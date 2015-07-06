@@ -22,11 +22,15 @@ func TestFeed(t *testing.T) {
 	assert.Nil(t, err2)
 	assert.NotNil(t, feed)
 
-	assert.NotNil(t, feed.Date)
-	assert.Equal(t, time.Date(2013, time.May, 31, 13, 54, 0, 0, time.UTC), *feed.Date)
+	assert.NotEmpty(t, feed.Title)
+	assert.Empty(t, feed.Subtitle)
+
+	assert.NotNil(t, feed.Updated)
+	assert.Equal(t, time.Date(2013, time.May, 31, 13, 54, 0, 0, time.UTC), *feed.Updated)
 
 	assert.NotNil(t, feed.Author)
 
+	assert.Empty(t, feed.Icon)
 	assert.NotEmpty(t, feed.Rights)
 	assert.Empty(t, feed.Generator)
 
@@ -38,6 +42,7 @@ func TestFeed(t *testing.T) {
 	assert.NotNil(t, feed.Entries)
 	assert.Equal(t, 6, len(feed.Entries))
 
+	assert.Nil(t, feed.Entries[0].Created)
 	assert.NotEmpty(t, feed.Entries[0].Summary)
 	assert.NotEmpty(t, feed.Entries[0].Content)
 

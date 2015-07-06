@@ -8,8 +8,10 @@ import (
 type Feed struct {
 	ID        string
 	Title     string
-	Date      *time.Time
+	Subtitle  string
+	Updated   *time.Time
 	Author    *Author
+	Icon      string
 	Rights    string
 	Generator string
 	Links     []*Link
@@ -18,13 +20,15 @@ type Feed struct {
 
 // Entry entry
 type Entry struct {
-	ID      string
-	Date    *time.Time
-	Author  *Author
-	Title   string
-	Links   []*Link
-	Summary string
-	Content string
+	ID         string
+	Created    *time.Time
+	Updated    *time.Time
+	Author     *Author
+	Title      string
+	Categories []string
+	Links      []*Link
+	Summary    string
+	Content    string
 }
 
 // Author author
