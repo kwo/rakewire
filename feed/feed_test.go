@@ -2,17 +2,29 @@ package feed
 
 import (
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 	"time"
 )
 
+const (
+	FeedFilename = "../test/feed.xml"
+)
+
 func TestFeed(t *testing.T) {
-	var feed, err = Parse("https://ostendorf.com/feed.xml")
-	assert.Nil(t, err)
+
+	f, err1 := os.Open(FeedFilename)
+	assert.Nil(t, err1)
+	assert.NotNil(t, f)
+	defer f.Close()
+
+	var feed, err2 = Parse(f)
+	assert.Nil(t, err2)
 	assert.NotNil(t, feed)
 	assert.NotNil(t, feed.Date)
 	assert.Equal(t, time.Date(2013, time.May, 31, 13, 54, 0, 0, time.UTC), *feed.Date)
 	assert.NotNil(t, feed.Author)
 	assert.NotNil(t, feed.Entries)
 	assert.Equal(t, 6, len(feed.Entries))
+
 }

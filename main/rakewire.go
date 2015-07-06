@@ -19,6 +19,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	feed.Parse(feedURL)
+	feed.ParseURL(feedURL)
 
 }

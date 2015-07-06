@@ -2,20 +2,14 @@ package feed
 
 import (
 	"encoding/xml"
+	"io"
 	"log"
 	"net/http"
 )
 
 // Parse feed
-func Parse(feedURL string) (*Feed, error) {
+func Parse(reader io.Reader) (*Feed, error) {
 
-	rsp, err := http.Get(feedURL)
-	if err != nil {
-		panic(err)
-	}
-
-	reader := rsp.Body
-	defer reader.Close()
 	decoder := xml.NewDecoder(reader)
 
 	var feed *Feed
@@ -42,5 +36,20 @@ func Parse(feedURL string) (*Feed, error) {
 	} // for loop
 
 	return feed, nil
+
+}
+
+// ParseURL download url and parse feed
+func ParseURL(feedURL string) (*Feed, error) {
+
+	rsp, err := http.Get(feedURL)
+	if err != nil {
+		return nil, err
+	}
+
+	reader := rsp.Body
+	defer reader.Close()
+
+	return Parse(reader)
 
 }
