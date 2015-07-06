@@ -1,18 +1,23 @@
 package feed
 
+import (
+	"time"
+)
+
 // atom feed
 type atomFeed struct {
 	ID      string      `xml:"id"`
 	Title   string      `xml:"title"`
-	Date    string      `xml:"updated"`
+	Date    time.Time   `xml:"updated"`
 	Author  atomAuthor  `xml:"author"`
+	Rights  string      `xml:"rights"`
 	Entries []atomEntry `xml:"entry"`
 }
 
 // atom entry
 type atomEntry struct {
 	ID     string     `xml:"id"`
-	Date   string     `xml:"updated"`
+	Date   time.Time  `xml:"updated"`
 	Author atomAuthor `xml:"author"`
 	Title  string     `xml:"title"`
 }
@@ -30,7 +35,7 @@ func (a atomFeed) toFeed() *Feed {
 
 	f.ID = a.ID
 	f.Title = a.Title
-	f.Date = a.Date
+	f.Date = &a.Date
 	f.Author = &Author{a.Author.Name, a.Author.EMail, a.Author.URI}
 
 	for i := 0; i < len(a.Entries); i++ {
@@ -38,7 +43,7 @@ func (a atomFeed) toFeed() *Feed {
 		e := Entry{}
 		e.ID = b.ID
 		e.Title = b.Title
-		e.Date = b.Date
+		e.Date = &b.Date
 		e.Author = &Author{b.Author.Name, b.Author.EMail, b.Author.URI}
 		f.Entries = append(f.Entries, &e)
 	}

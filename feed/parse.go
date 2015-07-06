@@ -14,8 +14,6 @@ func Parse(feedURL string) (*Feed, error) {
 		panic(err)
 	}
 
-	//fmt.Printf("URL: %s\n", rsp.Request.URL)
-
 	reader := rsp.Body
 	defer reader.Close()
 	decoder := xml.NewDecoder(reader)

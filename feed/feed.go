@@ -1,10 +1,14 @@
 package feed
 
+import (
+	"time"
+)
+
 // Feed feed
 type Feed struct {
 	ID      string
 	Title   string
-	Date    string
+	Date    *time.Time
 	Author  *Author
 	Entries []*Entry
 }
@@ -12,7 +16,7 @@ type Feed struct {
 // Entry entry
 type Entry struct {
 	ID     string
-	Date   string
+	Date   *time.Time
 	Author *Author
 	Title  string
 }
