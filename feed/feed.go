@@ -6,12 +6,14 @@ import (
 
 // Feed feed
 type Feed struct {
-	ID      string
-	Title   string
-	Date    *time.Time
-	Author  *Author
-	Links   []*Link
-	Entries []*Entry
+	ID        string
+	Title     string
+	Date      *time.Time
+	Author    *Author
+	Rights    string
+	Generator string
+	Links     []*Link
+	Entries   []*Entry
 }
 
 // Entry entry

@@ -27,6 +27,9 @@ func TestFeed(t *testing.T) {
 
 	assert.NotNil(t, feed.Author)
 
+	assert.NotEmpty(t, feed.Rights)
+	assert.Empty(t, feed.Generator)
+
 	assert.NotNil(t, feed.Links)
 	assert.Equal(t, 1, len(feed.Links))
 	assert.Equal(t, "self", feed.Links[0].Rel)

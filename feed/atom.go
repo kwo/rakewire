@@ -6,13 +6,14 @@ import (
 
 // atom feed
 type atomFeed struct {
-	ID      string      `xml:"id"`
-	Title   string      `xml:"title"`
-	Date    time.Time   `xml:"updated"`
-	Author  atomAuthor  `xml:"author"`
-	Rights  string      `xml:"rights"`
-	Links   []atomLink  `xml:"link"`
-	Entries []atomEntry `xml:"entry"`
+	ID        string        `xml:"id"`
+	Title     string        `xml:"title"`
+	Date      time.Time     `xml:"updated"`
+	Author    atomAuthor    `xml:"author"`
+	Generator atomGenerator `xml:"generator"`
+	Rights    string        `xml:"rights"`
+	Links     []atomLink    `xml:"link"`
+	Entries   []atomEntry   `xml:"entry"`
 }
 
 // atom entry
@@ -47,6 +48,13 @@ type atomText struct {
 	//Type string `xml:"type,attr"`
 }
 
+// atom generator
+type atomGenerator struct {
+	Name    string `xml:",chardata"`
+	URI     string `xml:"uri,attr"`
+	Version string `xml:"version,attr"`
+}
+
 func (txt atomText) String() string {
 
 	var result string
@@ -63,6 +71,24 @@ func (txt atomText) String() string {
 
 }
 
+func (g atomGenerator) String() string {
+
+	var result string
+
+	if g.Name != "" {
+		result = g.Name
+		if g.Version != "" {
+			result += " " + g.Version
+		}
+		if g.URI != "" {
+			result += " (" + g.URI + ")"
+		}
+	}
+
+	return result
+
+}
+
 func (a atomFeed) toFeed() *Feed {
 
 	var f Feed
@@ -71,6 +97,8 @@ func (a atomFeed) toFeed() *Feed {
 	f.Title = a.Title
 	f.Date = &a.Date
 	f.Author = &Author{a.Author.Name, a.Author.EMail, a.Author.URI}
+	f.Rights = a.Rights
+	f.Generator = a.Generator.String()
 
 	for j := 0; j < len(a.Links); j++ {
 		atomLink := a.Links[j]
