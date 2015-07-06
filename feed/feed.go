@@ -6,40 +6,39 @@ import (
 
 // Feed feed
 type Feed struct {
+	Author    *Author
+	Entries   []*Entry
+	Generator string
+	Icon      string
 	ID        string
+	Links     []*Link
 	Title     string
 	Subtitle  string
 	Updated   *time.Time
-	Author    *Author
-	Icon      string
-	Rights    string
-	Generator string
-	Links     []*Link
-	Entries   []*Entry
 }
 
 // Entry entry
 type Entry struct {
-	ID         string
-	Created    *time.Time
-	Updated    *time.Time
 	Author     *Author
-	Title      string
 	Categories []string
+	Content    string
+	Created    *time.Time
+	ID         string
 	Links      []*Link
 	Summary    string
-	Content    string
+	Title      string
+	Updated    *time.Time
 }
 
 // Author author
 type Author struct {
-	Name  string
 	EMail string
+	Name  string
 	URI   string
 }
 
 // Link link
 type Link struct {
-	Rel  string
 	Href string
+	Rel  string
 }

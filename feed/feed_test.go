@@ -31,7 +31,6 @@ func TestFeed(t *testing.T) {
 	assert.NotNil(t, feed.Author)
 
 	assert.Empty(t, feed.Icon)
-	assert.NotEmpty(t, feed.Rights)
 	assert.Empty(t, feed.Generator)
 
 	assert.NotNil(t, feed.Links)

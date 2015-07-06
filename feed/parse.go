@@ -13,6 +13,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 	decoder := xml.NewDecoder(reader)
 
 	var feed *Feed
+	var err error
 
 	for {
 		// Read tokens from the XML document in a stream.
@@ -27,7 +28,11 @@ func Parse(reader io.Reader) (*Feed, error) {
 			if element.Name.Local == "feed" {
 				var a atomFeed
 				decoder.DecodeElement(&a, &element)
-				feed = a.toFeed()
+				feed, err = a.toFeed()
+			} else if element.Name.Local == "rss" {
+				var r rssFeed
+				decoder.DecodeElement(&r, &element)
+				feed, err = r.Channel.toFeed()
 			} else {
 				log.Printf("Unknown feed type: %s\n", element.Name.Local)
 			}
@@ -35,7 +40,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 
 	} // for loop
 
-	return feed, nil
+	return feed, err
 
 }
 

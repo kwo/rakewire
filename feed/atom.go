@@ -6,50 +6,55 @@ import (
 
 // atom feed
 type atomFeed struct {
-	ID        string        `xml:"id"`
-	Title     string        `xml:"title"`
-	Subtitle  string        `xml:"subtitle"`
-	Updated   time.Time     `xml:"updated"`
-	Author    atomAuthor    `xml:"author"`
-	Icon      string        `xml:"icon"`
-	Generator atomGenerator `xml:"generator"`
-	Rights    string        `xml:"rights"`
-	Links     []atomLink    `xml:"link"`
-	Entries   []atomEntry   `xml:"entry"`
+	Author       atomAuthor     `xml:"author"`
+	Categories   []atomCategory `xml:"category"`
+	Contributors []atomAuthor   `xml:"contributor"`
+	Entries      []atomEntry    `xml:"entry"`
+	Generator    atomGenerator  `xml:"generator"`
+	Icon         string         `xml:"icon"`
+	ID           string         `xml:"id"`
+	Links        []atomLink     `xml:"link"`
+	Logo         string         `xml:"logo"`
+	Rights       string         `xml:"rights"`
+	Subtitle     string         `xml:"subtitle"`
+	Title        string         `xml:"title"`
+	Updated      time.Time      `xml:"updated"`
 }
 
 // atom entry
 type atomEntry struct {
-	ID         string         `xml:"id"`
-	Created    time.Time      `xml:"published"`
-	Updated    time.Time      `xml:"updated"`
-	Author     atomAuthor     `xml:"author"`
-	Title      string         `xml:"title"`
-	Categories []atomCategory `xml:"category"`
-	Links      []atomLink     `xml:"link"`
-	Summary    atomText       `xml:"summary"`
-	Content    atomText       `xml:"content"`
+	Author       atomAuthor     `xml:"author"`
+	Categories   []atomCategory `xml:"category"`
+	Content      atomText       `xml:"content"`
+	Contributors []atomAuthor   `xml:"contributor"`
+	ID           string         `xml:"id"`
+	Links        []atomLink     `xml:"link"`
+	Published    time.Time      `xml:"published"`
+	Rights       string         `xml:"rights"`
+	Summary      atomText       `xml:"summary"`
+	Title        string         `xml:"title"`
+	Updated      time.Time      `xml:"updated"`
 }
 
 // atom author
 type atomAuthor struct {
-	Name  string `xml:"name"`
 	EMail string `xml:"email"`
+	Name  string `xml:"name"`
 	URI   string `xml:"uri"`
 }
 
 // atom link
 type atomLink struct {
-	Rel  string `xml:"rel,attr"`
 	Href string `xml:"href,attr"`
+	Rel  string `xml:"rel,attr"`
 }
 
 // atom text
 type atomText struct {
-	Text string `xml:",chardata"`
-	XML  string `xml:",innerxml"`
 	URI  string `xml:"uri,attr"`
+	Text string `xml:",chardata"`
 	//Type string `xml:"type,attr"`
+	XML string `xml:",innerxml"`
 }
 
 func (txt atomText) String() string {
@@ -70,8 +75,8 @@ func (txt atomText) String() string {
 
 // atom generator
 type atomGenerator struct {
-	Name    string `xml:",chardata"`
 	URI     string `xml:"uri,attr"`
+	Name    string `xml:",chardata"`
 	Version string `xml:"version,attr"`
 }
 
@@ -95,16 +100,16 @@ func (g atomGenerator) String() string {
 
 // atom category
 type atomCategory struct {
+	Label  string `xml:"label,attr"`
 	Term   string `xml:",chardata"`
 	Scheme string `xml:"scheme,attr"`
-	Label  string `xml:"label,attr"`
 }
 
 func (c atomCategory) String() string {
 	return c.Term
 }
 
-func (a atomFeed) toFeed() *Feed {
+func (a atomFeed) toFeed() (*Feed, error) {
 
 	var f Feed
 
@@ -113,7 +118,6 @@ func (a atomFeed) toFeed() *Feed {
 	f.Subtitle = a.Subtitle
 	f.Author = &Author{a.Author.Name, a.Author.EMail, a.Author.URI}
 	f.Icon = a.Icon
-	f.Rights = a.Rights
 	f.Generator = a.Generator.String()
 
 	if !a.Updated.IsZero() {
@@ -122,7 +126,7 @@ func (a atomFeed) toFeed() *Feed {
 
 	for j := 0; j < len(a.Links); j++ {
 		atomLink := a.Links[j]
-		link := Link{atomLink.Rel, atomLink.Href}
+		link := Link{atomLink.Href, atomLink.Rel}
 		f.Links = append(f.Links, &link)
 	}
 
@@ -134,17 +138,17 @@ func (a atomFeed) toFeed() *Feed {
 
 		entry.ID = atomEntry.ID
 		entry.Title = atomEntry.Title
-		if !atomEntry.Created.IsZero() {
-			entry.Created = &atomEntry.Created
+		if !atomEntry.Published.IsZero() {
+			entry.Created = &atomEntry.Published
 		}
 		if !atomEntry.Updated.IsZero() {
 			entry.Updated = &atomEntry.Updated
 		}
-		entry.Author = &Author{atomEntry.Author.Name, atomEntry.Author.EMail, atomEntry.Author.URI}
+		entry.Author = &Author{atomEntry.Author.EMail, atomEntry.Author.Name, atomEntry.Author.URI}
 
 		for j := 0; j < len(atomEntry.Links); j++ {
 			atomLink := atomEntry.Links[j]
-			link := Link{atomLink.Rel, atomLink.Href}
+			link := Link{atomLink.Href, atomLink.Rel}
 			entry.Links = append(entry.Links, &link)
 		}
 
@@ -157,6 +161,6 @@ func (a atomFeed) toFeed() *Feed {
 
 	}
 
-	return &f
+	return &f, nil
 
 }
