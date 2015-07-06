@@ -10,6 +10,7 @@ type Feed struct {
 	Title   string
 	Date    *time.Time
 	Author  *Author
+	Links   []*Link
 	Entries []*Entry
 }
 
@@ -19,6 +20,7 @@ type Entry struct {
 	Date   *time.Time
 	Author *Author
 	Title  string
+	Links  []*Link
 }
 
 // Author author
@@ -26,4 +28,10 @@ type Author struct {
 	Name  string
 	EMail string
 	URI   string
+}
+
+// Link link
+type Link struct {
+	Rel  string
+	Href string
 }
