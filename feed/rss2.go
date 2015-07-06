@@ -10,15 +10,15 @@ type rssFeed struct {
 }
 
 type rssChannel struct {
-	Title       string    `xml:"title"`
-	Link        string    `xml:"link"`
-	Description string    `xml:"description"`
-	Items       []rssItem `xml:"item"`
+	Description string `xml:"description"`
+	//Items       []rssItem `xml:"item"`
+	Link  string `xml:"link"`
+	Title string `xml:"title"`
 }
 
 type rssItem struct {
 	ID         string         `xml:"id"`
-	Created    time.Time      `xml:"published"`
+	Published  time.Time      `xml:"published"`
 	Updated    time.Time      `xml:"updated"`
 	Author     atomAuthor     `xml:"author"`
 	Title      string         `xml:"title"`
@@ -32,7 +32,7 @@ func (r rssChannel) toFeed() (*Feed, error) {
 
 	var f Feed
 
-	//f.ID = r.ID
+	f.ID = r.Link
 	f.Title = r.Title
 	f.Subtitle = r.Description
 	// f.Author = &Author{r.Author.Name, r.Author.EMail, r.Author.URI}

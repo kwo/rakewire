@@ -2,26 +2,24 @@ package feed
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 	"time"
 )
 
-const (
-	FeedFilename = "../test/feed.xml"
-)
+func TestAtomFeed(t *testing.T) {
 
-func TestFeed(t *testing.T) {
-
-	f, err1 := os.Open(FeedFilename)
+	f, err1 := os.Open("../test/feed.xml")
 	assert.Nil(t, err1)
 	assert.NotNil(t, f)
 	defer f.Close()
 
 	var feed, err2 = Parse(f)
-	assert.Nil(t, err2)
-	assert.NotNil(t, feed)
+	require.Nil(t, err2)
+	require.NotNil(t, feed)
 
+	assert.NotEmpty(t, feed.ID)
 	assert.NotEmpty(t, feed.Title)
 	assert.Empty(t, feed.Subtitle)
 
@@ -43,5 +41,22 @@ func TestFeed(t *testing.T) {
 	assert.Nil(t, feed.Entries[0].Created)
 	assert.NotEmpty(t, feed.Entries[0].Summary)
 	assert.NotEmpty(t, feed.Entries[0].Content)
+
+}
+
+func TestRSSFeed(t *testing.T) {
+
+	f, err1 := os.Open("../test/wordpress.xml")
+	assert.Nil(t, err1)
+	assert.NotNil(t, f)
+	defer f.Close()
+
+	var feed, err2 = Parse(f)
+	require.NoError(t, err2)
+	require.NotNil(t, feed)
+
+	//assert.NotEmpty(t, feed.ID)
+	assert.NotEmpty(t, feed.Title)
+	assert.NotEmpty(t, feed.Subtitle)
 
 }

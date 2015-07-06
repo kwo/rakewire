@@ -2,6 +2,7 @@ package feed
 
 import (
 	"encoding/xml"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -32,7 +33,11 @@ func Parse(reader io.Reader) (*Feed, error) {
 			} else if element.Name.Local == "rss" {
 				var r rssFeed
 				decoder.DecodeElement(&r, &element)
-				feed, err = r.Channel.toFeed()
+				if r.Version == "2.0" {
+					feed, err = r.Channel.toFeed()
+				} else {
+					err = errors.New("Not an RSS2 feed")
+				}
 			} else {
 				log.Printf("Unknown feed type: %s\n", element.Name.Local)
 			}
