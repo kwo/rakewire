@@ -35,4 +35,7 @@ func TestFeed(t *testing.T) {
 	assert.NotNil(t, feed.Entries)
 	assert.Equal(t, 6, len(feed.Entries))
 
+	assert.NotEmpty(t, feed.Entries[0].Summary)
+	assert.NotEmpty(t, feed.Entries[0].Content)
+
 }

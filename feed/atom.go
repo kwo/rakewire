@@ -17,11 +17,13 @@ type atomFeed struct {
 
 // atom entry
 type atomEntry struct {
-	ID     string     `xml:"id"`
-	Date   time.Time  `xml:"updated"`
-	Author atomAuthor `xml:"author"`
-	Title  string     `xml:"title"`
-	Links  []atomLink `xml:"link"`
+	ID      string     `xml:"id"`
+	Date    time.Time  `xml:"updated"`
+	Author  atomAuthor `xml:"author"`
+	Title   string     `xml:"title"`
+	Links   []atomLink `xml:"link"`
+	Summary atomText   `xml:"summary"`
+	Content atomText   `xml:"content"`
 }
 
 // atom author
@@ -35,6 +37,30 @@ type atomAuthor struct {
 type atomLink struct {
 	Rel  string `xml:"rel,attr"`
 	Href string `xml:"href,attr"`
+}
+
+// atom text
+type atomText struct {
+	Text string `xml:",chardata"`
+	XML  string `xml:",innerxml"`
+	URI  string `xml:"uri,attr"`
+	//Type string `xml:"type,attr"`
+}
+
+func (txt atomText) String() string {
+
+	var result string
+
+	if txt.Text != "" {
+		result = txt.Text
+	} else if txt.XML != "" {
+		result = txt.XML
+	} else if txt.URI != "" {
+		result = txt.URI
+	}
+
+	return result
+
 }
 
 func (a atomFeed) toFeed() *Feed {
@@ -52,10 +78,16 @@ func (a atomFeed) toFeed() *Feed {
 		f.Links = append(f.Links, &link)
 	}
 
-	entry := Entry{}
-
 	for i := 0; i < len(a.Entries); i++ {
+
+		entry := Entry{}
 		atomEntry := a.Entries[i]
+		f.Entries = append(f.Entries, &entry)
+
+		entry.ID = atomEntry.ID
+		entry.Title = atomEntry.Title
+		entry.Date = &atomEntry.Date
+		entry.Author = &Author{atomEntry.Author.Name, atomEntry.Author.EMail, atomEntry.Author.URI}
 
 		for j := 0; j < len(atomEntry.Links); j++ {
 			atomLink := atomEntry.Links[j]
@@ -63,12 +95,11 @@ func (a atomFeed) toFeed() *Feed {
 			entry.Links = append(entry.Links, &link)
 		}
 
-		entry.ID = atomEntry.ID
-		entry.Title = atomEntry.Title
-		entry.Date = &atomEntry.Date
-		entry.Author = &Author{atomEntry.Author.Name, atomEntry.Author.EMail, atomEntry.Author.URI}
-		f.Entries = append(f.Entries, &entry)
+		entry.Summary = atomEntry.Summary.String()
+		entry.Content = atomEntry.Content.String()
+
 	}
 
 	return &f
+
 }

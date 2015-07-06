@@ -16,11 +16,13 @@ type Feed struct {
 
 // Entry entry
 type Entry struct {
-	ID     string
-	Date   *time.Time
-	Author *Author
-	Title  string
-	Links  []*Link
+	ID      string
+	Date    *time.Time
+	Author  *Author
+	Title   string
+	Links   []*Link
+	Summary string
+	Content string
 }
 
 // Author author
