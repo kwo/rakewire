@@ -2,24 +2,25 @@ package feed
 
 import (
 	"encoding/xml"
-	"fmt"
 	"log"
 	"net/http"
 )
 
 // Parse feed
-func Parse(feedURL string) {
+func Parse(feedURL string) (*Feed, error) {
 
 	rsp, err := http.Get(feedURL)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("URL: %s\n", rsp.Request.URL)
+	//fmt.Printf("URL: %s\n", rsp.Request.URL)
 
 	reader := rsp.Body
 	defer reader.Close()
 	decoder := xml.NewDecoder(reader)
+
+	var feed *Feed
 
 	for {
 		// Read tokens from the XML document in a stream.
@@ -32,17 +33,16 @@ func Parse(feedURL string) {
 		switch element := t.(type) {
 		case xml.StartElement:
 			if element.Name.Local == "feed" {
-				var feed atomfeed
-				decoder.DecodeElement(&feed, &element)
-				fmt.Printf("%s, %s, %s, %s\n", feed.Title, feed.ID, feed.Date, feed.Author.Name)
-				for _, entry := range feed.Entries {
-					fmt.Printf("%s, %s, %s, %s\n", entry.Title, entry.ID, entry.Date, entry.Author.Name)
-				}
+				var a atomFeed
+				decoder.DecodeElement(&a, &element)
+				feed = a.toFeed()
 			} else {
 				log.Printf("Unknown feed type: %s\n", element.Name.Local)
 			}
 		} // switch
 
 	} // for loop
+
+	return feed, nil
 
 }

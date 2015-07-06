@@ -5,15 +5,15 @@ type Feed struct {
 	ID      string
 	Title   string
 	Date    string
-	Author  Author
-	Entries []Entry
+	Author  *Author
+	Entries []*Entry
 }
 
 // Entry entry
 type Entry struct {
 	ID     string
 	Date   string
-	Author Author
+	Author *Author
 	Title  string
 }
 
