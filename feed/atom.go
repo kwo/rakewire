@@ -116,7 +116,7 @@ func (a atomFeed) toFeed() (*Feed, error) {
 	f.ID = a.ID
 	f.Title = a.Title
 	f.Subtitle = a.Subtitle
-	f.Author = &Author{a.Author.Name, a.Author.EMail, a.Author.URI}
+	f.Author = &Person{a.Author.Name, a.Author.EMail, a.Author.URI}
 	f.Icon = a.Icon
 	f.Generator = a.Generator.String()
 
@@ -143,7 +143,7 @@ func (a atomFeed) toFeed() (*Feed, error) {
 		if !atomEntry.Updated.IsZero() {
 			entry.Updated = &atomEntry.Updated
 		}
-		entry.Author = &Author{atomEntry.Author.EMail, atomEntry.Author.Name, atomEntry.Author.URI}
+		entry.Author = &Person{atomEntry.Author.EMail, atomEntry.Author.Name, atomEntry.Author.URI}
 
 		entry.Links = make(map[string]string)
 		for j := 0; j < len(atomEntry.Links); j++ {

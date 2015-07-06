@@ -6,7 +6,7 @@ import (
 
 // Feed feed
 type Feed struct {
-	Author    *Author
+	Author    *Person
 	Entries   []*Entry
 	Generator string
 	Icon      string
@@ -19,7 +19,7 @@ type Feed struct {
 
 // Entry entry
 type Entry struct {
-	Author     *Author
+	Author     *Person
 	Categories []string
 	Content    string
 	Created    *time.Time
@@ -30,8 +30,8 @@ type Entry struct {
 	Updated    *time.Time
 }
 
-// Author author
-type Author struct {
+// Person person
+type Person struct {
 	EMail string
 	Name  string
 	URI   string
