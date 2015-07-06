@@ -11,7 +11,7 @@ type Feed struct {
 	Generator string
 	Icon      string
 	ID        string
-	Links     []*Link
+	Links     map[string]string
 	Title     string
 	Subtitle  string
 	Updated   *time.Time
@@ -24,7 +24,7 @@ type Entry struct {
 	Content    string
 	Created    *time.Time
 	ID         string
-	Links      []*Link
+	Links      map[string]string
 	Summary    string
 	Title      string
 	Updated    *time.Time
@@ -35,10 +35,4 @@ type Author struct {
 	EMail string
 	Name  string
 	URI   string
-}
-
-// Link link
-type Link struct {
-	Href string
-	Rel  string
 }

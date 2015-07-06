@@ -33,10 +33,9 @@ func TestFeed(t *testing.T) {
 	assert.Empty(t, feed.Icon)
 	assert.Empty(t, feed.Generator)
 
-	assert.NotNil(t, feed.Links)
+	assert.NotEmpty(t, feed.Links)
 	assert.Equal(t, 1, len(feed.Links))
-	assert.Equal(t, "self", feed.Links[0].Rel)
-	assert.Equal(t, "https://ostendorf.com/feed.xml", feed.Links[0].Href)
+	assert.Equal(t, "https://ostendorf.com/feed.xml", feed.Links["self"])
 
 	assert.NotNil(t, feed.Entries)
 	assert.Equal(t, 6, len(feed.Entries))

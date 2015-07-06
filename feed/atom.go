@@ -124,10 +124,9 @@ func (a atomFeed) toFeed() (*Feed, error) {
 		f.Updated = &a.Updated
 	}
 
+	f.Links = make(map[string]string)
 	for j := 0; j < len(a.Links); j++ {
-		atomLink := a.Links[j]
-		link := Link{atomLink.Href, atomLink.Rel}
-		f.Links = append(f.Links, &link)
+		f.Links[a.Links[j].Rel] = a.Links[j].Href
 	}
 
 	for i := 0; i < len(a.Entries); i++ {
@@ -146,10 +145,9 @@ func (a atomFeed) toFeed() (*Feed, error) {
 		}
 		entry.Author = &Author{atomEntry.Author.EMail, atomEntry.Author.Name, atomEntry.Author.URI}
 
+		entry.Links = make(map[string]string)
 		for j := 0; j < len(atomEntry.Links); j++ {
-			atomLink := atomEntry.Links[j]
-			link := Link{atomLink.Href, atomLink.Rel}
-			entry.Links = append(entry.Links, &link)
+			entry.Links[atomEntry.Links[j].Rel] = atomEntry.Links[j].Href
 		}
 
 		for j := 0; j < len(atomEntry.Categories); j++ {
