@@ -119,6 +119,7 @@ func (a atomFeed) toFeed() (*Feed, error) {
 	f.Author = &Person{a.Author.Name, a.Author.EMail, a.Author.URI}
 	f.Icon = a.Icon
 	f.Generator = a.Generator.String()
+	f.Flavor = "atom"
 
 	if !a.Updated.IsZero() {
 		f.Updated = &a.Updated

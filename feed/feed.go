@@ -8,6 +8,7 @@ import (
 type Feed struct {
 	Author    *Person
 	Entries   []*Entry
+	Flavor    string
 	Generator string
 	Icon      string
 	ID        string

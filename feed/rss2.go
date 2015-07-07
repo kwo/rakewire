@@ -39,6 +39,7 @@ func (r rssChannel) toFeed() (*Feed, error) {
 	// f.Icon = r.Icon
 	// f.Rights = r.Rights
 	// f.Generator = r.Generator.String()
+	f.Flavor = "rss2"
 
 	// if !a.Updated.IsZero() {
 	// 	f.Updated = &a.Updated
