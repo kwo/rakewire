@@ -7,7 +7,7 @@ import (
 
 func TestFetch(t *testing.T) {
 
-	//t.SkipNow()
+	t.SkipNow()
 
 	var err = Fetch("../test/feedlist.txt")
 	require.Nil(t, err)
