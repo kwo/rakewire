@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 )
 
 type status struct {
@@ -30,7 +31,7 @@ const (
 
 var (
 	httpClient = http.Client{
-		Timeout: 60 * 1000 * 1000 * 1000, // seconds
+		Timeout: 60 * time.Second,
 	}
 )
 
