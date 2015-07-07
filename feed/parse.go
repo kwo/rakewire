@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"log"
-	"net/http"
 )
 
 // Parse feed
@@ -46,20 +45,5 @@ func Parse(reader io.Reader) (*Feed, error) {
 	} // for loop
 
 	return feed, err
-
-}
-
-// ParseURL download url and parse feed
-func ParseURL(feedURL string) (*Feed, error) {
-
-	rsp, err := http.Get(feedURL)
-	if err != nil {
-		return nil, err
-	}
-
-	reader := rsp.Body
-	defer reader.Close()
-
-	return Parse(reader)
 
 }
