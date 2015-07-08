@@ -12,15 +12,12 @@ func TestSerialize(t *testing.T) {
 
 	dt := time.Date(2015, time.July, 8, 9, 24, 0, 0, time.UTC)
 
-	fi := FeedInfo{
-		ID:          "ABCDEFG",
-		URL:         "http://localhost:8888/",
-		LastUpdated: &dt,
-	}
-
-	data, err := fi.Marshal()
+	fi, err := NewFeedInfo()
 	require.Nil(t, err)
-	require.NotNil(t, data)
+	require.NotNil(t, fi)
+	fi.URL = "http://localhost:8888/"
+	fi.LastUpdated = &dt
+
 	assert.Nil(t, fi.LastFetch)
 	assert.NotNil(t, fi.LastUpdated)
 	assert.EqualValues(t, dt, *fi.LastUpdated)
