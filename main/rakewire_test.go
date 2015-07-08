@@ -14,5 +14,5 @@ func TestConfigFileLocation(t *testing.T) {
 }
 
 func TestConfig(t *testing.T) {
-	assert.Nil(t, getConfig())
+	assert.NotNil(t, getConfig())
 }
