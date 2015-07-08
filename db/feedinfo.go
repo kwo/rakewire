@@ -37,12 +37,12 @@ type FeedInfo struct {
 }
 
 // NewFeedInfo instantiate a new FeedInfo object with a new UUID
-func NewFeedInfo(url string) (*FeedInfo, error) {
+func NewFeedInfo(url string) *FeedInfo {
 	x := FeedInfo{
 		ID:  uuid.NewUUID().String(),
 		URL: url,
 	}
-	return &x, nil
+	return &x
 }
 
 // Marshal serialize FeedInfo object to bytes

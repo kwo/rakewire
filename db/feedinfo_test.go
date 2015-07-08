@@ -12,8 +12,7 @@ func TestSerialize(t *testing.T) {
 
 	dt := time.Date(2015, time.July, 8, 9, 24, 0, 0, time.UTC)
 
-	fi, err := NewFeedInfo("http://localhost:8888/")
-	require.Nil(t, err)
+	fi := NewFeedInfo("http://localhost:8888/")
 	require.NotNil(t, fi)
 	fi.LastUpdated = &dt
 
