@@ -14,6 +14,7 @@ type Configuration struct {
 
 // HttpdConfiguration configuration
 type HttpdConfiguration struct {
+	Address   string
 	Port      int
 	WebAppDir string
 }

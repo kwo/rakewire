@@ -18,6 +18,7 @@ func TestConfiguration(t *testing.T) {
 
 	assert.NotNil(t, c.Httpd)
 
+	assert.Equal(t, "0.0.0.0", c.Httpd.Address)
 	assert.Equal(t, 4444, c.Httpd.Port)
 	assert.Equal(t, "/Users/karl/static", c.Httpd.WebAppDir)
 
