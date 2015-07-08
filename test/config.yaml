@@ -1,0 +1,3 @@
+httpd:
+  port: 4444
+  webappdir: "/Users/karl/static"
