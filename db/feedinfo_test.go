@@ -21,11 +21,14 @@ func TestSerialize(t *testing.T) {
 	assert.Nil(t, fi.LastFetch)
 	assert.NotNil(t, fi.LastUpdated)
 	assert.EqualValues(t, dt, *fi.LastUpdated)
-	assert.Equal(t, 111, len(data))
 
-	// jsonData, _ := unzip(data)
-	// fmt.Println(string(jsonData))
-	// fmt.Printf("size: %d\n", len(data))
+	data, err := fi.Marshal()
+	require.Nil(t, err)
+	require.NotNil(t, data)
+	assert.Equal(t, 124, len(data))
+
+	//fmt.Println(string(data))
+	//fmt.Printf("size: %d\n", len(data))
 
 	fi2 := FeedInfo{}
 	err = fi2.Unmarshal(data)
@@ -35,8 +38,5 @@ func TestSerialize(t *testing.T) {
 	assert.Nil(t, fi2.LastFetch)
 	assert.NotNil(t, fi2.LastUpdated)
 	assert.EqualValues(t, dt, *fi2.LastUpdated)
-
-	// times are deserialized with a non-nil location
-	// assert.EqualValues(t, fi, fi2)
 
 }

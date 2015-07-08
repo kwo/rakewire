@@ -46,24 +46,10 @@ func NewFeedInfo() (*FeedInfo, error) {
 
 // Marshal serialize FeedInfo object to bytes
 func (z *FeedInfo) Marshal() ([]byte, error) {
-
-	data, err := json.Marshal(z)
-	if err != nil {
-		return nil, err
-	}
-
-	return zip(data)
-
+	return json.Marshal(z)
 }
 
 // Unmarshal serialize FeedInfo object to bytes
-func (z *FeedInfo) Unmarshal(gzData []byte) error {
-
-	data, err := unzip(gzData)
-	if err != nil {
-		return err
-	}
-
+func (z *FeedInfo) Unmarshal(data []byte) error {
 	return json.Unmarshal(data, z)
-
 }
