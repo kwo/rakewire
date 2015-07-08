@@ -2,7 +2,7 @@ package bolt
 
 import (
 	"bufio"
-	"fmt"
+	//"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -42,14 +42,15 @@ func TestFeeds(t *testing.T) {
 
 	err = db.destroy()
 	assert.Nil(t, err)
+	assert.Nil(t, db.db)
 
 	err = os.Remove(databaseFile)
 	assert.Nil(t, err)
 
 	assert.Equal(t, len(feedmap), len(feeds))
-	for k, v := range feedmap {
-		fmt.Printf("Feed %s: %v\n", k, v.URL)
-	}
+	// for k, v := range feedmap {
+	// 	fmt.Printf("Feed %s: %v\n", k, v.URL)
+	// }
 
 }
 
