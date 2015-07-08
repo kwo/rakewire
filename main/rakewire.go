@@ -25,15 +25,13 @@ func main() {
 
 }
 
-func getHomeDirectory() string {
-	homeLocations := []string{"HOME", "HOMEPATH", "USERPROFILE"}
-	for _, v := range homeLocations {
-		x := os.Getenv(v)
-		if x != "" {
-			return x
-		}
+func getConfig() *m.Configuration {
+	cfg := m.Configuration{}
+	err := cfg.LoadFromFile(getConfigFileLocation())
+	if err != nil {
+		return nil
 	}
-	return ""
+	return &cfg
 }
 
 func getConfigFileLocation() string {
@@ -44,11 +42,13 @@ func getConfigFileLocation() string {
 	return configFileName
 }
 
-func getConfig() *m.Configuration {
-	cfg := m.Configuration{}
-	err := cfg.LoadFromFile(getConfigFileLocation())
-	if err != nil {
-		return nil
+func getHomeDirectory() string {
+	homeLocations := []string{"HOME", "HOMEPATH", "USERPROFILE"}
+	for _, v := range homeLocations {
+		x := os.Getenv(v)
+		if x != "" {
+			return x
+		}
 	}
-	return &cfg
+	return ""
 }
