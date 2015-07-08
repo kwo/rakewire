@@ -23,9 +23,15 @@ func Serve(cfg m.HttpdConfiguration) {
 	// static web site
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir(cfg.WebAppDir)))
 
+	logger := NewInternalLogger()
+
 	n := negroni.New()
-	n.Use(negroni.NewLogger())
+	n.Use(negroni.NewRecovery())
+	n.Use(logger)
 	n.UseHandler(router)
-	n.Run(fmt.Sprintf("%s:%d", cfg.Address, cfg.Port))
+
+	addr := fmt.Sprintf("%s:%d", cfg.Address, cfg.Port)
+	logger.Printf("listening on http://%s", addr)
+	logger.Fatal(http.ListenAndServe(addr, n))
 
 }
