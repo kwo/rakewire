@@ -6,4 +6,5 @@ type Database interface {
 	destroy() error
 	// return feeds keyed by ID
 	getFeeds() (map[string]*FeedInfo, error)
+	saveFeeds([]*FeedInfo) (int, error)
 }

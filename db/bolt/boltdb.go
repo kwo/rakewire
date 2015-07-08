@@ -2,6 +2,7 @@ package bolt
 
 import (
 	"github.com/boltdb/bolt"
+	"log"
 	"rakewire.com/db"
 	"time"
 )
@@ -37,11 +38,64 @@ func (z *Database) destroy() error {
 
 func (z *Database) getFeeds() (map[string]*db.FeedInfo, error) {
 
-	z.db.View(func(tx *bolt.Tx) error {
-		//b, _ := tx.CreateBucketIfNotExists([]byte("FeedInfo"))
-		//b.Put(key []byte, value []byte)
+	result := make(map[string]*db.FeedInfo)
+
+	err := z.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("FeedInfo"))
+		c := b.Cursor()
+
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+
+			f := db.FeedInfo{}
+			err := f.Unmarshal(v)
+			if err != nil {
+				return err
+			}
+			if f.ID != string(k) {
+				log.Printf("ID/key mismatch: %s/%s\n", k, f.ID)
+			} else {
+				result[f.ID] = &f
+			}
+
+		} // for
+
 		return nil
+
 	})
 
-	return nil, nil
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+
+}
+
+func (z *Database) saveFeeds(feeds []*db.FeedInfo) (int, error) {
+
+	var counter int
+	err := z.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("FeedInfo"))
+
+		for _, f := range feeds {
+
+			data, err := f.Marshal()
+			if err != nil {
+				return err
+			}
+
+			err = b.Put([]byte(f.ID), data)
+			if err != nil {
+				return err
+			}
+			counter++
+
+		} // for
+
+		return nil
+
+	}) // update
+
+	return counter, err
+
 }
