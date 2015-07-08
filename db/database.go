@@ -15,29 +15,29 @@ type Database interface {
 // FeedInfo feed descriptior
 type FeedInfo struct {
 	// Etag from HTTP Request - used for conditional GETs
-	ETag string
+	ETag string `json:"etag,omitempty"`
 	// Type of feed: Atom, RSS2, etc.
-	Flavor string
+	Flavor string `json:"flavor,omitempty"`
 	// Not yet in use: how often to poll the feed
-	Frequency int
+	Frequency int `json:"frequency,omitempty"`
 	// Feed generator
-	Generator string
+	Generator string `json:"generator,omitempty"`
 	// Hub URL
-	Hub string
+	Hub string `json:"hub,omitempty"`
 	// Feed icon
-	Icon string
+	Icon string `json:"icon,omitempty"`
 	// UUID
-	ID string
+	ID string `json:"id"`
 	// Time of last fetch attempt (LastStatus is true) or completion (LastStatus is false)
-	LastFetch time.Time
+	LastFetch *time.Time `json:"lastFetch,omitempty"`
 	// Last-Modified time from HTTP Request - used for conditional GETs
-	LastModified time.Time
+	LastModified *time.Time `json:"lastModified,omitempty"`
 	// The last status, true if error, false if successfully completed
-	LastStatus bool
+	LastStatus bool `json:"lastStatus,omitempty"`
 	// Time the feed was last updated (from feed)
-	LastUpdated time.Time
+	LastUpdated *time.Time `json:"lastUpdated,omitempty"`
 	// Feed title
-	Title string
+	Title string `json:"title"`
 	// URL updated if feed is permenently redirected
-	URL string
+	URL string `json:"url"`
 }
