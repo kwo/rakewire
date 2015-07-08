@@ -1,14 +1,13 @@
 # Rakewire
 
 ## TODO
+ - gracefully stop server on signal
  - open database at start
  - add db location to config file
  - decide on a database location
+ - close database on signal
  - implement config defaults
  - implememt APIRouter to list feeds in database
- - trap signal
- - close database on signal
- - gracefully stop server on signal
  - run fetch off of database
  - get fetch to complete without errors
 
