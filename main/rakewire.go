@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
 	"path"
 	m "rakewire.com/model"
 	"rakewire.com/server"
+	"syscall"
 )
 
 const (
@@ -21,7 +23,8 @@ func main() {
 		return
 	}
 
-	server.Serve(cfg.Httpd)
+	go server.Serve(cfg.Httpd)
+	waitForSignals()
 
 }
 
@@ -49,4 +52,14 @@ func getHomeDirectory() string {
 		}
 	}
 	return ""
+}
+
+func waitForSignals() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+	<-c
+	fmt.Print("stopping... ")
+	// TODO: shutdown server
+	// TODO: close database
+	fmt.Println("done")
 }
