@@ -12,14 +12,14 @@ func TestSerialize(t *testing.T) {
 
 	dt := time.Date(2015, time.July, 8, 9, 24, 0, 0, time.UTC)
 
-	fi, err := NewFeedInfo()
+	fi, err := NewFeedInfo("http://localhost:8888/")
 	require.Nil(t, err)
 	require.NotNil(t, fi)
-	fi.URL = "http://localhost:8888/"
 	fi.LastUpdated = &dt
 
 	assert.Nil(t, fi.LastFetch)
 	assert.NotNil(t, fi.LastUpdated)
+	assert.Equal(t, "http://localhost:8888/", fi.URL)
 	assert.EqualValues(t, dt, *fi.LastUpdated)
 
 	data, err := fi.Marshal()

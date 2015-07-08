@@ -37,9 +37,10 @@ type FeedInfo struct {
 }
 
 // NewFeedInfo instantiate a new FeedInfo object with a new UUID
-func NewFeedInfo() (*FeedInfo, error) {
+func NewFeedInfo(url string) (*FeedInfo, error) {
 	x := FeedInfo{
-		ID: uuid.NewUUID().String(),
+		ID:  uuid.NewUUID().String(),
+		URL: url,
 	}
 	return &x, nil
 }
