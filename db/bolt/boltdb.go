@@ -47,8 +47,7 @@ func (z *Database) getFeeds() (map[string]*db.FeedInfo, error) {
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 
 			f := db.FeedInfo{}
-			err := f.Unmarshal(v)
-			if err != nil {
+			if err := f.Unmarshal(v); err != nil {
 				return err
 			}
 			if f.ID != string(k) {
@@ -84,8 +83,7 @@ func (z *Database) saveFeeds(feeds []*db.FeedInfo) (int, error) {
 				return err
 			}
 
-			err = b.Put([]byte(f.ID), data)
-			if err != nil {
+			if err := b.Put([]byte(f.ID), data); err != nil {
 				return err
 			}
 			counter++

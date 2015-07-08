@@ -126,14 +126,13 @@ func (a atomFeed) toFeed() (*Feed, error) {
 	}
 
 	f.Links = make(map[string]string)
-	for j := 0; j < len(a.Links); j++ {
-		f.Links[a.Links[j].Rel] = a.Links[j].Href
+	for _, link := range a.Links {
+		f.Links[link.Rel] = link.Href
 	}
 
-	for i := 0; i < len(a.Entries); i++ {
+	for _, atomEntry := range a.Entries {
 
 		entry := Entry{}
-		atomEntry := a.Entries[i]
 		f.Entries = append(f.Entries, &entry)
 
 		entry.ID = atomEntry.ID
@@ -147,12 +146,12 @@ func (a atomFeed) toFeed() (*Feed, error) {
 		entry.Author = &Person{atomEntry.Author.EMail, atomEntry.Author.Name, atomEntry.Author.URI}
 
 		entry.Links = make(map[string]string)
-		for j := 0; j < len(atomEntry.Links); j++ {
-			entry.Links[atomEntry.Links[j].Rel] = atomEntry.Links[j].Href
+		for _, link := range atomEntry.Links {
+			entry.Links[link.Rel] = link.Href
 		}
 
-		for j := 0; j < len(atomEntry.Categories); j++ {
-			entry.Categories = append(entry.Categories, atomEntry.Categories[j].String())
+		for _, cat := range atomEntry.Categories {
+			entry.Categories = append(entry.Categories, cat.String())
 		}
 
 		entry.Summary = atomEntry.Summary.String()

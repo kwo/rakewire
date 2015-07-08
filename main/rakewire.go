@@ -27,16 +27,14 @@ func main() {
 
 func getConfig() *m.Configuration {
 	cfg := m.Configuration{}
-	err := cfg.LoadFromFile(getConfigFileLocation())
-	if err != nil {
+	if err := cfg.LoadFromFile(getConfigFileLocation()); err != nil {
 		return nil
 	}
 	return &cfg
 }
 
 func getConfigFileLocation() string {
-	var home = getHomeDirectory()
-	if home != "" {
+	if home := getHomeDirectory(); home != "" {
 		return path.Join(getHomeDirectory(), ".config", "rakewire", configFileName)
 	}
 	return configFileName
