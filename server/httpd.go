@@ -1,7 +1,6 @@
 package server
 
 import (
-	//"fmt"
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
@@ -21,7 +20,9 @@ func Serve(cfg m.HttpdConfiguration) {
 	))
 
 	// static web site
-	router.PathPrefix("/").Handler(http.FileServer(http.Dir(cfg.WebAppDir)))
+	router.PathPrefix("/").Handler(negroni.New(
+		negroni.Wrap(http.FileServer(http.Dir(cfg.WebAppDir))),
+	))
 
 	logger := NewInternalLogger()
 
