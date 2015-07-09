@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/signal"
 	"path"
+	"rakewire.com/db/bolt"
 	"rakewire.com/logging"
 	m "rakewire.com/model"
 	"rakewire.com/server"
@@ -15,8 +16,9 @@ const (
 )
 
 var (
-	httpd  *server.Httpd
-	logger = logging.New("main")
+	httpd    *server.Httpd
+	database *bolt.Database
+	logger   = logging.New("main")
 )
 
 func main() {
@@ -28,9 +30,17 @@ func main() {
 		return
 	}
 
-	httpd = &server.Httpd{}
+	database = &bolt.Database{}
+	err := database.Open(&cfg.Database)
+	if err != nil {
+		logger.Printf("Abort! Cannot access database: %s\n", err.Error())
+		os.Exit(1)
+		return
+	}
 
+	httpd = &server.Httpd{}
 	go httpd.Start(cfg.Httpd)
+
 	waitForSignals()
 
 }
@@ -67,12 +77,15 @@ func waitForSignals() {
 	<-c
 	logging.Linefeed()
 	logger.Println("stopping... ")
-	// TODO: shutdown server
-	err := httpd.Stop()
-	if err != nil {
-		logger.Printf("Error stopping server: %s", err)
-	}
+
+	// shutdown server
+	_ = httpd.Stop()
 	httpd = nil
-	// TODO: close database
+
+	// close database
+	_ = database.Close()
+	database = nil
+
 	logger.Println("done")
+
 }
