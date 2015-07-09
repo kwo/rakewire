@@ -7,5 +7,5 @@ import (
 
 // NewInternalLogger returns a new Logger instance
 func NewInternalLogger() *negroni.Logger {
-	return &negroni.Logger{logging.New("server")}
+	return &negroni.Logger{logging.New("httpd")}
 }
