@@ -14,6 +14,10 @@ type Httpd struct {
 	listener net.Listener
 }
 
+var (
+	logger = NewInternalLogger()
+)
+
 // Start web service
 func (z *Httpd) Start(cfg m.HttpdConfiguration) {
 
@@ -30,8 +34,6 @@ func (z *Httpd) Start(cfg m.HttpdConfiguration) {
 		negroni.Wrap(http.FileServer(http.Dir(cfg.WebAppDir))),
 	))
 
-	logger := NewInternalLogger()
-
 	n := negroni.New()
 	n.Use(negroni.NewRecovery())
 	n.Use(logger)
@@ -46,14 +48,20 @@ func (z *Httpd) Start(cfg m.HttpdConfiguration) {
 	server := http.Server{
 		Handler: n,
 	}
-	logger.Printf("listening on http://%s", z.listener.Addr())
+	logger.Printf("Started httpd on http://%s", z.listener.Addr())
 	logger.Fatal(server.Serve(z.listener))
 
 }
 
 // Stop stop the server
 func (z *Httpd) Stop() error {
-	l := z.listener
-	z.listener = nil
-	return l.Close()
+	if l := z.listener; l != nil {
+		z.listener = nil
+		if err := l.Close(); err != nil {
+			logger.Printf("Error stopping httpd: %s\n", err.Error())
+			return err
+		}
+		logger.Println("Stopped httpd")
+	}
+	return nil
 }
