@@ -4,6 +4,7 @@ import (
 	"github.com/boltdb/bolt"
 	"log"
 	"rakewire.com/db"
+	"rakewire.com/logging"
 	m "rakewire.com/model"
 	"time"
 )
@@ -12,6 +13,10 @@ import (
 type Database struct {
 	db *bolt.DB
 }
+
+var (
+	logger = logging.New("db")
+)
 
 // Open the database
 func (z *Database) Open(cfg *m.DatabaseConfiguration) error {
@@ -28,15 +33,27 @@ func (z *Database) Open(cfg *m.DatabaseConfiguration) error {
 		return err
 	})
 
-	return err
+	if err != nil {
+		return err
+	}
+
+	logger.Printf("Using database at %s\n", cfg.Location)
+
+	return nil
 
 }
 
 // Close the database
 func (z *Database) Close() error {
-	var db = z.db
-	z.db = nil
-	return db.Close()
+	if db := z.db; db != nil {
+		z.db = nil
+		if err := db.Close(); err != nil {
+			logger.Printf("Error closing database: %s\n", err.Error())
+			return err
+		}
+		logger.Println("Closed database")
+	}
+	return nil
 }
 
 // GetFeeds list feeds
