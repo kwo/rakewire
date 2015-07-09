@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"os"
 	"rakewire.com/db"
+	m "rakewire.com/model"
 	"strings"
 	"testing"
 )
@@ -29,18 +30,20 @@ func TestFeeds(t *testing.T) {
 	assert.Equal(t, len(feeds), len(feedinfos))
 
 	db := Database{}
-	err = db.init(databaseFile)
+	err = db.Open(&m.DatabaseConfiguration{
+		Location: databaseFile,
+	})
 	require.Nil(t, err)
 
-	updateCount, err := db.saveFeeds(feedinfos)
+	updateCount, err := db.SaveFeeds(feedinfos)
 	require.Nil(t, err)
 	assert.Equal(t, len(feeds), updateCount)
 
-	feedmap, err := db.getFeeds()
+	feedmap, err := db.GetFeeds()
 	require.Nil(t, err)
 	require.NotNil(t, feedmap)
 
-	err = db.destroy()
+	err = db.Close()
 	assert.Nil(t, err)
 	assert.Nil(t, db.db)
 

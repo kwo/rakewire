@@ -24,4 +24,6 @@ func TestConfiguration(t *testing.T) {
 	assert.Equal(t, "/Users/karl/static", c.Httpd.WebAppDir)
 	assert.Equal(t, "0.0.0.0:4444", fmt.Sprintf("%s:%d", c.Httpd.Address, c.Httpd.Port))
 
+	assert.Equal(t, "/Users/karl/.rakewire/data.db", c.Database.Location)
+
 }

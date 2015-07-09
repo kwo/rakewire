@@ -1,10 +1,14 @@
 package db
 
+import (
+	m "rakewire.com/model"
+)
+
 // Database interface
 type Database interface {
-	init(cfg string) error
-	destroy() error
+	Open(cfg *m.DatabaseConfiguration) error
+	Close() error
 	// return feeds keyed by ID
-	getFeeds() (map[string]*FeedInfo, error)
-	saveFeeds([]*FeedInfo) (int, error)
+	GetFeeds() (map[string]*FeedInfo, error)
+	SaveFeeds([]*FeedInfo) (int, error)
 }

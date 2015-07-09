@@ -2,14 +2,20 @@ package model
 
 import (
 	"bytes"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 	"io"
 	"os"
 )
 
 // Configuration object
 type Configuration struct {
-	Httpd HttpdConfiguration
+	Database DatabaseConfiguration
+	Httpd    HttpdConfiguration
+}
+
+// DatabaseConfiguration configuration
+type DatabaseConfiguration struct {
+	Location string
 }
 
 // HttpdConfiguration configuration

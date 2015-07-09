@@ -4,6 +4,7 @@ import (
 	"github.com/boltdb/bolt"
 	"log"
 	"rakewire.com/db"
+	m "rakewire.com/model"
 	"time"
 )
 
@@ -12,9 +13,10 @@ type Database struct {
 	db *bolt.DB
 }
 
-func (z *Database) init(dbFilename string) error {
+// Open the database
+func (z *Database) Open(cfg *m.DatabaseConfiguration) error {
 
-	db, err := bolt.Open(dbFilename, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	db, err := bolt.Open(cfg.Location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return err
 	}
@@ -30,13 +32,15 @@ func (z *Database) init(dbFilename string) error {
 
 }
 
-func (z *Database) destroy() error {
+// Close the database
+func (z *Database) Close() error {
 	var db = z.db
 	z.db = nil
 	return db.Close()
 }
 
-func (z *Database) getFeeds() (map[string]*db.FeedInfo, error) {
+// GetFeeds list feeds
+func (z *Database) GetFeeds() (map[string]*db.FeedInfo, error) {
 
 	result := make(map[string]*db.FeedInfo)
 
@@ -70,7 +74,8 @@ func (z *Database) getFeeds() (map[string]*db.FeedInfo, error) {
 
 }
 
-func (z *Database) saveFeeds(feeds []*db.FeedInfo) (int, error) {
+// SaveFeeds save feeds
+func (z *Database) SaveFeeds(feeds []*db.FeedInfo) (int, error) {
 
 	var counter int
 	err := z.db.Update(func(tx *bolt.Tx) error {
