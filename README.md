@@ -1,15 +1,11 @@
 # Rakewire
 
 ## TODO
- - gracefully stop server on signal
- - open database at start
- - add db location to config file
- - decide on a database location
- - close database on signal
- - implement config defaults
  - implememt APIRouter to list feeds in database
  - run fetch off of database
  - get fetch to complete without errors
+ - start fetcher pool, feed fetcher in addition to database and httpd
+ - implement config defaults
 
 ## Version 1 (MVP)
 
@@ -20,8 +16,8 @@
 
  - Conditional GETs
  - Set Feed fetch frequency (automatic mode with backoff algorithm)
- - PubSubHubBub
  - Push to Browser via WebSockets, etc.
+ - PubSubHubBub
  - Feed filters (by keyword, category, author)
  - Full text search (Bleve)
  - Feeds based on filters or full-text search
@@ -34,6 +30,8 @@
  - TLS via Let's Encrypt
  - HTTP2
  - database backup to tar file or something similar
+ - Mac Taskbar icon
 
 ## Technical Don't Forgets
  - use alternative libC implementation
+ - limit listener to x connections
