@@ -2,11 +2,10 @@ package server
 
 import (
 	"github.com/codegangsta/negroni"
-	"log"
-	"os"
+	"rakewire.com/logging"
 )
 
 // NewInternalLogger returns a new Logger instance
 func NewInternalLogger() *negroni.Logger {
-	return &negroni.Logger{log.New(os.Stdout, "[rakewire] ", 0)}
+	return &negroni.Logger{logging.New("server")}
 }
