@@ -76,16 +76,16 @@ func waitForSignals() {
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c
 	logging.Linefeed()
-	logger.Println("stopping... ")
+	logger.Println("Stopping... ")
 
 	// shutdown server
-	_ = ws.Stop()
+	ws.Stop()
 	ws = nil
 
 	// close database
-	_ = db.Close()
+	db.Close()
 	db = nil
 
-	logger.Println("done")
+	logger.Println("Done")
 
 }
