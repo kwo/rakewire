@@ -38,7 +38,9 @@ func main() {
 		return
 	}
 
-	ws = &httpd.Httpd{}
+	ws = &httpd.Httpd{
+		Database: db,
+	}
 	go ws.Start(cfg.Httpd)
 
 	waitForSignals()

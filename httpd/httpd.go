@@ -1,17 +1,20 @@
 package httpd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
 	"net"
 	"net/http"
+	"rakewire.com/db"
 	m "rakewire.com/model"
 )
 
 // Httpd server
 type Httpd struct {
 	listener net.Listener
+	Database db.Database
 }
 
 var (
@@ -19,7 +22,12 @@ var (
 )
 
 // Start web service
-func (z *Httpd) Start(cfg m.HttpdConfiguration) {
+func (z *Httpd) Start(cfg m.HttpdConfiguration) error {
+
+	if z.Database == nil {
+		logger.Println("Cannot start httpd, no database provided")
+		return errors.New("No database")
+	}
 
 	router := mux.NewRouter()
 
@@ -41,15 +49,20 @@ func (z *Httpd) Start(cfg m.HttpdConfiguration) {
 
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Address, cfg.Port))
 	if err != nil {
-		logger.Fatal(err)
-		return
+		logger.Printf("Cannot start listener: %s\n", err.Error())
+		return err
 	}
 	z.listener = l
 	server := http.Server{
 		Handler: n,
 	}
 	logger.Printf("Started httpd on http://%s", z.listener.Addr())
-	logger.Fatal(server.Serve(z.listener))
+	err = server.Serve(z.listener)
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
 
