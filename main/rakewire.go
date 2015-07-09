@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"path"
+	"rakewire.com/logging"
 	m "rakewire.com/model"
 	"rakewire.com/server"
 	"syscall"
@@ -14,16 +14,23 @@ const (
 	configFileName = "config.yaml"
 )
 
+var (
+	httpd  *server.Httpd
+	logger = logging.New("main")
+)
+
 func main() {
 
 	cfg := getConfig()
 	if cfg == nil {
-		fmt.Printf("Abort! No config file found at %s\n", getConfigFileLocation())
+		logger.Printf("Abort! No config file found at %s\n", getConfigFileLocation())
 		os.Exit(1)
 		return
 	}
 
-	go server.Serve(cfg.Httpd)
+	httpd = &server.Httpd{}
+
+	go httpd.Start(cfg.Httpd)
 	waitForSignals()
 
 }
@@ -38,7 +45,7 @@ func getConfig() *m.Configuration {
 
 func getConfigFileLocation() string {
 	if home := getHomeDirectory(); home != "" {
-		return path.Join(getHomeDirectory(), ".config", "rakewire", configFileName)
+		return path.Join(getHomeDirectory(), ".rakewire", configFileName)
 	}
 	return configFileName
 }
@@ -58,8 +65,14 @@ func waitForSignals() {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	<-c
-	fmt.Print("stopping... ")
+	logging.Linefeed()
+	logger.Println("stopping... ")
 	// TODO: shutdown server
+	err := httpd.Stop()
+	if err != nil {
+		logger.Printf("Error stopping server: %s", err)
+	}
+	httpd = nil
 	// TODO: close database
-	fmt.Println("done")
+	logger.Println("done")
 }
