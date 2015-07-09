@@ -10,7 +10,7 @@ func TestHomeDirectory(t *testing.T) {
 }
 
 func TestConfigFileLocation(t *testing.T) {
-	assert.Equal(t, "/Users/karl/.config/rakewire/config.yaml", getConfigFileLocation())
+	assert.Equal(t, "/Users/karl/.rakewire/config.yaml", getConfigFileLocation())
 }
 
 func TestConfig(t *testing.T) {
