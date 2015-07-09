@@ -22,7 +22,7 @@ var (
 )
 
 // Start web service
-func (z *Httpd) Start(cfg m.HttpdConfiguration) error {
+func (z *Httpd) Start(cfg *m.HttpdConfiguration) error {
 
 	if z.Database == nil {
 		logger.Println("Cannot start httpd, no database provided")
