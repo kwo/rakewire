@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
+	"github.com/phyber/negroni-gzip/gzip"
 	"net"
 	"net/http"
 	"rakewire.com/db"
@@ -32,13 +33,11 @@ func (z *Httpd) Start(cfg *m.HttpdConfiguration) error {
 	router := mux.NewRouter()
 
 	// api router
-	apiRouter := APIRouter()
-	router.PathPrefix("/api").Handler(negroni.New(
-		negroni.Wrap(apiRouter),
-	))
+	router.Path("/api").HandlerFunc(feedsHandler)
 
 	// static web site
 	router.PathPrefix("/").Handler(negroni.New(
+		gzip.Gzip(gzip.BestCompression),
 		negroni.Wrap(http.FileServer(http.Dir(cfg.WebAppDir))),
 	))
 

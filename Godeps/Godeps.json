@@ -29,6 +29,10 @@
 			"Rev": "9cb89f07ca03c6a28d1e237ba033bc6a29422fd6"
 		},
 		{
+			"ImportPath": "github.com/phyber/negroni-gzip/gzip",
+			"Rev": "ff2754fcbd1ea465aadd7f74699aed5e483eda85"
+		},
+		{
 			"ImportPath": "github.com/stretchr/testify/assert",
 			"Comment": "v1.0-17-g089c718",
 			"Rev": "089c7181b8c728499929ff09b62d3fdd8df8adff"
