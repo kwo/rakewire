@@ -33,7 +33,9 @@ func (z *Httpd) Start(cfg *m.HttpdConfiguration) error {
 	router := mux.NewRouter()
 
 	// api router
-	router.Path("/api").HandlerFunc(feedsHandler)
+	router.Path("/api").Handler(negroni.New(
+		negroni.Wrap(z.apiRouter()),
+	))
 
 	// static web site
 	router.PathPrefix("/").Handler(negroni.New(
