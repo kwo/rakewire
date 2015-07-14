@@ -17,21 +17,24 @@ var (
 )
 
 func TestMain(m *testing.M) {
+	chErrors := make(chan error)
 	ws = &Httpd{
 		Database: &FakeDb{},
 	}
 	go ws.Start(&model.HttpdConfiguration{
 		Port:      4444,
 		WebAppDir: "../test/public_html",
-	})
-	// TODO: how to catch error from Start
-	// if err != nil {
-	// 	fmt.Printf("Cannot start httpd: %s\n", err.Error())
-	// 	os.Exit(1)
-	// }
-	status := m.Run()
-	ws.Stop()
-	os.Exit(status)
+	}, chErrors)
+	// TODO: probably need to wait before jumping to default case
+	select {
+	case err := <-chErrors:
+		fmt.Printf("Cannot start httpd: %s\n", err.Error())
+		os.Exit(1)
+	default:
+		status := m.Run()
+		ws.Stop()
+		os.Exit(status)
+	}
 }
 
 func TestStaticPaths(t *testing.T) {

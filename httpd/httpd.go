@@ -23,11 +23,12 @@ var (
 )
 
 // Start web service
-func (z *Httpd) Start(cfg *m.HttpdConfiguration) error {
+func (z *Httpd) Start(cfg *m.HttpdConfiguration, chErrors chan error) {
 
 	if z.Database == nil {
 		logger.Println("Cannot start httpd, no database provided")
-		return errors.New("No database")
+		chErrors <- errors.New("No database")
+		return
 	}
 
 	router := mux.NewRouter()
@@ -51,7 +52,8 @@ func (z *Httpd) Start(cfg *m.HttpdConfiguration) error {
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Address, cfg.Port))
 	if err != nil {
 		logger.Printf("Cannot start listener: %s\n", err.Error())
-		return err
+		chErrors <- err
+		return
 	}
 	z.listener = l
 	server := http.Server{
@@ -60,10 +62,10 @@ func (z *Httpd) Start(cfg *m.HttpdConfiguration) error {
 	logger.Printf("Started httpd on http://%s", z.listener.Addr())
 	err = server.Serve(z.listener)
 	if err != nil {
-		return err
+		logger.Printf("Cannot start httpd: %s\n", err.Error())
+		chErrors <- err
+		return
 	}
-
-	return nil
 
 }
 

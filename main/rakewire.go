@@ -38,12 +38,39 @@ func main() {
 		return
 	}
 
+	chErrors := make(chan error)
+
 	ws = &httpd.Httpd{
 		Database: db,
 	}
-	go ws.Start(&cfg.Httpd)
+	go ws.Start(&cfg.Httpd, chErrors)
 
-	waitForSignals()
+	waitForSignals(chErrors)
+
+}
+
+func waitForSignals(chErrors chan error) {
+	chSignals := make(chan os.Signal, 1)
+	signal.Notify(chSignals, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case err := <-chErrors:
+		logger.Printf("Received error: %s", err.Error())
+	case <-chSignals:
+	}
+
+	logging.Linefeed()
+	logger.Println("Stopping... ")
+
+	// shutdown server
+	ws.Stop()
+	ws = nil
+
+	// close database
+	db.Close()
+	db = nil
+
+	logger.Println("Done")
 
 }
 
@@ -71,23 +98,4 @@ func getHomeDirectory() string {
 		}
 	}
 	return ""
-}
-
-func waitForSignals() {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
-	<-c
-	logging.Linefeed()
-	logger.Println("Stopping... ")
-
-	// shutdown server
-	ws.Stop()
-	ws = nil
-
-	// close database
-	db.Close()
-	db = nil
-
-	logger.Println("Done")
-
 }

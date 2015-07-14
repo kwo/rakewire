@@ -5,7 +5,6 @@
  - run fetch off of database
  - get fetch to complete without errors
  - start fetcher pool, feed fetcher in addition to database and httpd
- - catch errors returned by Httpd.Start
  - implement config defaults
 
 ## Version 1 (MVP)
