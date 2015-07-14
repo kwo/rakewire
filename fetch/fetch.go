@@ -61,13 +61,13 @@ func Fetch(feedfile string) error {
 
 }
 
-func (f *fetcher) getFeed(reqC chan status, rspC chan status) {
+func (f *fetcher) getFeed(chReq chan status, chRsp chan status) {
 
 	log.Printf("Fetcher %2d started", f.id)
 
 	for {
 
-		result := <-reqC
+		result := <-chReq
 		if result.halt {
 			break
 		}
@@ -86,7 +86,7 @@ func (f *fetcher) getFeed(reqC chan status, rspC chan status) {
 			result.StatusCode = rsp.StatusCode
 		}
 
-		rspC <- result
+		chRsp <- result
 
 	}
 
