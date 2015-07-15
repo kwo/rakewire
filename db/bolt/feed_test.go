@@ -19,15 +19,15 @@ const (
 
 func TestFeeds(t *testing.T) {
 
-	feeds, err := readFile(feedFile)
+	urls, err := readFile(feedFile)
 	require.Nil(t, err)
-	require.NotNil(t, feeds)
+	require.NotNil(t, urls)
 
-	var feedinfos []*db.FeedInfo
-	for _, url := range feeds {
-		feedinfos = append(feedinfos, db.NewFeedInfo(url))
+	feeds := db.NewFeeds()
+	for _, url := range urls {
+		feeds.Add(db.NewFeed(url))
 	}
-	assert.Equal(t, len(feeds), len(feedinfos))
+	assert.Equal(t, len(urls), feeds.Size())
 
 	db := Database{}
 	err = db.Open(&m.DatabaseConfiguration{
@@ -35,13 +35,13 @@ func TestFeeds(t *testing.T) {
 	})
 	require.Nil(t, err)
 
-	updateCount, err := db.SaveFeeds(feedinfos)
+	updateCount, err := db.SaveFeeds(feeds)
 	require.Nil(t, err)
-	assert.Equal(t, len(feeds), updateCount)
+	assert.Equal(t, feeds.Size(), updateCount)
 
-	feedmap, err := db.GetFeeds()
+	feeds2, err := db.GetFeeds()
 	require.Nil(t, err)
-	require.NotNil(t, feedmap)
+	require.NotNil(t, feeds2)
 
 	err = db.Close()
 	assert.Nil(t, err)
@@ -50,7 +50,7 @@ func TestFeeds(t *testing.T) {
 	err = os.Remove(databaseFile)
 	assert.Nil(t, err)
 
-	assert.Equal(t, len(feedmap), len(feeds))
+	assert.Equal(t, feeds2.Size(), feeds.Size())
 	// for k, v := range feedmap {
 	// 	fmt.Printf("Feed %s: %v\n", k, v.URL)
 	// }

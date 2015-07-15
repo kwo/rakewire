@@ -1,6 +1,7 @@
 package bolt
 
 import (
+	"bytes"
 	"github.com/boltdb/bolt"
 	"log"
 	"rakewire.com/db"
@@ -30,7 +31,7 @@ func (z *Database) Open(cfg *m.DatabaseConfiguration) error {
 
 	// check that buckets exist
 	err = z.db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("FeedInfo"))
+		_, err := tx.CreateBucketIfNotExists([]byte("Feed"))
 		return err
 	})
 
@@ -59,24 +60,24 @@ func (z *Database) Close() error {
 }
 
 // GetFeeds list feeds
-func (z *Database) GetFeeds() (map[string]*db.FeedInfo, error) {
+func (z *Database) GetFeeds() (*db.Feeds, error) {
 
-	result := make(map[string]*db.FeedInfo)
+	result := db.NewFeeds()
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("FeedInfo"))
+		b := tx.Bucket([]byte("Feed"))
 		c := b.Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 
-			f := db.FeedInfo{}
-			if err := f.Unmarshal(v); err != nil {
+			f := db.Feed{}
+			if err := f.Deserialize(bytes.NewReader(v)); err != nil {
 				return err
 			}
 			if f.ID != string(k) {
 				log.Printf("ID/key mismatch: %s/%s\n", k, f.ID)
 			} else {
-				result[f.ID] = &f
+				result.Add(&f)
 			}
 
 		} // for
@@ -94,19 +95,20 @@ func (z *Database) GetFeeds() (map[string]*db.FeedInfo, error) {
 }
 
 // SaveFeeds save feeds
-func (z *Database) SaveFeeds(feeds []*db.FeedInfo) (int, error) {
+func (z *Database) SaveFeeds(feeds *db.Feeds) (int, error) {
 
 	var counter int
 	err := z.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("FeedInfo"))
+		b := tx.Bucket([]byte("Feed"))
 
-		for _, f := range feeds {
+		for _, f := range feeds.Values {
 
-			data, err := f.Marshal()
+			buf := bytes.Buffer{}
+			err := f.Serialize(&buf)
 			if err != nil {
 				return err
 			}
-
+			data := buf.Bytes()
 			if err := b.Put([]byte(f.ID), data); err != nil {
 				return err
 			}
