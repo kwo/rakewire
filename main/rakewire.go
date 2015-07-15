@@ -3,11 +3,9 @@ package main
 import (
 	"os"
 	"os/signal"
-	"path"
 	"rakewire.com/db/bolt"
 	"rakewire.com/httpd"
 	"rakewire.com/logging"
-	m "rakewire.com/model"
 	"syscall"
 )
 
@@ -45,11 +43,12 @@ func main() {
 	}
 	go ws.Start(&cfg.Httpd, chErrors)
 
-	waitForSignals(chErrors)
+	monitorShutdown(chErrors)
 
 }
 
-func waitForSignals(chErrors chan error) {
+func monitorShutdown(chErrors chan error) {
+
 	chSignals := make(chan os.Signal, 1)
 	signal.Notify(chSignals, syscall.SIGINT, syscall.SIGTERM)
 
@@ -62,7 +61,7 @@ func waitForSignals(chErrors chan error) {
 	logging.Linefeed()
 	logger.Println("Stopping... ")
 
-	// shutdown server
+	// shutdown httpd
 	ws.Stop()
 	ws = nil
 
@@ -72,30 +71,4 @@ func waitForSignals(chErrors chan error) {
 
 	logger.Println("Done")
 
-}
-
-func getConfig() *m.Configuration {
-	cfg := m.Configuration{}
-	if err := cfg.LoadFromFile(getConfigFileLocation()); err != nil {
-		return nil
-	}
-	return &cfg
-}
-
-func getConfigFileLocation() string {
-	if home := getHomeDirectory(); home != "" {
-		return path.Join(getHomeDirectory(), ".rakewire", configFileName)
-	}
-	return configFileName
-}
-
-func getHomeDirectory() string {
-	homeLocations := []string{"HOME", "HOMEPATH", "USERPROFILE"}
-	for _, v := range homeLocations {
-		x := os.Getenv(v)
-		if x != "" {
-			return x
-		}
-	}
-	return ""
 }
