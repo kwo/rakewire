@@ -19,7 +19,7 @@ type Httpd struct {
 }
 
 var (
-	logger = NewInternalLogger()
+	logger = newInternalLogger()
 )
 
 // Start web service
