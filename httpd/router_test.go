@@ -38,6 +38,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStaticPaths(t *testing.T) {
+
 	require.NotNil(t, ws)
 
 	c := getHTTPClient()
@@ -71,7 +72,28 @@ func TestStaticPaths(t *testing.T) {
 
 }
 
+func Test404(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := getHTTPClient()
+
+	req := getRequest("/favicon.ico")
+	rsp, err := c.Do(req)
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, 404, rsp.StatusCode)
+	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
+	assert.Equal(t, "43", rsp.Header.Get("Content-Length"))
+	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, int64(43), rsp.ContentLength)
+	data, _ := unzipReader(rsp.Body)
+	assert.Equal(t, "404 page not found\n", string(data[:]))
+
+}
+
 func TestStaticRedirects(t *testing.T) {
+
 	require.NotNil(t, ws)
 
 	c := getHTTPClient()
@@ -94,6 +116,7 @@ func TestStaticRedirects(t *testing.T) {
 }
 
 func TestAPIPath(t *testing.T) {
+
 	require.NotNil(t, ws)
 
 	c := getHTTPClient()
