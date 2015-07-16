@@ -1,10 +1,12 @@
 package httpd
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io"
 	"net/http"
 	"os"
 	"rakewire.com/db"
@@ -48,7 +50,7 @@ func TestStaticPaths(t *testing.T) {
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
-	assert.Equal(t, 200, rsp.StatusCode)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, "text/html; charset=utf-8", rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
 	assert.Equal(t, "23", rsp.Header.Get("Content-Length"))
@@ -57,7 +59,7 @@ func TestStaticPaths(t *testing.T) {
 	rsp, err = c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
-	assert.Equal(t, 200, rsp.StatusCode)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
 	assert.Equal(t, "37", rsp.Header.Get("Content-Length"))
@@ -66,7 +68,7 @@ func TestStaticPaths(t *testing.T) {
 	rsp, err = c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
-	assert.Equal(t, 200, rsp.StatusCode)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
 	assert.Equal(t, "41", rsp.Header.Get("Content-Length"))
@@ -83,12 +85,15 @@ func Test404(t *testing.T) {
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
-	assert.Equal(t, 404, rsp.StatusCode)
+	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
 	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
-	assert.Equal(t, int64(43), rsp.ContentLength)
 	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
-	data, _ := unzipReader(rsp.Body)
-	assert.Equal(t, "404 page not found\n", string(data[:]))
+
+	expectedText := "404 page not found\n"
+	assert.Equal(t, 43, int(rsp.ContentLength)) // gzip expands from 19 to 43
+	bodyText, err := getZBodyAsString(rsp.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedText, bodyText)
 
 }
 
@@ -102,9 +107,9 @@ func TestStaticRedirects(t *testing.T) {
 	rsp, err := c.Do(req)
 	assert.NotNil(t, err)
 	assert.NotNil(t, rsp)
-	assert.Equal(t, 301, rsp.StatusCode)
+	assert.Equal(t, http.StatusMovedPermanently, rsp.StatusCode)
 	assert.Equal(t, "/", rsp.Header.Get("Location"))
-	assert.Equal(t, int64(0), rsp.ContentLength)
+	assert.Equal(t, 0, int(rsp.ContentLength))
 
 	// TODO: static redirect cannot be to /./
 	// req = getRequest("/index.html")
@@ -126,10 +131,10 @@ func TestFeedGet(t *testing.T) {
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
-	assert.Equal(t, 200, rsp.StatusCode)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, "application/json", rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
-	assert.Equal(t, int64(5), rsp.ContentLength)
+	assert.Equal(t, 5, int(rsp.ContentLength))
 
 }
 
@@ -143,10 +148,10 @@ func TestFeedPut(t *testing.T) {
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
-	assert.Equal(t, 200, rsp.StatusCode)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, "application/json", rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
-	assert.Equal(t, int64(11), rsp.ContentLength)
+	assert.Equal(t, 11, int(rsp.ContentLength))
 
 	jsonRsp := SaveFeedsResponse{}
 	err = json.NewDecoder(rsp.Body).Decode(&jsonRsp)
@@ -156,10 +161,41 @@ func TestFeedPut(t *testing.T) {
 
 }
 
+func TestFeedPost(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := getHTTPClient()
+
+	req := newRequest("POST", "/api/feeds")
+	rsp, err := c.Do(req)
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, http.StatusMethodNotAllowed, rsp.StatusCode)
+	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
+
+	expectedText := "405 Method Not Allowed\n"
+	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
+	bodyText, err := getBodyAsString(rsp.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedText, bodyText)
+
+}
+
+func getBodyAsString(r io.Reader) (string, error) {
+	var buf bytes.Buffer
+	_, err := buf.ReadFrom(r)
+	return string(buf.Bytes()[:]), err
+}
+
+func getZBodyAsString(r io.Reader) (string, error) {
+	data, err := unzipReader(r)
+	return string(data[:]), err
+}
+
 func getRequest(path string) *http.Request {
-	req, _ := http.NewRequest("GET", fmt.Sprintf("http://%s%s", ws.listener.Addr(), path), nil)
-	req.Header.Add("Accept-Encoding", "gzip")
-	return req
+	return newRequest("GET", path)
 }
 
 func newRequest(method string, path string) *http.Request {
