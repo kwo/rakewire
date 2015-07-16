@@ -6,6 +6,7 @@
  - start timer every 5 minutes to repoll feeds
  - get fetch to complete without errors
  - implement config defaults
+ - need save database channel
 
 ## Version 0.0.1
 

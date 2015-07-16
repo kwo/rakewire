@@ -2,7 +2,6 @@ package httpd
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -138,7 +137,7 @@ func TestFeedGet(t *testing.T) {
 
 }
 
-func TestFeedPut(t *testing.T) {
+func TestFeedPutNoContent(t *testing.T) {
 
 	require.NotNil(t, ws)
 
@@ -149,16 +148,21 @@ func TestFeedPut(t *testing.T) {
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
+	assert.Equal(t, http.StatusNoContent, rsp.StatusCode)
+	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	assert.Equal(t, 11, int(rsp.ContentLength))
 
-	jsonRsp := SaveFeedsResponse{}
-	err = json.NewDecoder(rsp.Body).Decode(&jsonRsp)
-	assert.Nil(t, err)
-	assert.NotNil(t, jsonRsp)
-	assert.Equal(t, 0, jsonRsp.Count)
+	// expectedText := "204 No Content\n"
+	// assert.Equal(t, len(expectedText), int(rsp.ContentLength))
+	// bodyText, err := getBodyAsString(rsp.Body)
+	// assert.Nil(t, err)
+	// assert.Equal(t, expectedText, bodyText)
+
+	// jsonRsp := SaveFeedsResponse{}
+	// err = json.NewDecoder(rsp.Body).Decode(&jsonRsp)
+	// assert.Nil(t, err)
+	// assert.NotNil(t, jsonRsp)
+	// assert.Equal(t, 0, jsonRsp.Count)
 
 }
 
