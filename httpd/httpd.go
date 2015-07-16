@@ -75,7 +75,7 @@ func (z *Httpd) Start(cfg *m.HttpdConfiguration, chErrors chan error) {
 	}
 	logger.Printf("Started httpd on http://%s", z.listener.Addr())
 	err = server.Serve(z.listener)
-	if err != nil {
+	if err != nil && z.Running() {
 		logger.Printf("Cannot start httpd: %s\n", err.Error())
 		chErrors <- err
 		return
@@ -94,4 +94,9 @@ func (z *Httpd) Stop() error {
 		logger.Println("Stopped httpd")
 	}
 	return nil
+}
+
+// Running indicates if server is running or not
+func (z *Httpd) Running() bool {
+	return z.listener != nil
 }
