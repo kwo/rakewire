@@ -4,11 +4,9 @@ package fetch
 // TODO: stop fetcher without sending special message?
 
 import (
-	"bufio"
 	"log"
 	"net/http"
-	"os"
-	"strings"
+	m "rakewire.com/model"
 	"time"
 )
 
@@ -31,21 +29,15 @@ const (
 )
 
 // Fetch feeds in file
-func Fetch(feedfile string) error {
+func Fetch(feeds *m.Feeds) error {
 
-	var feedlist, err = readFile(feedfile)
-	if err != nil {
-		return err
-	}
-
-	var total = len(feedlist)
 	requests := make(chan status)
 	responses := make(chan status, 5)
 	signals := make(chan bool)
 
 	initFetchers(requests, responses)
-	go addFeeds(feedlist, requests)
-	go processFeeds(total, responses, signals)
+	go addFeeds(feeds, requests)
+	go processFeeds(feeds.Size(), responses, signals)
 	<-signals
 	go destroyFetchers(requests, signals)
 	<-signals
@@ -116,12 +108,12 @@ func destroyFetchers(requests chan status, signals chan bool) {
 
 }
 
-func addFeeds(feedlist []string, requests chan status) {
+func addFeeds(feeds *m.Feeds, requests chan status) {
 
-	for index, url := range feedlist {
+	for index, feed := range feeds.Values {
 		s := status{
 			Index: index,
-			URL:   url,
+			URL:   feed.URL,
 		}
 		requests <- s
 	}
@@ -141,27 +133,5 @@ func processFeeds(total int, responses chan status, signals chan bool) {
 	}
 
 	signals <- true
-
-}
-
-func readFile(feedfile string) ([]string, error) {
-
-	var result []string
-
-	f, err1 := os.Open(feedfile)
-	if err1 != nil {
-		return nil, err1
-	}
-
-	scanner := bufio.NewScanner(f)
-	for scanner.Scan() {
-		var url = strings.TrimSpace(scanner.Text())
-		if url != "" && url[:1] != "#" {
-			result = append(result, url)
-		}
-	}
-	f.Close()
-
-	return result, nil
 
 }

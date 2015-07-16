@@ -7,13 +7,14 @@
  - get fetch to complete without errors
  - implement config defaults
  - need save database channel
+ - firm up API: add RemoveFeeds
 
 ## Version 0.0.1
 
   - DONE config
   - DONE database
   - DONE httpd
-  - rest api
+  - DONE rest api
   - fetcher pool
   - fetcher timer
   - html ui
