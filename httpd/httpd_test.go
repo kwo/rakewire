@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"rakewire.com/db"
+	"rakewire.com/db/bolt"
 	"rakewire.com/model"
 	"testing"
 	"time"
@@ -19,24 +19,44 @@ var (
 )
 
 func TestMain(m *testing.M) {
+
+	testDatabaseFile := "../test/test.db"
+
+	cfg := model.DatabaseConfiguration{
+		Location: testDatabaseFile,
+	}
+	testDatabase := bolt.Database{}
+	err := testDatabase.Open(&cfg)
+	if err != nil {
+		fmt.Printf("Cannot open database: %s\n", err.Error())
+		os.Exit(1)
+	}
+
 	chErrors := make(chan error)
 	ws = &Httpd{
-		Database: &FakeDb{},
+		Database: &testDatabase,
 	}
 	go ws.Start(&model.HttpdConfiguration{
 		Port:      4444,
 		WebAppDir: "../test/public_html",
 	}, chErrors)
+
 	// TODO: probably need to wait before jumping to default case
+
 	select {
 	case err := <-chErrors:
 		fmt.Printf("Cannot start httpd: %s\n", err.Error())
+		testDatabase.Close()
+		os.Remove(testDatabaseFile)
 		os.Exit(1)
 	default:
 		status := m.Run()
 		ws.Stop()
+		testDatabase.Close()
+		os.Remove(testDatabaseFile)
 		os.Exit(status)
 	}
+
 }
 
 func TestStaticPaths(t *testing.T) {
@@ -216,33 +236,4 @@ func getHTTPClient() *http.Client {
 		},
 		Timeout: 1 * time.Second,
 	}
-}
-
-type FakeDb struct {
-}
-
-func (z *FakeDb) GetFeeds() (*db.Feeds, error) {
-	f := db.NewFeeds()
-	return f, nil
-}
-
-func (z *FakeDb) GetFeedByID(id string) (*db.Feed, error) {
-	f := db.Feed{
-		ID:  id,
-		URL: "https://" + id,
-	}
-	return &f, nil
-}
-
-func (z *FakeDb) GetFeedByURL(url string) (*db.Feed, error) {
-	f := db.NewFeed(url)
-	return f, nil
-}
-
-func (z *FakeDb) SaveFeeds(*db.Feeds) (int, error) {
-	return 0, nil
-}
-
-func (z *FakeDb) Repair() error {
-	return nil
 }
