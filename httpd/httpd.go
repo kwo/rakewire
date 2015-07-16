@@ -20,6 +20,9 @@ type Httpd struct {
 
 const (
 	apiPrefix = "/api"
+	mimeJSON  = "application/json"
+	mimeHTML  = "text/html; charset=utf-8"
+	mimeText  = "text/plain; charset=utf-8"
 )
 
 var (

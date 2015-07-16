@@ -51,7 +51,7 @@ func TestStaticPaths(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, "text/html; charset=utf-8", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, mimeHTML, rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
 	assert.Equal(t, "23", rsp.Header.Get("Content-Length"))
 
@@ -60,7 +60,7 @@ func TestStaticPaths(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, mimeText, rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
 	assert.Equal(t, "37", rsp.Header.Get("Content-Length"))
 
@@ -69,7 +69,7 @@ func TestStaticPaths(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, mimeText, rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
 	assert.Equal(t, "41", rsp.Header.Get("Content-Length"))
 
@@ -87,7 +87,7 @@ func Test404(t *testing.T) {
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
 	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
-	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, mimeText, rsp.Header.Get("Content-Type"))
 
 	expectedText := "404 page not found\n"
 	assert.Equal(t, 43, int(rsp.ContentLength)) // gzip expands from 19 to 43
@@ -132,7 +132,7 @@ func TestFeedGet(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, "application/json", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, mimeJSON, rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
 	assert.Equal(t, 5, int(rsp.ContentLength))
 
@@ -149,7 +149,7 @@ func TestFeedPut(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, "application/json", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, mimeJSON, rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
 	assert.Equal(t, 11, int(rsp.ContentLength))
 
@@ -172,7 +172,7 @@ func TestFeedPost(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusMethodNotAllowed, rsp.StatusCode)
-	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, mimeText, rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
 
 	expectedText := "405 Method Not Allowed\n"
