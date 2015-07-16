@@ -22,17 +22,12 @@ type status struct {
 }
 
 type fetcher struct {
-	id int
+	id     int
+	client *http.Client
 }
 
 const (
 	fetcherCount = 20
-)
-
-var (
-	httpClient = http.Client{
-		Timeout: 60 * time.Second,
-	}
 )
 
 // Fetch feeds in file
@@ -74,7 +69,7 @@ func (f *fetcher) getFeed(chReq chan status, chRsp chan status) {
 
 		result.WorkerID = f.id
 
-		var rsp, err = httpClient.Get(result.URL)
+		var rsp, err = f.client.Get(result.URL)
 
 		if err != nil {
 			result.StatusCode = 5000
@@ -97,7 +92,12 @@ func (f *fetcher) getFeed(chReq chan status, chRsp chan status) {
 func initFetchers(requests chan status, responses chan status) {
 
 	for i := 0; i < fetcherCount; i++ {
-		f := &fetcher{id: i}
+		f := &fetcher{
+			id: i,
+			client: &http.Client{
+				Timeout: 60 * time.Second,
+			},
+		}
 		go f.getFeed(requests, responses)
 	}
 
