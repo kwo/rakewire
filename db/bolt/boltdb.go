@@ -86,11 +86,7 @@ func (z *Database) GetFeeds() (*db.Feeds, error) {
 
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return result, err
 
 }
 
