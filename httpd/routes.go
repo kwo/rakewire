@@ -2,24 +2,21 @@ package httpd
 
 import (
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
-func (z *Httpd) apiRouter() *mux.Router {
+const (
+	mGet = "GET"
+	mPut = "PUT"
+)
+
+func (z *Httpd) apiRouter(prefix string) *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/api", feedsHandler)
+
+	var prefixFeeds = prefix + "/feeds"
+
+	router.Methods(mGet).Path(prefixFeeds).HandlerFunc(z.feedsGet)
+	router.Methods(mPut).Path(prefixFeeds).HandlerFunc(z.feedsSave)
+
 	return router
-}
 
-// func (z *Httpd) feedsRouter() *mux.Router {
-// 	router := mux.NewRouter()
-// 	router.HandleFunc("/", feedsHandler)
-// 	return router
-// }
-
-// APIHandler handles API requests
-func feedsHandler(w http.ResponseWriter, req *http.Request) {
-	w.Write([]byte("Welcome to the feedsHandler"))
-	// vars := mux.Vars(req)
-	// key := vars["id"]
 }

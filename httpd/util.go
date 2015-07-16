@@ -8,7 +8,6 @@ import (
 	"rakewire.com/logging"
 )
 
-// NewInternalLogger returns a new Logger instance
 func newInternalLogger() *negroni.Logger {
 	return &negroni.Logger{logging.New("httpd")}
 }

@@ -18,6 +18,10 @@ type Httpd struct {
 	Database db.Database
 }
 
+const (
+	apiPrefix = "/api"
+)
+
 var (
 	logger = newInternalLogger()
 )
@@ -34,8 +38,8 @@ func (z *Httpd) Start(cfg *m.HttpdConfiguration, chErrors chan error) {
 	router := mux.NewRouter()
 
 	// api router
-	router.Path("/api").Handler(negroni.New(
-		negroni.Wrap(z.apiRouter()),
+	router.PathPrefix(apiPrefix).Handler(negroni.New(
+		negroni.Wrap(z.apiRouter(apiPrefix)),
 	))
 
 	// static web site

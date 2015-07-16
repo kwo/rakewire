@@ -1,8 +1,6 @@
 # Rakewire
 
 ## TODO
- - put routes in separate file
- - implememt APIRouter to list feeds in database
  - run fetch off of database
  - start fetcher pool, feed fetcher in addition to database and httpd
  - start timer every 5 minutes to repoll feeds

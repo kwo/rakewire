@@ -1,6 +1,7 @@
 package httpd
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -84,9 +85,8 @@ func Test404(t *testing.T) {
 	assert.NotNil(t, rsp)
 	assert.Equal(t, 404, rsp.StatusCode)
 	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
-	assert.Equal(t, "43", rsp.Header.Get("Content-Length"))
-	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
 	assert.Equal(t, int64(43), rsp.ContentLength)
+	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
 	data, _ := unzipReader(rsp.Body)
 	assert.Equal(t, "404 page not found\n", string(data[:]))
 
@@ -104,6 +104,7 @@ func TestStaticRedirects(t *testing.T) {
 	assert.NotNil(t, rsp)
 	assert.Equal(t, 301, rsp.StatusCode)
 	assert.Equal(t, "/", rsp.Header.Get("Location"))
+	assert.Equal(t, int64(0), rsp.ContentLength)
 
 	// TODO: static redirect cannot be to /./
 	// req = getRequest("/index.html")
@@ -115,25 +116,54 @@ func TestStaticRedirects(t *testing.T) {
 
 }
 
-func TestAPIPath(t *testing.T) {
+func TestFeedGet(t *testing.T) {
 
 	require.NotNil(t, ws)
 
 	c := getHTTPClient()
 
-	req := getRequest("/api")
+	req := getRequest("/api/feeds")
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, 200, rsp.StatusCode)
-	assert.Equal(t, "text/plain; charset=utf-8", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, "application/json", rsp.Header.Get("Content-Type"))
 	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
-	assert.Equal(t, "27", rsp.Header.Get("Content-Length"))
+	assert.Equal(t, int64(5), rsp.ContentLength)
+
+}
+
+func TestFeedPut(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := getHTTPClient()
+
+	req := newRequest("PUT", "/api/feeds")
+	rsp, err := c.Do(req)
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, 200, rsp.StatusCode)
+	assert.Equal(t, "application/json", rsp.Header.Get("Content-Type"))
+	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
+	assert.Equal(t, int64(11), rsp.ContentLength)
+
+	jsonRsp := SaveFeedsResponse{}
+	err = json.NewDecoder(rsp.Body).Decode(&jsonRsp)
+	assert.Nil(t, err)
+	assert.NotNil(t, jsonRsp)
+	assert.Equal(t, 0, jsonRsp.Count)
 
 }
 
 func getRequest(path string) *http.Request {
 	req, _ := http.NewRequest("GET", fmt.Sprintf("http://%s%s", ws.listener.Addr(), path), nil)
+	req.Header.Add("Accept-Encoding", "gzip")
+	return req
+}
+
+func newRequest(method string, path string) *http.Request {
+	req, _ := http.NewRequest(method, fmt.Sprintf("http://%s%s", ws.listener.Addr(), path), nil)
 	req.Header.Add("Accept-Encoding", "gzip")
 	return req
 }
@@ -150,10 +180,11 @@ func getHTTPClient() *http.Client {
 type FakeDb struct {
 }
 
-func (z *FakeDb) GetFeeds() (map[string]*db.FeedInfo, error) {
-	return nil, nil
+func (z *FakeDb) GetFeeds() (*db.Feeds, error) {
+	f := db.NewFeeds()
+	return f, nil
 }
 
-func (z *FakeDb) SaveFeeds([]*db.FeedInfo) (int, error) {
+func (z *FakeDb) SaveFeeds(*db.Feeds) (int, error) {
 	return 0, nil
 }
