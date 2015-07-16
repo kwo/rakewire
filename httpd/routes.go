@@ -16,6 +16,7 @@ func (z *Httpd) apiRouter(prefix string) *mux.Router {
 	router.Path(prefixAdmin).HandlerFunc(notFound)
 
 	var prefixFeeds = prefix + "/feeds"
+	router.Path(prefixFeeds).Methods(mGet).Queries("url", "{url:.+}").HandlerFunc(z.feedsGetFeedByURL)
 	router.Path(prefixFeeds).Methods(mGet).HandlerFunc(z.feedsGet)
 	router.Path(prefixFeeds).Methods(mPut).Headers(hContentType, mimeJSON).HandlerFunc(z.feedsSaveJSON)
 	router.Path(prefixFeeds).Methods(mPut).Headers(hContentType, mimeText).HandlerFunc(z.feedsSaveText)
@@ -23,7 +24,7 @@ func (z *Httpd) apiRouter(prefix string) *mux.Router {
 	router.Path(prefixFeeds).HandlerFunc(notSupported)
 
 	var prefixFeedsFeed = prefixFeeds + "/{feedID}"
-	router.Path(prefixFeedsFeed).Methods(mGet).HandlerFunc(z.feedsGetFeed)
+	router.Path(prefixFeedsFeed).Methods(mGet).HandlerFunc(z.feedsGetFeedByID)
 	router.Path(prefixFeedsFeed).HandlerFunc(notSupported)
 
 	return router

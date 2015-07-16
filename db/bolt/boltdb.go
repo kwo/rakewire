@@ -125,6 +125,33 @@ func (z *Database) GetFeedByID(id string) (*db.Feed, error) {
 
 }
 
+// GetFeedByURL return feed given url
+func (z *Database) GetFeedByURL(url string) (*db.Feed, error) {
+
+	var data []byte
+
+	err := z.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucketFeed))
+		i := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(bucketIndexFeedByURL))
+		data = i.Get([]byte(url))
+		if data != nil {
+			data = b.Get(data)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	} else if data == nil {
+		return nil, nil
+	}
+
+	result := db.Feed{}
+	err = result.Decode(data)
+	return &result, err
+
+}
+
 // SaveFeeds save feeds
 func (z *Database) SaveFeeds(feeds *db.Feeds) (int, error) {
 

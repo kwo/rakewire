@@ -14,7 +14,26 @@ type SaveFeedsResponse struct {
 	Count int `json:"count"`
 }
 
-func (z *Httpd) feedsGetFeed(w http.ResponseWriter, req *http.Request) {
+func (z *Httpd) feedsGet(w http.ResponseWriter, req *http.Request) {
+
+	feeds, err := z.Database.GetFeeds()
+	if err != nil {
+		logger.Printf("Error in db.GetFeeds: %s\n", err.Error())
+		http.Error(w, "Cannot retrieve feeds from database.", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set(hContentType, mimeJSON)
+	err = feeds.Serialize(w)
+	if err != nil {
+		logger.Printf("Error in db.GetFeeds: %s\n", err.Error())
+		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)
+		return
+	}
+
+}
+
+func (z *Httpd) feedsGetFeedByID(w http.ResponseWriter, req *http.Request) {
 
 	vars := mux.Vars(req)
 	feedID := vars["feedID"]
@@ -42,22 +61,30 @@ func (z *Httpd) feedsGetFeed(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (z *Httpd) feedsGet(w http.ResponseWriter, req *http.Request) {
+func (z *Httpd) feedsGetFeedByURL(w http.ResponseWriter, req *http.Request) {
 
-	feeds, err := z.Database.GetFeeds()
+	url := req.URL.Query().Get("url")
+
+	feed, err := z.Database.GetFeedByURL(url)
 	if err != nil {
-		logger.Printf("Error in db.GetFeeds: %s\n", err.Error())
-		http.Error(w, "Cannot retrieve feeds from database.", http.StatusInternalServerError)
+		logger.Printf("Error in db.GetFeedByURL: %s\n", err.Error())
+		http.Error(w, "Cannot retrieve feed from database.", http.StatusInternalServerError)
+		return
+	} else if feed == nil {
+		notFound(w, req)
+		return
+	}
+
+	data, err := feed.Encode()
+	if err != nil {
+		logger.Printf("Error in feed.Encode: %s\n", err.Error())
+		http.Error(w, "Cannot serialize feed from database.", http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set(hContentType, mimeJSON)
-	err = feeds.Serialize(w)
-	if err != nil {
-		logger.Printf("Error in db.GetFeeds: %s\n", err.Error())
-		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)
-		return
-	}
+	w.Write(data)
+	w.Write([]byte("\n"))
 
 }
 

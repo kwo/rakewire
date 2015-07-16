@@ -25,7 +25,7 @@ func TestFeed(t *testing.T) {
 	data, err := fi.Encode()
 	require.Nil(t, err)
 	require.NotNil(t, data)
-	assert.Equal(t, 124, len(data))
+	assert.Equal(t, 137, len(data))
 
 	// fmt.Println(string(data))
 	// fmt.Printf("size: %d\n", len(data))
