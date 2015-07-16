@@ -2,20 +2,28 @@ package httpd
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"rakewire.com/db"
 	"rakewire.com/db/bolt"
 	"rakewire.com/model"
 	"testing"
 	"time"
 )
 
+const (
+	feedURL = "http://localhost:5555/feed.xml"
+)
+
 var (
-	ws *Httpd
+	ws     *Httpd
+	feedID string
 )
 
 func TestMain(m *testing.M) {
@@ -45,7 +53,7 @@ func TestMain(m *testing.M) {
 
 	select {
 	case err := <-chErrors:
-		fmt.Printf("Cannot start httpd: %s\n", err.Error())
+		fmt.Printf("Error: %s\n", err.Error())
 		testDatabase.Close()
 		os.Remove(testDatabaseFile)
 		os.Exit(1)
@@ -63,9 +71,9 @@ func TestStaticPaths(t *testing.T) {
 
 	require.NotNil(t, ws)
 
-	c := getHTTPClient()
+	c := newHTTPClient()
 
-	req := getRequest("/")
+	req := newRequest(mGet, "/")
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
@@ -74,7 +82,7 @@ func TestStaticPaths(t *testing.T) {
 	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
 	assert.Equal(t, "23", rsp.Header.Get(hContentLength))
 
-	req = getRequest("/humans.txt")
+	req = newRequest(mGet, "/humans.txt")
 	rsp, err = c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
@@ -83,7 +91,7 @@ func TestStaticPaths(t *testing.T) {
 	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
 	assert.Equal(t, "37", rsp.Header.Get(hContentLength))
 
-	req = getRequest("/hello/world.txt")
+	req = newRequest(mGet, "/hello/world.txt")
 	rsp, err = c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
@@ -94,13 +102,13 @@ func TestStaticPaths(t *testing.T) {
 
 }
 
-func Test404(t *testing.T) {
+func TestStatic404(t *testing.T) {
 
 	require.NotNil(t, ws)
 
-	c := getHTTPClient()
+	c := newHTTPClient()
 
-	req := getRequest("/favicon.ico")
+	req := newRequest(mGet, "/favicon.ico")
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
@@ -120,9 +128,9 @@ func TestStaticRedirects(t *testing.T) {
 
 	require.NotNil(t, ws)
 
-	c := getHTTPClient()
+	c := newHTTPClient()
 
-	req := getRequest("//")
+	req := newRequest(mGet, "//")
 	rsp, err := c.Do(req)
 	assert.NotNil(t, err)
 	assert.NotNil(t, rsp)
@@ -131,7 +139,7 @@ func TestStaticRedirects(t *testing.T) {
 	assert.Equal(t, 0, int(rsp.ContentLength))
 
 	// TODO: static redirect cannot be to /./
-	// req = getRequest("/index.html")
+	// req = newRequest(mGet, "/index.html")
 	// rsp, err = c.Do(req)
 	// assert.NotNil(t, err)
 	// assert.NotNil(t, rsp)
@@ -140,28 +148,43 @@ func TestStaticRedirects(t *testing.T) {
 
 }
 
-func TestFeedGet(t *testing.T) {
+func TestFeedsPut(t *testing.T) {
 
 	require.NotNil(t, ws)
 
-	c := getHTTPClient()
+	c := newHTTPClient()
 
-	req := getRequest("/api/feeds")
+	req := newRequest(mPut, "/api/feeds")
+	req.Header.Add(hContentType, mimeJSON)
+
+	buf := bytes.Buffer{}
+	feeds := db.NewFeeds()
+	feed := db.NewFeed(feedURL)
+	feedID = feed.ID
+	feeds.Add(feed)
+	feeds.Serialize(&buf)
+	req.Body = ioutil.NopCloser(&buf)
+
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	assert.Equal(t, 5, int(rsp.ContentLength))
+
+	jsonRsp := SaveFeedsResponse{}
+	err = json.NewDecoder(rsp.Body).Decode(&jsonRsp)
+	assert.Nil(t, err)
+	assert.NotNil(t, jsonRsp)
+	assert.Equal(t, 1, jsonRsp.Count)
 
 }
 
-func TestFeedPutNoContent(t *testing.T) {
+func TestFeedsPutNoContent(t *testing.T) {
 
 	require.NotNil(t, ws)
 
-	c := getHTTPClient()
+	c := newHTTPClient()
 
 	req := newRequest(mPut, "/api/feeds")
 	req.Header.Add(hContentType, mimeJSON)
@@ -178,19 +201,13 @@ func TestFeedPutNoContent(t *testing.T) {
 	// assert.Nil(t, err)
 	// assert.Equal(t, expectedText, bodyText)
 
-	// jsonRsp := SaveFeedsResponse{}
-	// err = json.NewDecoder(rsp.Body).Decode(&jsonRsp)
-	// assert.Nil(t, err)
-	// assert.NotNil(t, jsonRsp)
-	// assert.Equal(t, 0, jsonRsp.Count)
-
 }
 
-func TestFeedPost(t *testing.T) {
+func TestFeedsMethodNotAllowed(t *testing.T) {
 
 	require.NotNil(t, ws)
 
-	c := getHTTPClient()
+	c := newHTTPClient()
 
 	req := newRequest(mPost, "/api/feeds")
 	rsp, err := c.Do(req)
@@ -201,6 +218,130 @@ func TestFeedPost(t *testing.T) {
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
 
 	expectedText := "Method Not Allowed\n"
+	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
+	bodyText, err := getBodyAsString(rsp.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedText, bodyText)
+
+}
+
+func TestFeedsGet(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := newHTTPClient()
+
+	req := newRequest(mGet, "/api/feeds")
+	rsp, err := c.Do(req)
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
+	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
+	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
+	assert.Equal(t, 98, int(rsp.ContentLength))
+
+	buf := bytes.Buffer{}
+	n, err := buf.ReadFrom(rsp.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, rsp.ContentLength, n)
+	feeds := db.NewFeeds()
+	err = feeds.Deserialize(&buf)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, feeds.Size())
+	feed := feeds.Values[0]
+	assert.Equal(t, feedURL, feed.URL)
+
+}
+
+func TestFeedGetByURL(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := newHTTPClient()
+
+	req := newRequest(mGet, "/api/feeds?url=http%3A%2F%2Flocalhost%3A5555%2Ffeed.xml")
+	rsp, err := c.Do(req)
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
+	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
+	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
+	assert.Equal(t, 106, int(rsp.ContentLength))
+
+	buf := bytes.Buffer{}
+	n, err := buf.ReadFrom(rsp.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, rsp.ContentLength, n)
+	feed := db.Feed{}
+	err = feed.Decode(buf.Bytes())
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
+
+}
+
+func TestFeedGetByURL404(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := newHTTPClient()
+
+	req := newRequest(mGet, "/api/feeds?url=http%3A%2F%2Flocalhost%3A5555%2Ffeed.XML")
+	rsp, err := c.Do(req)
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
+	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
+	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
+
+	expectedText := "Not Found\n"
+	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
+	bodyText, err := getBodyAsString(rsp.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, expectedText, bodyText)
+
+}
+
+func TestFeedGetByID(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := newHTTPClient()
+
+	req := newRequest(mGet, "/api/feeds/"+feedID)
+	rsp, err := c.Do(req)
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
+	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
+	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
+	assert.Equal(t, 106, int(rsp.ContentLength))
+
+	buf := bytes.Buffer{}
+	n, err := buf.ReadFrom(rsp.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, rsp.ContentLength, n)
+	feed := db.Feed{}
+	err = feed.Decode(buf.Bytes())
+	assert.Nil(t, err)
+	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
+
+}
+
+func TestFeedGetByID404(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := newHTTPClient()
+
+	req := newRequest(mGet, "/api/feeds/helloworld")
+	rsp, err := c.Do(req)
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
+	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
+	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
+
+	expectedText := "Not Found\n"
 	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
 	bodyText, err := getBodyAsString(rsp.Body)
 	assert.Nil(t, err)
@@ -219,17 +360,13 @@ func getZBodyAsString(r io.Reader) (string, error) {
 	return string(data[:]), err
 }
 
-func getRequest(path string) *http.Request {
-	return newRequest(mGet, path)
-}
-
 func newRequest(method string, path string) *http.Request {
 	req, _ := http.NewRequest(method, fmt.Sprintf("http://%s%s", ws.listener.Addr(), path), nil)
 	req.Header.Add(hAcceptEncoding, "gzip")
 	return req
 }
 
-func getHTTPClient() *http.Client {
+func newHTTPClient() *http.Client {
 	return &http.Client{
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrNotSupported
