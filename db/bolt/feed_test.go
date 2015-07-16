@@ -6,7 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
-	"rakewire.com/db"
 	m "rakewire.com/model"
 	"strings"
 	"testing"
@@ -23,9 +22,9 @@ func TestFeeds(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, urls)
 
-	feeds := db.NewFeeds()
+	feeds := m.NewFeeds()
 	for _, url := range urls {
-		feeds.Add(db.NewFeed(url))
+		feeds.Add(m.NewFeed(url))
 	}
 	assert.Equal(t, len(urls), feeds.Size())
 
