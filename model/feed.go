@@ -1,9 +1,11 @@
 package model
 
 import (
+	"bufio"
 	"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
 	"io"
+	"strings"
 	"time"
 )
 
@@ -109,4 +111,17 @@ func (z *Feeds) reindex() {
 	for _, d := range z.Values {
 		z.Index[d.ID] = d
 	}
+}
+
+// ParseListToFeeds parse url list to feeds
+func ParseListToFeeds(r io.Reader) *Feeds {
+	feeds := NewFeeds()
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		var url = strings.TrimSpace(scanner.Text())
+		if url != "" && url[:1] != "#" {
+			feeds.Add(NewFeed(url))
+		}
+	}
+	return feeds
 }

@@ -1,12 +1,10 @@
 package httpd
 
 import (
-	"bufio"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
 	m "rakewire.com/model"
-	"strings"
 )
 
 // SaveFeedsResponse response for SaveFeeds
@@ -121,15 +119,7 @@ func (z *Httpd) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	feeds := m.NewFeeds()
-	scanner := bufio.NewScanner(req.Body)
-	for scanner.Scan() {
-		var url = strings.TrimSpace(scanner.Text())
-		if url != "" && url[:1] != "#" {
-			feeds.Add(m.NewFeed(url))
-		}
-	}
-
+	feeds := m.ParseListToFeeds(req.Body)
 	z.feedsSaveNative(w, feeds)
 
 }
