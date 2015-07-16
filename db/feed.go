@@ -61,7 +61,7 @@ func (z *Feed) Decode(data []byte) error {
 
 // Encode Feed object to bytes
 func (z *Feed) Encode() ([]byte, error) {
-	return json.Marshal(z)
+	return json.MarshalIndent(z, "", " ")
 }
 
 // ========== Feeds ==========
