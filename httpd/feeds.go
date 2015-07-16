@@ -20,7 +20,7 @@ func (z *Httpd) feedsGet(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", mimeJSON)
 	err = feeds.Serialize(w)
 	if err != nil {
 		logger.Printf("Error in db.GetFeeds: %s\n", err.Error())
@@ -32,8 +32,33 @@ func (z *Httpd) feedsGet(w http.ResponseWriter, req *http.Request) {
 
 func (z *Httpd) feedsSave(w http.ResponseWriter, req *http.Request) {
 
+	contentType := req.Header.Get("Content-Type")
+
+	if contentType == mimeJSON {
+		z.feedsSaveJSON(w, req)
+	} else if contentType == mimeText {
+		z.feedsSaveText(w, req)
+	} else {
+		sendError(w, http.StatusUnsupportedMediaType)
+		return
+	}
+
+}
+
+func (z *Httpd) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
+
 	f := db.NewFeeds()
-	f.Deserialize(req.Body)
+	err := f.Deserialize(req.Body)
+	if err != nil {
+		logger.Printf("Error deserializing feeds: %s\n", err.Error())
+		http.Error(w, "Cannot deserialize feeds.", http.StatusInternalServerError)
+		return
+	}
+
+	if f.Size() == 0 {
+		sendError(w, http.StatusNoContent)
+		return
+	}
 
 	l, err := z.Database.SaveFeeds(f)
 	if err != nil {
@@ -53,7 +78,15 @@ func (z *Httpd) feedsSave(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Type", mimeJSON)
 	w.Write(data)
+
+}
+
+func (z *Httpd) feedsSaveText(w http.ResponseWriter, req *http.Request) {
+
+	// curl -D - -X PUT -H "Content-Type: text/plain; charset=utf-8" --data-binary @feedlist.txt http://localhost:4444/api/feeds
+
+	sendError(w, http.StatusNotImplemented)
 
 }
