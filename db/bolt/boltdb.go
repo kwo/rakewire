@@ -1,7 +1,6 @@
 package bolt
 
 import (
-	"bytes"
 	"github.com/boltdb/bolt"
 	"log"
 	"rakewire.com/db"
@@ -71,7 +70,7 @@ func (z *Database) GetFeeds() (*db.Feeds, error) {
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 
 			f := db.Feed{}
-			if err := f.Deserialize(bytes.NewReader(v)); err != nil {
+			if err := f.Decode(v); err != nil {
 				return err
 			}
 			if f.ID != string(k) {
@@ -90,6 +89,22 @@ func (z *Database) GetFeeds() (*db.Feeds, error) {
 
 }
 
+// GetFeedByID return feed given UUID
+func (z *Database) GetFeedByID(id string) (*db.Feed, error) {
+
+	var result db.Feed
+
+	err := z.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("Feed"))
+		data := b.Get([]byte(id))
+		result.Decode(data)
+		return nil
+	})
+
+	return &result, err
+
+}
+
 // SaveFeeds save feeds
 func (z *Database) SaveFeeds(feeds *db.Feeds) (int, error) {
 
@@ -99,13 +114,11 @@ func (z *Database) SaveFeeds(feeds *db.Feeds) (int, error) {
 
 		for _, f := range feeds.Values {
 
-			buf := bytes.Buffer{}
-			err := f.Serialize(&buf)
+			data, err := f.Encode()
 			if err != nil {
 				return err
 			}
-			data := buf.Bytes()
-			if err := b.Put([]byte(f.ID), data); err != nil {
+			if err = b.Put([]byte(f.ID), data); err != nil {
 				return err
 			}
 			counter++

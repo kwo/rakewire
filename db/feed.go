@@ -54,14 +54,14 @@ func NewFeed(url string) *Feed {
 	return &x
 }
 
-// Serialize Feed object to writer
-func (z *Feed) Serialize(w io.Writer) error {
-	return json.NewEncoder(w).Encode(&z)
+// Decode Feed object from bytes
+func (z *Feed) Decode(data []byte) error {
+	return json.Unmarshal(data, z)
 }
 
-// Deserialize Feed object to reader
-func (z *Feed) Deserialize(r io.Reader) error {
-	return json.NewDecoder(r).Decode(&z)
+// Encode Feed object to bytes
+func (z *Feed) Encode() ([]byte, error) {
+	return json.Marshal(z)
 }
 
 // ========== Feeds ==========

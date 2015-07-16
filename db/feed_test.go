@@ -22,18 +22,16 @@ func TestFeed(t *testing.T) {
 	assert.Equal(t, "http://localhost:8888/", fi.URL)
 	assert.EqualValues(t, dt, *fi.LastUpdated)
 
-	buf := bytes.Buffer{}
-	err := fi.Serialize(&buf)
-	data := buf.Bytes()
+	data, err := fi.Encode()
 	require.Nil(t, err)
 	require.NotNil(t, data)
-	assert.Equal(t, 125, len(data))
+	assert.Equal(t, 124, len(data))
 
 	// fmt.Println(string(data))
 	// fmt.Printf("size: %d\n", len(data))
 
 	fi2 := Feed{}
-	err = fi2.Deserialize(bytes.NewReader(data))
+	err = fi2.Decode(data)
 	require.Nil(t, err)
 	assert.NotNil(t, fi2)
 	assert.Equal(t, fi.ID, fi2.ID)
