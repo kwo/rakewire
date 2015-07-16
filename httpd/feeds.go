@@ -3,6 +3,7 @@ package httpd
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"net/http"
 	"rakewire.com/db"
 	"strings"
@@ -11,6 +12,34 @@ import (
 // SaveFeedsResponse response for SaveFeeds
 type SaveFeedsResponse struct {
 	Count int `json:"count"`
+}
+
+func (z *Httpd) feedsGetFeed(w http.ResponseWriter, req *http.Request) {
+
+	vars := mux.Vars(req)
+	feedID := vars["feedID"]
+
+	feed, err := z.Database.GetFeedByID(feedID)
+	if err != nil {
+		logger.Printf("Error in db.GetFeedByID: %s\n", err.Error())
+		http.Error(w, "Cannot retrieve feed from database.", http.StatusInternalServerError)
+		return
+	} else if feed == nil {
+		notFound(w, req)
+		return
+	}
+
+	data, err := feed.Encode()
+	if err != nil {
+		logger.Printf("Error in feed.Encode: %s\n", err.Error())
+		http.Error(w, "Cannot serialize feed from database.", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set(hContentType, mimeJSON)
+	w.Write(data)
+	w.Write([]byte("\n"))
+
 }
 
 func (z *Httpd) feedsGet(w http.ResponseWriter, req *http.Request) {
@@ -32,24 +61,12 @@ func (z *Httpd) feedsGet(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (z *Httpd) feedsSave(w http.ResponseWriter, req *http.Request) {
+func (z *Httpd) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 
 	if req.ContentLength == 0 {
 		sendError(w, http.StatusNoContent)
-	} else {
-		contentType := req.Header.Get(hContentType)
-		if contentType == mimeJSON {
-			z.feedsSaveJSON(w, req)
-		} else if contentType == mimeText {
-			z.feedsSaveText(w, req)
-		} else {
-			sendError(w, http.StatusUnsupportedMediaType)
-		}
+		return
 	}
-
-}
-
-func (z *Httpd) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 
 	feeds := db.NewFeeds()
 	err := feeds.Deserialize(req.Body)
@@ -71,6 +88,11 @@ func (z *Httpd) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 func (z *Httpd) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 
 	// curl -D - -X PUT -H "Content-Type: text/plain; charset=utf-8" --data-binary @feedlist.txt http://localhost:4444/api/feeds
+
+	if req.ContentLength == 0 {
+		sendError(w, http.StatusNoContent)
+		return
+	}
 
 	feeds := db.NewFeeds()
 	scanner := bufio.NewScanner(req.Body)

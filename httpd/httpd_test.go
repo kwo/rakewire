@@ -226,6 +226,14 @@ func (z *FakeDb) GetFeeds() (*db.Feeds, error) {
 	return f, nil
 }
 
+func (z *FakeDb) GetFeedByID(id string) (*db.Feed, error) {
+	f := db.Feed{
+		ID:  id,
+		URL: "https://" + id,
+	}
+	return &f, nil
+}
+
 func (z *FakeDb) SaveFeeds(*db.Feeds) (int, error) {
 	return 0, nil
 }
