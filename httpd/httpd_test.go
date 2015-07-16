@@ -51,27 +51,27 @@ func TestStaticPaths(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeHTML, rsp.Header.Get("Content-Type"))
-	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
-	assert.Equal(t, "23", rsp.Header.Get("Content-Length"))
+	assert.Equal(t, mimeHTML, rsp.Header.Get(hContentType))
+	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
+	assert.Equal(t, "23", rsp.Header.Get(hContentLength))
 
 	req = getRequest("/humans.txt")
 	rsp, err = c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get("Content-Type"))
-	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
-	assert.Equal(t, "37", rsp.Header.Get("Content-Length"))
+	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
+	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
+	assert.Equal(t, "37", rsp.Header.Get(hContentLength))
 
 	req = getRequest("/hello/world.txt")
 	rsp, err = c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get("Content-Type"))
-	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
-	assert.Equal(t, "41", rsp.Header.Get("Content-Length"))
+	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
+	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
+	assert.Equal(t, "41", rsp.Header.Get(hContentLength))
 
 }
 
@@ -86,8 +86,8 @@ func Test404(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
-	assert.Equal(t, "gzip", rsp.Header.Get("Content-Encoding"))
-	assert.Equal(t, mimeText, rsp.Header.Get("Content-Type"))
+	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
+	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 
 	expectedText := "404 page not found\n"
 	assert.Equal(t, 43, int(rsp.ContentLength)) // gzip expands from 19 to 43
@@ -132,8 +132,8 @@ func TestFeedGet(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get("Content-Type"))
-	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
+	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
+	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
 	assert.Equal(t, 5, int(rsp.ContentLength))
 
 }
@@ -145,12 +145,13 @@ func TestFeedPut(t *testing.T) {
 	c := getHTTPClient()
 
 	req := newRequest("PUT", "/api/feeds")
+	req.Header.Add(hContentType, mimeJSON)
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get("Content-Type"))
-	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
+	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
+	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
 	assert.Equal(t, 11, int(rsp.ContentLength))
 
 	jsonRsp := SaveFeedsResponse{}
@@ -172,8 +173,8 @@ func TestFeedPost(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusMethodNotAllowed, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get("Content-Type"))
-	assert.Equal(t, "", rsp.Header.Get("Content-Encoding"))
+	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
+	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
 
 	expectedText := "405 Method Not Allowed\n"
 	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
@@ -200,7 +201,7 @@ func getRequest(path string) *http.Request {
 
 func newRequest(method string, path string) *http.Request {
 	req, _ := http.NewRequest(method, fmt.Sprintf("http://%s%s", ws.listener.Addr(), path), nil)
-	req.Header.Add("Accept-Encoding", "gzip")
+	req.Header.Add(hAcceptEncoding, "gzip")
 	return req
 }
 
