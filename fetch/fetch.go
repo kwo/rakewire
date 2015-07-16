@@ -1,9 +1,10 @@
 package fetch
 
-// TODO: io timout errors at feed 235 - 286 always
 // TODO: stop fetcher without sending special message?
 
 import (
+	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	m "rakewire.com/model"
@@ -25,7 +26,7 @@ type fetcher struct {
 }
 
 const (
-	fetcherCount = 20
+	fetcherCount = 10
 )
 
 // Fetch feeds in file
@@ -62,6 +63,8 @@ func (f *fetcher) getFeed(chReq chan status, chRsp chan status) {
 		result.WorkerID = f.id
 
 		var rsp, err = f.client.Get(result.URL)
+		io.Copy(ioutil.Discard, rsp.Body)
+		rsp.Body.Close()
 
 		if err != nil {
 			result.StatusCode = 5000

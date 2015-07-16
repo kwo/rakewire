@@ -4,7 +4,6 @@
  - run fetch off of database
  - start fetcher pool, feed fetcher in addition to database and httpd
  - start timer every 5 minutes to repoll feeds
- - get fetch to complete without errors
  - implement config defaults
  - need save database channel
  - firm up API: add RemoveFeeds
