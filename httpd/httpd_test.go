@@ -89,7 +89,7 @@ func Test404(t *testing.T) {
 	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 
 	expectedText := "404 page not found\n"
-	assert.Equal(t, 43, int(rsp.ContentLength)) // gzip expands from 19 to 43
+	assert.Equal(t, 43 /* len(expectedText) */, int(rsp.ContentLength)) // gzip expands from 19 to 43
 	bodyText, err := getZBodyAsString(rsp.Body)
 	assert.Nil(t, err)
 	assert.Equal(t, expectedText, bodyText)
@@ -180,7 +180,7 @@ func TestFeedPost(t *testing.T) {
 	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
 
-	expectedText := "405 Method Not Allowed\n"
+	expectedText := "Method Not Allowed\n"
 	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
 	bodyText, err := getBodyAsString(rsp.Body)
 	assert.Nil(t, err)

@@ -1,7 +1,6 @@
 package httpd
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 )
@@ -23,6 +22,5 @@ func notSupported(w http.ResponseWriter, req *http.Request) {
 }
 
 func sendError(w http.ResponseWriter, code int) {
-	text := fmt.Sprintf("%d %s", code, http.StatusText(code))
-	http.Error(w, text, code)
+	http.Error(w, http.StatusText(code), code)
 }
