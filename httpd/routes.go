@@ -9,6 +9,12 @@ func (z *Httpd) apiRouter(prefix string) *mux.Router {
 
 	router := mux.NewRouter()
 
+	var prefixAdmin = prefix + "/admin"
+	var prefixAdminRepair = prefixAdmin + "/repairdb"
+	router.Path(prefixAdminRepair).Methods(mPost).HandlerFunc(z.repairDatabase)
+	router.Path(prefixAdminRepair).HandlerFunc(notSupported)
+	router.Path(prefixAdmin).HandlerFunc(notFound)
+
 	var prefixFeeds = prefix + "/feeds"
 	router.Path(prefixFeeds).Methods(mGet).HandlerFunc(z.feedsGet)
 	router.Path(prefixFeeds).Methods(mPut).Headers(hContentType, mimeJSON).HandlerFunc(z.feedsSaveJSON)
@@ -22,6 +28,10 @@ func (z *Httpd) apiRouter(prefix string) *mux.Router {
 
 	return router
 
+}
+
+func sendOK(w http.ResponseWriter, req *http.Request) {
+	sendError(w, http.StatusOK)
 }
 
 func badMediaType(w http.ResponseWriter, req *http.Request) {

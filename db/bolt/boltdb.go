@@ -2,11 +2,16 @@ package bolt
 
 import (
 	"github.com/boltdb/bolt"
-	"log"
 	"rakewire.com/db"
 	"rakewire.com/logging"
 	m "rakewire.com/model"
 	"time"
+)
+
+const (
+	bucketFeed           = "Feed"
+	bucketIndex          = "Index"
+	bucketIndexFeedByURL = "idxFeedByURL"
 )
 
 // Database implementation of Database
@@ -30,7 +35,15 @@ func (z *Database) Open(cfg *m.DatabaseConfiguration) error {
 
 	// check that buckets exist
 	err = z.db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte("Feed"))
+		_, err := tx.CreateBucketIfNotExists([]byte(bucketFeed))
+		if err != nil {
+			return err
+		}
+		b, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
+		if err != nil {
+			return err
+		}
+		_, err = b.CreateBucketIfNotExists([]byte(bucketIndexFeedByURL))
 		return err
 	})
 
@@ -64,7 +77,7 @@ func (z *Database) GetFeeds() (*db.Feeds, error) {
 	result := db.NewFeeds()
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("Feed"))
+		b := tx.Bucket([]byte(bucketFeed))
 		c := b.Cursor()
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
@@ -74,7 +87,7 @@ func (z *Database) GetFeeds() (*db.Feeds, error) {
 				return err
 			}
 			if f.ID != string(k) {
-				log.Printf("ID/key mismatch: %s/%s\n", k, f.ID)
+				logger.Printf("ID/key mismatch: %s/%s\n", k, f.ID)
 			} else {
 				result.Add(&f)
 			}
@@ -92,15 +105,22 @@ func (z *Database) GetFeeds() (*db.Feeds, error) {
 // GetFeedByID return feed given UUID
 func (z *Database) GetFeedByID(id string) (*db.Feed, error) {
 
-	var result db.Feed
+	var data []byte
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("Feed"))
-		data := b.Get([]byte(id))
-		result.Decode(data)
+		b := tx.Bucket([]byte(bucketFeed))
+		data = b.Get([]byte(id))
 		return nil
 	})
 
+	if err != nil {
+		return nil, err
+	} else if data == nil {
+		return nil, nil
+	}
+
+	result := db.Feed{}
+	err = result.Decode(data)
 	return &result, err
 
 }
@@ -110,7 +130,9 @@ func (z *Database) SaveFeeds(feeds *db.Feeds) (int, error) {
 
 	var counter int
 	err := z.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte("Feed"))
+
+		b := tx.Bucket([]byte(bucketFeed))
+		idxFeedByURL := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(bucketIndexFeedByURL))
 
 		for _, f := range feeds.Values {
 
@@ -119,6 +141,9 @@ func (z *Database) SaveFeeds(feeds *db.Feeds) (int, error) {
 				return err
 			}
 			if err = b.Put([]byte(f.ID), data); err != nil {
+				return err
+			}
+			if err = idxFeedByURL.Put([]byte(f.URL), []byte(f.ID)); err != nil {
 				return err
 			}
 			counter++
@@ -130,5 +155,50 @@ func (z *Database) SaveFeeds(feeds *db.Feeds) (int, error) {
 	}) // update
 
 	return counter, err
+
+}
+
+// Repair the database
+func (z *Database) Repair() error {
+
+	return z.db.Update(func(tx *bolt.Tx) error {
+
+		b := tx.Bucket([]byte(bucketFeed))
+		indexes := tx.Bucket([]byte(bucketIndex))
+		logger.Printf("dropping index %s\n", bucketIndexFeedByURL)
+		err := indexes.DeleteBucket([]byte(bucketIndexFeedByURL))
+		if err != nil {
+			return err
+		}
+		logger.Printf("readding index %s\n", bucketIndexFeedByURL)
+		idxFeedByURL, err := indexes.CreateBucket([]byte(bucketIndexFeedByURL))
+		if err != nil {
+			return err
+		}
+
+		c := b.Cursor()
+
+		logger.Printf("populating index %s\n", bucketIndexFeedByURL)
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+
+			f := db.Feed{}
+			if err := f.Decode(v); err != nil {
+				return err
+			}
+			if f.ID != string(k) {
+				logger.Printf("ID/key mismatch: %s/%s\n", k, f.ID)
+			} else {
+				err := idxFeedByURL.Put([]byte(f.URL), []byte(f.ID))
+				if err != nil {
+					return err
+				}
+				logger.Printf("added url to index %s: %s\n", bucketIndexFeedByURL, f.URL)
+			}
+
+		} // for
+
+		return nil
+
+	}) // update
 
 }
