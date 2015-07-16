@@ -143,7 +143,7 @@ func TestFeedPutNoContent(t *testing.T) {
 
 	c := getHTTPClient()
 
-	req := newRequest("PUT", "/api/feeds")
+	req := newRequest(mPut, "/api/feeds")
 	req.Header.Add(hContentType, mimeJSON)
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
@@ -172,7 +172,7 @@ func TestFeedPost(t *testing.T) {
 
 	c := getHTTPClient()
 
-	req := newRequest("POST", "/api/feeds")
+	req := newRequest(mPost, "/api/feeds")
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
@@ -200,7 +200,7 @@ func getZBodyAsString(r io.Reader) (string, error) {
 }
 
 func getRequest(path string) *http.Request {
-	return newRequest("GET", path)
+	return newRequest(mGet, path)
 }
 
 func newRequest(method string, path string) *http.Request {
