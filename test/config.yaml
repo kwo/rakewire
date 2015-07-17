@@ -1,6 +1,13 @@
 httpd:
-  address: "0.0.0.0"
   port: 4444
-  webappdir: "/Users/karl/static"
+  webappdir: "/Users/karl/projects/go/src/rakewire.com/test/public_html"
+
 database:
   location: "/Users/karl/.rakewire/data.db"
+
+fetcher:
+  fetchers: 10
+  requestbuffer: 500
+  httptimeoutseconds: 10
+  idletimeoutseconds: 5
+

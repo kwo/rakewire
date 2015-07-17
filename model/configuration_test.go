@@ -19,11 +19,14 @@ func TestConfiguration(t *testing.T) {
 
 	assert.NotNil(t, c.Httpd)
 
-	assert.Equal(t, "0.0.0.0", c.Httpd.Address)
+	assert.Equal(t, "", c.Httpd.Address)
 	assert.Equal(t, 4444, c.Httpd.Port)
-	assert.Equal(t, "/Users/karl/static", c.Httpd.WebAppDir)
-	assert.Equal(t, "0.0.0.0:4444", fmt.Sprintf("%s:%d", c.Httpd.Address, c.Httpd.Port))
+	assert.Equal(t, "/Users/karl/projects/go/src/rakewire.com/test/public_html", c.Httpd.WebAppDir)
+	assert.Equal(t, ":4444", fmt.Sprintf("%s:%d", c.Httpd.Address, c.Httpd.Port))
 
 	assert.Equal(t, "/Users/karl/.rakewire/data.db", c.Database.Location)
+
+	assert.NotNil(t, c.Fetcher)
+	assert.Equal(t, 10, c.Fetcher.Fetchers)
 
 }

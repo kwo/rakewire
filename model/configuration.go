@@ -10,12 +10,21 @@ import (
 // Configuration object
 type Configuration struct {
 	Database DatabaseConfiguration
+	Fetcher  FetcherConfiguration
 	Httpd    HttpdConfiguration
 }
 
 // DatabaseConfiguration configuration
 type DatabaseConfiguration struct {
 	Location string
+}
+
+// FetcherConfiguration configuration
+type FetcherConfiguration struct {
+	Fetchers           int
+	RequestBuffer      int
+	HTTPTimeoutSeconds int
+	IdleTimeoutSeconds int
 }
 
 // HttpdConfiguration configuration
