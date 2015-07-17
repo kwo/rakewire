@@ -8,13 +8,14 @@ import (
 	"github.com/phyber/negroni-gzip/gzip"
 	"net"
 	"net/http"
+	"rakewire.com/db"
 	m "rakewire.com/model"
 )
 
 // Httpd server
 type Httpd struct {
 	listener net.Listener
-	Database m.Database
+	Database db.Database
 }
 
 const (

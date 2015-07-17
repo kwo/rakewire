@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
-	m "rakewire.com/model"
+	"rakewire.com/db"
 )
 
 // SaveFeedsResponse response for SaveFeeds
@@ -16,7 +16,7 @@ func (z *Httpd) feedsGet(w http.ResponseWriter, req *http.Request) {
 
 	feeds, err := z.Database.GetFeeds()
 	if err != nil {
-		logger.Printf("Error in m.GetFeeds: %s\n", err.Error())
+		logger.Printf("Error in db.GetFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot retrieve feeds from database.", http.StatusInternalServerError)
 		return
 	}
@@ -24,7 +24,7 @@ func (z *Httpd) feedsGet(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set(hContentType, mimeJSON)
 	err = feeds.Serialize(w)
 	if err != nil {
-		logger.Printf("Error in m.GetFeeds: %s\n", err.Error())
+		logger.Printf("Error in db.GetFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)
 		return
 	}
@@ -38,7 +38,7 @@ func (z *Httpd) feedsGetFeedByID(w http.ResponseWriter, req *http.Request) {
 
 	feed, err := z.Database.GetFeedByID(feedID)
 	if err != nil {
-		logger.Printf("Error in m.GetFeedByID: %s\n", err.Error())
+		logger.Printf("Error in db.GetFeedByID: %s\n", err.Error())
 		http.Error(w, "Cannot retrieve feed from database.", http.StatusInternalServerError)
 		return
 	} else if feed == nil {
@@ -65,7 +65,7 @@ func (z *Httpd) feedsGetFeedByURL(w http.ResponseWriter, req *http.Request) {
 
 	feed, err := z.Database.GetFeedByURL(url)
 	if err != nil {
-		logger.Printf("Error in m.GetFeedByURL: %s\n", err.Error())
+		logger.Printf("Error in db.GetFeedByURL: %s\n", err.Error())
 		http.Error(w, "Cannot retrieve feed from database.", http.StatusInternalServerError)
 		return
 	} else if feed == nil {
@@ -93,7 +93,7 @@ func (z *Httpd) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	feeds := m.NewFeeds()
+	feeds := db.NewFeeds()
 	err := feeds.Deserialize(req.Body)
 	if err != nil {
 		logger.Printf("Error deserializing feeds: %s\n", err.Error())
@@ -119,16 +119,16 @@ func (z *Httpd) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	feeds := m.ParseListToFeeds(req.Body)
+	feeds := db.ParseListToFeeds(req.Body)
 	z.feedsSaveNative(w, feeds)
 
 }
 
-func (z *Httpd) feedsSaveNative(w http.ResponseWriter, feeds *m.Feeds) {
+func (z *Httpd) feedsSaveNative(w http.ResponseWriter, feeds *db.Feeds) {
 
 	n, err := z.Database.SaveFeeds(feeds)
 	if err != nil {
-		logger.Printf("Error in m.SaveFeeds: %s\n", err.Error())
+		logger.Printf("Error in db.SaveFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot save feeds to database.", http.StatusInternalServerError)
 		return
 	}

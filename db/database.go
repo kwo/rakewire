@@ -1,4 +1,4 @@
-package model
+package db
 
 // Database interface
 type Database interface {
@@ -7,4 +7,9 @@ type Database interface {
 	GetFeeds() (*Feeds, error)
 	SaveFeeds(*Feeds) (int, error)
 	Repair() error
+}
+
+// Configuration configuration
+type Configuration struct {
+	Location string
 }

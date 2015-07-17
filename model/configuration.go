@@ -5,19 +5,15 @@ import (
 	"gopkg.in/yaml.v2"
 	"io"
 	"os"
+	"rakewire.com/db"
 	"rakewire.com/fetch"
 )
 
 // Configuration object
 type Configuration struct {
-	Database DatabaseConfiguration
+	Database db.Configuration
 	Fetcher  fetch.Configuration
 	Httpd    HttpdConfiguration
-}
-
-// DatabaseConfiguration configuration
-type DatabaseConfiguration struct {
-	Location string
 }
 
 // HttpdConfiguration configuration

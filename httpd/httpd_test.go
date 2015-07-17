@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"rakewire.com/db"
 	"rakewire.com/db/bolt"
 	"rakewire.com/model"
 	"testing"
@@ -29,7 +30,7 @@ func TestMain(m *testing.M) {
 
 	testDatabaseFile := "../test/test.db"
 
-	cfg := model.DatabaseConfiguration{
+	cfg := db.Configuration{
 		Location: testDatabaseFile,
 	}
 	testDatabase := bolt.Database{}
@@ -157,8 +158,8 @@ func TestFeedsPut(t *testing.T) {
 	req.Header.Add(hContentType, mimeJSON)
 
 	buf := bytes.Buffer{}
-	feeds := model.NewFeeds()
-	feed := model.NewFeed(feedURL)
+	feeds := db.NewFeeds()
+	feed := db.NewFeed(feedURL)
 	feedID = feed.ID
 	feeds.Add(feed)
 	feeds.Serialize(&buf)
@@ -243,7 +244,7 @@ func TestFeedsGet(t *testing.T) {
 	n, err := buf.ReadFrom(rsp.Body)
 	assert.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
-	feeds := model.NewFeeds()
+	feeds := db.NewFeeds()
 	err = feeds.Deserialize(&buf)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, feeds.Size())
@@ -271,7 +272,7 @@ func TestFeedGetByURL(t *testing.T) {
 	n, err := buf.ReadFrom(rsp.Body)
 	assert.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
-	feed := model.Feed{}
+	feed := db.Feed{}
 	err = feed.Decode(buf.Bytes())
 	assert.Nil(t, err)
 	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
@@ -319,7 +320,7 @@ func TestFeedGetByID(t *testing.T) {
 	n, err := buf.ReadFrom(rsp.Body)
 	assert.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
-	feed := model.Feed{}
+	feed := db.Feed{}
 	err = feed.Decode(buf.Bytes())
 	assert.Nil(t, err)
 	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
