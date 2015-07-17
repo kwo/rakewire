@@ -12,7 +12,6 @@ import (
 	"os"
 	"rakewire.com/db"
 	"rakewire.com/db/bolt"
-	"rakewire.com/model"
 	"testing"
 	"time"
 )
@@ -22,7 +21,7 @@ const (
 )
 
 var (
-	ws     *Httpd
+	ws     *Service
 	feedID string
 )
 
@@ -41,10 +40,10 @@ func TestMain(m *testing.M) {
 	}
 
 	chErrors := make(chan error)
-	ws = &Httpd{
+	ws = &Service{
 		Database: &testDatabase,
 	}
-	go ws.Start(&model.HttpdConfiguration{
+	go ws.Start(&Configuration{
 		Port:      4444,
 		WebAppDir: "../test/public_html",
 	}, chErrors)

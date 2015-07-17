@@ -16,7 +16,7 @@ const (
 )
 
 var (
-	ws     *httpd.Httpd
+	ws     *httpd.Service
 	db     *bolt.Database
 	logger = logging.New("main")
 )
@@ -40,7 +40,7 @@ func main() {
 
 	chErrors := make(chan error)
 
-	ws = &httpd.Httpd{
+	ws = &httpd.Service{
 		Database: db,
 	}
 	go ws.Start(&cfg.Httpd, chErrors)

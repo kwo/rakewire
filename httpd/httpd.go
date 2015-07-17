@@ -9,13 +9,19 @@ import (
 	"net"
 	"net/http"
 	"rakewire.com/db"
-	m "rakewire.com/model"
 )
 
-// Httpd server
-type Httpd struct {
+// Service server
+type Service struct {
 	listener net.Listener
 	Database db.Database
+}
+
+// Configuration configuration
+type Configuration struct {
+	Address   string
+	Port      int
+	WebAppDir string
 }
 
 const (
@@ -37,7 +43,7 @@ var (
 )
 
 // Start web service
-func (z *Httpd) Start(cfg *m.HttpdConfiguration, chErrors chan error) {
+func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 
 	if z.Database == nil {
 		logger.Println("Cannot start httpd, no database provided")
@@ -84,7 +90,7 @@ func (z *Httpd) Start(cfg *m.HttpdConfiguration, chErrors chan error) {
 }
 
 // Stop stop the server
-func (z *Httpd) Stop() error {
+func (z *Service) Stop() error {
 	if l := z.listener; l != nil {
 		z.listener = nil
 		if err := l.Close(); err != nil {
@@ -97,6 +103,6 @@ func (z *Httpd) Stop() error {
 }
 
 // Running indicates if server is running or not
-func (z *Httpd) Running() bool {
+func (z *Service) Running() bool {
 	return z.listener != nil
 }

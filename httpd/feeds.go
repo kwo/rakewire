@@ -12,7 +12,7 @@ type SaveFeedsResponse struct {
 	Count int `json:"count"`
 }
 
-func (z *Httpd) feedsGet(w http.ResponseWriter, req *http.Request) {
+func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
 
 	feeds, err := z.Database.GetFeeds()
 	if err != nil {
@@ -31,7 +31,7 @@ func (z *Httpd) feedsGet(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (z *Httpd) feedsGetFeedByID(w http.ResponseWriter, req *http.Request) {
+func (z *Service) feedsGetFeedByID(w http.ResponseWriter, req *http.Request) {
 
 	vars := mux.Vars(req)
 	feedID := vars["feedID"]
@@ -59,7 +59,7 @@ func (z *Httpd) feedsGetFeedByID(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (z *Httpd) feedsGetFeedByURL(w http.ResponseWriter, req *http.Request) {
+func (z *Service) feedsGetFeedByURL(w http.ResponseWriter, req *http.Request) {
 
 	url := req.URL.Query().Get("url")
 
@@ -86,7 +86,7 @@ func (z *Httpd) feedsGetFeedByURL(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (z *Httpd) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
+func (z *Service) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 
 	if req.ContentLength == 0 {
 		sendError(w, http.StatusNoContent)
@@ -110,7 +110,7 @@ func (z *Httpd) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (z *Httpd) feedsSaveText(w http.ResponseWriter, req *http.Request) {
+func (z *Service) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 
 	// curl -D - -X PUT -H "Content-Type: text/plain; charset=utf-8" --data-binary @feedlist.txt http://localhost:4444/api/feeds
 
@@ -124,7 +124,7 @@ func (z *Httpd) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (z *Httpd) feedsSaveNative(w http.ResponseWriter, feeds *db.Feeds) {
+func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds *db.Feeds) {
 
 	n, err := z.Database.SaveFeeds(feeds)
 	if err != nil {

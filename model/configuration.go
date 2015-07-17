@@ -7,20 +7,14 @@ import (
 	"os"
 	"rakewire.com/db"
 	"rakewire.com/fetch"
+	"rakewire.com/httpd"
 )
 
 // Configuration object
 type Configuration struct {
 	Database db.Configuration
 	Fetcher  fetch.Configuration
-	Httpd    HttpdConfiguration
-}
-
-// HttpdConfiguration configuration
-type HttpdConfiguration struct {
-	Address   string
-	Port      int
-	WebAppDir string
+	Httpd    httpd.Configuration
 }
 
 // Load configuration from JSON

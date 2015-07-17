@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (z *Httpd) apiRouter(prefix string) *mux.Router {
+func (z *Service) apiRouter(prefix string) *mux.Router {
 
 	router := mux.NewRouter()
 

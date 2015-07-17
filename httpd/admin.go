@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (z *Httpd) repairDatabase(w http.ResponseWriter, req *http.Request) {
+func (z *Service) repairDatabase(w http.ResponseWriter, req *http.Request) {
 
 	err := z.Database.Repair()
 	if err != nil {
