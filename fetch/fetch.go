@@ -128,8 +128,8 @@ func (z *fetcher) processFeed(req *Request) {
 	result := &Response{
 		FetcherID:   z.id,
 		AttemptTime: &now,
+		ID:          req.ID,
 		URL:         req.URL,
-		Request:     req,
 	}
 
 	rsp, err := z.client.Do(z.newRequest(req.URL))
@@ -142,8 +142,8 @@ func (z *fetcher) processFeed(req *Request) {
 			result.URL = rsp.Request.URL.String()
 			result.StatusCode = 3000
 		} else {
-			result.ETag = rsp.Header.Get("etag")
 			result.FetchTime = &now
+			result.ETag = rsp.Header.Get("etag")
 			m, err := http.ParseTime(rsp.Header.Get("lastmodified"))
 			if err != nil {
 				result.LastModified = &m

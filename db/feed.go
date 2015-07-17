@@ -16,6 +16,7 @@ type Feeds struct {
 }
 
 // Feed feed descriptior
+// Also a super type of fetch.Request and fetch.Response
 type Feed struct {
 	// Etag from HTTP Request - used for conditional GETs
 	ETag string `json:"etag,omitempty"`
