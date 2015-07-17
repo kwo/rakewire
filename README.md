@@ -6,16 +6,16 @@
  - start timer every 5 minutes to repoll feeds
  - implement config defaults
  - need save database channel
- - firm up API: add RemoveFeeds
+ - remove rest api
 
 ## Version 0.0.1
 
   - DONE config
   - DONE database
   - DONE httpd
-  - DONE rest api
   - fetcher pool
   - fetcher timer
+  - websocket api
   - html ui
 
 ## Version 1.0.0 (MVP)

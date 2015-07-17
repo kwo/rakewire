@@ -19,6 +19,8 @@ type Feeds struct {
 type Feed struct {
 	// Etag from HTTP Request - used for conditional GETs
 	ETag string `json:"etag,omitempty"`
+	// The last status, true if error, false if successfully completed
+	Failed bool `json:"failed,omitempty"`
 	// Type of feed: Atom, RSS2, etc.
 	Flavor string `json:"flavor,omitempty"`
 	// Not yet in use: how often to poll the feed
@@ -31,12 +33,12 @@ type Feed struct {
 	Icon string `json:"icon,omitempty"`
 	// UUID
 	ID string `json:"id"`
-	// Time of last fetch attempt (LastStatus is true) or completion (LastStatus is false)
+	// Time of last fetch attempt
+	LastAttempt *time.Time `json:"lastAttempt,omitempty"`
+	// Time of last successful fetch completion
 	LastFetch *time.Time `json:"lastFetch,omitempty"`
 	// Last-Modified time from HTTP Request - used for conditional GETs
 	LastModified *time.Time `json:"lastModified,omitempty"`
-	// The last status, true if error, false if successfully completed
-	LastStatus bool `json:"lastStatus,omitempty"`
 	// Time the feed was last updated (from feed)
 	LastUpdated *time.Time `json:"lastUpdated,omitempty"`
 	// Feed title

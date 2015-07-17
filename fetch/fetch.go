@@ -1,140 +1,160 @@
 package fetch
 
-// TODO: stop fetcher without sending special message?
-
 import (
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
-	m "rakewire.com/model"
+	"rakewire.com/logging"
 	"time"
 )
 
-type status struct {
-	halt       bool
-	Index      int
-	URL        string
-	WorkerID   int
-	StatusCode int
-	Message    string
+const (
+	httpUserAgent = "Rakewire Bot 0.0.1"
+)
+
+var (
+	logger = logging.New("fetch")
+)
+
+// Service fetches feeds
+type Service struct {
+	fetchers     []*fetcher
+	requests     chan *Request
+	responses    chan *Response
+	fetcherCount int
+	httpTimeout  time.Duration
 }
 
 type fetcher struct {
-	id     int
-	client *http.Client
+	id         int
+	client     *http.Client
+	requests   chan *Request
+	responses  chan *Response
+	killsignal chan bool
 }
 
-const (
-	fetcherCount = 10
-)
-
-// Fetch feeds in file
-func Fetch(feeds *m.Feeds) error {
-
-	requests := make(chan status)
-	responses := make(chan status, 5)
-	signals := make(chan bool)
-
-	initFetchers(requests, responses)
-	go addFeeds(feeds, requests)
-	go processFeeds(feeds.Size(), responses, signals)
-	<-signals
-	go destroyFetchers(requests, signals)
-	<-signals
-
-	log.Println("exiting...")
-
-	return nil
-
-}
-
-func (f *fetcher) getFeed(chReq chan status, chRsp chan status) {
-
-	log.Printf("Fetcher %2d started", f.id)
-
-	for {
-
-		result := <-chReq
-		if result.halt {
-			break
-		}
-
-		result.WorkerID = f.id
-
-		var rsp, err = f.client.Get(result.URL)
-		io.Copy(ioutil.Discard, rsp.Body)
-		rsp.Body.Close()
-
-		if err != nil {
-			result.StatusCode = 5000
-			result.Message = err.Error()
-		} else if result.URL != rsp.Request.URL.String() {
-			result.StatusCode = 3000
-			result.URL = rsp.Request.URL.String()
-		} else {
-			result.StatusCode = rsp.StatusCode
-		}
-
-		chRsp <- result
-
+// NewService create new fetcher service
+func NewService(cfg *Configuration) *Service {
+	return &Service{
+		requests:     make(chan *Request, cfg.RequestBuffer),
+		responses:    make(chan *Response),
+		fetcherCount: cfg.Fetchers,
+		httpTimeout:  time.Duration(cfg.HTTPTimeoutSeconds) * time.Second,
 	}
-
-	log.Printf("Fetcher %2d exited", f.id)
-
 }
 
-func initFetchers(requests chan status, responses chan status) {
+// Start service
+func (z *Service) Start() {
 
-	for i := 0; i < fetcherCount; i++ {
+	logger.Println("starting service")
+
+	for i := 0; i < z.fetcherCount; i++ {
+
 		f := &fetcher{
 			id: i,
 			client: &http.Client{
-				Timeout: 60 * time.Second,
+				// CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				// 	return http.ErrNotSupported
+				// },
+				Timeout: z.httpTimeout,
 			},
+			requests:   z.requests,
+			responses:  z.responses,
+			killsignal: make(chan bool),
 		}
-		go f.getFeed(requests, responses)
+
+		z.fetchers = append(z.fetchers, f)
+
+		go f.start()
+
 	}
 
 }
 
-func destroyFetchers(requests chan status, signals chan bool) {
+// Stop service
+func (z *Service) Stop() {
 
-	for i := 0; i < fetcherCount; i++ {
-		s := status{
-			halt: true,
-		}
-		requests <- s
+	logger.Println("stopping service")
+	for _, f := range z.fetchers {
+		f.stop()
 	}
-
-	signals <- true
+	z.fetchers = nil
 
 }
 
-func addFeeds(feeds *m.Feeds, requests chan status) {
-
-	for index, feed := range feeds.Values {
-		s := status{
-			Index: index,
-			URL:   feed.URL,
-		}
-		requests <- s
+// Add feeds to pool
+func (z *Service) Add(requests []*Request) {
+	for _, req := range requests {
+		z.requests <- req
 	}
-
 }
 
-func processFeeds(total int, responses chan status, signals chan bool) {
+// Harvest responses from service
+func (z *Service) Harvest() chan *Response {
+	return z.responses
+}
 
-	var counter int
+func (z *fetcher) start() {
+
+Loop:
 	for {
-		s := <-responses
-		log.Printf("Worker: %2d, Feed %4d: %4d %s %s\n", s.WorkerID, s.Index, s.StatusCode, s.URL, s.Message)
-		counter++
-		if counter >= total {
-			break
+		select {
+		case <-z.killsignal:
+			break Loop
+		case req := <-z.requests:
+			z.processFeed(req)
 		}
 	}
 
-	signals <- true
+}
+
+func (z *fetcher) stop() {
+	logger.Printf("stopping fetcher: %2d\n", z.id)
+	z.killsignal <- true
+	close(z.killsignal)
+	z.client = nil
+	//logger.Printf("exiting fetcher %2d", z.id)
+}
+
+func (z *fetcher) newRequest(url string) *http.Request {
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header.Set("User-Agent", httpUserAgent)
+	return req
+}
+
+func (z *fetcher) processFeed(req *Request) {
+
+	now := time.Now()
+	result := &Response{
+		FetcherID:   z.id,
+		AttemptTime: &now,
+		URL:         req.URL,
+		Request:     req,
+	}
+
+	rsp, err := z.client.Do(z.newRequest(req.URL))
+
+	if err == nil {
+		io.Copy(ioutil.Discard, rsp.Body)
+		rsp.Body.Close()
+		result.StatusCode = rsp.StatusCode
+		if req.URL != rsp.Request.URL.String() {
+			result.URL = rsp.Request.URL.String()
+			result.StatusCode = 3000
+		} else {
+			result.ETag = rsp.Header.Get("etag")
+			result.FetchTime = &now
+			m, err := http.ParseTime(rsp.Header.Get("lastmodified"))
+			if err != nil {
+				result.LastModified = &m
+			}
+		}
+	} else {
+		result.Failed = true
+		result.Message = err.Error()
+		result.StatusCode = 5000
+	}
+
+	z.responses <- result
 
 }
