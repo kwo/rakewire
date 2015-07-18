@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"rakewire.com/db"
+	"rakewire.com/feedpump"
 	"rakewire.com/fetch"
 	"rakewire.com/httpd"
 )
@@ -18,6 +19,7 @@ const (
 // Configuration object
 type Configuration struct {
 	Database db.Configuration
+	Pump     feedpump.Configuration
 	Fetcher  fetch.Configuration
 	Httpd    httpd.Configuration
 }
