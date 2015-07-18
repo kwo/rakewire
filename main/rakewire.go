@@ -3,45 +3,45 @@ package main
 import (
 	"os"
 	"os/signal"
-	"path"
+	"rakewire.com/config"
 	"rakewire.com/db/bolt"
+	"rakewire.com/fetch"
 	"rakewire.com/httpd"
 	"rakewire.com/logging"
-	m "rakewire.com/model"
 	"syscall"
 )
 
-const (
-	configFileName = "config.yaml"
-)
-
 var (
-	ws     *httpd.Service
-	db     *bolt.Database
-	logger = logging.New("main")
+	fetchd   *fetch.Service
+	ws       *httpd.Service
+	database *bolt.Database
+	logger   = logging.New("main")
 )
 
 func main() {
 
-	cfg := getConfig()
+	cfg := config.GetConfig()
 	if cfg == nil {
-		logger.Printf("Abort! No config file found at %s\n", getConfigFileLocation())
+		logger.Printf("Abort! No config file found at %s\n", config.GetConfigFileLocation())
 		os.Exit(1)
 		return
 	}
 
-	db = &bolt.Database{}
-	err := db.Open(&cfg.Database)
+	database = &bolt.Database{}
+	err := database.Open(&cfg.Database)
 	if err != nil {
 		logger.Printf("Abort! Cannot access database: %s\n", err.Error())
 		os.Exit(1)
 		return
 	}
 
+	fetchd := fetch.NewService(&cfg.Fetcher)
+	go fetchd.Start()
+
 	chErrors := make(chan error)
 
 	ws = &httpd.Service{
-		Database: db,
+		Database: database,
 	}
 	go ws.Start(&cfg.Httpd, chErrors)
 
@@ -68,35 +68,9 @@ func monitorShutdown(chErrors chan error) {
 	ws = nil
 
 	// close database
-	db.Close()
-	db = nil
+	database.Close()
+	database = nil
 
 	logger.Println("Done")
 
-}
-
-func getConfig() *m.Configuration {
-	cfg := m.Configuration{}
-	if err := cfg.LoadFromFile(getConfigFileLocation()); err != nil {
-		return nil
-	}
-	return &cfg
-}
-
-func getConfigFileLocation() string {
-	if home := getHomeDirectory(); home != "" {
-		return path.Join(getHomeDirectory(), ".rakewire", configFileName)
-	}
-	return configFileName
-}
-
-func getHomeDirectory() string {
-	homeLocations := []string{"HOME", "HOMEPATH", "USERPROFILE"}
-	for _, v := range homeLocations {
-		x := os.Getenv(v)
-		if x != "" {
-			return x
-		}
-	}
-	return ""
 }
