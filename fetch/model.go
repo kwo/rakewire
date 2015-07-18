@@ -7,7 +7,6 @@ import (
 // Configuration configuration
 type Configuration struct {
 	Fetchers           int
-	RequestBuffer      int
 	HTTPTimeoutSeconds int
 }
 
