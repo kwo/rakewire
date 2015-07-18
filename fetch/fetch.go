@@ -25,6 +25,12 @@ type Service struct {
 	httpTimeout  time.Duration
 }
 
+// Channels for Service
+type Channels struct {
+	Requests  chan *Request
+	Responses chan *Response
+}
+
 type fetcher struct {
 	id         int
 	client     *http.Client
@@ -34,20 +40,21 @@ type fetcher struct {
 }
 
 // NewService create new fetcher service
-func NewService(cfg *Configuration) *Service {
+func NewService(cfg *Configuration, ch *Channels) *Service {
 	return &Service{
-		requests:     make(chan *Request, cfg.RequestBuffer),
-		responses:    make(chan *Response),
+		requests:     ch.Requests,
+		responses:    ch.Responses,
 		fetcherCount: cfg.Fetchers,
 		httpTimeout:  time.Duration(cfg.HTTPTimeoutSeconds) * time.Second,
 	}
 }
 
 // Start service
-func (z *Service) Start() {
+func (z *Service) Start(chErrors chan error) {
 
-	logger.Println("starting service")
+	logger.Println("service starting...")
 
+	// initialize fetchers
 	for i := 0; i < z.fetcherCount; i++ {
 
 		f := &fetcher{
@@ -67,7 +74,9 @@ func (z *Service) Start() {
 
 		go f.start()
 
-	}
+	} // for
+
+	logger.Println("service started.")
 
 }
 
@@ -80,18 +89,6 @@ func (z *Service) Stop() {
 	}
 	z.fetchers = nil
 
-}
-
-// Add feeds to pool
-func (z *Service) Add(requests []*Request) {
-	for _, req := range requests {
-		z.requests <- req
-	}
-}
-
-// Harvest responses from service
-func (z *Service) Harvest() chan *Response {
-	return z.responses
 }
 
 func (z *fetcher) start() {
