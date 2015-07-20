@@ -24,7 +24,7 @@ type Feed struct {
 	Failed bool `json:"failed,omitempty"`
 	// Type of feed: Atom, RSS2, etc.
 	Flavor string `json:"flavor,omitempty"`
-	// Not yet in use: how often to poll the feed
+	// how often to poll the feed in minutes
 	Frequency int `json:"frequency,omitempty"`
 	// Feed generator
 	Generator string `json:"generator,omitempty"`
@@ -67,6 +67,29 @@ func (z *Feed) Decode(data []byte) error {
 // Encode Feed object to bytes
 func (z *Feed) Encode() ([]byte, error) {
 	return json.MarshalIndent(z, "", " ")
+}
+
+// GetNextFetchTime get the next time to poll feed
+func (z *Feed) GetNextFetchTime() *time.Time {
+
+	var result time.Time
+
+	freq := z.Frequency
+	if freq == 0 {
+		freq = 60 // 1 hour default
+	}
+
+	frequency := time.Duration(freq) * time.Minute
+
+	lastFetch := z.LastFetch
+	if lastFetch == nil {
+		result = time.Now()
+	} else {
+		result = lastFetch.Add(frequency)
+	}
+
+	return &result
+
 }
 
 // ========== Feeds ==========
