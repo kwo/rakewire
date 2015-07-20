@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"rakewire.com/logging"
+	"sync"
 	"time"
 )
 
@@ -18,62 +19,37 @@ var (
 
 // Service fetches feeds
 type Service struct {
-	fetchers     []*fetcher
-	requests     chan *Request
-	responses    chan *Response
+	input        chan *Request
+	output       chan *Response
 	fetcherCount int
-	httpTimeout  time.Duration
-}
-
-// Channels for Service
-type Channels struct {
-	Requests  chan *Request
-	Responses chan *Response
-}
-
-type fetcher struct {
-	id         int
-	client     *http.Client
-	requests   chan *Request
-	responses  chan *Response
-	killsignal chan bool
+	latch        sync.WaitGroup
+	client       *http.Client
 }
 
 // NewService create new fetcher service
-func NewService(cfg *Configuration, ch *Channels) *Service {
+func NewService(cfg *Configuration, chReq chan *Request, chRsp chan *Response) *Service {
 	return &Service{
-		requests:     ch.Requests,
-		responses:    ch.Responses,
+		input:        chReq,
+		output:       chRsp,
 		fetcherCount: cfg.Fetchers,
-		httpTimeout:  time.Duration(cfg.HTTPTimeoutSeconds) * time.Second,
+		client: &http.Client{
+			// CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			// 	return http.ErrNotSupported
+			// },
+			Timeout: time.Duration(cfg.HTTPTimeoutSeconds) * time.Second,
+		},
 	}
 }
 
 // Start service
-func (z *Service) Start(chErrors chan error) {
+func (z *Service) Start() {
 
 	logger.Println("service starting...")
 
 	// initialize fetchers
 	for i := 0; i < z.fetcherCount; i++ {
-
-		f := &fetcher{
-			id: i,
-			client: &http.Client{
-				// CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				// 	return http.ErrNotSupported
-				// },
-				Timeout: z.httpTimeout,
-			},
-			requests:   z.requests,
-			responses:  z.responses,
-			killsignal: make(chan bool),
-		}
-
-		z.fetchers = append(z.fetchers, f)
-
-		go f.start()
-
+		z.latch.Add(1)
+		go z.run(i)
 	} // for
 
 	logger.Println("service started.")
@@ -82,48 +58,35 @@ func (z *Service) Start(chErrors chan error) {
 
 // Stop service
 func (z *Service) Stop() {
-
-	logger.Println("stopping service")
-	for _, f := range z.fetchers {
-		f.stop()
-	}
-	z.fetchers = nil
-
+	logger.Println("service stopping...")
+	z.latch.Wait()
+	logger.Println("service stopped")
 }
 
-func (z *fetcher) start() {
+func (z *Service) run(id int) {
 
-Loop:
-	for {
-		select {
-		case <-z.killsignal:
-			break Loop
-		case req := <-z.requests:
-			z.processFeed(req)
-		}
+	logger.Printf("fetcher %2d starting...\n", id)
+
+	for req := range z.input {
+		z.processFeed(req, id)
 	}
 
+	logger.Printf("fetcher %2d exited.\n", id)
+	z.latch.Done()
+
 }
 
-func (z *fetcher) stop() {
-	logger.Printf("stopping fetcher: %2d\n", z.id)
-	z.killsignal <- true
-	close(z.killsignal)
-	z.client = nil
-	//logger.Printf("exiting fetcher %2d", z.id)
-}
-
-func (z *fetcher) newRequest(url string) *http.Request {
+func (z *Service) newRequest(url string) *http.Request {
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header.Set("User-Agent", httpUserAgent)
 	return req
 }
 
-func (z *fetcher) processFeed(req *Request) {
+func (z *Service) processFeed(req *Request, id int) {
 
 	now := time.Now()
 	result := &Response{
-		FetcherID:   z.id,
+		FetcherID:   id,
 		AttemptTime: &now,
 		ID:          req.ID,
 		URL:         req.URL,
@@ -152,6 +115,6 @@ func (z *fetcher) processFeed(req *Request) {
 		result.StatusCode = 5000
 	}
 
-	z.responses <- result
+	z.output <- result
 
 }

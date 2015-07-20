@@ -14,6 +14,7 @@ func TestFetch(t *testing.T) {
 	r, err := os.Open("../test/feedlist.txt")
 	require.Nil(t, err)
 	require.NotNil(t, r)
+	//feeds := []*Request{}
 	feeds := URLListToRequestArray(r)
 	r.Close()
 	require.NotNil(t, feeds)
@@ -22,27 +23,23 @@ func TestFetch(t *testing.T) {
 
 	cfg := &Configuration{
 		Fetchers:           20,
-		RequestBuffer:      500,
 		HTTPTimeoutSeconds: 10,
 	}
 
-	ch := &Channels{
-		Requests:  make(chan *Request),
-		Responses: make(chan *Response),
-	}
+	chReq := make(chan *Request)
+	chRsp := make(chan *Response)
 
-	chErrors := make(chan error)
-
-	ff := NewService(cfg, ch)
-	go ff.Start(chErrors)
+	ff := NewService(cfg, chReq, chRsp)
+	ff.Start()
 
 	// add feeds
 	go func() {
 		logger.Printf("adding feeds: %d\n", len(feeds))
 		for _, f := range feeds {
 			logger.Printf("adding feed: %s\n", f.URL)
-			ch.Requests <- f
+			chReq <- f
 		}
+		close(chReq)
 	}()
 
 	logger.Println("monitoring...")
@@ -50,9 +47,9 @@ func TestFetch(t *testing.T) {
 monitor:
 	for {
 		select {
-		case rsp := <-ch.Responses:
+		case rsp := <-chRsp:
 			logger.Printf("Worker: %2d, %4d %s %s\n", rsp.FetcherID, rsp.StatusCode, rsp.URL, rsp.Message)
-		case <-time.After(5 * time.Second):
+		case <-time.After(time.Duration(cfg.HTTPTimeoutSeconds+1) * time.Second):
 			break monitor
 		}
 	}
