@@ -1,4 +1,4 @@
-package feedpump
+package pump
 
 import (
 	"rakewire.com/db"
