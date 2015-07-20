@@ -1,4 +1,4 @@
-package pump
+package queryfeed
 
 import (
 	"github.com/stretchr/testify/assert"

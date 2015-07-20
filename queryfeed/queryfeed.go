@@ -1,4 +1,4 @@
-package pump
+package queryfeed
 
 import (
 	"rakewire.com/db"
@@ -7,12 +7,8 @@ import (
 	"sync/atomic"
 )
 
-const (
-	numGoRoutines = 2
-)
-
 var (
-	logger = logging.New("feedpump")
+	logger = logging.New("queryfeed")
 )
 
 // NewService create a new service
