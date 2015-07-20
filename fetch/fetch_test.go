@@ -4,7 +4,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
-	"time"
 )
 
 func TestFetch(t *testing.T) {
@@ -23,36 +22,31 @@ func TestFetch(t *testing.T) {
 
 	cfg := &Configuration{
 		Fetchers:           20,
-		HTTPTimeoutSeconds: 10,
+		HTTPTimeoutSeconds: 20,
 	}
 
-	chReq := make(chan *Request)
-	chRsp := make(chan *Response)
-
-	ff := NewService(cfg, chReq, chRsp)
+	ff := NewService(cfg)
+	ff.Input = make(chan *Request)
+	ff.Output = make(chan *Response)
 	ff.Start()
 
-	// add feeds
 	go func() {
 		logger.Printf("adding feeds: %d\n", len(feeds))
 		for _, f := range feeds {
 			logger.Printf("adding feed: %s\n", f.URL)
-			chReq <- f
+			ff.Input <- f
 		}
-		close(chReq)
+		close(ff.Input)
+		logger.Println("adding feeds done")
 	}()
 
-	logger.Println("monitoring...")
-
-monitor:
-	for {
-		select {
-		case rsp := <-chRsp:
+	go func() {
+		logger.Println("monitoring...")
+		for rsp := range ff.Output {
 			logger.Printf("Worker: %2d, %4d %s %s\n", rsp.FetcherID, rsp.StatusCode, rsp.URL, rsp.Message)
-		case <-time.After(time.Duration(cfg.HTTPTimeoutSeconds+1) * time.Second):
-			break monitor
 		}
-	}
+		logger.Println("monitoring done")
+	}()
 
 	ff.Stop()
 

@@ -19,18 +19,16 @@ var (
 
 // Service fetches feeds
 type Service struct {
-	input        chan *Request
-	output       chan *Response
+	Input        chan *Request
+	Output       chan *Response
 	fetcherCount int
 	latch        sync.WaitGroup
 	client       *http.Client
 }
 
 // NewService create new fetcher service
-func NewService(cfg *Configuration, chReq chan *Request, chRsp chan *Response) *Service {
+func NewService(cfg *Configuration) *Service {
 	return &Service{
-		input:        chReq,
-		output:       chRsp,
 		fetcherCount: cfg.Fetchers,
 		client: &http.Client{
 			// CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -60,6 +58,7 @@ func (z *Service) Start() {
 func (z *Service) Stop() {
 	logger.Println("service stopping...")
 	z.latch.Wait()
+	close(z.Output)
 	logger.Println("service stopped")
 }
 
@@ -67,7 +66,7 @@ func (z *Service) run(id int) {
 
 	logger.Printf("fetcher %2d starting...\n", id)
 
-	for req := range z.input {
+	for req := range z.Input {
 		z.processFeed(req, id)
 	}
 
@@ -93,10 +92,12 @@ func (z *Service) processFeed(req *Request, id int) {
 	}
 
 	rsp, err := z.client.Do(z.newRequest(req.URL))
-
-	if err == nil {
+	if rsp != nil && rsp.Body != nil {
 		io.Copy(ioutil.Discard, rsp.Body)
 		rsp.Body.Close()
+	}
+
+	if err == nil {
 		result.StatusCode = rsp.StatusCode
 		if req.URL != rsp.Request.URL.String() {
 			result.URL = rsp.Request.URL.String()
@@ -115,6 +116,6 @@ func (z *Service) processFeed(req *Request, id int) {
 		result.StatusCode = 5000
 	}
 
-	z.output <- result
+	z.Output <- result
 
 }
