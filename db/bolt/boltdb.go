@@ -11,6 +11,7 @@ const (
 	bucketFeed           = "Feed"
 	bucketIndex          = "Index"
 	bucketIndexFeedByURL = "idxFeedByURL"
+	bucketIndexNextFetch = "idxNextFetch"
 )
 
 // Database implementation of Database
@@ -42,8 +43,13 @@ func (z *Database) Open(cfg *db.Configuration) error {
 		if err != nil {
 			return err
 		}
-		_, err = b.CreateBucketIfNotExists([]byte(bucketIndexFeedByURL))
-		return err
+		if _, err = b.CreateBucketIfNotExists([]byte(bucketIndexFeedByURL)); err != nil {
+			return err
+		}
+		if _, err = b.CreateBucketIfNotExists([]byte(bucketIndexNextFetch)); err != nil {
+			return err
+		}
+		return nil
 	})
 
 	if err != nil {
@@ -152,35 +158,66 @@ func (z *Database) GetFeedByURL(url string) (*db.Feed, error) {
 }
 
 // SaveFeeds save feeds
-func (z *Database) SaveFeeds(feeds *db.Feeds) (int, error) {
+func (z *Database) SaveFeeds(feeds *db.Feeds) error {
 
-	var counter int
-	err := z.db.Update(func(tx *bolt.Tx) error {
+	tx, err := z.db.Begin(true)
+	defer tx.Rollback()
+	if err == nil {
 
-		b := tx.Bucket([]byte(bucketFeed))
-		idxFeedByURL := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(bucketIndexFeedByURL))
+		err = func() error {
 
-		for _, f := range feeds.Values {
+			b := tx.Bucket([]byte(bucketFeed))
+			idxFeedByURL := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(bucketIndexFeedByURL))
 
-			data, err := f.Encode()
-			if err != nil {
-				return err
-			}
-			if err = b.Put([]byte(f.ID), data); err != nil {
-				return err
-			}
-			if err = idxFeedByURL.Put([]byte(f.URL), []byte(f.ID)); err != nil {
-				return err
-			}
-			counter++
+			for _, f := range feeds.Values {
 
-		} // for
+				// get previous record before saving new record
+				var f0 *db.Feed
+				data0 := b.Get([]byte(f.ID))
+				if data0 != nil {
 
-		return nil
+					f0 = &db.Feed{}
+					err := f0.Decode(data0)
+					if err != nil {
+						return err
+					}
 
-	}) // update
+					// remove old index entries
+					if err = idxFeedByURL.Delete([]byte(f0.URL)); err != nil {
+						return err
+					}
 
-	return counter, err
+				}
+
+				// encode
+				data, err := f.Encode()
+				if err != nil {
+					return err
+				}
+
+				// save record
+				if err = b.Put([]byte(f.ID), data); err != nil {
+					return err
+				}
+
+				// add index entries
+				if err = idxFeedByURL.Put([]byte(f.URL), []byte(f.ID)); err != nil {
+					return err
+				}
+
+			} // for
+
+			return nil
+
+		}()
+
+		if err == nil {
+			err = tx.Commit()
+		}
+
+	}
+
+	return err
 
 }
 
@@ -196,7 +233,7 @@ func (z *Database) Repair() error {
 		if err != nil {
 			return err
 		}
-		logger.Printf("readding index %s\n", bucketIndexFeedByURL)
+		logger.Printf("creating index %s\n", bucketIndexFeedByURL)
 		idxFeedByURL, err := indexes.CreateBucket([]byte(bucketIndexFeedByURL))
 		if err != nil {
 			return err
