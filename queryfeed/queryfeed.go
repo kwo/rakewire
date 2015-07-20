@@ -4,21 +4,13 @@ import (
 	"rakewire.com/db"
 	"rakewire.com/fetch"
 	"rakewire.com/logging"
+	"sync"
 	"sync/atomic"
 )
 
 var (
-	logger = logging.New("queryfeed")
+	logger = logging.New("qf")
 )
-
-// NewService create a new service
-func NewService(cfg *Configuration) *Service {
-
-	return &Service{
-		countdownLatch: make(chan bool),
-	}
-
-}
 
 // Configuration for pump service
 type Configuration struct {
@@ -26,69 +18,62 @@ type Configuration struct {
 
 // Service for pumping feeds between fetcher and database
 type Service struct {
-	killsignal     int32
-	countdownLatch chan bool
+	Output  chan *fetch.Request
+	running int32
+	latch   sync.WaitGroup
+}
+
+// NewService create a new service
+func NewService(cfg *Configuration) *Service {
+
+	return &Service{
+		Output: make(chan *fetch.Request),
+	}
+
 }
 
 // Start Service
-func (z *Service) Start(chErrors chan error) {
-
+func (z *Service) Start() {
 	logger.Println("service starting...")
-
 	z.setRunning(true)
-	go z.saveResponses()
-	go z.fetchRequests()
-
+	z.latch.Add(1)
+	go z.run()
 	logger.Println("service started.")
-
 }
 
 // Stop service
 func (z *Service) Stop() {
 	logger.Println("service stopping...")
 	z.setRunning(false)
-	for i := 0; i < numGoRoutines; i++ {
-		<-z.countdownLatch
-	}
+	z.latch.Wait()
 	logger.Println("service stopped.")
 }
 
-func (z *Service) fetchRequests() {
+func (z *Service) run() {
 
-	logger.Println("fetchRequests starting...")
-
-	for z.IsRunning() {
-
-	}
-
-	logger.Println("fetchRequests exited.")
-	z.countdownLatch <- true
-
-}
-
-func (z *Service) saveResponses() {
-
-	logger.Println("saveResponses starting...")
+	logger.Println("run starting...")
 
 	for z.IsRunning() {
 
 	}
 
-	logger.Println("saveResponses exited.")
-	z.countdownLatch <- true
+	close(z.Output)
+
+	logger.Println("run exited.")
+	z.latch.Done()
 
 }
 
 // IsRunning status of the service
 func (z *Service) IsRunning() bool {
-	return atomic.LoadInt32(&z.killsignal) != 0
+	return atomic.LoadInt32(&z.running) != 0
 }
 
 func (z *Service) setRunning(running bool) {
 	if running {
-		atomic.StoreInt32(&z.killsignal, 1)
+		atomic.StoreInt32(&z.running, 1)
 	} else {
-		atomic.StoreInt32(&z.killsignal, 0)
+		atomic.StoreInt32(&z.running, 0)
 	}
 }
 

@@ -7,9 +7,9 @@ import (
 	"os"
 	"path"
 	"rakewire.com/db"
-	"rakewire.com/feedpump"
 	"rakewire.com/fetch"
 	"rakewire.com/httpd"
+	"rakewire.com/queryfeed"
 )
 
 const (
@@ -18,10 +18,10 @@ const (
 
 // Configuration object
 type Configuration struct {
-	Database db.Configuration
-	Pump     feedpump.Configuration
-	Fetcher  fetch.Configuration
-	Httpd    httpd.Configuration
+	Database  db.Configuration
+	QueryFeed queryfeed.Configuration
+	Fetcher   fetch.Configuration
+	Httpd     httpd.Configuration
 }
 
 // Load configuration from JSON

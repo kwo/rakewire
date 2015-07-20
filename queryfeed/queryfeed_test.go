@@ -12,12 +12,11 @@ func TestFetch(t *testing.T) {
 
 	cfg := &Configuration{}
 
-	pump := NewService(cfg)
-	chErrors := make(chan error)
+	qf := NewService(cfg)
 
-	pump.Start(chErrors)
-	require.Equal(t, true, pump.IsRunning())
-	pump.Stop()
-	assert.Equal(t, false, pump.IsRunning())
+	qf.Start()
+	require.Equal(t, true, qf.IsRunning())
+	qf.Stop()
+	assert.Equal(t, false, qf.IsRunning())
 
 }
