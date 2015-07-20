@@ -18,13 +18,7 @@ var (
 // NewService create a new service
 func NewService(cfg *Configuration) *Service {
 
-	ch := &fetch.Channels{
-		Requests:  make(chan *fetch.Request),
-		Responses: make(chan *fetch.Response),
-	}
-
 	return &Service{
-		Channels:       ch,
 		countdownLatch: make(chan bool),
 	}
 
@@ -36,7 +30,6 @@ type Configuration struct {
 
 // Service for pumping feeds between fetcher and database
 type Service struct {
-	Channels       *fetch.Channels
 	killsignal     int32
 	countdownLatch chan bool
 }
