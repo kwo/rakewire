@@ -19,16 +19,18 @@ var (
 
 // Service fetches feeds
 type Service struct {
-	Input        chan *Request
-	Output       chan *Response
+	input        chan *Request
+	output       chan *Response
 	fetcherCount int
 	latch        sync.WaitGroup
 	client       *http.Client
 }
 
 // NewService create new fetcher service
-func NewService(cfg *Configuration) *Service {
+func NewService(cfg *Configuration, input chan *Request, output chan *Response) *Service {
 	return &Service{
+		input:        input,
+		output:       output,
 		fetcherCount: cfg.Fetchers,
 		client: &http.Client{
 			// CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -41,24 +43,20 @@ func NewService(cfg *Configuration) *Service {
 
 // Start service
 func (z *Service) Start() {
-
 	logger.Println("service starting...")
-
 	// initialize fetchers
 	for i := 0; i < z.fetcherCount; i++ {
 		z.latch.Add(1)
 		go z.run(i)
 	} // for
-
 	logger.Println("service started.")
-
 }
 
 // Stop service
 func (z *Service) Stop() {
 	logger.Println("service stopping...")
 	z.latch.Wait()
-	close(z.Output)
+	close(z.output)
 	logger.Println("service stopped")
 }
 
@@ -66,7 +64,7 @@ func (z *Service) run(id int) {
 
 	logger.Printf("fetcher %2d starting...\n", id)
 
-	for req := range z.Input {
+	for req := range z.input {
 		z.processFeed(req, id)
 	}
 
@@ -116,6 +114,6 @@ func (z *Service) processFeed(req *Request, id int) {
 		result.StatusCode = 5000
 	}
 
-	z.Output <- result
+	z.output <- result
 
 }

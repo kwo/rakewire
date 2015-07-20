@@ -25,24 +25,25 @@ func TestFetch(t *testing.T) {
 		HTTPTimeoutSeconds: 20,
 	}
 
-	ff := NewService(cfg)
-	ff.Input = make(chan *Request)
-	ff.Output = make(chan *Response)
+	requests := make(chan *Request)
+	responses := make(chan *Response)
+
+	ff := NewService(cfg, requests, responses)
 	ff.Start()
 
 	go func() {
 		logger.Printf("adding feeds: %d\n", len(feeds))
 		for _, f := range feeds {
-			logger.Printf("adding feed: %s\n", f.URL)
-			ff.Input <- f
+			//logger.Printf("adding feed: %s\n", f.URL)
+			requests <- f
 		}
-		close(ff.Input)
+		close(requests)
 		logger.Println("adding feeds done")
 	}()
 
 	go func() {
 		logger.Println("monitoring...")
-		for rsp := range ff.Output {
+		for rsp := range responses {
 			logger.Printf("Worker: %2d, %4d %s %s\n", rsp.FetcherID, rsp.StatusCode, rsp.URL, rsp.Message)
 		}
 		logger.Println("monitoring done")
