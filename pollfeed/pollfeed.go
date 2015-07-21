@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	logger = logging.New("pollfeed")
+	logger = logging.New("poll")
 )
 
 // Configuration for pump service
@@ -68,6 +68,8 @@ func (z *Service) Stop() {
 func (z *Service) run() {
 
 	logger.Println("run starting...")
+
+	//go z.poll(nil) // run once initially
 
 	ticker := time.NewTicker(z.pollFrequency)
 

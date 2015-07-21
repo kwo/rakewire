@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	logger = logging.New("reaper")
+	logger = logging.New("reap")
 )
 
 // Configuration for reaper service
