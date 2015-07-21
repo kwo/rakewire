@@ -4,13 +4,14 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"rakewire.com/app"
 	"rakewire.com/logging"
 	"sync"
 	"time"
 )
 
 const (
-	httpUserAgent = "Rakewire Bot 0.0.1"
+	httpUserAgent = "Rakewire " + app.VERSION
 )
 
 var (
@@ -81,6 +82,8 @@ func (z *Service) newRequest(url string) *http.Request {
 }
 
 func (z *Service) processFeed(req *Request, id int) {
+
+	logger.Printf("fetching feed %2d: %s", id, req.URL)
 
 	now := time.Now()
 	result := &Response{
