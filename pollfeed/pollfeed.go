@@ -69,7 +69,10 @@ func (z *Service) run() {
 
 	logger.Println("run starting...")
 
-	//go z.poll(nil) // run once initially
+	// run once initially
+	z.setPolling(true)
+	z.polllatch.Add(1)
+	go z.poll(nil)
 
 	ticker := time.NewTicker(z.pollFrequency)
 
