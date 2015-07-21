@@ -77,11 +77,13 @@ run:
 
 func (z *Service) processResponse(rsp *fetch.Response) {
 
+	logger.Printf("saving feed: %s", rsp.URL)
+
 	// convert feeds
 	feeds := responseToFeeds(rsp)
 	err := z.database.SaveFeeds(feeds)
 	if err != nil {
-		logger.Printf("Error saving feeds: %s", err.Error())
+		logger.Printf("Error saving feed %s: %s", rsp.URL, err.Error())
 	}
 
 }
@@ -104,15 +106,25 @@ func responseToFeeds(response *fetch.Response) *db.Feeds {
 	rsps = append(rsps, response)
 	return responsesToFeeds(rsps)
 }
+
 func responsesToFeeds(responses []*fetch.Response) *db.Feeds {
 	feeds := db.NewFeeds()
 	for _, v := range responses {
 		feed := &db.Feed{
+			ETag:   v.ETag,
+			Failed: v.Failed,
+			// Flavor: TODO
+			// Frequency - intentionally skipping
+			// Generator: TODO
+			// Hub: TODO
+			// Icon: TODO
 			ID:           v.ID,
-			ETag:         v.ETag,
+			LastAttempt:  v.AttemptTime,
+			LastFetch:    v.FetchTime,
 			LastModified: v.LastModified,
-			URL:          v.URL,
-			// TODO: add remaining fields
+			// LastUpdated: TODO
+			// Title: TODO
+			URL: v.URL,
 		}
 		feeds.Add(feed)
 	}
