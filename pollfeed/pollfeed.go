@@ -19,13 +19,13 @@ type Configuration struct {
 // Service for pumping feeds between fetcher and database
 type Service struct {
 	Output   chan *fetch.Request
-	database *db.Database
+	database db.Database
 	running  int32
 	latch    sync.WaitGroup
 }
 
 // NewService create a new service
-func NewService(cfg *Configuration, database *db.Database) *Service {
+func NewService(cfg *Configuration, database db.Database) *Service {
 
 	return &Service{
 		Output:   make(chan *fetch.Request),
