@@ -28,7 +28,9 @@ func TestFetch(t *testing.T) {
 	requests := make(chan *Request)
 	responses := make(chan *Response)
 
-	ff := NewService(cfg, requests, responses)
+	ff := NewService(cfg)
+	ff.Input = requests
+	ff.Output = responses
 	ff.Start()
 
 	go func() {
