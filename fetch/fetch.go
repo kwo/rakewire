@@ -53,9 +53,11 @@ func (z *Service) Start() {
 // Stop service
 func (z *Service) Stop() {
 	logger.Println("service stopping...")
-	z.latch.Wait()
-	z.Input = nil
-	z.Output = nil
+	if z != nil { // hack because on app close object is apparantly already garbage collected
+		z.latch.Wait()
+		z.Input = nil
+		z.Output = nil
+	}
 	logger.Println("service stopped")
 }
 
