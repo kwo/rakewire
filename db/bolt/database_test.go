@@ -258,10 +258,21 @@ func TestNextFetch(t *testing.T) {
 	require.NotNil(t, feeds2)
 	assert.Equal(t, 10, feeds2.Size())
 
-	logger.Printf("max: %s\n", formatMaxTime(maxTime))
-	for _, f := range feeds2.Values {
-		logger.Printf("%s: %d %s\n", f.URL, f.Frequency, formatFetchTime(*f.GetNextFetchTime()))
-	}
+	// logger.Printf("max: %s\n", formatMaxTime(maxTime))
+	// for _, f := range feeds2.Values {
+	// 	logger.Printf("%s: %d %s\n", f.URL, f.Frequency, formatFetchTime(*f.GetNextFetchTime()))
+	// }
+
+	feeds2, err = database.GetFeeds()
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 10, feeds2.Size())
+
+	maxTime = now.Add(48 * time.Hour)
+	feeds2, err = database.GetFetchFeeds(&maxTime)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 10, feeds2.Size())
 
 	// close database
 	err = database.Close()
