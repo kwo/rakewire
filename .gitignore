@@ -1,4 +1,4 @@
-test/test.db
+test/*.db
 Godeps/_workspace
 Godeps/Readme
 tags
