@@ -15,7 +15,7 @@ import (
 
 const (
 	feedFile     = "../../test/feedlist.txt"
-	databaseFile = "../../test/test.db"
+	databaseFile = "../../test/bolt.db"
 )
 
 func TestInterface(t *testing.T) {

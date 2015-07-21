@@ -27,12 +27,12 @@ var (
 
 func TestMain(m *testing.M) {
 
-	testDatabaseFile := "../test/test.db"
+	testDatabaseFile := "../test/httpd.db"
 
 	cfg := db.Configuration{
 		Location: testDatabaseFile,
 	}
-	testDatabase := bolt.Database{}
+	testDatabase := &bolt.Database{}
 	err := testDatabase.Open(&cfg)
 	if err != nil {
 		fmt.Printf("Cannot open database: %s\n", err.Error())
@@ -41,7 +41,7 @@ func TestMain(m *testing.M) {
 
 	chErrors := make(chan error)
 	ws = &Service{
-		Database: &testDatabase,
+		Database: testDatabase,
 	}
 	go ws.Start(&Configuration{
 		Port:      4444,
