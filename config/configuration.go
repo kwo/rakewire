@@ -10,6 +10,7 @@ import (
 	"rakewire.com/fetch"
 	"rakewire.com/httpd"
 	"rakewire.com/pollfeed"
+	"rakewire.com/reaper"
 )
 
 const (
@@ -19,9 +20,10 @@ const (
 // Configuration object
 type Configuration struct {
 	Database db.Configuration
-	PollFeed pollfeed.Configuration
 	Fetcher  fetch.Configuration
 	Httpd    httpd.Configuration
+	Poll     pollfeed.Configuration
+	Reaper   reaper.Configuration
 }
 
 // Load configuration from JSON

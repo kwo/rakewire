@@ -8,14 +8,18 @@ import (
 	"rakewire.com/fetch"
 	"rakewire.com/httpd"
 	"rakewire.com/logging"
+	"rakewire.com/pollfeed"
+	"rakewire.com/reaper"
 	"syscall"
 )
 
 var (
-	fetchd   *fetch.Service
-	ws       *httpd.Service
 	database *bolt.Database
+	fetchd   *fetch.Service
 	logger   = logging.New("main")
+	polld    *pollfeed.Service
+	reaperd  *reaper.Service
+	ws       *httpd.Service
 )
 
 func main() {
@@ -35,8 +39,13 @@ func main() {
 		return
 	}
 
-	// fetchd := fetch.NewService(&cfg.Fetcher)
-	// go fetchd.Start()
+	polld = pollfeed.NewService(&cfg.Poll, database)
+	reaperd = reaper.NewService(&cfg.Reaper, database)
+	fetchd := fetch.NewService(&cfg.Fetcher, polld.Output, reaperd.Input)
+
+	polld.Start()
+	fetchd.Start()
+	reaperd.Start()
 
 	chErrors := make(chan error)
 
@@ -66,6 +75,15 @@ func monitorShutdown(chErrors chan error) {
 	// shutdown httpd
 	ws.Stop()
 	ws = nil
+
+	polld.Stop()
+	polld = nil
+
+	fetchd.Stop()
+	fetchd = nil
+
+	reaperd.Stop()
+	reaperd = nil
 
 	// close database
 	database.Close()
