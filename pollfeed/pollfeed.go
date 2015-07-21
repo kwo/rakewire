@@ -117,7 +117,7 @@ func (z *Service) poll(t *time.Time) {
 	// convert feeds
 	requests := feedsToRequests(feeds)
 
-	logger.Println("sending feeds to output channel")
+	logger.Printf("sending feeds to output channel: %d\n", feeds.Size())
 
 	// send to output
 	for _, req := range requests {
