@@ -56,7 +56,7 @@ func TestTickerPositive(t *testing.T) {
 
 }
 
-func TestFetch(t *testing.T) {
+func TestPoll(t *testing.T) {
 
 	//t.SkipNow()
 

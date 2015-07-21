@@ -128,6 +128,8 @@ func (z *Database) GetFetchFeeds(maxTime *time.Time) (*db.Feeds, error) {
 		//logger.Printf("max: %s\n", string(max))
 		for k, uuid := c.First(); k != nil && bytes.Compare(k, max) <= 0; k, uuid = c.Next() {
 
+			//logger.Printf("key: %s: %s", k, uuid)
+
 			v := b.Get(uuid)
 			f := &db.Feed{}
 			if err := f.Decode(v); err != nil {

@@ -21,6 +21,8 @@ func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	logger.Printf("Getting feeds: %d", feeds.Size())
+
 	w.Header().Set(hContentType, mimeJSON)
 	err = feeds.Serialize(w)
 	if err != nil {

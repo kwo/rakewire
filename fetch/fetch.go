@@ -83,8 +83,6 @@ func (z *Service) newRequest(url string) *http.Request {
 
 func (z *Service) processFeed(req *Request, id int) {
 
-	logger.Printf("fetching feed %2d: %s", id, req.URL)
-
 	now := time.Now()
 	result := &Response{
 		FetcherID:   id,
@@ -118,6 +116,7 @@ func (z *Service) processFeed(req *Request, id int) {
 		result.StatusCode = 5000
 	}
 
+	logger.Printf("fetch: %2d, %4d %s %s\n", result.FetcherID, result.StatusCode, result.URL, result.Message)
 	z.Output <- result
 
 }

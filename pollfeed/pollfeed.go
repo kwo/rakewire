@@ -117,9 +117,10 @@ func (z *Service) poll(t *time.Time) {
 	// convert feeds
 	requests := feedsToRequests(feeds)
 
-	logger.Printf("sending feeds to output channel: %d\n", feeds.Size())
+	logger.Printf("request feeds: %d", len(requests))
 
 	// send to output
+	// TODO: break on killsignal
 	for _, req := range requests {
 		z.Output <- req
 	}
@@ -155,16 +156,16 @@ func (z *Service) setPolling(polling bool) {
 	}
 }
 
-func feedsToRequests(dbfeeds *db.Feeds) []*fetch.Request {
-	var feeds []*fetch.Request
-	for _, v := range dbfeeds.Values {
-		feed := &fetch.Request{
+func feedsToRequests(feeds *db.Feeds) []*fetch.Request {
+	var requests []*fetch.Request
+	for _, v := range feeds.Values {
+		request := &fetch.Request{
 			ID:           v.ID,
 			ETag:         v.ETag,
 			LastModified: v.LastModified,
 			URL:          v.URL,
 		}
-		feeds = append(feeds, feed)
+		requests = append(requests, request)
 	}
-	return feeds
+	return requests
 }

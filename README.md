@@ -1,7 +1,10 @@
 # Rakewire
 
 ## TODO
- - implement config defaults
+
+ - Conditional GETs
+ - feed parser
+ - save entries
  - need save database channel
 
 ## Version 0.0.1
@@ -26,7 +29,6 @@
 ## Roadmap
 
  - Feed Reading via Browser (UI)
- - Conditional GETs
  - Set Feed fetch frequency (automatic mode with backoff algorithm)
  - Feed Feedback: update url automatically
  - Push to Browser via WebSockets, etc.

@@ -77,7 +77,7 @@ run:
 
 func (z *Service) processResponse(rsp *fetch.Response) {
 
-	logger.Printf("saving feed: %s", rsp.URL)
+	//logger.Printf("saving feed: %s %s", rsp.ID, rsp.URL)
 
 	// convert feeds
 	feeds := responseToFeeds(rsp)
