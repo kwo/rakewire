@@ -18,6 +18,13 @@ const (
 	databaseFile = "../../test/test.db"
 )
 
+func TestInterface(t *testing.T) {
+
+	var d db.Database = &Database{}
+	assert.NotNil(t, d)
+
+}
+
 func TestFeeds(t *testing.T) {
 
 	urls, err := readFile(feedFile)

@@ -126,7 +126,7 @@ func (z *Service) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 
 func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds *db.Feeds) {
 
-	n, err := z.Database.SaveFeeds(feeds)
+	err := z.Database.SaveFeeds(feeds)
 	if err != nil {
 		logger.Printf("Error in db.SaveFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot save feeds to database.", http.StatusInternalServerError)
@@ -134,7 +134,7 @@ func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds *db.Feeds) {
 	}
 
 	jsonRsp := SaveFeedsResponse{
-		Count: n,
+		Count: len(feeds.Values),
 	}
 
 	data, err := json.Marshal(jsonRsp)
