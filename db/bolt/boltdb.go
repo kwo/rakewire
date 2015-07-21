@@ -1,6 +1,7 @@
 package bolt
 
 import (
+	"bytes"
 	"github.com/boltdb/bolt"
 	"rakewire.com/db"
 	"rakewire.com/logging"
@@ -107,6 +108,44 @@ func (z *Database) GetFeeds() (*db.Feeds, error) {
 
 }
 
+// GetFetchFeeds get feeds to be fetched
+func (z *Database) GetFetchFeeds(maxTime *time.Time) (*db.Feeds, error) {
+
+	var max []byte
+	if maxTime == nil {
+		max = []byte(formatFetchTime(time.Now()))
+	} else {
+		max = []byte(formatFetchTime(*maxTime))
+	}
+
+	result := db.NewFeeds()
+
+	err := z.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucketFeed))
+		idxNextFetch := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(bucketIndexNextFetch))
+		c := idxNextFetch.Cursor()
+
+		//logger.Printf("max: %s\n", string(max))
+		for k, uuid := c.First(); k != nil && bytes.Compare(k, max) <= 0; k, uuid = c.Next() {
+
+			v := b.Get(uuid)
+			//logger.Printf("idxNextFetch: %s\n", string(k))
+			f := &db.Feed{}
+			if err := f.Decode(v); err != nil {
+				return err
+			}
+			result.Add(f)
+
+		} // for
+
+		return nil
+
+	})
+
+	return result, err
+
+}
+
 // GetFeedByID return feed given UUID
 func (z *Database) GetFeedByID(id string) (*db.Feed, error) {
 
@@ -168,6 +207,7 @@ func (z *Database) SaveFeeds(feeds *db.Feeds) error {
 
 			b := tx.Bucket([]byte(bucketFeed))
 			idxFeedByURL := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(bucketIndexFeedByURL))
+			idxNextFetch := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(bucketIndexNextFetch))
 
 			for _, f := range feeds.Values {
 
@@ -187,6 +227,10 @@ func (z *Database) SaveFeeds(feeds *db.Feeds) error {
 						return err
 					}
 
+					if err = idxNextFetch.Delete([]byte(fetchKey(f0))); err != nil {
+						return err
+					}
+
 				}
 
 				// encode
@@ -202,6 +246,12 @@ func (z *Database) SaveFeeds(feeds *db.Feeds) error {
 
 				// add index entries
 				if err = idxFeedByURL.Put([]byte(f.URL), []byte(f.ID)); err != nil {
+					return err
+				}
+
+				timestr := fetchKey(f)
+				//logger.Printf("%s: %s\n", f.URL, timestr)
+				if err = idxNextFetch.Put([]byte(timestr), []byte(f.ID)); err != nil {
 					return err
 				}
 
@@ -228,34 +278,43 @@ func (z *Database) Repair() error {
 
 		b := tx.Bucket([]byte(bucketFeed))
 		indexes := tx.Bucket([]byte(bucketIndex))
+
 		logger.Printf("dropping index %s\n", bucketIndexFeedByURL)
-		err := indexes.DeleteBucket([]byte(bucketIndexFeedByURL))
+		if err := indexes.DeleteBucket([]byte(bucketIndexFeedByURL)); err != nil {
+			return err
+		}
+		logger.Printf("dropping index %s\n", bucketIndexNextFetch)
+		if err := indexes.DeleteBucket([]byte(bucketIndexNextFetch)); err != nil {
+			return err
+		}
+
+		logger.Printf("creating index %s\n", bucketIndexFeedByURL)
+		idxFeedByURL, err := indexes.CreateBucket([]byte(bucketIndexFeedByURL))
 		if err != nil {
 			return err
 		}
-		logger.Printf("creating index %s\n", bucketIndexFeedByURL)
-		idxFeedByURL, err := indexes.CreateBucket([]byte(bucketIndexFeedByURL))
+		logger.Printf("creating index %s\n", bucketIndexNextFetch)
+		idxNextFetch, err := indexes.CreateBucket([]byte(bucketIndexNextFetch))
 		if err != nil {
 			return err
 		}
 
 		c := b.Cursor()
 
-		logger.Printf("populating index %s\n", bucketIndexFeedByURL)
+		logger.Printf("populating indexes")
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 
-			f := db.Feed{}
+			f := &db.Feed{}
 			if err := f.Decode(v); err != nil {
 				return err
 			}
-			if f.ID != string(k) {
-				logger.Printf("ID/key mismatch: %s/%s\n", k, f.ID)
-			} else {
-				err := idxFeedByURL.Put([]byte(f.URL), []byte(f.ID))
-				if err != nil {
-					return err
-				}
-				logger.Printf("added url to index %s: %s\n", bucketIndexFeedByURL, f.URL)
+
+			if err := idxFeedByURL.Put([]byte(f.URL), []byte(f.ID)); err != nil {
+				return err
+			}
+
+			if err := idxNextFetch.Put([]byte(fetchKey(f)), []byte(f.ID)); err != nil {
+				return err
 			}
 
 		} // for

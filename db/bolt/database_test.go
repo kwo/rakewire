@@ -2,13 +2,15 @@ package bolt
 
 import (
 	"bufio"
-	//"fmt"
+	"bytes"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
 	"rakewire.com/db"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -122,6 +124,95 @@ func TestURLIndex(t *testing.T) {
 	require.NotNil(t, feed2)
 	assert.Equal(t, feed.ID, feed2.ID)
 	assert.Equal(t, URL2, feed2.URL)
+
+	// close database
+	err = database.Close()
+	assert.Nil(t, err)
+	assert.Nil(t, database.db)
+
+	// remove file
+	err = os.Remove(databaseFile)
+	assert.Nil(t, err)
+
+}
+func TestNextFetchKeyCompare(t *testing.T) {
+
+	assert.Equal(t, -1, bytes.Compare([]byte("2015-07-21T06:59:24Z#c35d9174-2f74-11e5-baf1-5cf938992b62"), []byte("2015-07-21T07:00:24Z")))
+
+	now := time.Now()
+	f := db.NewFeed("http://localhost/")
+	f.LastFetch = &now
+	f.Frequency = 5
+
+	key := fetchKey(f)
+	max := formatFetchTime(now.Add(5 * time.Minute))
+	assert.Equal(t, 1, bytes.Compare([]byte(key), []byte(max)))
+	max = formatFetchTime(now.Add(5 * time.Minute).Add(1 * time.Second))
+	assert.Equal(t, -1, bytes.Compare([]byte(key), []byte(max)))
+
+}
+
+func TestNextFetch(t *testing.T) {
+
+	// open database
+	database := Database{}
+	err := database.Open(&db.Configuration{
+		Location: databaseFile,
+	})
+	require.Nil(t, err)
+
+	// create feeds, feed
+	feeds := db.NewFeeds()
+	now := time.Now()
+	lastFetch := &now
+	for i := 0; i < 10; i++ {
+		url := fmt.Sprintf("http://localhost:888%d", i)
+		feed := db.NewFeed(url)
+		feed.LastFetch = lastFetch
+		feed.Frequency = 5 + i
+		feeds.Add(feed)
+	}
+
+	assert.Equal(t, 10, feeds.Size())
+
+	// save feeds
+	err = database.SaveFeeds(feeds)
+	require.Nil(t, err)
+
+	// right now there should be no feeds up for fetch
+	feeds2, err := database.GetFetchFeeds(nil)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 0, feeds2.Size())
+
+	maxTime := now.Add(1 * time.Minute)
+	feeds2, err = database.GetFetchFeeds(&maxTime)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 0, feeds2.Size())
+
+	maxTime = now.Add(5 * time.Minute)
+	feeds2, err = database.GetFetchFeeds(&maxTime)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 0, feeds2.Size())
+
+	maxTime = now.Add(5 * time.Minute).Add(1 * time.Second)
+	feeds2, err = database.GetFetchFeeds(&maxTime)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 1, feeds2.Size())
+
+	maxTime = now.Add(10 * time.Minute)
+	feeds2, err = database.GetFetchFeeds(&maxTime)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 5, feeds2.Size())
+
+	// logger.Printf("max: %s\n", formatFetchTime(maxTime))
+	// for _, f := range feeds2.Values {
+	// 	logger.Printf("%s: %d %s\n", f.URL, f.Frequency, formatFetchTime(*f.GetNextFetchTime()))
+	// }
 
 	// close database
 	err = database.Close()
