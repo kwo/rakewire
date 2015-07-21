@@ -113,9 +113,9 @@ func (z *Database) GetFetchFeeds(maxTime *time.Time) (*db.Feeds, error) {
 
 	var max []byte
 	if maxTime == nil {
-		max = []byte(formatFetchTime(time.Now()))
+		max = []byte(formatMaxTime(time.Now()))
 	} else {
-		max = []byte(formatFetchTime(*maxTime))
+		max = []byte(formatMaxTime(*maxTime))
 	}
 
 	result := db.NewFeeds()
@@ -129,7 +129,6 @@ func (z *Database) GetFetchFeeds(maxTime *time.Time) (*db.Feeds, error) {
 		for k, uuid := c.First(); k != nil && bytes.Compare(k, max) <= 0; k, uuid = c.Next() {
 
 			v := b.Get(uuid)
-			//logger.Printf("idxNextFetch: %s\n", string(k))
 			f := &db.Feed{}
 			if err := f.Decode(v); err != nil {
 				return err
@@ -249,9 +248,7 @@ func (z *Database) SaveFeeds(feeds *db.Feeds) error {
 					return err
 				}
 
-				timestr := fetchKey(f)
-				//logger.Printf("%s: %s\n", f.URL, timestr)
-				if err = idxNextFetch.Put([]byte(timestr), []byte(f.ID)); err != nil {
+				if err = idxNextFetch.Put([]byte(fetchKey(f)), []byte(f.ID)); err != nil {
 					return err
 				}
 

@@ -142,6 +142,7 @@ func TestURLIndex(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
 func TestNextFetchKeyCompare(t *testing.T) {
 
 	assert.Equal(t, -1, bytes.Compare([]byte("2015-07-21T06:59:24Z#c35d9174-2f74-11e5-baf1-5cf938992b62"), []byte("2015-07-21T07:00:24Z")))
@@ -202,24 +203,65 @@ func TestNextFetch(t *testing.T) {
 	feeds2, err = database.GetFetchFeeds(&maxTime)
 	require.Nil(t, err)
 	require.NotNil(t, feeds2)
-	assert.Equal(t, 0, feeds2.Size())
-
-	maxTime = now.Add(5 * time.Minute).Add(1 * time.Second)
-	feeds2, err = database.GetFetchFeeds(&maxTime)
-	require.Nil(t, err)
-	require.NotNil(t, feeds2)
 	assert.Equal(t, 1, feeds2.Size())
 
 	maxTime = now.Add(10 * time.Minute)
 	feeds2, err = database.GetFetchFeeds(&maxTime)
 	require.Nil(t, err)
 	require.NotNil(t, feeds2)
-	assert.Equal(t, 5, feeds2.Size())
+	assert.Equal(t, 6, feeds2.Size())
 
-	// logger.Printf("max: %s\n", formatFetchTime(maxTime))
-	// for _, f := range feeds2.Values {
-	// 	logger.Printf("%s: %d %s\n", f.URL, f.Frequency, formatFetchTime(*f.GetNextFetchTime()))
-	// }
+	maxTime = now.Add(14 * time.Minute)
+	feeds2, err = database.GetFetchFeeds(&maxTime)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 10, feeds2.Size())
+
+	// again
+
+	now = time.Now()
+	for _, f := range feeds.Values {
+		nt := now.Add(-90 * time.Second)
+		f.LastFetch = &nt
+	}
+	// save feeds
+	err = database.SaveFeeds(feeds)
+	require.Nil(t, err)
+
+	// right now there should be no feeds up for fetch
+	feeds2, err = database.GetFetchFeeds(nil)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 0, feeds2.Size())
+
+	maxTime = now.Add(1 * time.Minute)
+	feeds2, err = database.GetFetchFeeds(&maxTime)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 0, feeds2.Size())
+
+	maxTime = now.Add(5 * time.Minute)
+	feeds2, err = database.GetFetchFeeds(&maxTime)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 2, feeds2.Size())
+
+	maxTime = now.Add(10 * time.Minute)
+	feeds2, err = database.GetFetchFeeds(&maxTime)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 7, feeds2.Size())
+
+	maxTime = now.Add(20 * time.Minute)
+	feeds2, err = database.GetFetchFeeds(&maxTime)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
+	assert.Equal(t, 10, feeds2.Size())
+
+	logger.Printf("max: %s\n", formatMaxTime(maxTime))
+	for _, f := range feeds2.Values {
+		logger.Printf("%s: %d %s\n", f.URL, f.Frequency, formatFetchTime(*f.GetNextFetchTime()))
+	}
 
 	// close database
 	err = database.Close()
