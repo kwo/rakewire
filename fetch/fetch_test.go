@@ -8,7 +8,7 @@ import (
 
 func TestFetch(t *testing.T) {
 
-	//t.SkipNow()
+	t.SkipNow()
 
 	r, err := os.Open("../test/feedlist.txt")
 	require.Nil(t, err)
