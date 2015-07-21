@@ -9,7 +9,7 @@ import (
 	"rakewire.com/db"
 	"rakewire.com/fetch"
 	"rakewire.com/httpd"
-	"rakewire.com/queryfeed"
+	"rakewire.com/pollfeed"
 )
 
 const (
@@ -18,10 +18,10 @@ const (
 
 // Configuration object
 type Configuration struct {
-	Database  db.Configuration
-	QueryFeed queryfeed.Configuration
-	Fetcher   fetch.Configuration
-	Httpd     httpd.Configuration
+	Database db.Configuration
+	PollFeed pollfeed.Configuration
+	Fetcher  fetch.Configuration
+	Httpd    httpd.Configuration
 }
 
 // Load configuration from JSON

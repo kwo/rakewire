@@ -1,4 +1,4 @@
-package queryfeed
+package pollfeed
 
 import (
 	"rakewire.com/db"
@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	logger = logging.New("qf")
+	logger = logging.New("pollfeed")
 )
 
 // Configuration for pump service
@@ -18,16 +18,18 @@ type Configuration struct {
 
 // Service for pumping feeds between fetcher and database
 type Service struct {
-	Output  chan *fetch.Request
-	running int32
-	latch   sync.WaitGroup
+	Output   chan *fetch.Request
+	database *db.Database
+	running  int32
+	latch    sync.WaitGroup
 }
 
 // NewService create a new service
-func NewService(cfg *Configuration) *Service {
+func NewService(cfg *Configuration, database *db.Database) *Service {
 
 	return &Service{
-		Output: make(chan *fetch.Request),
+		Output:   make(chan *fetch.Request),
+		database: database,
 	}
 
 }
@@ -54,6 +56,10 @@ func (z *Service) run() {
 	logger.Println("run starting...")
 
 	for z.IsRunning() {
+
+		// get next feeds
+		// convert feeds
+		// send to output
 
 	}
 

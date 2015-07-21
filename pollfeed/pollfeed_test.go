@@ -1,4 +1,4 @@
-package queryfeed
+package pollfeed
 
 import (
 	"github.com/stretchr/testify/assert"
