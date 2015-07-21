@@ -53,7 +53,7 @@ func TestTickerPositive(t *testing.T) {
 
 func TestFetch(t *testing.T) {
 
-	t.SkipNow()
+	//t.SkipNow()
 
 	// open database
 	database := &bolt.Database{}
@@ -63,7 +63,9 @@ func TestFetch(t *testing.T) {
 	require.Nil(t, err)
 
 	// create service
-	cfg := &Configuration{}
+	cfg := &Configuration{
+		FrequencyMinutes: 1,
+	}
 	pf := NewService(cfg, database)
 
 	pf.Start()

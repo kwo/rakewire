@@ -6,6 +6,7 @@ import (
 	"rakewire.com/logging"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 var (
@@ -14,22 +15,33 @@ var (
 
 // Configuration for pump service
 type Configuration struct {
+	FrequencyMinutes int
 }
 
 // Service for pumping feeds between fetcher and database
 type Service struct {
-	Output   chan *fetch.Request
-	database db.Database
-	running  int32
-	latch    sync.WaitGroup
+	Output        chan *fetch.Request
+	database      db.Database
+	pollFrequency time.Duration
+	killsignal    chan bool
+	running       int32
+	latch         sync.WaitGroup
 }
 
 // NewService create a new service
 func NewService(cfg *Configuration, database db.Database) *Service {
 
+	freqMin := cfg.FrequencyMinutes
+	if freqMin < 1 {
+		freqMin = 5
+		logger.Printf("Bad or missing FrequencyMinutes configuration parameter (%d), setting to default of 5 minutes.", cfg.FrequencyMinutes)
+	}
+
 	return &Service{
-		Output:   make(chan *fetch.Request),
-		database: database,
+		Output:        make(chan *fetch.Request),
+		database:      database,
+		pollFrequency: time.Duration(freqMin) * time.Minute,
+		killsignal:    make(chan bool),
 	}
 
 }
@@ -47,6 +59,7 @@ func (z *Service) Start() {
 func (z *Service) Stop() {
 	logger.Println("service stopping...")
 	z.setRunning(false)
+	z.killsignal <- true
 	z.latch.Wait()
 	logger.Println("service stopped.")
 }
@@ -55,18 +68,45 @@ func (z *Service) run() {
 
 	logger.Println("run starting...")
 
-	for z.IsRunning() {
+	ticker := time.NewTicker(z.pollFrequency)
 
-		// get next feeds
-		// convert feeds
-		// send to output
-
+	select {
+	case tick := <-ticker.C:
+		z.poll(&tick)
+	case <-z.killsignal:
+		ticker.Stop()
+		break
 	}
 
 	close(z.Output)
 
 	logger.Println("run exited.")
 	z.latch.Done()
+
+}
+
+func (z *Service) poll(t *time.Time) {
+
+	logger.Println("polling...")
+
+	// get next feeds
+	feeds, err := z.database.GetFetchFeeds(t)
+	if err != nil {
+		logger.Printf("Cannot poll feeds: %s", err.Error())
+		return
+	}
+
+	// convert feeds
+	requests := feedsToRequests(feeds)
+
+	logger.Println("sending feeds to output channel")
+
+	// send to output
+	for _, req := range requests {
+		z.Output <- req
+	}
+
+	logger.Println("polling exited.")
 
 }
 
@@ -83,7 +123,7 @@ func (z *Service) setRunning(running bool) {
 	}
 }
 
-func databaseFeedsToFetchRequests(dbfeeds *db.Feeds) []*fetch.Request {
+func feedsToRequests(dbfeeds *db.Feeds) []*fetch.Request {
 	var feeds []*fetch.Request
 	for _, v := range dbfeeds.Values {
 		feed := &fetch.Request{
