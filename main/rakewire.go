@@ -35,8 +35,8 @@ func main() {
 		return
 	}
 
-	fetchd := fetch.NewService(&cfg.Fetcher)
-	go fetchd.Start()
+	// fetchd := fetch.NewService(&cfg.Fetcher)
+	// go fetchd.Start()
 
 	chErrors := make(chan error)
 
