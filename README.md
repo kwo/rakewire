@@ -1,20 +1,16 @@
 # Rakewire
 
 ## TODO
- - run fetch off of database
- - start fetcher pool, feed fetcher in addition to database and httpd
- - start timer every 5 minutes to repoll feeds
  - implement config defaults
  - need save database channel
- - remove rest api
 
 ## Version 0.0.1
 
   - DONE config
   - DONE database
   - DONE httpd
-  - fetcher pool
-  - fetcher timer
+  - DONE fetcher pool
+  - DONE fetcher timer
   - websocket api
   - html ui
 
