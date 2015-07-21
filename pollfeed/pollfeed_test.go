@@ -20,12 +20,15 @@ func TestTickerKillSignal(t *testing.T) {
 	killsignal := make(chan bool)
 	ticker := time.NewTicker(5 * time.Minute)
 	go func() {
-		select {
-		case <-ticker.C:
-			assert.Fail(t, "ticker should never fire")
-		case <-killsignal:
-			ticker.Stop()
-			break
+	run:
+		for {
+			select {
+			case <-ticker.C:
+				assert.Fail(t, "ticker should never fire")
+			case <-killsignal:
+				ticker.Stop()
+				break run
+			}
 		}
 		beenThere = true
 	}()
@@ -39,11 +42,13 @@ func TestTickerPositive(t *testing.T) {
 	beenThere := false
 	ticker := time.NewTicker(1 * time.Millisecond)
 	go func() {
-		select {
-		case <-ticker.C:
-			beenThere = !beenThere
-			ticker.Stop()
-			break
+		for {
+			select {
+			case <-ticker.C:
+				beenThere = !beenThere
+				ticker.Stop()
+				break
+			}
 		}
 	}()
 	time.Sleep(2 * time.Millisecond)
@@ -67,9 +72,11 @@ func TestFetch(t *testing.T) {
 		FrequencyMinutes: 1,
 	}
 	pf := NewService(cfg, database)
+	pf.pollFrequency = 500 * time.Millisecond
 
 	pf.Start()
 	require.Equal(t, true, pf.IsRunning())
+	time.Sleep(3 * time.Second)
 	pf.Stop()
 	assert.Equal(t, false, pf.IsRunning())
 
