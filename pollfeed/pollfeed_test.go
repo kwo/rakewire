@@ -72,11 +72,11 @@ func TestFetch(t *testing.T) {
 		FrequencyMinutes: 1,
 	}
 	pf := NewService(cfg, database)
-	pf.pollFrequency = 500 * time.Millisecond
+	pf.pollFrequency = 50 * time.Millisecond
 
 	pf.Start()
 	require.Equal(t, true, pf.IsRunning())
-	time.Sleep(3 * time.Second)
+	time.Sleep(100 * time.Millisecond)
 	pf.Stop()
 	assert.Equal(t, false, pf.IsRunning())
 

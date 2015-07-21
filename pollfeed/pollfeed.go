@@ -51,11 +51,9 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 // Start Service
 func (z *Service) Start() {
 	logger.Println("service starting...")
+	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	for !z.IsRunning() {
-		time.Sleep(time.Nanosecond)
-	}
 	logger.Println("service started.")
 }
 
@@ -69,7 +67,6 @@ func (z *Service) Stop() {
 
 func (z *Service) run() {
 
-	z.setRunning(true)
 	logger.Println("run starting...")
 
 	ticker := time.NewTicker(z.pollFrequency)
@@ -79,6 +76,7 @@ run:
 		select {
 		case tick := <-ticker.C:
 			if !z.isPolling() {
+				z.setPolling(true)
 				z.polllatch.Add(1)
 				go z.poll(&tick)
 			} else {
@@ -102,7 +100,6 @@ run:
 
 func (z *Service) poll(t *time.Time) {
 
-	z.setPolling(true)
 	logger.Println("polling...")
 
 	// get next feeds
@@ -116,7 +113,6 @@ func (z *Service) poll(t *time.Time) {
 	requests := feedsToRequests(feeds)
 
 	logger.Println("sending feeds to output channel")
-	time.Sleep(1 * time.Second)
 
 	// send to output
 	for _, req := range requests {
