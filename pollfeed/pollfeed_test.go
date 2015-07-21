@@ -12,11 +12,11 @@ func TestFetch(t *testing.T) {
 
 	cfg := &Configuration{}
 
-	qf := NewService(cfg)
+	pf := NewService(cfg, nil)
 
-	qf.Start()
-	require.Equal(t, true, qf.IsRunning())
-	qf.Stop()
-	assert.Equal(t, false, qf.IsRunning())
+	pf.Start()
+	require.Equal(t, true, pf.IsRunning())
+	pf.Stop()
+	assert.Equal(t, false, pf.IsRunning())
 
 }
