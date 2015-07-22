@@ -2,11 +2,6 @@
 
 ## TODO
 
- - Conditional GETs
- - feed parser
- - save entries
- - need save database channel
-
 ## Version 0.0.1
 
   - DONE config
@@ -14,7 +9,15 @@
   - DONE httpd
   - DONE fetcher pool
   - DONE fetcher timer
-  - websocket api
+
+## Version 0.0.2
+  - Conditional GETs
+  - feed log history - which feeds have errors, were redirected?
+  - feed parser
+  - save feed items/entries
+
+## Version 0.1.0
+  - rest api
   - html ui
 
 ## Version 1.0.0 (MVP)
@@ -25,6 +28,10 @@
 ## Version 1.1.0 (MVP)
 
  - add support for Hot Links to Fever API support
+
+## Version 2.0.0
+ - websocket api
+ - hub support
 
 ## Roadmap
 
@@ -51,5 +58,6 @@
  - Mac Taskbar icon
 
 ## Technical Don't Forgets
+ - need save database channel
  - use alternative libC implementation
  - limit listener to x connections
