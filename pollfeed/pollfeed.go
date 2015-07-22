@@ -24,6 +24,7 @@ type Service struct {
 	database      db.Database
 	pollFrequency time.Duration
 	killsignal    chan bool
+	killed        int32
 	running       int32
 	runlatch      sync.WaitGroup
 	polling       int32
@@ -60,7 +61,7 @@ func (z *Service) Start() {
 // Stop service
 func (z *Service) Stop() {
 	logger.Println("service stopping...")
-	z.killsignal <- true
+	z.kill()
 	z.runlatch.Wait()
 	logger.Println("service stopped.")
 }
@@ -116,13 +117,11 @@ func (z *Service) poll(t *time.Time) {
 
 	// convert feeds
 	requests := feedsToRequests(feeds)
-
 	logger.Printf("request feeds: %d", len(requests))
 
 	// send to output
-	// TODO: break on killsignal
-	for _, req := range requests {
-		z.Output <- req
+	for i := 0; i < len(requests) && !z.isKilled(); i++ {
+		z.Output <- requests[i]
 	}
 
 	z.setPolling(false)
@@ -141,7 +140,17 @@ func (z *Service) setRunning(running bool) {
 		atomic.StoreInt32(&z.running, 1)
 	} else {
 		atomic.StoreInt32(&z.running, 0)
+		atomic.StoreInt32(&z.killed, 0)
 	}
+}
+
+func (z *Service) kill() {
+	z.killsignal <- true
+	atomic.StoreInt32(&z.killed, 1)
+}
+
+func (z *Service) isKilled() bool {
+	return atomic.LoadInt32(&z.killed) != 0
 }
 
 func (z *Service) isPolling() bool {
