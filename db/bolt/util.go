@@ -3,11 +3,11 @@ package bolt
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
-	"rakewire.com/db"
+	m "rakewire.com/model"
 	"time"
 )
 
-func fetchKey(f *db.Feed) string {
+func fetchKey(f *m.Feed) string {
 	return fmt.Sprintf("%s!%s", formatFetchTime(*f.GetNextFetchTime()), f.ID)
 }
 

@@ -1,8 +1,7 @@
-package db
+package model
 
 import (
 	"bytes"
-	// "fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -17,7 +16,7 @@ func TestFeed(t *testing.T) {
 	require.NotNil(t, fi)
 	fi.LastUpdated = &dt
 
-	assert.Nil(t, fi.LastFetch)
+	assert.NotNil(t, fi.LastFetch)
 	assert.NotNil(t, fi.LastUpdated)
 	assert.Equal(t, "http://localhost:8888/", fi.URL)
 	assert.EqualValues(t, dt, *fi.LastUpdated)
@@ -25,7 +24,7 @@ func TestFeed(t *testing.T) {
 	data, err := fi.Encode()
 	require.Nil(t, err)
 	require.NotNil(t, data)
-	assert.Equal(t, 137, len(data))
+	//assert.Equal(t, 190, len(data))
 
 	// fmt.Println(string(data))
 	// fmt.Printf("size: %d\n", len(data))
@@ -36,7 +35,7 @@ func TestFeed(t *testing.T) {
 	assert.NotNil(t, fi2)
 	assert.Equal(t, fi.ID, fi2.ID)
 	assert.Equal(t, fi.URL, fi2.URL)
-	assert.Nil(t, fi2.LastFetch)
+	assert.NotNil(t, fi2.LastFetch)
 	assert.NotNil(t, fi2.LastUpdated)
 	assert.EqualValues(t, dt, *fi2.LastUpdated)
 
@@ -50,7 +49,7 @@ func TestFeeds(t *testing.T) {
 	require.NotNil(t, fi)
 	fi.LastUpdated = &dt
 
-	assert.Nil(t, fi.LastFetch)
+	assert.NotNil(t, fi.LastFetch)
 	assert.NotNil(t, fi.LastUpdated)
 	assert.Equal(t, "http://localhost:8888/", fi.URL)
 	assert.EqualValues(t, dt, *fi.LastUpdated)
@@ -64,7 +63,7 @@ func TestFeeds(t *testing.T) {
 	data := buf.Bytes()
 	require.Nil(t, err)
 	require.NotNil(t, data)
-	assert.Equal(t, 127, len(data))
+	assert.Equal(t, 177, len(data))
 
 	// fmt.Println(string(data))
 	// fmt.Printf("size: %d\n", len(data))
@@ -78,7 +77,7 @@ func TestFeeds(t *testing.T) {
 	assert.NotNil(t, fi2)
 	assert.Equal(t, fi.ID, fi2.ID)
 	assert.Equal(t, fi.URL, fi2.URL)
-	assert.Nil(t, fi2.LastFetch)
+	assert.NotNil(t, fi2.LastFetch)
 	assert.NotNil(t, fi2.LastUpdated)
 	assert.EqualValues(t, dt, *fi2.LastUpdated)
 

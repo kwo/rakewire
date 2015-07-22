@@ -1,6 +1,7 @@
 package db
 
 import (
+	m "rakewire.com/model"
 	"time"
 )
 
@@ -11,10 +12,10 @@ type Configuration struct {
 
 // Database interface
 type Database interface {
-	GetFeedByID(id string) (*Feed, error)
-	GetFeedByURL(url string) (*Feed, error)
-	GetFeeds() (*Feeds, error)
-	GetFetchFeeds(max *time.Time) (*Feeds, error)
-	SaveFeeds(*Feeds) error
+	GetFeedByID(id string) (*m.Feed, error)
+	GetFeedByURL(url string) (*m.Feed, error)
+	GetFeeds() (*m.Feeds, error)
+	GetFetchFeeds(max *time.Time) (*m.Feeds, error)
+	SaveFeeds(*m.Feeds) error
 	Repair() error
 }

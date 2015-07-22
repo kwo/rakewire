@@ -1,4 +1,4 @@
-package db
+package model
 
 import (
 	"bufio"
@@ -56,7 +56,7 @@ type Feed struct {
 
 // NewFeed instantiate a new Feed object with a new UUID
 func NewFeed(url string) *Feed {
-	lastFetch := time.Now().Add(-24 * time.Hour)
+	lastFetch := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
 	x := Feed{
 		ID:        uuid.NewUUID().String(),
 		URL:       url,
@@ -80,12 +80,12 @@ func (z *Feed) GetNextFetchTime() *time.Time {
 
 	var frequency time.Duration
 	if z.Frequency == 0 {
-		frequency = time.Duration(z.Frequency) * time.Minute
-	} else {
 		frequency = defaultFeedFrequency
+	} else {
+		frequency = time.Duration(z.Frequency) * time.Minute
 	}
 
-	result := z.LastFetch.Add(frequency)
+	result := z.LastFetch.Add(frequency).Truncate(time.Second)
 	return &result
 
 }

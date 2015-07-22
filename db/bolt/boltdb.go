@@ -5,6 +5,7 @@ import (
 	"github.com/boltdb/bolt"
 	"rakewire.com/db"
 	"rakewire.com/logging"
+	m "rakewire.com/model"
 	"time"
 )
 
@@ -78,9 +79,9 @@ func (z *Database) Close() error {
 }
 
 // GetFeeds list feeds
-func (z *Database) GetFeeds() (*db.Feeds, error) {
+func (z *Database) GetFeeds() (*m.Feeds, error) {
 
-	result := db.NewFeeds()
+	result := m.NewFeeds()
 
 	err := z.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketFeed))
@@ -88,7 +89,7 @@ func (z *Database) GetFeeds() (*db.Feeds, error) {
 
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 
-			f := db.Feed{}
+			f := m.Feed{}
 			if err := f.Decode(v); err != nil {
 				return err
 			}
@@ -109,7 +110,7 @@ func (z *Database) GetFeeds() (*db.Feeds, error) {
 }
 
 // GetFetchFeeds get feeds to be fetched
-func (z *Database) GetFetchFeeds(maxTime *time.Time) (*db.Feeds, error) {
+func (z *Database) GetFetchFeeds(maxTime *time.Time) (*m.Feeds, error) {
 
 	var max []byte
 	if maxTime == nil {
@@ -118,7 +119,7 @@ func (z *Database) GetFetchFeeds(maxTime *time.Time) (*db.Feeds, error) {
 		max = []byte(formatMaxTime(*maxTime))
 	}
 
-	result := db.NewFeeds()
+	result := m.NewFeeds()
 
 	err := z.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketFeed))
@@ -131,7 +132,7 @@ func (z *Database) GetFetchFeeds(maxTime *time.Time) (*db.Feeds, error) {
 			//logger.Printf("key: %s: %s", k, uuid)
 
 			v := b.Get(uuid)
-			f := &db.Feed{}
+			f := &m.Feed{}
 			if err := f.Decode(v); err != nil {
 				return err
 			}
@@ -148,7 +149,7 @@ func (z *Database) GetFetchFeeds(maxTime *time.Time) (*db.Feeds, error) {
 }
 
 // GetFeedByID return feed given UUID
-func (z *Database) GetFeedByID(id string) (*db.Feed, error) {
+func (z *Database) GetFeedByID(id string) (*m.Feed, error) {
 
 	var data []byte
 
@@ -164,14 +165,14 @@ func (z *Database) GetFeedByID(id string) (*db.Feed, error) {
 		return nil, nil
 	}
 
-	result := db.Feed{}
+	result := m.Feed{}
 	err = result.Decode(data)
 	return &result, err
 
 }
 
 // GetFeedByURL return feed given url
-func (z *Database) GetFeedByURL(url string) (*db.Feed, error) {
+func (z *Database) GetFeedByURL(url string) (*m.Feed, error) {
 
 	var data []byte
 
@@ -191,14 +192,14 @@ func (z *Database) GetFeedByURL(url string) (*db.Feed, error) {
 		return nil, nil
 	}
 
-	result := db.Feed{}
+	result := m.Feed{}
 	err = result.Decode(data)
 	return &result, err
 
 }
 
 // SaveFeeds save feeds
-func (z *Database) SaveFeeds(feeds *db.Feeds) error {
+func (z *Database) SaveFeeds(feeds *m.Feeds) error {
 
 	for _, f := range feeds.Values {
 
@@ -220,7 +221,7 @@ func (z *Database) SaveFeeds(feeds *db.Feeds) error {
 
 }
 
-func (z *Database) saveFeed(f *db.Feed, f0 *db.Feed) error {
+func (z *Database) saveFeed(f *m.Feed, f0 *m.Feed) error {
 
 	err := z.db.Update(func(tx *bolt.Tx) error {
 
@@ -306,7 +307,7 @@ func (z *Database) Repair() error {
 		logger.Printf("populating indexes")
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 
-			f := &db.Feed{}
+			f := &m.Feed{}
 			if err := f.Decode(v); err != nil {
 				return err
 			}

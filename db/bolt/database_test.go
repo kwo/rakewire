@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"os"
 	"rakewire.com/db"
+	m "rakewire.com/model"
 	"strings"
 	"testing"
 	"time"
@@ -31,9 +32,9 @@ func TestFeeds(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, urls)
 
-	feeds := db.NewFeeds()
+	feeds := m.NewFeeds()
 	for _, url := range urls {
-		feeds.Add(db.NewFeed(url))
+		feeds.Add(m.NewFeed(url))
 	}
 
 	database := Database{}
@@ -77,8 +78,8 @@ func TestURLIndex(t *testing.T) {
 	require.Nil(t, err)
 
 	// create feeds, feed
-	feeds := db.NewFeeds()
-	feed := db.NewFeed(URL1)
+	feeds := m.NewFeeds()
+	feed := m.NewFeed(URL1)
 	feeds.Add(feed)
 	assert.Equal(t, 1, feeds.Size())
 	assert.Equal(t, URL1, feed.URL)
@@ -145,18 +146,20 @@ func TestURLIndex(t *testing.T) {
 
 func TestNextFetchKeyCompare(t *testing.T) {
 
-	assert.Equal(t, -1, bytes.Compare([]byte("2015-07-21T06:59:24Z#c35d9174-2f74-11e5-baf1-5cf938992b62"), []byte("2015-07-21T07:00:24Z")))
+	assert.Equal(t, 1, bytes.Compare([]byte("2015-07-21T07:00:24Z#"), []byte("2015-07-21T07:00:24Z!c35d9174-2f74-11e5-baf1-5cf938992b62")))
 
 	now := time.Now()
-	f := db.NewFeed("http://localhost/")
+	f := m.NewFeed("http://localhost/")
 	f.LastFetch = &now
 	f.Frequency = 5
+	nextFetch := now.Add(5 * time.Minute).Truncate(time.Second)
+	assert.Equal(t, &nextFetch, f.GetNextFetchTime())
 
 	key := fetchKey(f)
-	max := formatFetchTime(now.Add(5 * time.Minute))
-	assert.Equal(t, 1, bytes.Compare([]byte(key), []byte(max)))
-	max = formatFetchTime(now.Add(5 * time.Minute).Add(1 * time.Second))
-	assert.Equal(t, -1, bytes.Compare([]byte(key), []byte(max)))
+	max := formatMaxTime(now.Add(5 * time.Minute))
+	assert.Equal(t, 1, bytes.Compare([]byte(max), []byte(key)))
+	max = formatMaxTime(now.Add(5 * time.Minute).Add(1 * time.Second))
+	assert.Equal(t, 1, bytes.Compare([]byte(max), []byte(key)))
 
 }
 
@@ -170,12 +173,12 @@ func TestNextFetch(t *testing.T) {
 	require.Nil(t, err)
 
 	// create feeds, feed
-	feeds := db.NewFeeds()
+	feeds := m.NewFeeds()
 	now := time.Now()
 	lastFetch := &now
 	for i := 0; i < 10; i++ {
 		url := fmt.Sprintf("http://localhost:888%d", i)
-		feed := db.NewFeed(url)
+		feed := m.NewFeed(url)
 		feed.LastFetch = lastFetch
 		feed.Frequency = 5 + i
 		feeds.Add(feed)
@@ -304,5 +307,155 @@ func readFile(feedfile string) ([]string, error) {
 	f.Close()
 
 	return result, nil
+
+}
+
+func TestIndexFetch(t *testing.T) {
+
+	//t.SkipNow()
+
+	// open database
+	database := &Database{}
+	err := database.Open(&db.Configuration{
+		Location: databaseFile,
+	})
+	require.Nil(t, err)
+
+	// test feeds
+	feeds, err := database.GetFeeds()
+	assert.Nil(t, err)
+	assert.NotNil(t, feeds)
+	assert.Equal(t, 0, feeds.Size())
+
+	maxTime := time.Now().Add(48 * time.Hour)
+	feeds, err = database.GetFetchFeeds(&maxTime)
+	assert.Nil(t, err)
+	assert.NotNil(t, feeds)
+	assert.Equal(t, 0, feeds.Size())
+
+	// create new feed, add to database
+	feeds = m.NewFeeds()
+	feed := m.NewFeed("http://localhost/")
+	feeds.Add(feed)
+	err = database.SaveFeeds(feeds)
+	assert.Nil(t, err)
+
+	// retest
+	feeds, err = database.GetFeeds()
+	assert.Nil(t, err)
+	assert.NotNil(t, feeds)
+	assert.Equal(t, 1, feeds.Size())
+
+	maxTime = time.Now().Add(48 * time.Hour)
+	feeds, err = database.GetFetchFeeds(&maxTime)
+	assert.Nil(t, err)
+	assert.NotNil(t, feeds)
+	assert.Equal(t, 1, feeds.Size())
+
+	// modify feed, resave to database
+	lastTime := time.Now().Add(-48 * time.Hour)
+	// create new feed, add to database
+	feeds2 := m.NewFeeds()
+	feed2 := &m.Feed{
+		ID:        feed.ID,
+		URL:       "https://localhost/",
+		LastFetch: &lastTime,
+	}
+	feeds2.Add(feed2)
+	f3 := m.NewFeed("http://kangaroo.com/")
+	feeds2.Add(f3)
+	err = database.SaveFeeds(feeds2)
+	assert.Nil(t, err)
+
+	// retest
+	feeds, err = database.GetFeeds()
+	assert.Nil(t, err)
+	assert.NotNil(t, feeds)
+	assert.Equal(t, 2, feeds.Size())
+
+	maxTime = time.Now().Add(48 * time.Hour)
+	feeds, err = database.GetFetchFeeds(&maxTime)
+	assert.Nil(t, err)
+	assert.NotNil(t, feeds)
+	assert.Equal(t, 2, feeds.Size())
+
+	// close database
+	err = database.Close()
+	assert.Nil(t, err)
+
+	// delete test file
+	err = os.Remove(databaseFile)
+	assert.Nil(t, err)
+
+}
+
+func TestIndexDeletes(t *testing.T) {
+
+	//t.SkipNow()
+
+	// open database
+	database := &Database{}
+	err := database.Open(&db.Configuration{
+		Location: databaseFile,
+	})
+	require.Nil(t, err)
+
+	urls, err := readFile(feedFile)
+	require.Nil(t, err)
+	require.NotNil(t, urls)
+
+	now := time.Now().Add(-1 * time.Hour)
+	feeds := m.NewFeeds()
+	for _, url := range urls {
+		feed := m.NewFeed(url)
+		feed.LastFetch = &now
+		feeds.Add(feed)
+	}
+
+	err = database.SaveFeeds(feeds)
+	assert.Nil(t, err)
+
+	feeds, err = database.GetFeeds()
+	assert.Nil(t, err)
+	assert.NotNil(t, feeds)
+	assert.Equal(t, 288, feeds.Size())
+
+	for _, feed := range feeds.Values {
+		err = database.checkIndexForEntries(bucketIndexNextFetch, feed.ID, 1)
+		assert.Nil(t, err)
+	}
+
+	now = time.Now()
+	for _, feed := range feeds.Values {
+		feed.LastFetch = &now
+		feed.Frequency = 10
+	}
+
+	err = database.SaveFeeds(feeds)
+	assert.Nil(t, err)
+
+	feeds, err = database.GetFeeds()
+	assert.Nil(t, err)
+	assert.NotNil(t, feeds)
+	assert.Equal(t, 288, feeds.Size())
+
+	maxTime := time.Now().Add(48 * time.Hour)
+	feeds, err = database.GetFetchFeeds(&maxTime)
+	assert.Nil(t, err)
+	assert.NotNil(t, feeds)
+	assert.Equal(t, 288, feeds.Size())
+
+	for _, feed := range feeds.Values {
+		err = database.checkIndexForEntries(bucketIndexNextFetch, feed.ID, 1)
+		assert.Nil(t, err)
+	}
+
+	// close database
+	err = database.Close()
+	assert.Nil(t, err)
+
+	// delete test file
+	err = os.Remove(databaseFile)
+	assert.Nil(t, err)
 
 }
