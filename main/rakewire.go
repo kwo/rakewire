@@ -41,9 +41,7 @@ func main() {
 
 	polld = pollfeed.NewService(&cfg.Poll, database)
 	reaperd = reaper.NewService(&cfg.Reaper, database)
-	fetchd := fetch.NewService(&cfg.Fetcher)
-	fetchd.Input = polld.Output
-	fetchd.Output = reaperd.Input
+	fetchd := fetch.NewService(&cfg.Fetcher, polld.Output, reaperd.Input)
 
 	polld.Start()
 	fetchd.Start()

@@ -21,16 +21,18 @@ var (
 
 // Service fetches feeds
 type Service struct {
-	Input        chan *m.Feed
-	Output       chan *m.Feed
+	input        chan *m.Feed
+	output       chan *m.Feed
 	fetcherCount int
 	latch        sync.WaitGroup
 	client       *http.Client
 }
 
 // NewService create new fetcher service
-func NewService(cfg *Configuration) *Service {
+func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Service {
 	return &Service{
+		input:        input,
+		output:       output,
 		fetcherCount: cfg.Fetchers,
 		client: &http.Client{
 			// CheckRedirect: func(req *http.Request, via []*http.Request) error {
@@ -57,8 +59,8 @@ func (z *Service) Stop() {
 	logger.Println("service stopping...")
 	if z != nil { // hack because on app close object is apparently already garbage collected
 		z.latch.Wait()
-		z.Input = nil
-		z.Output = nil
+		z.input = nil
+		z.output = nil
 	}
 	logger.Println("service stopped")
 }
@@ -67,7 +69,7 @@ func (z *Service) run(id int) {
 
 	logger.Printf("fetcher %2d starting...\n", id)
 
-	for req := range z.Input {
+	for req := range z.input {
 		z.processFeed(req, id)
 	}
 
@@ -116,6 +118,6 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 	}
 
 	logger.Printf("fetch %2d: %5t %3d %s - %s\n", id, feed.Failed, status, feed.URL, message)
-	z.Output <- feed
+	z.output <- feed
 
 }
