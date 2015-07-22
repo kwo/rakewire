@@ -84,12 +84,14 @@ func (z *Service) newRequest(url string) *http.Request {
 
 func (z *Service) processFeed(feed *m.Feed, id int) {
 
-	now := time.Now()
+	now := time.Now().Truncate(time.Second)
 
 	feed.LastAttempt = &now
 
 	status := 0
+	message := ""
 	rsp, err := z.client.Do(z.newRequest(feed.URL))
+
 	if rsp != nil && rsp.Body != nil {
 		io.Copy(ioutil.Discard, rsp.Body)
 		rsp.Body.Close()
@@ -97,6 +99,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 	}
 
 	if err == nil {
+		feed.Failed = false
 		if feed.URL != rsp.Request.URL.String() {
 			feed.URL = rsp.Request.URL.String()
 		} else {
@@ -109,9 +112,10 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 		}
 	} else {
 		feed.Failed = true
+		message = err.Error()
 	}
 
-	logger.Printf("fetch %2d: %5t %3d %s\n", id, feed.Failed, status, feed.URL)
+	logger.Printf("fetch %2d: %5t %3d %s - %s\n", id, feed.Failed, status, feed.URL, message)
 	z.Output <- feed
 
 }
