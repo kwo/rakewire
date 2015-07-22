@@ -2,8 +2,8 @@ package reaper
 
 import (
 	"rakewire.com/db"
-	"rakewire.com/fetch"
 	"rakewire.com/logging"
+	m "rakewire.com/model"
 	"sync"
 	"sync/atomic"
 )
@@ -18,7 +18,7 @@ type Configuration struct {
 
 // Service for saving fetch responses back to the database
 type Service struct {
-	Input      chan *fetch.Response
+	Input      chan *m.Feed
 	database   db.Database
 	killsignal chan bool
 	running    int32
@@ -29,7 +29,7 @@ type Service struct {
 func NewService(cfg *Configuration, database db.Database) *Service {
 
 	return &Service{
-		Input:      make(chan *fetch.Response),
+		Input:      make(chan *m.Feed),
 		database:   database,
 		killsignal: make(chan bool),
 	}
@@ -75,12 +75,13 @@ run:
 
 }
 
-func (z *Service) processResponse(rsp *fetch.Response) {
+func (z *Service) processResponse(rsp *m.Feed) {
 
 	//logger.Printf("saving feed: %s %s", rsp.ID, rsp.URL)
 
 	// convert feeds
-	feeds := responseToFeeds(rsp)
+	feeds := m.NewFeeds()
+	feeds.Add(rsp)
 	err := z.database.SaveFeeds(feeds)
 	if err != nil {
 		logger.Printf("Cannot save feed %s: %s", rsp.URL, err.Error())
@@ -99,34 +100,4 @@ func (z *Service) setRunning(running bool) {
 	} else {
 		atomic.StoreInt32(&z.running, 0)
 	}
-}
-
-func responseToFeeds(response *fetch.Response) *db.Feeds {
-	var rsps []*fetch.Response
-	rsps = append(rsps, response)
-	return responsesToFeeds(rsps)
-}
-
-func responsesToFeeds(responses []*fetch.Response) *db.Feeds {
-	feeds := db.NewFeeds()
-	for _, v := range responses {
-		feed := &db.Feed{
-			ETag:   v.ETag,
-			Failed: v.Failed,
-			// Flavor: TODO
-			// Frequency - intentionally skipping
-			// Generator: TODO
-			// Hub: TODO
-			// Icon: TODO
-			ID:           v.ID,
-			LastAttempt:  v.AttemptTime,
-			LastFetch:    v.FetchTime,
-			LastModified: v.LastModified,
-			// LastUpdated: TODO
-			// Title: TODO
-			URL: v.URL,
-		}
-		feeds.Add(feed)
-	}
-	return feeds
 }

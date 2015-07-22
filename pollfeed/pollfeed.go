@@ -2,8 +2,8 @@ package pollfeed
 
 import (
 	"rakewire.com/db"
-	"rakewire.com/fetch"
 	"rakewire.com/logging"
+	m "rakewire.com/model"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -20,7 +20,7 @@ type Configuration struct {
 
 // Service for pumping feeds between fetcher and database
 type Service struct {
-	Output        chan *fetch.Request
+	Output        chan *m.Feed
 	database      db.Database
 	pollFrequency time.Duration
 	killsignal    chan bool
@@ -41,7 +41,7 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 	}
 
 	return &Service{
-		Output:        make(chan *fetch.Request),
+		Output:        make(chan *m.Feed),
 		database:      database,
 		pollFrequency: time.Duration(freqMin) * time.Minute,
 		killsignal:    make(chan bool),
@@ -116,12 +116,11 @@ func (z *Service) poll(t *time.Time) {
 	}
 
 	// convert feeds
-	requests := feedsToRequests(feeds)
-	logger.Printf("request feeds: %d", len(requests))
+	logger.Printf("request feeds: %d", feeds.Size())
 
 	// send to output
-	for i := 0; i < len(requests) && !z.isKilled(); i++ {
-		z.Output <- requests[i]
+	for i := 0; i < len(feeds.Values) && !z.isKilled(); i++ {
+		z.Output <- feeds.Values[i]
 	}
 
 	z.setPolling(false)
@@ -163,19 +162,4 @@ func (z *Service) setPolling(polling bool) {
 	} else {
 		atomic.StoreInt32(&z.polling, 0)
 	}
-}
-
-func feedsToRequests(feeds *db.Feeds) []*fetch.Request {
-	var requests []*fetch.Request
-	for _, v := range feeds.Values {
-		request := &fetch.Request{
-			ID:           v.ID,
-			ETag:         v.ETag,
-			LastFetch:    v.LastFetch,
-			LastModified: v.LastModified,
-			URL:          v.URL,
-		}
-		requests = append(requests, request)
-	}
-	return requests
 }

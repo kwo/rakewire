@@ -3,6 +3,7 @@ package fetch
 import (
 	"github.com/stretchr/testify/require"
 	"os"
+	m "rakewire.com/model"
 	"testing"
 )
 
@@ -14,19 +15,19 @@ func TestFetch(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, r)
 	//feeds := []*Request{}
-	feeds := URLListToRequestArray(r)
+	feeds := URLListToFeeds(r)
 	r.Close()
 	require.NotNil(t, feeds)
 
-	logger.Printf("feeds: %d\n", len(feeds))
+	logger.Printf("feeds: %d\n", feeds.Size())
 
 	cfg := &Configuration{
 		Fetchers:           20,
 		HTTPTimeoutSeconds: 20,
 	}
 
-	requests := make(chan *Request)
-	responses := make(chan *Response)
+	requests := make(chan *m.Feed)
+	responses := make(chan *m.Feed)
 
 	ff := NewService(cfg)
 	ff.Input = requests
@@ -34,8 +35,8 @@ func TestFetch(t *testing.T) {
 	ff.Start()
 
 	go func() {
-		logger.Printf("adding feeds: %d\n", len(feeds))
-		for _, f := range feeds {
+		logger.Printf("adding feeds: %d\n", feeds.Size())
+		for _, f := range feeds.Values {
 			//logger.Printf("adding feed: %s\n", f.URL)
 			requests <- f
 		}
@@ -46,7 +47,7 @@ func TestFetch(t *testing.T) {
 	go func() {
 		logger.Println("monitoring...")
 		for rsp := range responses {
-			logger.Printf("Worker: %2d, %4d %s %s\n", rsp.FetcherID, rsp.StatusCode, rsp.URL, rsp.Message)
+			logger.Printf("%5t %s\n", rsp.Failed, rsp.URL)
 		}
 		logger.Println("monitoring done")
 	}()

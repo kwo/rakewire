@@ -3,22 +3,21 @@ package fetch
 import (
 	"bufio"
 	"io"
+	m "rakewire.com/model"
 	"strings"
 )
 
-// URLListToRequestArray parse url list to feeds
-func URLListToRequestArray(r io.Reader) []*Request {
+// URLListToFeeds parse url list to feeds
+func URLListToFeeds(r io.Reader) *m.Feeds {
 
-	var result []*Request
+	result := m.NewFeeds()
 	scanner := bufio.NewScanner(r)
 
 	for scanner.Scan() {
 		var url = strings.TrimSpace(scanner.Text())
 		if url != "" && url[:1] != "#" {
-			req := &Request{
-				URL: url,
-			}
-			result = append(result, req)
+			req := m.NewFeed(url)
+			result.Add(req)
 		}
 	}
 

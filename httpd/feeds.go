@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
-	"rakewire.com/db"
+	m "rakewire.com/model"
 )
 
 // SaveFeedsResponse response for SaveFeeds
@@ -95,7 +95,7 @@ func (z *Service) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	feeds := db.NewFeeds()
+	feeds := m.NewFeeds()
 	err := feeds.Deserialize(req.Body)
 	if err != nil {
 		logger.Printf("Error deserializing feeds: %s\n", err.Error())
@@ -121,12 +121,12 @@ func (z *Service) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	feeds := db.ParseListToFeeds(req.Body)
+	feeds := m.ParseListToFeeds(req.Body)
 	z.feedsSaveNative(w, feeds)
 
 }
 
-func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds *db.Feeds) {
+func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds *m.Feeds) {
 
 	err := z.Database.SaveFeeds(feeds)
 	if err != nil {
