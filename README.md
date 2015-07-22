@@ -11,7 +11,7 @@
   - DONE fetcher timer
 
 ## Version 0.0.2
-  - Conditional GETs
+  - DONE Conditional GETs
   - feed log history - which feeds have errors, were redirected?
   - feed parser
   - save feed items/entries
