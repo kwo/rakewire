@@ -23,6 +23,9 @@ func (z *Service) apiRouter(prefix string) *mux.Router {
 	router.Path(prefixFeeds).Methods(mPut).HandlerFunc(badMediaType)
 	router.Path(prefixFeeds).HandlerFunc(notSupported)
 
+	var prefixFeedsNext = prefixFeeds + "/next"
+	router.Path(prefixFeedsNext).Methods(mGet).HandlerFunc(z.feedsGetFeedsNext)
+
 	var prefixFeedsFeed = prefixFeeds + "/{feedID}"
 	router.Path(prefixFeedsFeed).Methods(mGet).HandlerFunc(z.feedsGetFeedByID)
 	router.Path(prefixFeedsFeed).HandlerFunc(notSupported)

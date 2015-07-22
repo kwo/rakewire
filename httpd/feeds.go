@@ -2,9 +2,11 @@ package httpd
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 	m "rakewire.com/model"
+	"time"
 )
 
 // SaveFeedsResponse response for SaveFeeds
@@ -29,6 +31,34 @@ func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
 		logger.Printf("Error in db.GetFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)
 		return
+	}
+
+}
+
+func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
+
+	maxTime := time.Now().Truncate(time.Second).Add(48 * time.Hour)
+	feeds, err := z.Database.GetFetchFeeds(&maxTime)
+	if err != nil {
+		logger.Printf("Error in db.GetFetchFeeds: %s\n", err.Error())
+		http.Error(w, "Cannot retrieve feeds from database.", http.StatusInternalServerError)
+		return
+	}
+
+	logger.Printf("Getting feeds: %d", feeds.Size())
+
+	w.Header().Set(hContentType, mimeText)
+	line := fmt.Sprintf("%-8s  %-8s  -  %s\n", "Next", "Last", "URL")
+	w.Write([]byte(line))
+
+	for _, f := range feeds.Values {
+		dtNext := f.GetNextFetchTime().Format("15:04:05")
+		dtLast := ""
+		if f.LastFetch != nil {
+			dtLast = f.LastFetch.Format("15:04:05")
+		}
+		line := fmt.Sprintf("%-8s  %-8s  -  %s\n", dtNext, dtLast, f.URL)
+		w.Write([]byte(line))
 	}
 
 }
