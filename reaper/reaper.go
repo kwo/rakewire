@@ -83,7 +83,7 @@ func (z *Service) processResponse(rsp *fetch.Response) {
 	feeds := responseToFeeds(rsp)
 	err := z.database.SaveFeeds(feeds)
 	if err != nil {
-		logger.Printf("Error saving feed %s: %s", rsp.URL, err.Error())
+		logger.Printf("Cannot save feed %s: %s", rsp.URL, err.Error())
 	}
 
 }
