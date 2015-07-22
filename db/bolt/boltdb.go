@@ -200,70 +200,73 @@ func (z *Database) GetFeedByURL(url string) (*db.Feed, error) {
 // SaveFeeds save feeds
 func (z *Database) SaveFeeds(feeds *db.Feeds) error {
 
-	tx, err := z.db.Begin(true)
-	defer tx.Rollback()
-	if err == nil {
+	for _, f := range feeds.Values {
 
-		err = func() error {
-
-			b := tx.Bucket([]byte(bucketFeed))
-			idxFeedByURL := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(bucketIndexFeedByURL))
-			idxNextFetch := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(bucketIndexNextFetch))
-
-			for _, f := range feeds.Values {
-
-				// get previous record before saving new record
-				var f0 *db.Feed
-				data0 := b.Get([]byte(f.ID))
-				if data0 != nil {
-
-					f0 = &db.Feed{}
-					err := f0.Decode(data0)
-					if err != nil {
-						return err
-					}
-
-					// remove old index entries
-					if err = idxFeedByURL.Delete([]byte(f0.URL)); err != nil {
-						return err
-					}
-
-					if err = idxNextFetch.Delete([]byte(fetchKey(f0))); err != nil {
-						return err
-					}
-
-				}
-
-				// encode
-				data, err := f.Encode()
-				if err != nil {
-					return err
-				}
-
-				// save record
-				if err = b.Put([]byte(f.ID), data); err != nil {
-					return err
-				}
-
-				// add index entries
-				if err = idxFeedByURL.Put([]byte(f.URL), []byte(f.ID)); err != nil {
-					return err
-				}
-
-				if err = idxNextFetch.Put([]byte(fetchKey(f)), []byte(f.ID)); err != nil {
-					return err
-				}
-
-			} // for
-
-			return nil
-
-		}()
-
-		if err == nil {
-			err = tx.Commit()
+		// get old record
+		f0, err := z.GetFeedByID(f.ID)
+		if err != nil {
+			return err
 		}
 
+		// save new record
+		err = z.saveFeed(f, f0)
+		if err != nil {
+			return err
+		}
+
+	} // loop
+
+	return nil
+
+}
+
+func (z *Database) saveFeed(f *db.Feed, f0 *db.Feed) error {
+
+	err := z.db.Update(func(tx *bolt.Tx) error {
+
+		data, err := f.Encode()
+		if err != nil {
+			return err
+		}
+
+		b := tx.Bucket([]byte(bucketFeed))
+		indexes := tx.Bucket([]byte(bucketIndex))
+		idxFeedByURL := indexes.Bucket([]byte(bucketIndexFeedByURL))
+		idxNextFetch := indexes.Bucket([]byte(bucketIndexNextFetch))
+
+		// save record
+		if err = b.Put([]byte(f.ID), data); err != nil {
+			return err
+		}
+
+		// remove old index entries
+		if f0 != nil {
+
+			if err := idxFeedByURL.Delete([]byte(f0.URL)); err != nil {
+				return err
+			}
+			if err := idxNextFetch.Delete([]byte(fetchKey(f0))); err != nil {
+				return err
+			}
+
+		}
+
+		// add index entries
+		if err := idxFeedByURL.Put([]byte(f.URL), []byte(f.ID)); err != nil {
+			return err
+		}
+		if err := idxNextFetch.Put([]byte(fetchKey(f)), []byte(f.ID)); err != nil {
+			return err
+		}
+
+		return nil
+
+	})
+
+	if err == nil {
+		z.checkIndexForEntries(bucketIndexNextFetch, f.ID, 1)
+	} else {
+		logger.Println("Cannot check for duplicates, error")
 	}
 
 	return err
