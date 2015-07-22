@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultFeedFrequency = 1 * time.Hour
+	defaultFeedFrequencyMinutes = 5
 )
 
 // Feeds collection of Feed
@@ -58,9 +58,10 @@ type Feed struct {
 func NewFeed(url string) *Feed {
 	lastFetch := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
 	x := Feed{
+		Frequency: defaultFeedFrequencyMinutes,
 		ID:        uuid.NewUUID().String(),
-		URL:       url,
 		LastFetch: &lastFetch,
+		URL:       url,
 	}
 	return &x
 }
@@ -77,17 +78,9 @@ func (z *Feed) Encode() ([]byte, error) {
 
 // GetNextFetchTime get the next time to poll feed
 func (z *Feed) GetNextFetchTime() *time.Time {
-
-	var frequency time.Duration
-	if z.Frequency == 0 {
-		frequency = defaultFeedFrequency
-	} else {
-		frequency = time.Duration(z.Frequency) * time.Minute
-	}
-
+	frequency := time.Duration(z.Frequency) * time.Minute
 	result := z.LastFetch.Add(frequency).Truncate(time.Second)
 	return &result
-
 }
 
 // ========== Feeds ==========
