@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	configEnv      = "RAKEWIRE_CONF"
 	configFileName = "config.yaml"
 )
 
@@ -59,7 +60,9 @@ func GetConfig() *Configuration {
 
 // GetConfigFileLocation get the location of the config file
 func GetConfigFileLocation() string {
-	if home := GetHomeDirectory(); home != "" {
+	if location := os.Getenv(configEnv); location != "" {
+		return location
+	} else if home := GetHomeDirectory(); home != "" {
 		return path.Join(GetHomeDirectory(), ".rakewire", configFileName)
 	}
 	return configFileName
