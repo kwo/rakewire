@@ -35,7 +35,6 @@ func TestFeeds(t *testing.T) {
 	for _, url := range urls {
 		feeds.Add(db.NewFeed(url))
 	}
-	assert.Equal(t, len(urls), feeds.Size())
 
 	database := Database{}
 	err = database.Open(&db.Configuration{
@@ -44,11 +43,11 @@ func TestFeeds(t *testing.T) {
 	require.Nil(t, err)
 
 	err = database.SaveFeeds(feeds)
-	require.Nil(t, err)
+	assert.Nil(t, err)
 
 	feeds2, err := database.GetFeeds()
-	require.Nil(t, err)
-	require.NotNil(t, feeds2)
+	assert.Nil(t, err)
+	assert.NotNil(t, feeds2)
 
 	err = database.Close()
 	assert.Nil(t, err)
@@ -57,6 +56,7 @@ func TestFeeds(t *testing.T) {
 	err = os.Remove(databaseFile)
 	assert.Nil(t, err)
 
+	assert.Equal(t, len(urls), feeds.Size())
 	assert.Equal(t, feeds.Size(), feeds2.Size())
 	// for k, v := range feedmap {
 	// 	fmt.Printf("Feed %s: %v\n", k, v.URL)
