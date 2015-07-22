@@ -85,8 +85,9 @@ func (z *Service) processFeed(req *Request, id int) {
 
 	now := time.Now()
 	result := &Response{
-		FetcherID:   id,
 		AttemptTime: &now,
+		FetcherID:   id,
+		FetchTime:   req.LastFetch,
 		ID:          req.ID,
 		URL:         req.URL,
 	}

@@ -162,6 +162,7 @@ func feedsToRequests(feeds *db.Feeds) []*fetch.Request {
 		request := &fetch.Request{
 			ID:           v.ID,
 			ETag:         v.ETag,
+			LastFetch:    v.LastFetch,
 			LastModified: v.LastModified,
 			URL:          v.URL,
 		}

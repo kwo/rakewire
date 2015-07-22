@@ -15,6 +15,7 @@ type Configuration struct {
 type Request struct {
 	ID           string
 	ETag         string
+	LastFetch    *time.Time
 	LastModified *time.Time
 	URL          string
 }
