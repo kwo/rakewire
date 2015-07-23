@@ -156,7 +156,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 		} else if rsp.StatusCode >= 400 {
 			// don't hammer site if it has errors
-			feed.BackoffInterval()
+			feed.BackoffIntervalError()
 		}
 
 	} // err

@@ -91,6 +91,12 @@ func (z *Feed) BackoffInterval() {
 	}
 }
 
+// BackoffIntervalError increases the fetch interval in the event of an error
+func (z *Feed) BackoffIntervalError() {
+	nextFetch := time.Now().Add(1 * time.Hour).Truncate(time.Second)
+	z.Interval = nextFetch.Sub(*z.LastFetch)
+}
+
 // ResetInterval resets to the minimum fetch interval
 func (z *Feed) ResetInterval() {
 	z.Interval = feedIntervalMin
