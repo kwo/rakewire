@@ -129,7 +129,6 @@ func (z *Service) poll(t *time.Time) {
 
 	z.setPolling(false)
 	z.polllatch.Done()
-	logger.Println("polling exited.")
 
 }
 
