@@ -128,7 +128,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 		if feed.URL != rsp.Request.URL.String() {
 			feed.URL = rsp.Request.URL.String()
-			feed.StatusCode = 300
+			feed.StatusCode = 333 // a redirect 301, 302, 307 or 308
 		} else if rsp.StatusCode == 200 || rsp.StatusCode == 304 {
 
 			feed.LastFetch = &now
@@ -141,21 +141,23 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 				if feed.Checksum != "" {
 					if feed.Checksum != cs {
 						// updated - reset back to minimum
+						// TODO: check feed last updated as last check if content has changed
 						feed.ResetInterval()
 					} else {
 						// not updated - use backoff policy to increase interval
 						feed.BackoffInterval()
+						feed.StatusCode = 399 // not modified but site doesn't support conditional GETs
 					}
 				}
 				feed.Checksum = cs
 
-			} else { // 304
+			} else if rsp.StatusCode == 304 { // 304 not modified
 				// not updated - use backoff policy to increase interval
 				feed.BackoffInterval()
 			}
 
 		} else if rsp.StatusCode >= 400 {
-			// don't hammer site if it has errors
+			// don't hammer site if error
 			feed.BackoffIntervalError()
 		}
 
