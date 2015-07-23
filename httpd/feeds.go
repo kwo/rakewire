@@ -48,7 +48,7 @@ func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 	logger.Printf("Getting feeds: %d", feeds.Size())
 
 	w.Header().Set(hContentType, mimeText)
-	line := fmt.Sprintf("%-8s  %-8s  -  %s\n", "Next", "Last", "URL")
+	line := fmt.Sprintf("%-8s  %-8s %6s   %s\n", "Next", "Last", "Status", "URL")
 	w.Write([]byte(line))
 
 	for _, f := range feeds.Values {
@@ -57,7 +57,7 @@ func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 		if f.LastFetch != nil {
 			dtLast = f.LastFetch.Format("15:04:05")
 		}
-		line := fmt.Sprintf("%-8s  %-8s  -  %s\n", dtNext, dtLast, f.URL)
+		line := fmt.Sprintf("%-8s  %-8s %6d   %s\n", dtNext, dtLast, f.StatusCode, f.URL)
 		w.Write([]byte(line))
 	}
 
