@@ -135,20 +135,30 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.ETag = rsp.Header.Get(hEtag)
 			feed.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 
-			cs := checksum(feed.Body)
-			if feed.Checksum != "" {
-				if feed.Checksum != cs {
-					// updated - reset back to minimum
-					feed.Interval = m.FeedIntervalMin
-				} else {
-					// not updated - use backoff policy to decrease frequency
-					feed.Interval *= 2
-					if feed.Interval > m.FeedIntervalMax {
-						feed.Interval = m.FeedIntervalMax
+			if rsp.StatusCode == 200 {
+
+				cs := checksum(feed.Body)
+				if feed.Checksum != "" {
+					if feed.Checksum != cs {
+						// updated - reset back to minimum
+						feed.Interval = m.FeedIntervalMin
+					} else {
+						// not updated - use backoff policy to increase interval
+						feed.Interval *= 2
+						if feed.Interval > m.FeedIntervalMax {
+							feed.Interval = m.FeedIntervalMax
+						}
 					}
 				}
+				feed.Checksum = cs
+
+			} else { // 304
+				// not updated - use backoff policy to increase interval
+				feed.Interval *= 2
+				if feed.Interval > m.FeedIntervalMax {
+					feed.Interval = m.FeedIntervalMax
+				}
 			}
-			feed.Checksum = cs
 
 		} // 200 or 304
 
