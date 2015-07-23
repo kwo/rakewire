@@ -151,7 +151,7 @@ func TestNextFetchKeyCompare(t *testing.T) {
 	now := time.Now()
 	f := m.NewFeed("http://localhost/")
 	f.LastFetch = &now
-	f.Frequency = 5
+	f.Frequency = 5 * time.Minute
 	nextFetch := now.Add(5 * time.Minute).Truncate(time.Second)
 	assert.Equal(t, &nextFetch, f.GetNextFetchTime())
 
@@ -180,7 +180,7 @@ func TestNextFetch(t *testing.T) {
 		url := fmt.Sprintf("http://localhost:888%d", i)
 		feed := m.NewFeed(url)
 		feed.LastFetch = lastFetch
-		feed.Frequency = 5 + i
+		feed.Frequency = time.Minute * time.Duration(5+i)
 		feeds.Add(feed)
 	}
 

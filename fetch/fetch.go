@@ -12,6 +12,7 @@ import (
 )
 
 const (
+	defaultTimeout   = time.Second * 20
 	httpUserAgent    = "Rakewire " + app.VERSION
 	hEtag            = "Etag"
 	hIfModifiedSince = "If-Modified-Since"
@@ -25,6 +26,12 @@ var (
 	logger = logging.New("fetch")
 )
 
+// Configuration configuration
+type Configuration struct {
+	Workers int
+	Timeout string
+}
+
 // Service fetches feeds
 type Service struct {
 	input        chan *m.Feed
@@ -36,15 +43,19 @@ type Service struct {
 
 // NewService create new fetcher service
 func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Service {
+	timeout, err := time.ParseDuration(cfg.Timeout)
+	if err != nil {
+		timeout = defaultTimeout
+	}
 	return &Service{
 		input:        input,
 		output:       output,
-		fetcherCount: cfg.Fetchers,
+		fetcherCount: cfg.Workers,
 		client: &http.Client{
 			// CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			// 	return http.ErrNotSupported
 			// },
-			Timeout: time.Duration(cfg.HTTPTimeoutSeconds) * time.Second,
+			Timeout: timeout,
 		},
 	}
 }

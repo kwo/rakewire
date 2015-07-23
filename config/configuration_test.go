@@ -27,6 +27,6 @@ func TestConfiguration(t *testing.T) {
 	assert.Equal(t, "/Users/karl/.rakewire/data.db", c.Database.Location)
 
 	assert.NotNil(t, c.Fetcher)
-	assert.Equal(t, 10, c.Fetcher.Fetchers)
+	assert.Equal(t, 10, c.Fetcher.Workers)
 
 }

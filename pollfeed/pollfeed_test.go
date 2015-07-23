@@ -69,7 +69,7 @@ func TestPoll(t *testing.T) {
 
 	// create service
 	cfg := &Configuration{
-		FrequencyMinutes: 1,
+		Frequency: "1m",
 	}
 	pf := NewService(cfg, database)
 	pf.pollFrequency = 50 * time.Millisecond

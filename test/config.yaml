@@ -6,8 +6,5 @@ database:
   location: "/Users/karl/.rakewire/data.db"
 
 fetcher:
-  fetchers: 10
-  requestbuffer: 500
-  httptimeoutseconds: 10
-  idletimeoutseconds: 5
-
+  workers: 10
+  timeout: "10s"

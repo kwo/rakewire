@@ -22,8 +22,8 @@ func TestFetch(t *testing.T) {
 	logger.Printf("feeds: %d\n", feeds.Size())
 
 	cfg := &Configuration{
-		Fetchers:           20,
-		HTTPTimeoutSeconds: 20,
+		Workers: 20,
+		Timeout: "20s",
 	}
 
 	requests := make(chan *m.Feed)

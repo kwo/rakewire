@@ -9,13 +9,17 @@ import (
 	"time"
 )
 
+const (
+	minPollFrequency = time.Minute * 1
+)
+
 var (
 	logger = logging.New("poll")
 )
 
 // Configuration for pump service
 type Configuration struct {
-	FrequencyMinutes int
+	Frequency string
 }
 
 // Service for pumping feeds between fetcher and database
@@ -34,16 +38,16 @@ type Service struct {
 // NewService create a new service
 func NewService(cfg *Configuration, database db.Database) *Service {
 
-	freqMin := cfg.FrequencyMinutes
-	if freqMin < 1 {
-		freqMin = 5
-		logger.Printf("Bad or missing FrequencyMinutes configuration parameter (%d), setting to default of 5 minutes.", cfg.FrequencyMinutes)
+	freq, err := time.ParseDuration(cfg.Frequency)
+	if err != nil || freq < minPollFrequency {
+		freq = minPollFrequency
+		logger.Printf("Bad or missing FrequencyMinutes configuration parameter (%s), setting to default of %s.", cfg.Frequency, minPollFrequency.String())
 	}
 
 	return &Service{
 		Output:        make(chan *m.Feed),
 		database:      database,
-		pollFrequency: time.Duration(freqMin) * time.Minute,
+		pollFrequency: freq,
 		killsignal:    make(chan bool),
 	}
 

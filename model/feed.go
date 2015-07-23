@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	defaultFeedFrequencyMinutes = 5
+	defaultFeedFrequency time.Duration = time.Minute * 5
 )
 
 // Feeds collection of Feed
@@ -29,7 +29,7 @@ type Feed struct {
 	// Type of feed: Atom, RSS2, etc.
 	Flavor string `json:"flavor,omitempty"`
 	// how often to poll the feed in minutes
-	Frequency int `json:"frequency,omitempty"`
+	Frequency time.Duration `json:"frequency,omitempty"`
 	// Feed generator
 	Generator string `json:"generator,omitempty"`
 	// Hub URL
@@ -58,7 +58,7 @@ type Feed struct {
 func NewFeed(url string) *Feed {
 	lastFetch := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
 	x := Feed{
-		Frequency: defaultFeedFrequencyMinutes,
+		Frequency: defaultFeedFrequency,
 		ID:        uuid.NewUUID().String(),
 		LastFetch: &lastFetch,
 		URL:       url,
@@ -78,8 +78,7 @@ func (z *Feed) Encode() ([]byte, error) {
 
 // GetNextFetchTime get the next time to poll feed
 func (z *Feed) GetNextFetchTime() *time.Time {
-	frequency := time.Duration(z.Frequency) * time.Minute
-	result := z.LastFetch.Add(frequency).Truncate(time.Second)
+	result := z.LastFetch.Add(z.Frequency).Truncate(time.Second)
 	return &result
 }
 
