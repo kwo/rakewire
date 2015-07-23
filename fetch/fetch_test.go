@@ -1,7 +1,11 @@
 package fetch
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io"
 	"os"
 	m "rakewire.com/model"
 	"testing"
@@ -51,5 +55,27 @@ func TestFetch(t *testing.T) {
 	}()
 
 	ff.Stop()
+
+}
+
+func TestHash(t *testing.T) {
+
+	f, err := os.Open("../test/feed.xml")
+	require.Nil(t, err)
+	require.NotNil(t, f)
+
+	hash := sha256.New()
+	_, err = io.Copy(hash, f)
+	assert.Nil(t, err)
+	f.Close()
+
+	d := hash.Sum(nil)
+	assert.NotNil(t, d)
+	assert.Equal(t, 32, len(d))
+	cs := hex.EncodeToString(d)
+	assert.NotNil(t, cs)
+	assert.Equal(t, 64, len(cs))
+
+	//logger.Printf("file hash: %s", cs)
 
 }
