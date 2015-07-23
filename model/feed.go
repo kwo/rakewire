@@ -10,7 +10,10 @@ import (
 )
 
 const (
-	defaultFeedFrequency time.Duration = time.Minute * 5
+	// FeedIntervalMin is the minimum feed fetch interval (2m48s750ms) x 2^9 = 1 day
+	FeedIntervalMin time.Duration = time.Millisecond * 168750
+	// FeedIntervalMax is the maximum feed fetch interval
+	FeedIntervalMax time.Duration = time.Hour * 24
 )
 
 // Feeds collection of Feed
@@ -22,14 +25,16 @@ type Feeds struct {
 // Feed feed descriptior
 // Also a super type of fetch.Request and fetch.Response
 type Feed struct {
+	// Body is the HTTP payload
+	Body []byte `json:"-"`
+	// Checksum of HTTP payload (independent of etag)
+	Checksum string `json:"checksum,omitempty"`
 	// Etag from HTTP Request - used for conditional GETs
 	ETag string `json:"etag,omitempty"`
-	// The last status, true if error, false if successfully completed
-	Failed bool `json:"failed,omitempty"`
 	// Type of feed: Atom, RSS2, etc.
 	Flavor string `json:"flavor,omitempty"`
 	// how often to poll the feed in minutes
-	Frequency time.Duration `json:"frequency,omitempty"`
+	Interval time.Duration `json:"interval"`
 	// Feed generator
 	Generator string `json:"generator,omitempty"`
 	// Hub URL
@@ -41,11 +46,13 @@ type Feed struct {
 	// Time of last fetch attempt
 	LastAttempt *time.Time `json:"lastAttempt,omitempty"`
 	// Time of last successful fetch completion
-	LastFetch *time.Time `json:"lastFetch,omitempty"`
+	LastFetch *time.Time `json:"lastFetch"`
 	// Last-Modified time from HTTP Request - used for conditional GETs
 	LastModified *time.Time `json:"lastModified,omitempty"`
 	// Time the feed was last updated (from feed)
 	LastUpdated *time.Time `json:"lastUpdated,omitempty"`
+	// Last HTTP status code
+	StatusCode int `json:"statusCode,omitempty"`
 	// Feed title
 	Title string `json:"title"`
 	// URL updated if feed is permenently redirected
@@ -58,7 +65,7 @@ type Feed struct {
 func NewFeed(url string) *Feed {
 	lastFetch := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
 	x := Feed{
-		Frequency: defaultFeedFrequency,
+		Interval:  FeedIntervalMin,
 		ID:        uuid.NewUUID().String(),
 		LastFetch: &lastFetch,
 		URL:       url,
@@ -78,7 +85,7 @@ func (z *Feed) Encode() ([]byte, error) {
 
 // GetNextFetchTime get the next time to poll feed
 func (z *Feed) GetNextFetchTime() *time.Time {
-	result := z.LastFetch.Add(z.Frequency).Truncate(time.Second)
+	result := z.LastFetch.Add(z.Interval).Truncate(time.Second)
 	return &result
 }
 

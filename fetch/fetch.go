@@ -1,8 +1,8 @@
 package fetch
 
 import (
+	"bytes"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"rakewire.com/app"
 	"rakewire.com/logging"
@@ -34,11 +34,11 @@ type Configuration struct {
 
 // Service fetches feeds
 type Service struct {
-	input        chan *m.Feed
-	output       chan *m.Feed
-	fetcherCount int
-	latch        sync.WaitGroup
-	client       *http.Client
+	input   chan *m.Feed
+	output  chan *m.Feed
+	workers int
+	latch   sync.WaitGroup
+	client  *http.Client
 }
 
 // NewService create new fetcher service
@@ -48,9 +48,9 @@ func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Se
 		timeout = defaultTimeout
 	}
 	return &Service{
-		input:        input,
-		output:       output,
-		fetcherCount: cfg.Workers,
+		input:   input,
+		output:  output,
+		workers: cfg.Workers,
 		client: &http.Client{
 			// CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			// 	return http.ErrNotSupported
@@ -64,7 +64,7 @@ func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Se
 func (z *Service) Start() {
 	logger.Println("service starting...")
 	// initialize fetchers
-	for i := 0; i < z.fetcherCount; i++ {
+	for i := 0; i < z.workers; i++ {
 		z.latch.Add(1)
 		go z.run(i)
 	} // for
@@ -113,34 +113,48 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	feed.LastAttempt = &now
 
-	status := 0
 	message := ""
 	rsp, err := z.client.Do(z.newRequest(feed))
+	if err != nil {
+		feed.StatusCode = 999
+		message = err.Error()
+	} else {
 
-	if rsp != nil && rsp.Body != nil {
-		io.Copy(ioutil.Discard, rsp.Body)
+		buf := &bytes.Buffer{}
+		io.Copy(buf, rsp.Body)
 		rsp.Body.Close()
-		status = rsp.StatusCode
-	}
+		feed.Body = buf.Bytes()
+		feed.StatusCode = rsp.StatusCode
 
-	if err == nil {
-		feed.Failed = false
 		if feed.URL != rsp.Request.URL.String() {
 			feed.URL = rsp.Request.URL.String()
-		} else {
+			feed.StatusCode = 300
+		} else if rsp.StatusCode == 200 || rsp.StatusCode == 304 {
+
 			feed.LastFetch = &now
 			feed.ETag = rsp.Header.Get(hEtag)
-			m, err := http.ParseTime(rsp.Header.Get(hLastModified))
-			if err == nil && !m.IsZero() {
-				feed.LastModified = &m
-			}
-		}
-	} else {
-		feed.Failed = true
-		message = err.Error()
-	}
+			feed.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 
-	logger.Printf("fetch %2d: %5t %3d %s - %s\n", id, feed.Failed, status, feed.URL, message)
+			cs := checksum(feed.Body)
+			if feed.Checksum != "" {
+				if feed.Checksum != cs {
+					// updated - reset back to minimum
+					feed.Interval = m.FeedIntervalMin
+				} else {
+					// not updated - use backoff policy to decrease frequency
+					feed.Interval *= 2
+					if feed.Interval > m.FeedIntervalMax {
+						feed.Interval = m.FeedIntervalMax
+					}
+				}
+			}
+			feed.Checksum = cs
+
+		} // 200 or 304
+
+	} // err
+
+	logger.Printf("fetch %2d: %3d %s %s\n", id, feed.StatusCode, feed.URL, message)
 	z.output <- feed
 
 }

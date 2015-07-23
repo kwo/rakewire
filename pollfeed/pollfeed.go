@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	minPollFrequency = time.Minute * 1
+	minPollFrequency = time.Minute * 2
 )
 
 var (
