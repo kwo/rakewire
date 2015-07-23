@@ -69,10 +69,10 @@ func TestPoll(t *testing.T) {
 
 	// create service
 	cfg := &Configuration{
-		Frequency: "1m",
+		Interval: "1m",
 	}
 	pf := NewService(cfg, database)
-	pf.pollFrequency = 50 * time.Millisecond
+	pf.pollInterval = 50 * time.Millisecond
 
 	pf.Start()
 	require.Equal(t, true, pf.IsRunning())

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	minPollFrequency = time.Minute * 2
+	minPollInterval = time.Minute * 1
 )
 
 var (
@@ -19,36 +19,36 @@ var (
 
 // Configuration for pump service
 type Configuration struct {
-	Frequency string
+	Interval string
 }
 
 // Service for pumping feeds between fetcher and database
 type Service struct {
-	Output        chan *m.Feed
-	database      db.Database
-	pollFrequency time.Duration
-	killsignal    chan bool
-	killed        int32
-	running       int32
-	runlatch      sync.WaitGroup
-	polling       int32
-	polllatch     sync.WaitGroup
+	Output       chan *m.Feed
+	database     db.Database
+	pollInterval time.Duration
+	killsignal   chan bool
+	killed       int32
+	running      int32
+	runlatch     sync.WaitGroup
+	polling      int32
+	polllatch    sync.WaitGroup
 }
 
 // NewService create a new service
 func NewService(cfg *Configuration, database db.Database) *Service {
 
-	freq, err := time.ParseDuration(cfg.Frequency)
-	if err != nil || freq < minPollFrequency {
-		freq = minPollFrequency
-		logger.Printf("Bad or missing FrequencyMinutes configuration parameter (%s), setting to default of %s.", cfg.Frequency, minPollFrequency.String())
+	interval, err := time.ParseDuration(cfg.Interval)
+	if err != nil || interval < minPollInterval {
+		interval = minPollInterval
+		logger.Printf("Bad or missing interval configuration parameter (%s), setting to default of %s.", cfg.Interval, minPollInterval.String())
 	}
 
 	return &Service{
-		Output:        make(chan *m.Feed),
-		database:      database,
-		pollFrequency: freq,
-		killsignal:    make(chan bool),
+		Output:       make(chan *m.Feed),
+		database:     database,
+		pollInterval: interval,
+		killsignal:   make(chan bool),
 	}
 
 }
@@ -79,7 +79,7 @@ func (z *Service) run() {
 	z.polllatch.Add(1)
 	go z.poll(nil)
 
-	ticker := time.NewTicker(z.pollFrequency)
+	ticker := time.NewTicker(z.pollInterval)
 
 run:
 	for {
