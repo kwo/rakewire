@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	// FeedIntervalMin is the minimum feed fetch interval (2m48s750ms) x 2^9 = 1 day
-	FeedIntervalMin time.Duration = time.Millisecond * 168750
-	// FeedIntervalMax is the maximum feed fetch interval
-	FeedIntervalMax time.Duration = time.Hour * 24
+	// feedIntervalMin is the minimum feed fetch interval (5m37s500ms) x 2^8 = 1 day
+	feedIntervalMin time.Duration = time.Millisecond * 337500
+	// feedIntervalMax is the maximum feed fetch interval
+	feedIntervalMax time.Duration = time.Hour * 24
 )
 
 // Feeds collection of Feed
@@ -65,7 +65,7 @@ type Feed struct {
 func NewFeed(url string) *Feed {
 	lastFetch := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
 	x := Feed{
-		Interval:  FeedIntervalMin,
+		Interval:  feedIntervalMin,
 		ID:        uuid.NewUUID().String(),
 		LastFetch: &lastFetch,
 		URL:       url,
@@ -81,6 +81,19 @@ func (z *Feed) Decode(data []byte) error {
 // Encode Feed object to bytes
 func (z *Feed) Encode() ([]byte, error) {
 	return json.MarshalIndent(z, "", " ")
+}
+
+// BackoffInterval increases the fetch interval
+func (z *Feed) BackoffInterval() {
+	z.Interval *= 2
+	if z.Interval > feedIntervalMax {
+		z.Interval = feedIntervalMax
+	}
+}
+
+// ResetInterval resets to the minimum fetch interval
+func (z *Feed) ResetInterval() {
+	z.Interval = feedIntervalMin
 }
 
 // GetNextFetchTime get the next time to poll feed

@@ -141,26 +141,23 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 				if feed.Checksum != "" {
 					if feed.Checksum != cs {
 						// updated - reset back to minimum
-						feed.Interval = m.FeedIntervalMin
+						feed.ResetInterval()
 					} else {
 						// not updated - use backoff policy to increase interval
-						feed.Interval *= 2
-						if feed.Interval > m.FeedIntervalMax {
-							feed.Interval = m.FeedIntervalMax
-						}
+						feed.BackoffInterval()
 					}
 				}
 				feed.Checksum = cs
 
 			} else { // 304
 				// not updated - use backoff policy to increase interval
-				feed.Interval *= 2
-				if feed.Interval > m.FeedIntervalMax {
-					feed.Interval = m.FeedIntervalMax
-				}
+				feed.BackoffInterval()
 			}
 
-		} // 200 or 304
+		} else if rsp.StatusCode >= 400 {
+			// don't hammer site if it has errors
+			feed.BackoffInterval()
+		}
 
 	} // err
 
