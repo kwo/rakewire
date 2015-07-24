@@ -8,8 +8,10 @@ import (
 	"rakewire.com/fetch"
 	"rakewire.com/httpd"
 	"rakewire.com/logging"
+	"rakewire.com/model"
 	"rakewire.com/pollfeed"
 	"rakewire.com/reaper"
+	"runtime"
 	"syscall"
 )
 
@@ -23,6 +25,9 @@ var (
 )
 
 func main() {
+
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	logger.Printf("Rakewire %s starting with %d CPUs", model.VERSION, runtime.NumCPU())
 
 	cfg := config.GetConfig()
 	if cfg == nil {
