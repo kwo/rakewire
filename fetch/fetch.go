@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"io"
 	"net/http"
-	"rakewire.com/app"
 	"rakewire.com/logging"
 	m "rakewire.com/model"
 	"sync"
@@ -13,7 +12,7 @@ import (
 
 const (
 	defaultTimeout   = time.Second * 20
-	httpUserAgent    = "Rakewire " + app.VERSION
+	httpUserAgent    = "Rakewire " + m.VERSION
 	hEtag            = "Etag"
 	hIfModifiedSince = "If-Modified-Since"
 	hIfNoneMatch     = "If-None-Match"
