@@ -16,7 +16,7 @@ const (
 	httpUserAgent    = "Rakewire " + m.VERSION
 	hAcceptEncoding  = "Accept-Encoding"
 	hContentEncoding = "Content-Encoding"
-	hEtag            = "Etag"
+	hEtag            = "ETag"
 	hIfModifiedSince = "If-Modified-Since"
 	hIfNoneMatch     = "If-None-Match"
 	hLastModified    = "Last-Modified"
