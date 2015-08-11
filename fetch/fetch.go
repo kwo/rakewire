@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"rakewire.com/logging"
 	m "rakewire.com/model"
-	"strings"
 	"sync"
 	"time"
 )
@@ -16,12 +15,14 @@ const (
 	defaultTimeout   = time.Second * 20
 	httpUserAgent    = "Rakewire " + m.VERSION
 	hAcceptEncoding  = "Accept-Encoding"
+	hContentEncoding = "Content-Encoding"
 	hEtag            = "Etag"
 	hIfModifiedSince = "If-Modified-Since"
 	hIfNoneMatch     = "If-None-Match"
 	hLastModified    = "Last-Modified"
 	hUserAgent       = "User-Agent"
 	mGET             = "GET"
+	gzip             = "gzip"
 )
 
 var (
@@ -99,19 +100,20 @@ func (z *Service) run(id int) {
 
 func (z *Service) newRequest(feed *m.Feed) *http.Request {
 	req, _ := http.NewRequest(mGET, feed.URL, nil)
+	req.Header.Set(hUserAgent, httpUserAgent)
+	req.Header.Set(hAcceptEncoding, gzip)
 	if feed.LastModified != nil {
 		req.Header.Set(hIfModifiedSince, feed.LastModified.UTC().Format(http.TimeFormat))
 	}
 	if feed.ETag != "" {
 		req.Header.Set(hIfNoneMatch, feed.ETag)
 	}
-	req.Header.Set(hUserAgent, httpUserAgent)
 	return req
 }
 
 func (z *Service) processFeed(feed *m.Feed, id int) {
 
-	startTime := time.Now().Truncate(time.Millisecond)
+	startTime := time.Now().UTC().Truncate(time.Millisecond)
 	now := startTime.Truncate(time.Second)
 	feed.Attempt = &m.FeedLog{}
 
@@ -149,7 +151,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.Result = m.FetchResultOK
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
-			feed.Attempt.UsesGzip = strings.Contains(rsp.Header.Get(hAcceptEncoding), "gzip")
+			feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
 
 			if rsp.StatusCode == 200 {
 

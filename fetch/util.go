@@ -44,3 +44,7 @@ func parseDateHeader(value string) *time.Time {
 	}
 	return result
 }
+
+func usesGzip(header string) bool {
+	return strings.Contains(header, gzip)
+}
