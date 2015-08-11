@@ -155,20 +155,21 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 				feed.Attempt.ContentLength = len(feed.Body)
 				feed.Attempt.Checksum = checksum(feed.Body)
-				if feed.Last.Checksum != "" {
+				feed.Attempt.UpdateCheck = m.UpdateCheckChecksum
+				if feed.Last != nil && feed.Last.Checksum != "" {
 					if feed.Last.Checksum != feed.Attempt.Checksum {
 						// updated - reset back to minimum
 						// #TODO:20 add UpdateCheckFeedEntries check
 						feed.Attempt.IsUpdated = true
-						feed.Attempt.UpdateCheck = m.UpdateCheckChecksum
 						feed.ResetInterval()
 					} else {
 						// not updated - use backoff policy to increase interval
-						feed.Attempt.IsUpdated = false
-						feed.Attempt.UpdateCheck = m.UpdateCheckChecksum // not modified but site doesn't support conditional GETs
+						feed.Attempt.IsUpdated = false // not modified but site doesn't support conditional GETs
 						feed.BackoffInterval()
 						feed.StatusCode = 399 // not modified but site doesn't support conditional GETs
 					}
+				} else {
+					feed.Attempt.IsUpdated = true
 				}
 
 			} else if rsp.StatusCode == 304 { // 304 not modified
