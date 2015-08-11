@@ -130,16 +130,16 @@ func (z *Database) GetFeedByURL(url string) (*m.Feed, error) {
 // SaveFeeds save feeds
 func (z *Database) SaveFeeds(feeds *m.Feeds) error {
 
-	for _, f := range feeds.Values {
+	for _, fNew := range feeds.Values {
 
 		// get old record
-		f0, err := z.GetFeedByID(f.ID)
+		fOld, err := z.GetFeedByID(fNew.ID)
 		if err != nil {
 			return err
 		}
 
 		// save new record
-		err = z.saveFeed(f, f0)
+		err = z.saveFeed(fNew, fOld)
 		if err != nil {
 			return err
 		}
@@ -150,14 +150,9 @@ func (z *Database) SaveFeeds(feeds *m.Feeds) error {
 
 }
 
-func (z *Database) saveFeed(f *m.Feed, f0 *m.Feed) error {
+func (z *Database) saveFeed(fNew *m.Feed, fOld *m.Feed) error {
 
 	err := z.db.Update(func(tx *bolt.Tx) error {
-
-		data, err := f.Encode()
-		if err != nil {
-			return err
-		}
 
 		b := tx.Bucket([]byte(bucketFeed))
 		indexes := tx.Bucket([]byte(bucketIndex))
@@ -165,36 +160,41 @@ func (z *Database) saveFeed(f *m.Feed, f0 *m.Feed) error {
 		idxNextFetch := indexes.Bucket([]byte(bucketIndexNextFetch))
 
 		// log record
-		if f.Attempt != nil {
-			f.Last = f.Attempt
-			f.Attempt = nil
-			if err := z.addFeedLog(tx, f.ID, f.Last); err != nil {
+		if fNew.Attempt != nil {
+			fNew.Last = fNew.Attempt
+			if err := z.addFeedLog(tx, fNew.ID, fNew.Last); err != nil {
 				return err
 			}
 		}
 
+		// encode record (must be after feed log)
+		data, err := fNew.Encode()
+		if err != nil {
+			return err
+		}
+
 		// save record
-		if err = b.Put([]byte(f.ID), data); err != nil {
+		if err = b.Put([]byte(fNew.ID), data); err != nil {
 			return err
 		}
 
 		// remove old index entries
-		if f0 != nil {
+		if fOld != nil {
 
-			if err := idxFeedByURL.Delete([]byte(f0.URL)); err != nil {
+			if err := idxFeedByURL.Delete([]byte(fOld.URL)); err != nil {
 				return err
 			}
-			if err := idxNextFetch.Delete([]byte(fetchKey(f0))); err != nil {
+			if err := idxNextFetch.Delete([]byte(fetchKey(fOld))); err != nil {
 				return err
 			}
 
 		}
 
 		// add index entries
-		if err := idxFeedByURL.Put([]byte(f.URL), []byte(f.ID)); err != nil {
+		if err := idxFeedByURL.Put([]byte(fNew.URL), []byte(fNew.ID)); err != nil {
 			return err
 		}
-		if err := idxNextFetch.Put([]byte(fetchKey(f)), []byte(f.ID)); err != nil {
+		if err := idxNextFetch.Put([]byte(fetchKey(fNew)), []byte(fNew.ID)); err != nil {
 			return err
 		}
 
@@ -203,7 +203,7 @@ func (z *Database) saveFeed(f *m.Feed, f0 *m.Feed) error {
 	})
 
 	if err == nil {
-		z.checkIndexForEntries(bucketIndexNextFetch, f.ID, 1)
+		z.checkIndexForEntries(bucketIndexNextFetch, fNew.ID, 1)
 	} else {
 		logger.Println("Cannot check for duplicates, error")
 	}
