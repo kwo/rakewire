@@ -30,6 +30,10 @@ func (z *Service) apiRouter(prefix string) *mux.Router {
 	router.Path(prefixFeedsFeed).Methods(mGet).HandlerFunc(z.feedsGetFeedByID)
 	router.Path(prefixFeedsFeed).HandlerFunc(notSupported)
 
+	var prefixFeedsFeedLog = prefixFeeds + "/{feedID}/log"
+	router.Path(prefixFeedsFeedLog).Methods(mGet).HandlerFunc(z.feedsGetFeedLogByID)
+	router.Path(prefixFeedsFeedLog).HandlerFunc(notSupported)
+
 	return router
 
 }

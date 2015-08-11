@@ -180,3 +180,28 @@ func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds *m.Feeds) {
 	w.Write(data)
 
 }
+
+func (z *Service) feedsGetFeedLogByID(w http.ResponseWriter, req *http.Request) {
+
+	vars := mux.Vars(req)
+	feedID := vars["feedID"]
+
+	entries, err := z.Database.GetFeedLog(feedID, 7*24*time.Hour)
+	if err != nil {
+		logger.Printf("Error in db.GetFeedLog: %s\n", err.Error())
+		http.Error(w, "Cannot retrieve feed logs from database.", http.StatusInternalServerError)
+		return
+	} else if entries == nil {
+		notFound(w, req)
+		return
+	}
+
+	w.Header().Set(hContentType, mimeJSON)
+	err = json.NewEncoder(w).Encode(entries)
+	if err != nil {
+		logger.Printf("Error encoding log entries: %s\n", err.Error())
+		http.Error(w, "Cannot serialize feed logs from database.", http.StatusInternalServerError)
+		return
+	}
+
+}
