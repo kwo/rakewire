@@ -53,7 +53,7 @@ type Feed struct {
 	LastModified *time.Time `json:"lastModified,omitempty"`
 	// Time the feed was last updated (from feed)
 	LastUpdated *time.Time `json:"lastUpdated,omitempty"`
-	// Last fetch attempt for feed
+	// Last successful fetch with status code 200
 	Last *FeedLog `json:"last"`
 	// Past fetch attempts for feed
 	Log []*FeedLog `json:"-"`
