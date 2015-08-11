@@ -2,10 +2,12 @@ package fetch
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"net/http"
 	"rakewire.com/logging"
 	m "rakewire.com/model"
+	"strings"
 	"sync"
 	"time"
 )
@@ -13,6 +15,7 @@ import (
 const (
 	defaultTimeout   = time.Second * 20
 	httpUserAgent    = "Rakewire " + m.VERSION
+	hAcceptEncoding  = "Accept-Encoding"
 	hEtag            = "Etag"
 	hIfModifiedSince = "If-Modified-Since"
 	hIfNoneMatch     = "If-None-Match"
@@ -108,63 +111,85 @@ func (z *Service) newRequest(feed *m.Feed) *http.Request {
 
 func (z *Service) processFeed(feed *m.Feed, id int) {
 
-	now := time.Now().Truncate(time.Second)
+	startTime := time.Now().Truncate(time.Millisecond)
+	now := startTime.Truncate(time.Second)
+	feed.Attempt = &m.FeedLog{}
+	feed.Attempt.FeedID = feed.ID
 
-	feed.LastAttempt = &now
+	feed.LastAttempt = &now // TODO: remove
+	feed.Attempt.StartTime = &now
 
-	message := ""
 	rsp, err := z.client.Do(z.newRequest(feed))
 	if err != nil {
-		feed.StatusCode = 999
-		message = err.Error()
+		feed.StatusCode = 999 // TODO: remove
+		feed.Attempt.Result = m.FetchResultClientError
+		feed.Attempt.ResultMessage = err.Error()
 	} else {
 
 		buf := &bytes.Buffer{}
 		io.Copy(buf, rsp.Body)
 		rsp.Body.Close()
 		feed.Body = buf.Bytes()
-		feed.StatusCode = rsp.StatusCode
+		feed.StatusCode = rsp.StatusCode // TODO: remove
+		feed.Attempt.StatusCode = rsp.StatusCode
 
 		// #TODO:0 stop following redirects so that they may be logged
 
 		if feed.URL != rsp.Request.URL.String() {
+			feed.Attempt.Result = m.FetchResultRedirect
+			feed.Attempt.ResultMessage = fmt.Sprintf("%s -> %s", feed.URL, rsp.Request.URL.String())
 			feed.URL = rsp.Request.URL.String()
-			feed.StatusCode = 333 // a redirect 301, 302, 307 or 308
+			feed.StatusCode = 333 // a redirect 301, 302, 307 or 308 // TODO: remove
 		} else if rsp.StatusCode == 200 || rsp.StatusCode == 304 {
 
+			// TODO: remove block
 			feed.LastFetch = &now
 			feed.ETag = rsp.Header.Get(hEtag)
 			feed.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 
+			feed.Attempt.Result = m.FetchResultOK
+			feed.Attempt.ETag = rsp.Header.Get(hEtag)
+			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
+			feed.Attempt.UsesGzip = strings.Contains(rsp.Header.Get(hAcceptEncoding), "gzip")
+
 			if rsp.StatusCode == 200 {
 
-				cs := checksum(feed.Body)
-				if feed.Checksum != "" {
-					if feed.Checksum != cs {
+				feed.Attempt.ContentLength = len(feed.Body)
+				feed.Attempt.Checksum = checksum(feed.Body)
+				if feed.Last.Checksum != "" {
+					if feed.Last.Checksum != feed.Attempt.Checksum {
 						// updated - reset back to minimum
-						// #TODO:20 check feed last updated as last check if content has changed
+						// #TODO:20 add UpdateCheckFeedEntries check
+						feed.Attempt.IsUpdated = true
+						feed.Attempt.UpdateCheck = m.UpdateCheckChecksum
 						feed.ResetInterval()
 					} else {
 						// not updated - use backoff policy to increase interval
+						feed.Attempt.IsUpdated = false
+						feed.Attempt.UpdateCheck = m.UpdateCheckChecksum // not modified but site doesn't support conditional GETs
 						feed.BackoffInterval()
 						feed.StatusCode = 399 // not modified but site doesn't support conditional GETs
 					}
 				}
-				feed.Checksum = cs
 
 			} else if rsp.StatusCode == 304 { // 304 not modified
 				// not updated - use backoff policy to increase interval
+				feed.Attempt.IsUpdated = false
+				feed.Attempt.UpdateCheck = m.UpdateCheck304
 				feed.BackoffInterval()
 			}
 
 		} else if rsp.StatusCode >= 400 {
 			// don't hammer site if error
 			feed.BackoffIntervalError()
+			feed.Attempt.Result = m.FetchResultServerError
 		}
 
 	} // err
 
-	logger.Printf("fetch %2d: %3d %s %s\n", id, feed.StatusCode, feed.URL, message)
+	feed.Attempt.Duration = startTime.Sub(time.Now().Truncate(time.Millisecond))
+
+	logger.Printf("fetch %2d: %3d %s %s\n", id, feed.StatusCode, feed.URL, feed.Attempt.ResultMessage)
 	z.output <- feed
 
 }

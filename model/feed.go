@@ -25,6 +25,8 @@ type Feeds struct {
 // Feed feed descriptior
 // Also a super type of fetch.Request and fetch.Response
 type Feed struct {
+	// Current fetch attempt for feed
+	Attempt *FeedLog `json:"-"`
 	// Body is the HTTP payload
 	Body []byte `json:"-"`
 	// Checksum of HTTP payload (independent of etag)
@@ -51,6 +53,10 @@ type Feed struct {
 	LastModified *time.Time `json:"lastModified,omitempty"`
 	// Time the feed was last updated (from feed)
 	LastUpdated *time.Time `json:"lastUpdated,omitempty"`
+	// Last fetch attempt for feed
+	Last *FeedLog `json:"last"`
+	// Past fetch attempts for feed
+	Log []*FeedLog `json:"-"`
 	// Last HTTP status code
 	StatusCode int `json:"statusCode,omitempty"`
 	// Feed title
@@ -70,6 +76,11 @@ func NewFeed(url string) *Feed {
 		LastFetch: &lastFetch,
 		URL:       url,
 	}
+	// ensure that feed has .Last element
+	x.Last = &FeedLog{
+		FeedID: x.ID,
+	}
+
 	return &x
 }
 

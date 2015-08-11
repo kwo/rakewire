@@ -2,7 +2,6 @@
 
 ## v0.0.2
 
- - #DOING:0 create database methods for fetch entries
  - #DOING:10 feed log history - which feeds have errors, were redirected?
  - #TODO:10 improve polling algorithm (automatic mode with backoff algorithm)
  - #TODO:30 feed parser
