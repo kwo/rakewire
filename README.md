@@ -40,6 +40,7 @@
  - #BACKLOG:240 Mac Taskbar icon
  - #BACKLOG:250 add login for single user
  - #BACKLOG:260 pre gzip webapp
+ - #BACKLOG:270 cryptographically signing of entries, feeds with nice UI lock symbol as proof (see [Atom Digital Signatures](https://tools.ietf.org/html/rfc4287#section-5.1))
 
 ## Changelog
 
