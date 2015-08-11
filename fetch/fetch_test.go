@@ -49,7 +49,7 @@ func TestFetch(t *testing.T) {
 	go func() {
 		logger.Println("monitoring...")
 		for rsp := range responses {
-			logger.Printf("%3d %s\n", rsp.StatusCode, rsp.URL)
+			logger.Printf("%3d %s\n", rsp.Attempt.StatusCode, rsp.URL)
 		}
 		logger.Println("monitoring done")
 	}()

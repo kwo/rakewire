@@ -29,10 +29,6 @@ type Feed struct {
 	Attempt *FeedLog `json:"-"`
 	// Body is the HTTP payload
 	Body []byte `json:"-"`
-	// Checksum of HTTP payload (independent of etag)
-	Checksum string `json:"checksum,omitempty"`
-	// Etag from HTTP Request - used for conditional GETs
-	ETag string `json:"etag,omitempty"`
 	// Type of feed: Atom, RSS2, etc.
 	Flavor string `json:"flavor,omitempty"`
 	// how often to poll the feed in minutes
@@ -45,20 +41,16 @@ type Feed struct {
 	Icon string `json:"icon,omitempty"`
 	// UUID
 	ID string `json:"id"`
-	// Time of last fetch attempt
-	LastAttempt *time.Time `json:"lastAttempt,omitempty"`
 	// Time of last successful fetch completion
 	LastFetch *time.Time `json:"lastFetch"`
-	// Last-Modified time from HTTP Request - used for conditional GETs
-	LastModified *time.Time `json:"lastModified,omitempty"`
 	// Time the feed was last updated (from feed)
 	LastUpdated *time.Time `json:"lastUpdated,omitempty"`
-	// Last successful fetch with status code 200
+	// Last fetch
 	Last *FeedLog `json:"last"`
+	// Last successful fetch with status code 200
+	Last200 *FeedLog `json:"last200"`
 	// Past fetch attempts for feed
 	Log []*FeedLog `json:"-"`
-	// Last HTTP status code
-	StatusCode int `json:"statusCode,omitempty"`
 	// Feed title
 	Title string `json:"title"`
 	// URL updated if feed is permenently redirected

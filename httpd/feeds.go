@@ -57,7 +57,7 @@ func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 		if f.LastFetch != nil {
 			dtLast = f.LastFetch.Format("15:04:05")
 		}
-		line := fmt.Sprintf("%-8s  %-8s %6d   %s\n", dtNext, dtLast, f.StatusCode, f.URL)
+		line := fmt.Sprintf("%-8s  %-8s %6d   %s\n", dtNext, dtLast, f.Last.StatusCode, f.URL)
 		w.Write([]byte(line))
 	}
 

@@ -102,11 +102,13 @@ func (z *Service) newRequest(feed *m.Feed) *http.Request {
 	req, _ := http.NewRequest(mGET, feed.URL, nil)
 	req.Header.Set(hUserAgent, httpUserAgent)
 	req.Header.Set(hAcceptEncoding, gzip)
-	if feed.LastModified != nil {
-		req.Header.Set(hIfModifiedSince, feed.LastModified.UTC().Format(http.TimeFormat))
-	}
-	if feed.ETag != "" {
-		req.Header.Set(hIfNoneMatch, feed.ETag)
+	if feed.Last200 != nil {
+		if feed.Last200.LastModified != nil {
+			req.Header.Set(hIfModifiedSince, feed.Last200.LastModified.UTC().Format(http.TimeFormat))
+		}
+		if feed.Last200.ETag != "" {
+			req.Header.Set(hIfNoneMatch, feed.Last200.ETag)
+		}
 	}
 	return req
 }
@@ -117,12 +119,10 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 	now := startTime.Truncate(time.Second)
 	feed.Attempt = &m.FeedLog{}
 
-	feed.LastAttempt = &now // TODO: remove
 	feed.Attempt.StartTime = &now
 
 	rsp, err := z.client.Do(z.newRequest(feed))
 	if err != nil {
-		feed.StatusCode = 999 // TODO: remove
 		feed.Attempt.Result = m.FetchResultClientError
 		feed.Attempt.ResultMessage = err.Error()
 	} else {
@@ -131,7 +131,6 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 		io.Copy(buf, rsp.Body)
 		rsp.Body.Close()
 		feed.Body = buf.Bytes()
-		feed.StatusCode = rsp.StatusCode // TODO: remove
 		feed.Attempt.StatusCode = rsp.StatusCode
 
 		// #TODO:0 stop following redirects so that they may be logged
@@ -140,13 +139,10 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.Result = m.FetchResultRedirect
 			feed.Attempt.ResultMessage = fmt.Sprintf("%s -> %s", feed.URL, rsp.Request.URL.String())
 			feed.URL = rsp.Request.URL.String()
-			feed.StatusCode = 333 // a redirect 301, 302, 307 or 308 // TODO: remove
 		} else if rsp.StatusCode == 200 || rsp.StatusCode == 304 {
 
 			// TODO: remove block
 			feed.LastFetch = &now
-			feed.ETag = rsp.Header.Get(hEtag)
-			feed.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 
 			feed.Attempt.Result = m.FetchResultOK
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
@@ -158,8 +154,8 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 				feed.Attempt.ContentLength = len(feed.Body)
 				feed.Attempt.Checksum = checksum(feed.Body)
 				feed.Attempt.UpdateCheck = m.UpdateCheckChecksum
-				if feed.Last != nil && feed.Last.Checksum != "" {
-					if feed.Last.Checksum != feed.Attempt.Checksum {
+				if feed.Last200 != nil && feed.Last200.Checksum != "" {
+					if feed.Last200.Checksum != feed.Attempt.Checksum {
 						// updated - reset back to minimum
 						// #TODO:20 add UpdateCheckFeedEntries check
 						feed.Attempt.IsUpdated = true
@@ -168,7 +164,6 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 						// not updated - use backoff policy to increase interval
 						feed.Attempt.IsUpdated = false // not modified but site doesn't support conditional GETs
 						feed.BackoffInterval()
-						feed.StatusCode = 399 // not modified but site doesn't support conditional GETs
 					}
 				} else {
 					feed.Attempt.IsUpdated = true
@@ -191,7 +186,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
 
-	logger.Printf("fetch %2d: %3d %s %s\n", id, feed.StatusCode, feed.URL, feed.Attempt.ResultMessage)
+	logger.Printf("fetch %2d: %3d %s %s\n", id, feed.Attempt.StatusCode, feed.URL, feed.Attempt.ResultMessage)
 	z.output <- feed
 
 }

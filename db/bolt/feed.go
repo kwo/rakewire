@@ -161,11 +161,12 @@ func (z *Database) saveFeed(fNew *m.Feed, fOld *m.Feed) error {
 
 		// log record
 		if fNew.Attempt != nil {
-			if err := z.addFeedLog(tx, fNew.ID, fNew.Attempt); err != nil {
+			fNew.Last = fNew.Attempt
+			if err := z.addFeedLog(tx, fNew.ID, fNew.Last); err != nil {
 				return err
 			}
-			if fNew.Attempt.StatusCode == 200 {
-				fNew.Last = fNew.Attempt
+			if fNew.Last.StatusCode == 200 {
+				fNew.Last200 = fNew.Last
 			}
 		}
 
