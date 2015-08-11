@@ -26,7 +26,6 @@ type FeedLog struct {
 	ContentLength int           `json:"contentLength,omitempty"` // Length of the HTTP Response
 	Duration      time.Duration `json:"duration"`                // duration of http request plus feed processing
 	ETag          string        `json:"etag,omitempty"`          // ETag from HTTP Request
-	FeedID        string        `json:"feedId"`                  // UUID of feed
 	IsUpdated     bool          `json:"updated"`                 // flag indicating updated content, see UpdateCheck
 	LastModified  *time.Time    `json:"lastModified,omitempty"`  // Last-Modified time from HTTP Request
 	Result        int           `json:"result"`                  // result code of fetch attempt

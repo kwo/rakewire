@@ -76,9 +76,7 @@ func NewFeed(url string) *Feed {
 		ID:        id,
 		LastFetch: &lastFetch,
 		URL:       url,
-		Last: &FeedLog{
-			FeedID: id,
-		},
+		Last:      &FeedLog{},
 	}
 	return &x
 }

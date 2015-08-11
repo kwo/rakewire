@@ -20,22 +20,22 @@ func TestSaveFeedLog(t *testing.T) {
 	require.Nil(t, err)
 
 	now := time.Now().Truncate(time.Second)
+	feedID := "12345"
 
 	err = database.db.Update(func(tx *bolt.Tx) error {
 		for i := 1; i <= 100; i++ {
 			dt := now.Add(time.Hour * time.Duration(-i))
 			entry := &m.FeedLog{}
-			entry.FeedID = "12345"
 			entry.StartTime = &dt
 			entry.Duration = time.Duration(i)
-			err := database.addFeedLog(tx, entry)
+			err := database.addFeedLog(tx, feedID, entry)
 			assert.Nil(t, err)
 		}
 		return nil
 	})
 	assert.Nil(t, err)
 
-	entries, err := database.GetFeedLog("12345", 10*time.Hour)
+	entries, err := database.GetFeedLog(feedID, 10*time.Hour)
 	assert.Nil(t, err)
 	assert.NotNil(t, entries)
 	assert.Equal(t, 10, len(entries))

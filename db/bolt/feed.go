@@ -186,7 +186,7 @@ func (z *Database) saveFeed(f *m.Feed, f0 *m.Feed) error {
 		if f.Attempt != nil {
 			f.Last = f.Attempt
 			f.Attempt = nil
-			if err := z.addFeedLog(tx, f.Last); err != nil {
+			if err := z.addFeedLog(tx, f.ID, f.Last); err != nil {
 				return err
 			}
 		}

@@ -46,7 +46,7 @@ func (z *Database) GetFeedLog(id string, since time.Duration) ([]*m.FeedLog, err
 
 }
 
-func (z *Database) addFeedLog(tx *bolt.Tx, entry *m.FeedLog) error {
+func (z *Database) addFeedLog(tx *bolt.Tx, id string, entry *m.FeedLog) error {
 
 	data, err := entry.Encode()
 	if err != nil {
@@ -56,7 +56,7 @@ func (z *Database) addFeedLog(tx *bolt.Tx, entry *m.FeedLog) error {
 	b := tx.Bucket([]byte(bucketFeedLog))
 
 	// save record
-	if err = b.Put([]byte(formatFeedLogKey(entry.FeedID, entry.StartTime)), data); err != nil {
+	if err = b.Put([]byte(formatFeedLogKey(id, entry.StartTime)), data); err != nil {
 		return err
 	}
 

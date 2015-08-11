@@ -114,7 +114,6 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 	startTime := time.Now().Truncate(time.Millisecond)
 	now := startTime.Truncate(time.Second)
 	feed.Attempt = &m.FeedLog{}
-	feed.Attempt.FeedID = feed.ID
 
 	feed.LastAttempt = &now // TODO: remove
 	feed.Attempt.StartTime = &now
