@@ -70,17 +70,16 @@ type Feed struct {
 // NewFeed instantiate a new Feed object with a new UUID
 func NewFeed(url string) *Feed {
 	lastFetch := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
+	id := uuid.NewUUID().String()
 	x := Feed{
 		Interval:  feedIntervalMin,
-		ID:        uuid.NewUUID().String(),
+		ID:        id,
 		LastFetch: &lastFetch,
 		URL:       url,
+		Last: &FeedLog{
+			FeedID: id,
+		},
 	}
-	// ensure that feed has .Last element
-	x.Last = &FeedLog{
-		FeedID: x.ID,
-	}
-
 	return &x
 }
 
