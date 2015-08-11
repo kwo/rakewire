@@ -7,6 +7,13 @@ import (
 	"time"
 )
 
+func formatFeedLogKey(id string, dt *time.Time) string {
+	if dt == nil {
+		return fmt.Sprintf("%s!", id)
+	}
+	return fmt.Sprintf("%s!%s", id, formatTimeKey(*dt))
+}
+
 func fetchKey(f *m.Feed) string {
 	return fmt.Sprintf("%s!%s", formatTimeKey(*f.GetNextFetchTime()), f.ID)
 }

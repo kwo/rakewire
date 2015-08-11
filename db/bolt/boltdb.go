@@ -11,6 +11,7 @@ import (
 
 const (
 	bucketFeed           = "Feed"
+	bucketFeedLog        = "FeedLog"
 	bucketIndex          = "Index"
 	bucketIndexFeedByURL = "idxFeedByURL"
 	bucketIndexNextFetch = "idxNextFetch"
@@ -38,6 +39,10 @@ func (z *Database) Open(cfg *db.Configuration) error {
 	// check that buckets exist
 	err = z.db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(bucketFeed))
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists([]byte(bucketFeedLog))
 		if err != nil {
 			return err
 		}
@@ -269,6 +274,70 @@ func (z *Database) saveFeed(f *m.Feed, f0 *m.Feed) error {
 	} else {
 		logger.Println("Cannot check for duplicates, error")
 	}
+
+	return err
+
+}
+
+// GetFeedLog retrieves the past fetch attempts for the feed in reverse chronological order.
+// If since is equal to 0, return all.
+func (z *Database) GetFeedLog(id string, since time.Duration) ([]*m.FeedLog, error) {
+
+	var min []byte
+	var max []byte
+	maxDate := time.Now()
+	if since == 0 {
+		min = []byte(formatFeedLogKey(id, nil))
+		max = []byte(formatFeedLogKey(id, &maxDate))
+	} else {
+		minDate := maxDate.Add(-since)
+		min = []byte(formatFeedLogKey(id, &minDate))
+		max = []byte(formatFeedLogKey(id, &maxDate))
+	}
+
+	var result []*m.FeedLog
+
+	err := z.db.View(func(tx *bolt.Tx) error {
+
+		b := tx.Bucket([]byte(bucketFeedLog))
+		c := b.Cursor()
+
+		for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+			entry := &m.FeedLog{}
+			if err := entry.Decode(v); err != nil {
+				return err
+			}
+			result = append(result, entry)
+		} // for
+
+		return nil
+
+	})
+
+	return result, err
+
+}
+
+// SaveFeedLog saves a single feed log entry to the database
+func (z *Database) SaveFeedLog(entry *m.FeedLog) error {
+
+	err := z.db.Update(func(tx *bolt.Tx) error {
+
+		data, err := entry.Encode()
+		if err != nil {
+			return err
+		}
+
+		b := tx.Bucket([]byte(bucketFeedLog))
+
+		// save record
+		if err = b.Put([]byte(formatFeedLogKey(entry.FeedID, entry.StartTime)), data); err != nil {
+			return err
+		}
+
+		return nil
+
+	})
 
 	return err
 
