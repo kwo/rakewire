@@ -125,6 +125,8 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 		feed.Body = buf.Bytes()
 		feed.StatusCode = rsp.StatusCode
 
+		// #TODO:0 stop following redirects so that they may be logged
+
 		if feed.URL != rsp.Request.URL.String() {
 			feed.URL = rsp.Request.URL.String()
 			feed.StatusCode = 333 // a redirect 301, 302, 307 or 308
@@ -140,7 +142,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 				if feed.Checksum != "" {
 					if feed.Checksum != cs {
 						// updated - reset back to minimum
-						// #TODO:10 check feed last updated as last check if content has changed
+						// #TODO:20 check feed last updated as last check if content has changed
 						feed.ResetInterval()
 					} else {
 						// not updated - use backoff policy to increase interval
