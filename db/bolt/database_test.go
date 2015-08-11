@@ -263,7 +263,7 @@ func TestNextFetch(t *testing.T) {
 
 	// logger.Printf("max: %s\n", formatMaxTime(maxTime))
 	// for _, f := range feeds2.Values {
-	// 	logger.Printf("%s: %d %s\n", f.URL, f.Frequency, formatFetchTime(*f.GetNextFetchTime()))
+	// 	logger.Printf("%s: %d %s\n", f.URL, f.Frequency, formatTimeKey(*f.GetNextFetchTime()))
 	// }
 
 	feeds2, err = database.GetFeeds()
