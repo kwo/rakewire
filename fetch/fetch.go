@@ -186,7 +186,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	} // err
 
-	feed.Attempt.Duration = startTime.Sub(time.Now().Truncate(time.Millisecond))
+	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
 
 	logger.Printf("fetch %2d: %3d %s %s\n", id, feed.StatusCode, feed.URL, feed.Attempt.ResultMessage)
 	z.output <- feed
