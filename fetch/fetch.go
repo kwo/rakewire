@@ -133,7 +133,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 		feed.Body = buf.Bytes()
 		feed.Attempt.StatusCode = rsp.StatusCode
 
-		// #TODO:0 stop following redirects so that they may be logged
+		// #DOING:10 stop following redirects so that they may be logged
 
 		if feed.URL != rsp.Request.URL.String() {
 			feed.Attempt.Result = m.FetchResultRedirect
@@ -141,7 +141,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.URL = rsp.Request.URL.String()
 		} else if rsp.StatusCode == 200 || rsp.StatusCode == 304 {
 
-			// TODO: remove block
+			// #DOING:30 remove block
 			feed.LastFetch = &now
 
 			feed.Attempt.Result = m.FetchResultOK

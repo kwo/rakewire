@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// TODO: change constants to 2 char strings - they need two bytes anyways when serialized
+// #DOING:0 change constants to 2 char strings - they need two bytes anyways when serialized
 
 // FetchResults
 const (

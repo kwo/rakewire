@@ -2,13 +2,13 @@
 
 ## v0.0.2
 
- - #DOING:10 feed log history - which feeds have errors, were redirected?
- - #TODO:10 improve polling algorithm (automatic mode with backoff algorithm)
- - #TODO:30 feed parser
- - #TODO:40 save feed items/entries
- - #TODO:50 need save database channel
+ - #DOING:20 improve polling algorithm (automatic mode with backoff algorithm)
+ - #TODO:0 feed parser
+ - #TODO:10 save feed items/entries
+ - #TODO:30 need save database channel
  - #DONE:50 v0.0.2 Conditional GETs
- - #DONE:60 v0.0.2 follow redirects, update url automatically
+ - #DONE:70 v0.0.2 follow redirects, update url automatically
+ - #DONE:60 v0.0.2 feed log history - which feeds have errors, were redirected?
 
 ## BACKLOG
 
