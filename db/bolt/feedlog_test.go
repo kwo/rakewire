@@ -1,6 +1,7 @@
 package bolt
 
 import (
+	"github.com/boltdb/bolt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -20,15 +21,19 @@ func TestSaveFeedLog(t *testing.T) {
 
 	now := time.Now().Truncate(time.Second)
 
-	for i := 1; i <= 100; i++ {
-		dt := now.Add(time.Hour * time.Duration(-i))
-		entry := &m.FeedLog{}
-		entry.FeedID = "12345"
-		entry.StartTime = &dt
-		entry.Duration = time.Duration(i)
-		err = database.SaveFeedLog(entry)
-		assert.Nil(t, err)
-	}
+	err = database.db.Update(func(tx *bolt.Tx) error {
+		for i := 1; i <= 100; i++ {
+			dt := now.Add(time.Hour * time.Duration(-i))
+			entry := &m.FeedLog{}
+			entry.FeedID = "12345"
+			entry.StartTime = &dt
+			entry.Duration = time.Duration(i)
+			err := database.addFeedLog(tx, entry)
+			assert.Nil(t, err)
+		}
+		return nil
+	})
+	assert.Nil(t, err)
 
 	entries, err := database.GetFeedLog("12345", 10*time.Hour)
 	assert.Nil(t, err)

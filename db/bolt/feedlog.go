@@ -46,27 +46,20 @@ func (z *Database) GetFeedLog(id string, since time.Duration) ([]*m.FeedLog, err
 
 }
 
-// SaveFeedLog saves a single feed log entry to the database
-func (z *Database) SaveFeedLog(entry *m.FeedLog) error {
+func (z *Database) addFeedLog(tx *bolt.Tx, entry *m.FeedLog) error {
 
-	err := z.db.Update(func(tx *bolt.Tx) error {
+	data, err := entry.Encode()
+	if err != nil {
+		return err
+	}
 
-		data, err := entry.Encode()
-		if err != nil {
-			return err
-		}
+	b := tx.Bucket([]byte(bucketFeedLog))
 
-		b := tx.Bucket([]byte(bucketFeedLog))
+	// save record
+	if err = b.Put([]byte(formatFeedLogKey(entry.FeedID, entry.StartTime)), data); err != nil {
+		return err
+	}
 
-		// save record
-		if err = b.Put([]byte(formatFeedLogKey(entry.FeedID, entry.StartTime)), data); err != nil {
-			return err
-		}
-
-		return nil
-
-	})
-
-	return err
+	return nil
 
 }

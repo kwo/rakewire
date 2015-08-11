@@ -65,6 +65,12 @@ func (z *Database) GetFetchFeeds(maxTime *time.Time) (*m.Feeds, error) {
 			if err := f.Decode(v); err != nil {
 				return err
 			}
+			// #TODO:0 remove hack that feed has .Last element
+			if f.Last == nil {
+				f.Last = &m.FeedLog{
+					FeedID: f.ID,
+				}
+			}
 			result.Add(f)
 
 		} // for
@@ -96,6 +102,12 @@ func (z *Database) GetFeedByID(id string) (*m.Feed, error) {
 
 	result := m.Feed{}
 	err = result.Decode(data)
+	// #TODO:0 remove hack that feed has .Last element
+	if result.Last == nil {
+		result.Last = &m.FeedLog{
+			FeedID: result.ID,
+		}
+	}
 	return &result, err
 
 }
@@ -123,6 +135,12 @@ func (z *Database) GetFeedByURL(url string) (*m.Feed, error) {
 
 	result := m.Feed{}
 	err = result.Decode(data)
+	// #TODO:0 remove hack that feed has .Last element
+	if result.Last == nil {
+		result.Last = &m.FeedLog{
+			FeedID: result.ID,
+		}
+	}
 	return &result, err
 
 }
@@ -163,6 +181,15 @@ func (z *Database) saveFeed(f *m.Feed, f0 *m.Feed) error {
 		indexes := tx.Bucket([]byte(bucketIndex))
 		idxFeedByURL := indexes.Bucket([]byte(bucketIndexFeedByURL))
 		idxNextFetch := indexes.Bucket([]byte(bucketIndexNextFetch))
+
+		// log record
+		if f.Attempt != nil {
+			f.Last = f.Attempt
+			f.Attempt = nil
+			if err := z.addFeedLog(tx, f.Last); err != nil {
+				return err
+			}
+		}
 
 		// save record
 		if err = b.Put([]byte(f.ID), data); err != nil {
