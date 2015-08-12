@@ -54,12 +54,7 @@ func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Se
 		input:   input,
 		output:  output,
 		workers: cfg.Workers,
-		client: &http.Client{
-			// CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			// 	return http.ErrNotSupported
-			// },
-			Timeout: timeout,
-		},
+		client:  newInternalClient(timeout),
 	}
 }
 
@@ -127,19 +122,18 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 		feed.Attempt.ResultMessage = err.Error()
 	} else {
 
+		// #TODO:0 test unexplicitly adding accept-encoding header for transparent decompression
 		buf := &bytes.Buffer{}
 		io.Copy(buf, rsp.Body)
 		rsp.Body.Close()
 		feed.Body = buf.Bytes()
 		feed.Attempt.StatusCode = rsp.StatusCode
 
-		// #DOING:10 stop following redirects so that they may be logged
-
-		if feed.URL != rsp.Request.URL.String() {
+		if rsp.StatusCode == http.StatusMovedPermanently {
 			feed.Attempt.Result = m.FetchResultRedirect
 			feed.Attempt.ResultMessage = fmt.Sprintf("%s -> %s", feed.URL, rsp.Request.URL.String())
-			feed.URL = rsp.Request.URL.String()
-		} else if rsp.StatusCode == 200 || rsp.StatusCode == 304 {
+			feed.URL = rsp.Request.URL.String() // update feed
+		} else if rsp.StatusCode == http.StatusOK || rsp.StatusCode == http.StatusNotModified {
 
 			// #DOING:30 remove block
 			feed.LastFetch = &now
@@ -149,7 +143,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 			feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
 
-			if rsp.StatusCode == 200 {
+			if rsp.StatusCode == http.StatusOK {
 
 				feed.Attempt.ContentLength = len(feed.Body)
 				feed.Attempt.Checksum = checksum(feed.Body)
@@ -157,7 +151,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 				if feed.Last200 != nil && feed.Last200.Checksum != "" {
 					if feed.Last200.Checksum != feed.Attempt.Checksum {
 						// updated - reset back to minimum
-						// #TODO:20 add UpdateCheckFeedEntries check
+						// #TODO:40 add UpdateCheckFeedEntries check
 						feed.Attempt.IsUpdated = true
 						feed.ResetInterval()
 					} else {
@@ -169,7 +163,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 					feed.Attempt.IsUpdated = true
 				}
 
-			} else if rsp.StatusCode == 304 { // 304 not modified
+			} else if rsp.StatusCode == http.StatusNotModified { // 304 not modified
 				// not updated - use backoff policy to increase interval
 				feed.Attempt.IsUpdated = false
 				feed.Attempt.UpdateCheck = m.UpdateCheck304

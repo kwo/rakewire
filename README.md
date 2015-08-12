@@ -2,10 +2,11 @@
 
 ## v0.0.2
 
+ - #TODO:10 add cache-control headers to API
  - #DOING:20 improve polling algorithm (automatic mode with backoff algorithm)
- - #TODO:0 feed parser
- - #TODO:10 save feed items/entries
- - #TODO:30 need save database channel
+ - #TODO:20 feed parser
+ - #TODO:30 save feed items/entries
+ - #TODO:50 need save database channel
  - #DONE:50 v0.0.2 Conditional GETs
  - #DONE:70 v0.0.2 follow redirects, update url automatically
  - #DONE:60 v0.0.2 feed log history - which feeds have errors, were redirected?
