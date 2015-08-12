@@ -72,7 +72,7 @@ func (z *Service) Start() {
 // Stop service
 func (z *Service) Stop() {
 	logger.Println("service stopping...")
-	if z != nil { // hack because on app close object is apparently already garbage collected
+	if z != nil { // #TODO:60 remove hack because on app close object is apparently already garbage collected
 		z.latch.Wait()
 		z.input = nil
 		z.output = nil

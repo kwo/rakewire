@@ -23,7 +23,6 @@ type Feeds struct {
 }
 
 // Feed feed descriptior
-// Also a super type of fetch.Request and fetch.Response
 type Feed struct {
 	// Current fetch attempt for feed
 	Attempt *FeedLog `json:"-"`
