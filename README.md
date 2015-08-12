@@ -2,10 +2,11 @@
 
 ## v0.0.2
 
- - #TODO:0 add cache-control headers to API
- - #DOING:10 feed parser
- - #TODO:10 save feed items/entries
- - #TODO:20 need save database channel
+ - #TODO:10 better logging
+ - #TODO:20 add cache-control headers to API
+ - #DOING:20 feed parser
+ - #TODO:0 save feed items/entries
+ - #TODO:30 need save database channel
  - #DONE:50 v0.0.2 Conditional GETs
  - #DONE:60 v0.0.2 feed log history - which feeds have errors, were redirected?
  - #DONE:70 v0.0.2 follow redirects, update url automatically

@@ -73,7 +73,7 @@ func (z *Service) Start() {
 // Stop service
 func (z *Service) Stop() {
 	logger.Println("service stopping...")
-	if z != nil { // #TODO:40 remove hack because on app close object is apparently already garbage collected
+	if z != nil { // #TODO:50 remove hack because on app close object is apparently already garbage collected
 		z.latch.Wait()
 		z.input = nil
 		z.output = nil
@@ -123,64 +123,64 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 		feed.Attempt.ResultMessage = err.Error()
 	} else {
 
-		// #DOING:0 test unexplicitly adding accept-encoding header for transparent decompression
+		feed.Attempt.StatusCode = rsp.StatusCode
+
+		// #DOING:10 test unexplicitly adding accept-encoding header for transparent decompression
 		buf := &bytes.Buffer{}
 		io.Copy(buf, rsp.Body)
 		rsp.Body.Close()
 		feed.Body = buf.Bytes()
-		feed.Attempt.StatusCode = rsp.StatusCode
 
-		if rsp.StatusCode == http.StatusMovedPermanently {
+		switch {
+
+		case rsp.StatusCode == http.StatusMovedPermanently:
 			feed.Attempt.Result = m.FetchResultRedirect
 			newURL := rsp.Header.Get(hLocation)
-			feed.Attempt.ResultMessage = fmt.Sprintf("%s moved to %s", feed.URL, newURL)
+			feed.Attempt.ResultMessage = fmt.Sprintf("%s moved %s", feed.URL, newURL)
 			feed.URL = newURL // update feed
-		} else if rsp.StatusCode == http.StatusOK || rsp.StatusCode == http.StatusNotModified {
 
+		case rsp.StatusCode == http.StatusOK:
 			feed.Attempt.Result = m.FetchResultOK
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 			feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
+			feed.Attempt.ContentLength = len(feed.Body)
+			feed.Attempt.Checksum = checksum(feed.Body)
 
-			if rsp.StatusCode == http.StatusOK {
-
-				feed.Attempt.ContentLength = len(feed.Body)
-				feed.Attempt.Checksum = checksum(feed.Body)
+			if feed.Last200.Checksum != feed.Attempt.Checksum {
+				// #DOING:30 add UpdateCheckFeedEntries check
+				// do not use LastModified - do it right and use last feed entry for LastUpdated
+				feed.Attempt.IsUpdated = true
 				feed.Attempt.UpdateCheck = m.UpdateCheckChecksum
-				if feed.Last200 != nil && feed.Last200.Checksum != "" {
-					if feed.Last200.Checksum != feed.Attempt.Checksum {
-						// updated - reset back to minimum
-						// #DOING:20 add UpdateCheckFeedEntries check
-						feed.Attempt.IsUpdated = true
-						feed.UpdateFetchTime(nil)
-					} else {
-						// not updated - use backoff policy to increase interval
-						feed.Attempt.IsUpdated = false // not modified but site doesn't support conditional GETs
-						feed.UpdateFetchTime(nil)
-					}
-				} else {
-					feed.Attempt.IsUpdated = true
-					feed.UpdateFetchTime(&now)
-				}
-
-			} else if rsp.StatusCode == http.StatusNotModified { // 304 not modified
-				// not updated - use backoff policy to increase interval
-				feed.Attempt.IsUpdated = false
-				feed.Attempt.UpdateCheck = m.UpdateCheck304
+				feed.UpdateFetchTime(feed.Attempt.StartTime)
+			} else {
+				feed.Attempt.IsUpdated = false // not modified but site doesn't support conditional GETs
+				feed.Attempt.UpdateCheck = m.UpdateCheckChecksum
 				feed.UpdateFetchTime(nil)
 			}
 
-		} else if rsp.StatusCode >= 400 {
-			// don't hammer site if error
-			feed.UpdateFetchTimeError()
+		case rsp.StatusCode == http.StatusNotModified:
+			feed.Attempt.Result = m.FetchResultOK
+			feed.Attempt.IsUpdated = false
+			feed.Attempt.UpdateCheck = m.UpdateCheck304
+			feed.Attempt.ETag = rsp.Header.Get(hEtag)
+			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
+			feed.UpdateFetchTime(nil)
+
+		case rsp.StatusCode >= 400:
 			feed.Attempt.Result = m.FetchResultServerError
-		}
+			feed.UpdateFetchTimeError() // don't hammer site if error
+
+		case true:
+			logger.Printf("Uncaught Status Code: %d", rsp.StatusCode)
+
+		} // switch
 
 	} // err
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
 
-	logger.Printf("fetch %2d: %3d %s %s\n", id, feed.Attempt.StatusCode, feed.URL, feed.Attempt.ResultMessage)
+	logger.Printf("fetch %2d: %s  %d  %5t  %s  %s  %s\n", id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage)
 	z.output <- feed
 
 }

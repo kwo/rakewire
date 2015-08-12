@@ -88,7 +88,7 @@ func (z *Feed) UpdateFetchTime(lastUpdated *time.Time) {
 		lu = &now
 	}
 
-	d := now.Sub(*lu)
+	d := now.Sub(*lu) // how long since the last update?
 
 	switch {
 	case d < 10*time.Minute:
