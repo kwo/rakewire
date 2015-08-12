@@ -69,6 +69,7 @@ func NewFeed(url string) *Feed {
 		LastFetch: &lastFetch,
 		URL:       url,
 		Last:      &FeedLog{},
+		Last200:   &FeedLog{},
 	}
 	return &x
 }
