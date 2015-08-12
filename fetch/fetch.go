@@ -20,6 +20,7 @@ const (
 	hIfModifiedSince = "If-Modified-Since"
 	hIfNoneMatch     = "If-None-Match"
 	hLastModified    = "Last-Modified"
+	hLocation        = "Location"
 	hUserAgent       = "User-Agent"
 	mGET             = "GET"
 	gzip             = "gzip"
@@ -117,7 +118,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 	feed.Attempt.StartTime = &now
 
 	rsp, err := z.client.Do(z.newRequest(feed))
-	if err != nil {
+	if err != nil && (rsp == nil || rsp.StatusCode != http.StatusMovedPermanently) {
 		feed.Attempt.Result = m.FetchResultClientError
 		feed.Attempt.ResultMessage = err.Error()
 	} else {
@@ -131,8 +132,9 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 		if rsp.StatusCode == http.StatusMovedPermanently {
 			feed.Attempt.Result = m.FetchResultRedirect
-			feed.Attempt.ResultMessage = fmt.Sprintf("%s -> %s", feed.URL, rsp.Request.URL.String())
-			feed.URL = rsp.Request.URL.String() // update feed
+			newURL := rsp.Header.Get(hLocation)
+			feed.Attempt.ResultMessage = fmt.Sprintf("%s moved to %s", feed.URL, newURL)
+			feed.URL = newURL // update feed
 		} else if rsp.StatusCode == http.StatusOK || rsp.StatusCode == http.StatusNotModified {
 
 			// #DOING:30 remove block

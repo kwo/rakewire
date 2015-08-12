@@ -1,8 +1,14 @@
 package fetch
 
 import (
+	"errors"
 	"net/http"
 	"time"
+)
+
+// Internal Errors
+var (
+	ErrRedirected = errors.New("Fetch URL redirected")
 )
 
 func newInternalClient(timeout time.Duration) *http.Client {
@@ -15,7 +21,7 @@ func newInternalClient(timeout time.Duration) *http.Client {
 
 func noFlaggedRequestsRedirectPolicy(req *http.Request, via []*http.Request) error {
 	if len(via) > 0 && via[0].Header.Get("X-Redirect") != "" {
-		return http.ErrNotSupported
+		return ErrRedirected
 	}
 	return nil
 }
