@@ -9,12 +9,7 @@ import (
 	"time"
 )
 
-const (
-	// feedIntervalMin is the minimum feed fetch interval (5m37s500ms) x 2^8 = 1 day
-	feedIntervalMin time.Duration = time.Millisecond * 337500
-	// feedIntervalMax is the maximum feed fetch interval
-	feedIntervalMax time.Duration = time.Hour * 24
-)
+// #TODO: eliminate Feeds struct
 
 // Feeds collection of Feed
 type Feeds struct {
@@ -30,8 +25,6 @@ type Feed struct {
 	Body []byte `json:"-"`
 	// Type of feed: Atom, RSS2, etc.
 	Flavor string `json:"flavor,omitempty"`
-	// how often to poll the feed in minutes
-	Interval time.Duration `json:"interval"`
 	// Feed generator
 	Generator string `json:"generator,omitempty"`
 	// Hub URL
@@ -40,9 +33,7 @@ type Feed struct {
 	Icon string `json:"icon,omitempty"`
 	// UUID
 	ID string `json:"id"`
-	// Time of last successful fetch completion
-	LastFetch *time.Time `json:"lastFetch"`
-	// Time the feed was last updated (from feed)
+	// Time the feed was last updated
 	LastUpdated *time.Time `json:"lastUpdated,omitempty"`
 	// Last fetch
 	Last *FeedLog `json:"last"`
@@ -50,6 +41,8 @@ type Feed struct {
 	Last200 *FeedLog `json:"last200"`
 	// Past fetch attempts for feed
 	Log []*FeedLog `json:"-"`
+	// Time of next scheduled fetch
+	NextFetch *time.Time `json:"nextFetch"`
 	// Feed title
 	Title string `json:"title"`
 	// URL updated if feed is permenently redirected
@@ -60,15 +53,14 @@ type Feed struct {
 
 // NewFeed instantiate a new Feed object with a new UUID
 func NewFeed(url string) *Feed {
-	lastFetch := time.Now().Add(-24 * time.Hour).Truncate(time.Second)
+	nextFetch := time.Now().UTC().Truncate(time.Second)
 	id := uuid.NewUUID().String()
 	x := Feed{
-		Interval:  feedIntervalMin,
 		ID:        id,
-		LastFetch: &lastFetch,
 		URL:       url,
 		Last:      &FeedLog{},
 		Last200:   &FeedLog{},
+		NextFetch: &nextFetch,
 	}
 	return &x
 }
@@ -83,29 +75,43 @@ func (z *Feed) Encode() ([]byte, error) {
 	return json.MarshalIndent(z, "", " ")
 }
 
-// BackoffInterval increases the fetch interval
-func (z *Feed) BackoffInterval() {
-	z.Interval *= 2
-	if z.Interval > feedIntervalMax {
-		z.Interval = feedIntervalMax
+// UpdateFetchTime increases the fetch interval
+func (z *Feed) UpdateFetchTime(lastUpdated *time.Time) {
+
+	if lastUpdated != nil {
+		z.LastUpdated = lastUpdated
 	}
+
+	now := time.Now().UTC().Truncate(time.Second)
+	lu := z.LastUpdated
+	if lu == nil {
+		lu = &now
+	}
+
+	d := now.Sub(*lu)
+
+	switch {
+	case d < 10*time.Minute:
+		nextFetch := now.Add(10 * time.Minute)
+		z.NextFetch = &nextFetch
+	case d < 1*time.Hour:
+		nextFetch := now.Add(30 * time.Minute)
+		z.NextFetch = &nextFetch
+	case d > 72*time.Hour:
+		nextFetch := now.Add(24 * time.Hour)
+		z.NextFetch = &nextFetch
+	case true:
+		nextFetch := now.Add(1 * time.Hour)
+		z.NextFetch = &nextFetch
+	}
+
 }
 
-// BackoffIntervalError increases the fetch interval in the event of an error
-func (z *Feed) BackoffIntervalError() {
-	nextFetch := time.Now().Add(24 * time.Hour).Truncate(time.Second)
-	z.Interval = nextFetch.Sub(*z.LastFetch)
-}
-
-// ResetInterval resets to the minimum fetch interval
-func (z *Feed) ResetInterval() {
-	z.Interval = feedIntervalMin
-}
-
-// GetNextFetchTime get the next time to poll feed
-func (z *Feed) GetNextFetchTime() *time.Time {
-	result := z.LastFetch.Add(z.Interval).Truncate(time.Second)
-	return &result
+// UpdateFetchTimeError increases the fetch interval in the event of an error
+func (z *Feed) UpdateFetchTimeError() {
+	now := time.Now().UTC().Truncate(time.Second)
+	nextFetch := now.Add(24 * time.Hour)
+	z.NextFetch = &nextFetch
 }
 
 // ========== Feeds ==========

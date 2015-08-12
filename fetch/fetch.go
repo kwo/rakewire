@@ -73,7 +73,7 @@ func (z *Service) Start() {
 // Stop service
 func (z *Service) Stop() {
 	logger.Println("service stopping...")
-	if z != nil { // #TODO:60 remove hack because on app close object is apparently already garbage collected
+	if z != nil { // #TODO:40 remove hack because on app close object is apparently already garbage collected
 		z.latch.Wait()
 		z.input = nil
 		z.output = nil
@@ -123,7 +123,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 		feed.Attempt.ResultMessage = err.Error()
 	} else {
 
-		// #TODO:0 test unexplicitly adding accept-encoding header for transparent decompression
+		// #DOING:0 test unexplicitly adding accept-encoding header for transparent decompression
 		buf := &bytes.Buffer{}
 		io.Copy(buf, rsp.Body)
 		rsp.Body.Close()
@@ -136,9 +136,6 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.ResultMessage = fmt.Sprintf("%s moved to %s", feed.URL, newURL)
 			feed.URL = newURL // update feed
 		} else if rsp.StatusCode == http.StatusOK || rsp.StatusCode == http.StatusNotModified {
-
-			// #DOING:30 remove block
-			feed.LastFetch = &now
 
 			feed.Attempt.Result = m.FetchResultOK
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
@@ -153,28 +150,29 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 				if feed.Last200 != nil && feed.Last200.Checksum != "" {
 					if feed.Last200.Checksum != feed.Attempt.Checksum {
 						// updated - reset back to minimum
-						// #TODO:40 add UpdateCheckFeedEntries check
+						// #DOING:20 add UpdateCheckFeedEntries check
 						feed.Attempt.IsUpdated = true
-						feed.ResetInterval()
+						feed.UpdateFetchTime(nil)
 					} else {
 						// not updated - use backoff policy to increase interval
 						feed.Attempt.IsUpdated = false // not modified but site doesn't support conditional GETs
-						feed.BackoffInterval()
+						feed.UpdateFetchTime(nil)
 					}
 				} else {
 					feed.Attempt.IsUpdated = true
+					feed.UpdateFetchTime(&now)
 				}
 
 			} else if rsp.StatusCode == http.StatusNotModified { // 304 not modified
 				// not updated - use backoff policy to increase interval
 				feed.Attempt.IsUpdated = false
 				feed.Attempt.UpdateCheck = m.UpdateCheck304
-				feed.BackoffInterval()
+				feed.UpdateFetchTime(nil)
 			}
 
 		} else if rsp.StatusCode >= 400 {
 			// don't hammer site if error
-			feed.BackoffIntervalError()
+			feed.UpdateFetchTimeError()
 			feed.Attempt.Result = m.FetchResultServerError
 		}
 

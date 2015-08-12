@@ -16,7 +16,7 @@ func TestFeed(t *testing.T) {
 	require.NotNil(t, fi)
 	fi.LastUpdated = &dt
 
-	assert.NotNil(t, fi.LastFetch)
+	assert.NotNil(t, fi.NextFetch)
 	assert.NotNil(t, fi.LastUpdated)
 	assert.Equal(t, "http://localhost:8888/", fi.URL)
 	assert.EqualValues(t, dt, *fi.LastUpdated)
@@ -35,7 +35,7 @@ func TestFeed(t *testing.T) {
 	assert.NotNil(t, fi2)
 	assert.Equal(t, fi.ID, fi2.ID)
 	assert.Equal(t, fi.URL, fi2.URL)
-	assert.NotNil(t, fi2.LastFetch)
+	assert.NotNil(t, fi2.NextFetch)
 	assert.NotNil(t, fi2.LastUpdated)
 	assert.EqualValues(t, dt, *fi2.LastUpdated)
 
@@ -49,7 +49,7 @@ func TestFeeds(t *testing.T) {
 	require.NotNil(t, fi)
 	fi.LastUpdated = &dt
 
-	assert.NotNil(t, fi.LastFetch)
+	assert.NotNil(t, fi.NextFetch)
 	assert.NotNil(t, fi.LastUpdated)
 	assert.Equal(t, "http://localhost:8888/", fi.URL)
 	assert.EqualValues(t, dt, *fi.LastUpdated)
@@ -77,7 +77,7 @@ func TestFeeds(t *testing.T) {
 	assert.NotNil(t, fi2)
 	assert.Equal(t, fi.ID, fi2.ID)
 	assert.Equal(t, fi.URL, fi2.URL)
-	assert.NotNil(t, fi2.LastFetch)
+	assert.NotNil(t, fi2.NextFetch)
 	assert.NotNil(t, fi2.LastUpdated)
 	assert.EqualValues(t, dt, *fi2.LastUpdated)
 

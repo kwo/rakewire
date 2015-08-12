@@ -2,20 +2,20 @@
 
 ## v0.0.2
 
- - #TODO:10 add cache-control headers to API
- - #DOING:20 improve polling algorithm (automatic mode with backoff algorithm)
- - #TODO:20 feed parser
- - #TODO:30 save feed items/entries
- - #TODO:50 need save database channel
+ - #TODO:0 add cache-control headers to API
+ - #DOING:10 feed parser
+ - #TODO:10 save feed items/entries
+ - #TODO:20 need save database channel
  - #DONE:50 v0.0.2 Conditional GETs
- - #DONE:70 v0.0.2 follow redirects, update url automatically
  - #DONE:60 v0.0.2 feed log history - which feeds have errors, were redirected?
+ - #DONE:70 v0.0.2 follow redirects, update url automatically
+ - #DONE:80 v0.0.2 improve polling algorithm (automatic mode with backoff algorithm)
 
 ## BACKLOG
 
- - #BACKLOG:0 implememt Fever API
- - #BACKLOG:10 add support for Hot Links to Fever API support
- - #BACKLOG:20 html ui
+ - #BACKLOG:10 implememt Fever API
+ - #BACKLOG:20 add support for Hot Links to Fever API support
+ - #BACKLOG:0 html ui
  - #BACKLOG:30 hub subscription support
  - #BACKLOG:40 TLS
  - #BACKLOG:50 http2 server push
