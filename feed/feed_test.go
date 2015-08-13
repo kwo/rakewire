@@ -81,6 +81,11 @@ func TestRSSWordpress(t *testing.T) {
 	testURL(t, "https://en.blog.wordpress.com/feed/")
 }
 
+func TestRSSLatin1(t *testing.T) {
+	t.SkipNow()
+	testURL(t, "http://www.spamhaus.org/news/rss/")
+}
+
 func testURL(t *testing.T, url string) {
 
 	rsp, err := http.Get(url)

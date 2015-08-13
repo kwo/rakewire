@@ -2,6 +2,9 @@ package feed
 
 import (
 	"bytes"
+	"code.google.com/p/go-charset/charset"
+	// required by go-charset
+	_ "code.google.com/p/go-charset/data"
 	"encoding/xml"
 	"github.com/kwo/ocd/feeds/atom"
 	"github.com/kwo/ocd/feeds/rss"
@@ -48,6 +51,7 @@ type Person struct {
 func Parse(body []byte) (feed *Feed, err error) {
 
 	decoder := xml.NewDecoder(bytes.NewReader(body))
+	decoder.CharsetReader = charset.NewReader
 	a := &atom.Feed{}
 	err = decoder.Decode(a)
 	if err == nil {
@@ -55,8 +59,9 @@ func Parse(body []byte) (feed *Feed, err error) {
 	}
 
 	decoder = xml.NewDecoder(bytes.NewReader(body))
-	r := &rss.Rss{}
+	decoder.CharsetReader = charset.NewReader
 	decoder.DefaultSpace = "rss"
+	r := &rss.Rss{}
 	err = decoder.Decode(r)
 	if err == nil {
 		return rssToFeed(r)
