@@ -41,7 +41,6 @@ func atomToFeed(a *atom.Feed) (*Feed, error) {
 		entry.Created = &a.Entries[i].Published
 		entry.ID = a.Entries[i].Id
 		entry.Links = make(map[string]string)
-		entry.Rights = a.Entries[i].Rights.Text
 		entry.Summary = a.Entries[i].Summary.Text
 		entry.Title = a.Entries[i].Title
 		entry.Updated = &a.Entries[i].Updated

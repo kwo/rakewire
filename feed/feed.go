@@ -34,7 +34,6 @@ type Entry struct {
 	Created    *time.Time
 	ID         string
 	Links      map[string]string
-	Rights     string
 	Summary    string
 	Title      string
 	Updated    *time.Time
