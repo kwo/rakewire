@@ -125,7 +125,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 		feed.Attempt.StatusCode = rsp.StatusCode
 
-		// #DOING:10 test unexplicitly adding accept-encoding header for transparent decompression
+		// #DOING:30 test unexplicitly adding accept-encoding header for transparent decompression
 		buf := &bytes.Buffer{}
 		io.Copy(buf, rsp.Body)
 		rsp.Body.Close()
@@ -148,7 +148,8 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.Checksum = checksum(feed.Body)
 
 			if feed.Last200.Checksum != feed.Attempt.Checksum {
-				// #DOING:30 add UpdateCheckFeedEntries check
+				// #DOING:10 add UpdateCheckFeedEntries check
+				// #DOING:20 is checksum even necessary?
 				// do not use LastModified - do it right and use last feed entry for LastUpdated
 				feed.Attempt.IsUpdated = true
 				feed.Attempt.UpdateCheck = m.UpdateCheckChecksum
