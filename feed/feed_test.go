@@ -86,6 +86,11 @@ func TestRSSLatin1(t *testing.T) {
 	testURL(t, "http://www.spamhaus.org/news/rss/")
 }
 
+func TestRSSCooperPressDate(t *testing.T) {
+	//t.SkipNow()
+	testURL(t, "http://nodeweekly.com/rss/1ooif86o")
+}
+
 func testURL(t *testing.T, url string) {
 
 	rsp, err := http.Get(url)
