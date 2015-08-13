@@ -23,13 +23,13 @@ func atomToFeed(a *atom.Feed) (*Feed, error) {
 	f.Title = a.Title
 	f.Updated = &a.Metadata.Updated
 
-	for _, author := range a.Metadata.Authors {
-		b := &Person{author.Name, author.Email, author.Uri}
+	for j := range a.Authors {
+		b := &Person{a.Authors[j].Name, a.Authors[j].Email, a.Authors[j].Uri}
 		f.Authors = append(f.Authors, b)
 	}
 
-	for _, link := range a.Metadata.Links {
-		f.Links[link.Rel] = link.Href
+	for j := range a.Links {
+		f.Links[a.Links[j].Rel] = a.Links[j].Href
 	}
 
 	for i := range a.Entries {
@@ -49,14 +49,14 @@ func atomToFeed(a *atom.Feed) (*Feed, error) {
 			entry.Authors = append(entry.Authors, b)
 		}
 
-		for j := range a.Entries[i].Links {
-			entry.Links[a.Entries[i].Links[j].Rel] = a.Entries[i].Links[j].Href
-		}
-
 		for j := range a.Entries[i].Categories {
 			if a.Entries[i].Categories[j].Term != "" {
 				entry.Categories = append(entry.Categories, a.Entries[i].Categories[j].Term)
 			}
+		}
+
+		for j := range a.Entries[i].Links {
+			entry.Links[a.Entries[i].Links[j].Rel] = a.Entries[i].Links[j].Href
 		}
 
 		f.Entries = append(f.Entries, entry)
