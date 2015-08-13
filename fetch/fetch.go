@@ -1,9 +1,7 @@
 package fetch
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"net/http"
 	xmlfeed "rakewire.com/feed"
 	"rakewire.com/logging"
@@ -24,7 +22,6 @@ const (
 	hLocation        = "Location"
 	hUserAgent       = "User-Agent"
 	mGET             = "GET"
-	gzip             = "gzip"
 )
 
 var (
@@ -98,6 +95,7 @@ func (z *Service) run(id int) {
 func (z *Service) newRequest(feed *m.Feed) *http.Request {
 	req, _ := http.NewRequest(mGET, feed.URL, nil)
 	req.Header.Set(hUserAgent, httpUserAgent)
+	req.Header.Set(hAcceptEncoding, "gzip")
 	if feed.Last200 != nil {
 		if feed.Last200.LastModified != nil {
 			req.Header.Set(hIfModifiedSince, feed.Last200.LastModified.UTC().Format(http.TimeFormat))
@@ -124,11 +122,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 	} else {
 
 		feed.Attempt.StatusCode = rsp.StatusCode
-
-		buf := &bytes.Buffer{}
-		io.Copy(buf, rsp.Body)
-		rsp.Body.Close()
-		feed.Body = buf.Bytes()
+		body, _ := readBody(rsp)
 
 		switch {
 
@@ -143,9 +137,9 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 			feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
-			feed.Attempt.ContentLength = len(feed.Body)
+			feed.Attempt.ContentLength = len(body)
 
-			xmlFeed, err := xmlfeed.Parse(feed.Body)
+			xmlFeed, err := xmlfeed.Parse(body)
 			if err != nil || xmlFeed == nil {
 				// cannot parse feed
 				feed.Attempt.Result = m.FetchResultFeedError

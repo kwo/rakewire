@@ -22,8 +22,6 @@ type Feeds struct {
 type Feed struct {
 	// Current fetch attempt for feed
 	Attempt *FeedLog `json:"-"`
-	// Body is the HTTP payload
-	Body []byte `json:"-"`
 	// Feed object parsed from Body
 	Feed *feed.Feed `json:"-"`
 	// Type of feed: Atom, RSS2, etc.

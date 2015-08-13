@@ -2,6 +2,8 @@ package fetch
 
 import (
 	"bufio"
+	"bytes"
+	"compress/gzip"
 	"io"
 	"net/http"
 	m "rakewire.com/model"
@@ -37,7 +39,7 @@ func parseDateHeader(value string) *time.Time {
 }
 
 func usesGzip(header string) bool {
-	return strings.Contains(header, gzip)
+	return strings.Contains(header, "gzip")
 }
 
 func isFeedUpdated(newTime *time.Time, lastTime *time.Time) bool {
@@ -49,5 +51,45 @@ func isFeedUpdated(newTime *time.Time, lastTime *time.Time) bool {
 	}
 
 	return false
+
+}
+
+func readBody(rsp *http.Response) (result []byte, err error) {
+
+	if rsp.Body == nil {
+		return
+	}
+
+	var reader io.ReadCloser
+	if usesGzip(rsp.Header.Get(hContentEncoding)) {
+		reader, err = gzip.NewReader(rsp.Body)
+	} else {
+		reader = rsp.Body
+	}
+	if err != nil {
+		return
+	}
+
+	buf := &bytes.Buffer{}
+	io.Copy(buf, reader)
+	reader.Close()
+	result = buf.Bytes()
+	return
+
+}
+
+func unzipReader(data io.Reader) ([]byte, error) {
+
+	r, err := gzip.NewReader(data)
+	if err != nil {
+		return nil, err
+	}
+
+	var uncompressedData bytes.Buffer
+	if _, err = io.Copy(&uncompressedData, r); err != nil {
+		return nil, err
+	}
+
+	return uncompressedData.Bytes(), nil
 
 }
