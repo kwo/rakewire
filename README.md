@@ -2,16 +2,19 @@
 
 ## v0.0.2
 
- - #TODO:10 better logging
- - #TODO:20 add cache-control headers to API
+ - #TODO:30 better logging
+ - #TODO:40 add cache-control headers to API
  - #DOING:10 feed parser
- - #TODO:0 save feed items/entries
+ - #TODO:20 save feed items/entries
  - #DOING:0 add feed header to feed log (perhaps divide into http and feed subsections)
- - #TODO:30 need save database channel
+ - #TODO:50 need save database channel
  - #DONE:50 v0.0.2 Conditional GETs
  - #DONE:60 v0.0.2 feed log history - which feeds have errors, were redirected?
  - #DONE:70 v0.0.2 follow redirects, update url automatically
  - #DONE:80 v0.0.2 improve polling algorithm (automatic mode with backoff algorithm)
+ - #TODO:60 bugfix feeds next on empty db or db with feeds but before first poll
+ - #TODO:10 handle feeds without dates on entries - save items, check for new ones, assign new current time, update feed.LastUpdated
+ - #TODO:0 bring back checksum function for comparing entries during save
 
 ## BACKLOG
 
@@ -44,6 +47,7 @@
  - #BACKLOG:250 add login for single user
  - #BACKLOG:260 pre gzip webapp
  - #BACKLOG:270 cryptographically signing of entries, feeds with nice UI lock symbol as proof (see [Atom Digital Signatures](https://tools.ietf.org/html/rfc4287#section-5.1))
+ - #BACKLOG:280 manually specify feed fetchTime interval for strange feeds: Eilmeldungen, z.B.
 
 ## Changelog
 

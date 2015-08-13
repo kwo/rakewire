@@ -49,7 +49,7 @@ func TestMain(m *testing.M) {
 		WebAppDir: "../test/public_html",
 	}, chErrors)
 
-	// #TODO:40 probably need to wait before jumping to default case
+	// #TODO:70 probably need to wait before jumping to default case
 
 	select {
 	case err := <-chErrors:
@@ -138,7 +138,7 @@ func TestStaticRedirects(t *testing.T) {
 	assert.Equal(t, "/", rsp.Header.Get("Location"))
 	assert.Equal(t, 0, int(rsp.ContentLength))
 
-	// #TODO:60 static redirect cannot be to /./
+	// #TODO:90 static redirect cannot be to /./
 	// req = newRequest(mGet, "/index.html")
 	// rsp, err = c.Do(req)
 	// assert.NotNil(t, err)
