@@ -76,7 +76,7 @@ func TestRSSFeed(t *testing.T) {
 	t.Logf(feedFmt, "Updated", feed.Updated)
 	t.Logf(feedFmt, "Generator", feed.Generator)
 	for _, e := range feed.Entries {
-		t.Logf("%s %s %s", e.ID, e.Updated, e.Title)
+		t.Logf("%s %s %s", e.ID, e.Updated.Format("2006-01-02 15:04:05"), e.Title)
 	}
 
 }
