@@ -5,6 +5,7 @@ import (
 	"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
 	"io"
+	"rakewire.com/feed"
 	"strings"
 	"time"
 )
@@ -23,6 +24,8 @@ type Feed struct {
 	Attempt *FeedLog `json:"-"`
 	// Body is the HTTP payload
 	Body []byte `json:"-"`
+	// Feed object parsed from Body
+	Feed *feed.Feed `json:"-"`
 	// Type of feed: Atom, RSS2, etc.
 	Flavor string `json:"flavor,omitempty"`
 	// Feed generator

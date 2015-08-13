@@ -4,9 +4,9 @@
 
  - #TODO:10 better logging
  - #TODO:20 add cache-control headers to API
- - #DOING:0 feed parser
+ - #DOING:10 feed parser
  - #TODO:0 save feed items/entries
- - #TODO:0 add feed header to feed log (perhaps divide into http and feed subsections)
+ - #DOING:0 add feed header to feed log (perhaps divide into http and feed subsections)
  - #TODO:30 need save database channel
  - #DONE:50 v0.0.2 Conditional GETs
  - #DONE:60 v0.0.2 feed log history - which feeds have errors, were redirected?
@@ -15,6 +15,7 @@
 
 ## BACKLOG
 
+ - #BACKLOG:0 have fetchers signal when they are idle, FetcherService signal when it is idle
  - #BACKLOG:10 implememt Fever API
  - #BACKLOG:20 add support for Hot Links to Fever API support
  - #BACKLOG:0 html ui

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	xmlfeed "rakewire.com/feed"
 	"rakewire.com/logging"
 	m "rakewire.com/model"
 	"sync"
@@ -97,7 +98,6 @@ func (z *Service) run(id int) {
 func (z *Service) newRequest(feed *m.Feed) *http.Request {
 	req, _ := http.NewRequest(mGET, feed.URL, nil)
 	req.Header.Set(hUserAgent, httpUserAgent)
-	req.Header.Set(hAcceptEncoding, gzip)
 	if feed.Last200 != nil {
 		if feed.Last200.LastModified != nil {
 			req.Header.Set(hIfModifiedSince, feed.Last200.LastModified.UTC().Format(http.TimeFormat))
@@ -125,7 +125,6 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 		feed.Attempt.StatusCode = rsp.StatusCode
 
-		// #DOING:30 test unexplicitly adding accept-encoding header for transparent decompression
 		buf := &bytes.Buffer{}
 		io.Copy(buf, rsp.Body)
 		rsp.Body.Close()
@@ -145,19 +144,20 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 			feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
 			feed.Attempt.ContentLength = len(feed.Body)
-			feed.Attempt.Checksum = checksum(feed.Body)
 
-			if feed.Last200.Checksum != feed.Attempt.Checksum {
-				// #DOING:10 add UpdateCheckFeedEntries check
-				// #DOING:20 is checksum even necessary?
-				// do not use LastModified - do it right and use last feed entry for LastUpdated
-				feed.Attempt.IsUpdated = true
-				feed.Attempt.UpdateCheck = m.UpdateCheckChecksum
-				feed.UpdateFetchTime(feed.Attempt.StartTime)
+			xmlFeed, err := xmlfeed.Parse(feed.Body)
+			if err != nil {
+				// cannot parse feed
+				feed.Attempt.Result = m.FetchResultFeedError
+				feed.Attempt.ResultMessage = err.Error()
+				feed.Attempt.IsUpdated = false
+				feed.Attempt.UpdateCheck = m.UpdateCheckFeedEntries
+				feed.UpdateFetchTimeError() // don't hammer site if error
 			} else {
-				feed.Attempt.IsUpdated = false // not modified but site doesn't support conditional GETs
-				feed.Attempt.UpdateCheck = m.UpdateCheckChecksum
-				feed.UpdateFetchTime(nil)
+				feed.Feed = xmlFeed
+				feed.Attempt.IsUpdated = isFeedUpdated(feed.Feed.Updated, feed.LastUpdated)
+				feed.Attempt.UpdateCheck = m.UpdateCheckFeedEntries
+				feed.UpdateFetchTime(feed.Feed.Updated)
 			}
 
 		case rsp.StatusCode == http.StatusNotModified:
