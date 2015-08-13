@@ -7,17 +7,18 @@ import (
 
 // FetchResults
 const (
-	FetchResultOK          = "OK"
-	FetchResultRedirect    = "MV" // message contains old URL -> new URL
-	FetchResultClientError = "EC" // message contains error text
-	FetchResultServerError = "ES" // check http status code
-	FetchResultFeedError   = "EF" // cannot parse feed
+	FetchResultOK            = "OK"
+	FetchResultRedirect      = "MV" // message contains old URL -> new URL
+	FetchResultClientError   = "EC" // message contains error text
+	FetchResultServerError   = "ES" // check http status code
+	FetchResultFeedError     = "FP" // cannot parse feed
+	FetchResultFeedTimeError = "FT" // cannot parse time
 )
 
 // Check Levels for Update Status
 const (
-	UpdateCheck304         = "NM" // HTTP Status Code 304
-	UpdateCheckFeedEntries = "LU" // No 304  but feed LastUpdated is the same
+	UpdateCheck304  = "NM" // HTTP Status Code 304
+	UpdateCheckFeed = "LU" // No 304  but feed LastUpdated is the same
 )
 
 // FeedLog represents an attempted HTTP request to a feed

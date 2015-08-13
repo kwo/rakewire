@@ -95,25 +95,21 @@ func (z *Feed) UpdateFetchTime(lastUpdated *time.Time) {
 
 	switch {
 	case d < 10*time.Minute:
-		nextFetch := now.Add(10 * time.Minute)
-		z.NextFetch = &nextFetch
+		z.AdjustFetchTime(10 * time.Minute)
 	case d < 1*time.Hour:
-		nextFetch := now.Add(30 * time.Minute)
-		z.NextFetch = &nextFetch
+		z.AdjustFetchTime(30 * time.Minute)
 	case d > 72*time.Hour:
-		nextFetch := now.Add(24 * time.Hour)
-		z.NextFetch = &nextFetch
+		z.AdjustFetchTime(24 * time.Hour)
 	case true:
-		nextFetch := now.Add(1 * time.Hour)
-		z.NextFetch = &nextFetch
+		z.AdjustFetchTime(1 * time.Hour)
 	}
 
 }
 
-// UpdateFetchTimeError increases the fetch interval in the event of an error
-func (z *Feed) UpdateFetchTimeError() {
+// AdjustFetchTime sets the FetchTime to interval units in the future.
+func (z *Feed) AdjustFetchTime(interval time.Duration) {
 	now := time.Now().UTC().Truncate(time.Second)
-	nextFetch := now.Add(24 * time.Hour)
+	nextFetch := now.Add(interval)
 	z.NextFetch = &nextFetch
 }
 

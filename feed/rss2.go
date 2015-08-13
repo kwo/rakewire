@@ -14,6 +14,7 @@ func rssToFeed(r *rss.Rss) (*Feed, error) {
 	f.Subtitle = r.Channel.Description
 	f.Flavor = "rss2"
 	f.Generator = r.Channel.Generator
+	f.Updated = getTime(r.Channel.PubDate)
 
 	for i := range r.Channel.Items {
 
@@ -44,8 +45,14 @@ func rssToFeed(r *rss.Rss) (*Feed, error) {
 
 	} // loop
 
-	if len(f.Entries) > 0 {
+	// set updated to first entry time ignoring time in header
+	if len(f.Entries) > 0 && f.Entries[0].Updated != nil && !f.Entries[0].Updated.IsZero() {
 		f.Updated = f.Entries[0].Updated
+	}
+
+	// turn zero times to nil
+	if f.Updated != nil && f.Updated.IsZero() {
+		f.Updated = nil
 	}
 
 	return f, nil

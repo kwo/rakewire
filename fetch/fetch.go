@@ -146,17 +146,20 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.ContentLength = len(feed.Body)
 
 			xmlFeed, err := xmlfeed.Parse(feed.Body)
-			if err != nil {
+			if err != nil || xmlFeed == nil {
 				// cannot parse feed
 				feed.Attempt.Result = m.FetchResultFeedError
 				feed.Attempt.ResultMessage = err.Error()
+				feed.AdjustFetchTime(1 * time.Hour) // give us time to work on solution
+			} else if xmlFeed.Updated == nil {
+				feed.Attempt.Result = m.FetchResultFeedTimeError
 				feed.Attempt.IsUpdated = false
-				feed.Attempt.UpdateCheck = m.UpdateCheckFeedEntries
-				feed.UpdateFetchTimeError() // don't hammer site if error
+				feed.Attempt.UpdateCheck = m.UpdateCheckFeed
+				feed.AdjustFetchTime(1 * time.Hour) // give us time to work on solution
 			} else {
 				feed.Feed = xmlFeed
 				feed.Attempt.IsUpdated = isFeedUpdated(feed.Feed.Updated, feed.LastUpdated)
-				feed.Attempt.UpdateCheck = m.UpdateCheckFeedEntries
+				feed.Attempt.UpdateCheck = m.UpdateCheckFeed
 				feed.UpdateFetchTime(feed.Feed.Updated)
 			}
 
@@ -170,7 +173,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 		case rsp.StatusCode >= 400:
 			feed.Attempt.Result = m.FetchResultServerError
-			feed.UpdateFetchTimeError() // don't hammer site if error
+			feed.AdjustFetchTime(24 * time.Hour) // don't hammer site if error
 
 		case true:
 			logger.Printf("Uncaught Status Code: %d", rsp.StatusCode)
@@ -181,7 +184,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
 
-	logger.Printf("fetch %2d: %s  %d  %5t  %s  %s  %s\n", id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage)
+	logger.Printf("fetch %2d: %2s  %3d  %5t  %2s  %s  %s\n", id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage)
 	z.output <- feed
 
 }
