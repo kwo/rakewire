@@ -2,6 +2,7 @@ package feed
 
 import (
 	"github.com/kwo/ocd/feeds/rss"
+	"time"
 )
 
 func rssToFeed(r *rss.Rss) (*Feed, error) {
@@ -20,8 +21,7 @@ func rssToFeed(r *rss.Rss) (*Feed, error) {
 		f.Entries = append(f.Entries, entry)
 
 		entry.Title = r.Channel.Items[i].Title
-		dt := r.Channel.Items[i].PubDate.GetTime()
-		entry.Updated = &dt
+		entry.Updated = getTime(r.Channel.Items[i].PubDate)
 		//entry.Created = rssItem.Created
 		//entry.Updated = rssItem.Updated
 		// if entry.Updated.IsZero() {
@@ -50,4 +50,12 @@ func rssToFeed(r *rss.Rss) (*Feed, error) {
 
 	return f, nil
 
+}
+
+func getTime(t rss.Time) *time.Time {
+	dt := t.GetTime()
+	if dt.IsZero() {
+		return nil
+	}
+	return &dt
 }
