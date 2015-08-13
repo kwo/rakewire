@@ -1,12 +1,15 @@
 package feed
 
 import (
+	"encoding/xml"
+	"io"
+	"log"
 	"time"
 )
 
 // Feed feed
 type Feed struct {
-	Author    *Person
+	Author    Person
 	Entries   []*Entry
 	Flavor    string
 	Generator string
@@ -15,20 +18,20 @@ type Feed struct {
 	Links     map[string]string
 	Title     string
 	Subtitle  string
-	Updated   *time.Time
+	Updated   time.Time
 }
 
 // Entry entry
 type Entry struct {
-	Author     *Person
+	Author     Person
 	Categories []string
 	Content    string
-	Created    *time.Time
+	Created    time.Time
 	ID         string
 	Links      map[string]string
 	Summary    string
 	Title      string
-	Updated    *time.Time
+	Updated    time.Time
 }
 
 // Person person
@@ -36,4 +39,43 @@ type Person struct {
 	EMail string
 	Name  string
 	URI   string
+}
+
+// Parse feed
+func Parse(reader io.Reader) (*Feed, error) {
+
+	decoder := xml.NewDecoder(reader)
+
+	var feed *Feed
+	var err error
+
+	for {
+
+		// Read tokens from the XML document in a stream.
+		t, _ := decoder.Token()
+		if t == nil {
+			break
+		}
+
+		// Inspect the type of the token just read.
+		switch element := t.(type) {
+		case xml.StartElement:
+			if element.Name.Local == "feed" {
+				a := &atomFeed{}
+				decoder.DecodeElement(a, &element)
+				feed, err = a.toFeed()
+			} else if element.Name.Local == "rss" {
+				r := &rssFeed{}
+				decoder.DecodeElement(r, &element)
+				decoder.DefaultSpace = "rss"
+				feed, err = r.toFeed()
+			} else {
+				log.Printf("Unknown feed type: %s\n", element.Name.Local)
+			}
+		} // switch
+
+	} // for loop
+
+	return feed, err
+
 }

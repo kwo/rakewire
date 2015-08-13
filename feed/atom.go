@@ -1,7 +1,12 @@
 package feed
 
 import (
+	"rakewire.com/logging"
 	"time"
+)
+
+var (
+	logger = logging.New("feed")
 )
 
 // atom feed
@@ -111,18 +116,20 @@ func (c atomCategory) String() string {
 
 func (a atomFeed) toFeed() (*Feed, error) {
 
-	var f Feed
+	f := &Feed{}
+
+	// #DOING:0 if no feed updated, populate with latest entry
 
 	f.ID = a.ID
 	f.Title = a.Title
 	f.Subtitle = a.Subtitle
-	f.Author = &Person{a.Author.Name, a.Author.EMail, a.Author.URI}
+	f.Author = Person{a.Author.Name, a.Author.EMail, a.Author.URI}
 	f.Icon = a.Icon
 	f.Generator = a.Generator.String()
 	f.Flavor = "atom"
 
 	if !a.Updated.IsZero() {
-		f.Updated = &a.Updated
+		f.Updated = a.Updated
 	}
 
 	f.Links = make(map[string]string)
@@ -132,18 +139,14 @@ func (a atomFeed) toFeed() (*Feed, error) {
 
 	for _, atomEntry := range a.Entries {
 
-		entry := Entry{}
-		f.Entries = append(f.Entries, &entry)
+		entry := &Entry{}
+		f.Entries = append(f.Entries, entry)
 
 		entry.ID = atomEntry.ID
 		entry.Title = atomEntry.Title
-		if !atomEntry.Published.IsZero() {
-			entry.Created = &atomEntry.Published
-		}
-		if !atomEntry.Updated.IsZero() {
-			entry.Updated = &atomEntry.Updated
-		}
-		entry.Author = &Person{atomEntry.Author.EMail, atomEntry.Author.Name, atomEntry.Author.URI}
+		entry.Created = atomEntry.Published
+		entry.Updated = atomEntry.Updated
+		entry.Author = Person{atomEntry.Author.EMail, atomEntry.Author.Name, atomEntry.Author.URI}
 
 		entry.Links = make(map[string]string)
 		for _, link := range atomEntry.Links {
@@ -157,8 +160,12 @@ func (a atomFeed) toFeed() (*Feed, error) {
 		entry.Summary = atomEntry.Summary.String()
 		entry.Content = atomEntry.Content.String()
 
+	} // loop
+
+	if f.Updated.IsZero() && len(f.Entries) > 0 {
+		f.Updated = f.Entries[0].Updated
 	}
 
-	return &f, nil
+	return f, nil
 
 }

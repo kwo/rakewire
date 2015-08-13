@@ -24,7 +24,7 @@ func TestAtomFeed(t *testing.T) {
 	assert.Empty(t, feed.Subtitle)
 
 	assert.NotNil(t, feed.Updated)
-	assert.Equal(t, time.Date(2013, time.May, 31, 13, 54, 0, 0, time.UTC), *feed.Updated)
+	assert.Equal(t, time.Date(2013, time.May, 31, 13, 54, 0, 0, time.UTC), feed.Updated)
 
 	assert.NotNil(t, feed.Author)
 
@@ -38,9 +38,19 @@ func TestAtomFeed(t *testing.T) {
 	assert.NotNil(t, feed.Entries)
 	assert.Equal(t, 6, len(feed.Entries))
 
-	assert.Nil(t, feed.Entries[0].Created)
+	assert.True(t, feed.Entries[0].Created.IsZero())
 	assert.NotEmpty(t, feed.Entries[0].Summary)
 	assert.NotEmpty(t, feed.Entries[0].Content)
+
+	feedFmt := "%-12s %s"
+	t.Logf(feedFmt, "ID", feed.ID)
+	t.Logf(feedFmt, "Title", feed.Title)
+	t.Logf(feedFmt, "Flavor", feed.Flavor)
+	t.Logf(feedFmt, "Updated", feed.Updated.Format("2006-01-02 15:04:05"))
+	t.Logf(feedFmt, "Generator", feed.Generator)
+	for _, e := range feed.Entries {
+		t.Logf("%s %s %s", e.ID, e.Updated.Format("2006-01-02 15:04:05"), e.Title)
+	}
 
 }
 
@@ -58,5 +68,15 @@ func TestRSSFeed(t *testing.T) {
 	//assert.NotEmpty(t, feed.ID)
 	assert.NotEmpty(t, feed.Title)
 	assert.NotEmpty(t, feed.Subtitle)
+
+	feedFmt := "%-12s %s"
+	t.Logf(feedFmt, "ID", feed.ID)
+	t.Logf(feedFmt, "Title", feed.Title)
+	t.Logf(feedFmt, "Flavor", feed.Flavor)
+	t.Logf(feedFmt, "Updated", feed.Updated)
+	t.Logf(feedFmt, "Generator", feed.Generator)
+	for _, e := range feed.Entries {
+		t.Logf("%s %s %s", e.ID, e.Updated, e.Title)
+	}
 
 }
