@@ -1,7 +1,7 @@
 package feed
 
 import (
-	"github.com/aaron-lebo/ocd/feeds/atom"
+	"github.com/kwo/ocd/feeds/atom"
 	"rakewire.com/logging"
 )
 
@@ -35,6 +35,8 @@ func atomToFeed(a *atom.Feed) (*Feed, error) {
 	for i := range a.Entries {
 
 		entry := &Entry{}
+		f.Entries = append(f.Entries, entry)
+
 		entry.Content = a.Entries[i].Content.Text
 		entry.Created = &a.Entries[i].Published
 		entry.ID = a.Entries[i].Id
@@ -58,8 +60,6 @@ func atomToFeed(a *atom.Feed) (*Feed, error) {
 		for j := range a.Entries[i].Links {
 			entry.Links[a.Entries[i].Links[j].Rel] = a.Entries[i].Links[j].Href
 		}
-
-		f.Entries = append(f.Entries, entry)
 
 	} // loop
 
