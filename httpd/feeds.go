@@ -52,10 +52,10 @@ func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte(line))
 
 	for _, f := range feeds.Values {
-		dtNext := f.NextFetch.Local().Format("15:04:05")
+		dtNext := f.NextFetch.Local().Format("Mon 15:04:05")
 		dtLast := ""
 		if f.Last != nil {
-			dtLast = f.Last.StartTime.Local().Format("15:04:05")
+			dtLast = f.Last.StartTime.Local().Format("Mon 15:04:05")
 		}
 		line := fmt.Sprintf("%-8s  %-8s %6s %6d %7t %-5s %s\n", dtNext, dtLast, f.Last.Result, f.Last.StatusCode, f.Last.IsUpdated, f.Last.UpdateCheck, f.URL)
 		w.Write([]byte(line))
