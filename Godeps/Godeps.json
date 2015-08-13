@@ -6,14 +6,24 @@
 	],
 	"Deps": [
 		{
+			"ImportPath": "code.google.com/p/go-charset/charset",
+			"Comment": "null-32",
+			"Rev": "ebbeafdc430eb6c7e44e9a730a38eaff4c56ba3a"
+		},
+		{
+			"ImportPath": "code.google.com/p/go-charset/data",
+			"Comment": "null-32",
+			"Rev": "ebbeafdc430eb6c7e44e9a730a38eaff4c56ba3a"
+		},
+		{
 			"ImportPath": "code.google.com/p/go-uuid/uuid",
 			"Comment": "null-15",
 			"Rev": "35bc42037350f0078e3c974c6ea690f1926603ab"
 		},
 		{
 			"ImportPath": "github.com/boltdb/bolt",
-			"Comment": "v1.0-111-g04a3e85",
-			"Rev": "04a3e85793043e76d41164037d0d7f9d53eecae3"
+			"Comment": "v1.0-115-gc2745b3",
+			"Rev": "c2745b3c62985affcf08d0522135f4747e9b81f3"
 		},
 		{
 			"ImportPath": "github.com/codegangsta/negroni",
@@ -26,23 +36,23 @@
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "9cb89f07ca03c6a28d1e237ba033bc6a29422fd6"
+			"Rev": "ffb3f683aad4dcbc2bb65177799563252585dd22"
 		},
 		{
 			"ImportPath": "github.com/kwo/ocd/feeds/atom",
-			"Rev": "67f37d4b1142b2f0e9f5c7491ab0051e81bfa315"
+			"Rev": "aceb6d93a0cb4486c86a13d2fdfc869dba359894"
 		},
 		{
 			"ImportPath": "github.com/kwo/ocd/feeds/modules/atom",
-			"Rev": "67f37d4b1142b2f0e9f5c7491ab0051e81bfa315"
+			"Rev": "aceb6d93a0cb4486c86a13d2fdfc869dba359894"
 		},
 		{
 			"ImportPath": "github.com/kwo/ocd/feeds/modules/media",
-			"Rev": "67f37d4b1142b2f0e9f5c7491ab0051e81bfa315"
+			"Rev": "aceb6d93a0cb4486c86a13d2fdfc869dba359894"
 		},
 		{
 			"ImportPath": "github.com/kwo/ocd/feeds/rss",
-			"Rev": "67f37d4b1142b2f0e9f5c7491ab0051e81bfa315"
+			"Rev": "aceb6d93a0cb4486c86a13d2fdfc869dba359894"
 		},
 		{
 			"ImportPath": "github.com/phyber/negroni-gzip/gzip",
@@ -50,13 +60,13 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.0-17-g089c718",
-			"Rev": "089c7181b8c728499929ff09b62d3fdd8df8adff"
+			"Comment": "v1.0-19-g6fe8314",
+			"Rev": "6fe8314ce5ce27f43c9a510126279fdc5d5d38fc"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/require",
-			"Comment": "v1.0-17-g089c718",
-			"Rev": "089c7181b8c728499929ff09b62d3fdd8df8adff"
+			"Comment": "v1.0-19-g6fe8314",
+			"Rev": "6fe8314ce5ce27f43c9a510126279fdc5d5d38fc"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
