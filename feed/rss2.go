@@ -44,8 +44,8 @@ func (r rssFeed) toFeed() (*Feed, error) {
 		f.Entries = append(f.Entries, entry)
 
 		entry.Title = rssItem.Title
-		entry.Created = rssItem.Created
-		entry.Updated = rssItem.Updated
+		*entry.Created = rssItem.Created
+		*entry.Updated = rssItem.Updated
 		if entry.Updated.IsZero() {
 			entry.Updated = entry.Created
 		}

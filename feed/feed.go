@@ -2,6 +2,7 @@ package feed
 
 import (
 	"encoding/xml"
+	"github.com/aaron-lebo/ocd/feeds/atom"
 	"io"
 	"log"
 	"time"
@@ -9,35 +10,37 @@ import (
 
 // Feed feed
 type Feed struct {
-	Author    Person
+	Authors   []*Person
 	Entries   []*Entry
 	Flavor    string
 	Generator string
 	Icon      string
 	ID        string
 	Links     map[string]string
-	Title     string
+	Rights    string
 	Subtitle  string
-	Updated   time.Time
+	Title     string
+	Updated   *time.Time
 }
 
 // Entry entry
 type Entry struct {
-	Author     Person
+	Authors    []*Person
 	Categories []string
 	Content    string
-	Created    time.Time
+	Created    *time.Time
 	ID         string
 	Links      map[string]string
+	Rights     string
 	Summary    string
 	Title      string
-	Updated    time.Time
+	Updated    *time.Time
 }
 
 // Person person
 type Person struct {
-	EMail string
 	Name  string
+	EMail string
 	URI   string
 }
 
@@ -61,9 +64,9 @@ func Parse(reader io.Reader) (*Feed, error) {
 		switch element := t.(type) {
 		case xml.StartElement:
 			if element.Name.Local == "feed" {
-				a := &atomFeed{}
+				a := &atom.Feed{}
 				decoder.DecodeElement(a, &element)
-				feed, err = a.toFeed()
+				feed, err = atomToFeed(a)
 			} else if element.Name.Local == "rss" {
 				r := &rssFeed{}
 				decoder.DecodeElement(r, &element)
