@@ -96,7 +96,7 @@ func (z *Service) newRequest(feed *m.Feed) *http.Request {
 	req, _ := http.NewRequest(mGET, feed.URL, nil)
 	req.Header.Set(hUserAgent, httpUserAgent)
 	req.Header.Set(hAcceptEncoding, "gzip")
-	if feed.Last200 != nil {
+	if feed.Last200 != nil && feed.Last200.Result == m.FetchResultOK {
 		if feed.Last200.LastModified != nil {
 			req.Header.Set(hIfModifiedSince, feed.Last200.LastModified.UTC().Format(http.TimeFormat))
 		}
