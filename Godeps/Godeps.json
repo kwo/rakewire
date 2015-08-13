@@ -29,6 +29,22 @@
 			"Rev": "9cb89f07ca03c6a28d1e237ba033bc6a29422fd6"
 		},
 		{
+			"ImportPath": "github.com/kwo/ocd/feeds/atom",
+			"Rev": "67f37d4b1142b2f0e9f5c7491ab0051e81bfa315"
+		},
+		{
+			"ImportPath": "github.com/kwo/ocd/feeds/modules/atom",
+			"Rev": "67f37d4b1142b2f0e9f5c7491ab0051e81bfa315"
+		},
+		{
+			"ImportPath": "github.com/kwo/ocd/feeds/modules/media",
+			"Rev": "67f37d4b1142b2f0e9f5c7491ab0051e81bfa315"
+		},
+		{
+			"ImportPath": "github.com/kwo/ocd/feeds/rss",
+			"Rev": "67f37d4b1142b2f0e9f5c7491ab0051e81bfa315"
+		},
+		{
 			"ImportPath": "github.com/phyber/negroni-gzip/gzip",
 			"Rev": "ff2754fcbd1ea465aadd7f74699aed5e483eda85"
 		},
