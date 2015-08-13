@@ -1,10 +1,10 @@
 package feed
 
 import (
+	"bytes"
 	"encoding/xml"
-	"github.com/aaron-lebo/ocd/feeds/atom"
-	"io"
-	"log"
+	"github.com/kwo/ocd/feeds/atom"
+	"github.com/kwo/ocd/feeds/rss"
 	"time"
 )
 
@@ -45,40 +45,23 @@ type Person struct {
 }
 
 // Parse feed
-func Parse(reader io.Reader) (*Feed, error) {
+func Parse(body []byte) (feed *Feed, err error) {
 
-	decoder := xml.NewDecoder(reader)
+	decoder := xml.NewDecoder(bytes.NewReader(body))
+	a := &atom.Feed{}
+	err = decoder.Decode(a)
+	if err == nil {
+		return atomToFeed(a)
+	}
 
-	var feed *Feed
-	var err error
+	decoder = xml.NewDecoder(bytes.NewReader(body))
+	r := &rss.Rss{}
+	decoder.DefaultSpace = "rss"
+	err = decoder.Decode(r)
+	if err == nil {
+		return rssToFeed(r)
+	}
 
-	for {
-
-		// Read tokens from the XML document in a stream.
-		t, _ := decoder.Token()
-		if t == nil {
-			break
-		}
-
-		// Inspect the type of the token just read.
-		switch element := t.(type) {
-		case xml.StartElement:
-			if element.Name.Local == "feed" {
-				a := &atom.Feed{}
-				decoder.DecodeElement(a, &element)
-				feed, err = atomToFeed(a)
-			} else if element.Name.Local == "rss" {
-				r := &rssFeed{}
-				decoder.DecodeElement(r, &element)
-				decoder.DefaultSpace = "rss"
-				feed, err = r.toFeed()
-			} else {
-				log.Printf("Unknown feed type: %s\n", element.Name.Local)
-			}
-		} // switch
-
-	} // for loop
-
-	return feed, err
+	return
 
 }

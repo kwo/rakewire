@@ -3,6 +3,7 @@ package feed
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -10,13 +11,15 @@ import (
 
 func TestAtomFeed(t *testing.T) {
 
-	f, err1 := os.Open("../test/feed.xml")
-	assert.Nil(t, err1)
+	f, err := os.Open("../test/feed.xml")
+	assert.Nil(t, err)
 	assert.NotNil(t, f)
 	defer f.Close()
+	body, err := ioutil.ReadAll(f)
+	assert.Nil(t, err)
 
-	var feed, err2 = Parse(f)
-	require.Nil(t, err2)
+	feed, err := Parse(body)
+	require.Nil(t, err)
 	require.NotNil(t, feed)
 
 	assert.NotEmpty(t, feed.ID)
@@ -56,13 +59,15 @@ func TestAtomFeed(t *testing.T) {
 
 func TestRSSFeed(t *testing.T) {
 
-	f, err1 := os.Open("../test/wordpress.xml")
-	assert.Nil(t, err1)
+	f, err := os.Open("../test/wordpress.xml")
+	assert.Nil(t, err)
 	assert.NotNil(t, f)
 	defer f.Close()
+	body, err := ioutil.ReadAll(f)
+	assert.Nil(t, err)
 
-	var feed, err2 = Parse(f)
-	require.NoError(t, err2)
+	feed, err := Parse(body)
+	require.Nil(t, err)
 	require.NotNil(t, feed)
 
 	//assert.NotEmpty(t, feed.ID)
