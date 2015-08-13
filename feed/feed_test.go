@@ -4,6 +4,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"testing"
 	"time"
@@ -66,6 +67,35 @@ func TestRSSFeed(t *testing.T) {
 	body, err := ioutil.ReadAll(f)
 	assert.Nil(t, err)
 
+	testFeed(t, body)
+
+}
+
+func TestRSSStallmann(t *testing.T) {
+	t.SkipNow()
+	testURL(t, "https://stallman.org/rss/rss.xml")
+}
+
+func TestRSSWordpress(t *testing.T) {
+	t.SkipNow()
+	testURL(t, "https://en.blog.wordpress.com/feed/")
+}
+
+func testURL(t *testing.T, url string) {
+
+	rsp, err := http.Get(url)
+	require.Nil(t, err)
+	require.NotNil(t, rsp)
+	defer rsp.Body.Close()
+	body, err := ioutil.ReadAll(rsp.Body)
+	require.Nil(t, err)
+
+	testFeed(t, body)
+
+}
+
+func testFeed(t *testing.T, body []byte) {
+
 	feed, err := Parse(body)
 	require.Nil(t, err)
 	require.NotNil(t, feed)
@@ -81,7 +111,7 @@ func TestRSSFeed(t *testing.T) {
 	t.Logf(feedFmt, "Updated", feed.Updated)
 	t.Logf(feedFmt, "Generator", feed.Generator)
 	for _, e := range feed.Entries {
-		t.Logf("%s %s %s", e.ID, e.Updated.Format("2006-01-02 15:04:05"), e.Title)
+		t.Logf("%s %s %s", e.ID, e.Updated, e.Title)
 	}
 
 }
