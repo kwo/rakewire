@@ -87,8 +87,13 @@ func TestRSSLatin1(t *testing.T) {
 }
 
 func TestRSSCooperPressDate(t *testing.T) {
-	//t.SkipNow()
+	t.SkipNow()
 	testURL(t, "http://nodeweekly.com/rss/1ooif86o")
+}
+
+func TestRSSDublinCoreDate(t *testing.T) {
+	t.SkipNow()
+	testURL(t, "https://www.omnigroup.com/blog/rss/")
 }
 
 func testURL(t *testing.T, url string) {
@@ -122,6 +127,7 @@ func testFeed(t *testing.T, body []byte) {
 	t.Logf(feedFmt, "Generator", feed.Generator)
 	for _, e := range feed.Entries {
 		t.Logf("%s %s %s", e.ID, e.Updated, e.Title)
+		t.Log(e.Content)
 	}
 
 }

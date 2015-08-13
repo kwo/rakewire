@@ -40,19 +40,27 @@
 		},
 		{
 			"ImportPath": "github.com/kwo/ocd/feeds/atom",
-			"Rev": "aceb6d93a0cb4486c86a13d2fdfc869dba359894"
+			"Rev": "1a822820c7573fab7772c55e8389ecc6b7166039"
 		},
 		{
 			"ImportPath": "github.com/kwo/ocd/feeds/modules/atom",
-			"Rev": "aceb6d93a0cb4486c86a13d2fdfc869dba359894"
+			"Rev": "1a822820c7573fab7772c55e8389ecc6b7166039"
+		},
+		{
+			"ImportPath": "github.com/kwo/ocd/feeds/modules/content",
+			"Rev": "1a822820c7573fab7772c55e8389ecc6b7166039"
+		},
+		{
+			"ImportPath": "github.com/kwo/ocd/feeds/modules/dublincore",
+			"Rev": "1a822820c7573fab7772c55e8389ecc6b7166039"
 		},
 		{
 			"ImportPath": "github.com/kwo/ocd/feeds/modules/media",
-			"Rev": "aceb6d93a0cb4486c86a13d2fdfc869dba359894"
+			"Rev": "1a822820c7573fab7772c55e8389ecc6b7166039"
 		},
 		{
 			"ImportPath": "github.com/kwo/ocd/feeds/rss",
-			"Rev": "aceb6d93a0cb4486c86a13d2fdfc869dba359894"
+			"Rev": "1a822820c7573fab7772c55e8389ecc6b7166039"
 		},
 		{
 			"ImportPath": "github.com/phyber/negroni-gzip/gzip",

@@ -9,11 +9,14 @@ func rssToFeed(r *rss.Rss) (*Feed, error) {
 
 	f := &Feed{}
 
-	f.ID = r.Channel.Link
-	f.Title = r.Channel.Title
-	f.Subtitle = r.Channel.Description
 	f.Flavor = "rss2"
 	f.Generator = r.Channel.Generator
+	f.Icon = r.Channel.Image.Url
+	f.ID = r.Channel.Link
+	f.Links = make(map[string]string)
+	f.Rights = r.Channel.Copyright
+	f.Subtitle = r.Channel.Description
+	f.Title = r.Channel.Title
 	f.Updated = getTime(r.Channel.PubDate)
 
 	for i := range r.Channel.Items {
@@ -21,27 +24,40 @@ func rssToFeed(r *rss.Rss) (*Feed, error) {
 		entry := &Entry{}
 		f.Entries = append(f.Entries, entry)
 
+		entry.Content = r.Channel.Items[i].Description
+		if r.Channel.Items[i].Encoded != "" {
+			entry.Summary = entry.Content
+			entry.Content = r.Channel.Items[i].Encoded
+		}
+
+		entry.Created = getTime(r.Channel.Items[i].PubDate)
+		entry.ID = r.Channel.Items[i].Guid.Text
+		entry.Links = make(map[string]string)
 		entry.Title = r.Channel.Items[i].Title
 		entry.Updated = getTime(r.Channel.Items[i].PubDate)
-		//entry.Created = rssItem.Created
-		//entry.Updated = rssItem.Updated
-		// if entry.Updated.IsZero() {
-		// 	entry.Updated = entry.Created
-		// }
-		//entry.Author = &Author{atomEntry.Author.Name, atomEntry.Author.EMail, atomEntry.Author.URI}
+		// use the dublincore date in no pubDate
+		if entry.Updated == nil && !r.Channel.Items[i].Date.IsZero() {
+			entry.Updated = &r.Channel.Items[i].Date
+		}
 
-		// for j := 0; j < len(atomEntry.Links); j++ {
-		// 	atomLink := atomEntry.Links[j]
-		// 	link := Link{atomLink.Rel, atomLink.Href}
-		// 	entry.Links = append(entry.Links, &link)
-		// }
-		//
-		// for j := 0; j < len(atomEntry.Categories); j++ {
-		// 	entry.Categories = append(entry.Categories, atomEntry.Categories[j].String())
-		// }
+		if r.Channel.Items[i].Author != "" {
+			b := &Person{Name: r.Channel.Items[i].Author}
+			entry.Authors = append(entry.Authors, b)
+		} else if r.Channel.Items[i].Creator != "" { // dublincore
+			b := &Person{Name: r.Channel.Items[i].Author}
+			entry.Authors = append(entry.Authors, b)
+		}
 
-		// entry.Summary = rssItem.Summary
-		// entry.Content = rssItem.Content
+		for j := range r.Channel.Items[i].Categories {
+			if r.Channel.Items[i].Categories[j].Text != "" {
+				entry.Categories = append(entry.Categories, r.Channel.Items[i].Categories[j].Text)
+			}
+		}
+
+		if r.Channel.Items[i].Link != "" {
+			// #DOING:0 which link is the rss entry link
+			// entry.Links[""] = r.Channel.Items[i].Link
+		}
 
 	} // loop
 
