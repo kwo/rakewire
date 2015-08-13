@@ -63,9 +63,12 @@ func atomToFeed(a *atom.Feed) (*Feed, error) {
 
 	} // loop
 
-	if (f.Updated == nil || f.Updated.IsZero()) && len(f.Entries) > 0 {
+	// set updated to first entry time ignoring time in header
+	if len(f.Entries) > 0 && f.Entries[0].Updated != nil && !f.Entries[0].Updated.IsZero() {
 		f.Updated = f.Entries[0].Updated
 	}
+
+	// turn zero times to nil
 	if f.Updated != nil && f.Updated.IsZero() {
 		f.Updated = nil
 	}
