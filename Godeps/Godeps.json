@@ -22,8 +22,8 @@
 		},
 		{
 			"ImportPath": "github.com/boltdb/bolt",
-			"Comment": "v1.0-115-gc2745b3",
-			"Rev": "c2745b3c62985affcf08d0522135f4747e9b81f3"
+			"Comment": "v1.0-117-g0f053fa",
+			"Rev": "0f053fabc06119583d61937a0a06ef0ba0f1b301"
 		},
 		{
 			"ImportPath": "github.com/codegangsta/negroni",
@@ -36,7 +36,7 @@
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "ffb3f683aad4dcbc2bb65177799563252585dd22"
+			"Rev": "5112c33f3a6ef694c1e5784b68981f08b3f0327c"
 		},
 		{
 			"ImportPath": "github.com/kwo/ocd/feeds/atom",
@@ -68,13 +68,13 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Comment": "v1.0-19-g6fe8314",
-			"Rev": "6fe8314ce5ce27f43c9a510126279fdc5d5d38fc"
+			"Comment": "v1.0-21-gf552045",
+			"Rev": "f5520455607c0233cb6d7b056f71b22c1d265ef1"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/require",
-			"Comment": "v1.0-19-g6fe8314",
-			"Rev": "6fe8314ce5ce27f43c9a510126279fdc5d5d38fc"
+			"Comment": "v1.0-21-gf552045",
+			"Rev": "f5520455607c0233cb6d7b056f71b22c1d265ef1"
 		},
 		{
 			"ImportPath": "gopkg.in/yaml.v2",
