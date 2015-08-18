@@ -2,6 +2,7 @@
 
 ## v0.0.2
 
+ - #TODO:0 move test out of src
  - #TODO:30 better logging
  - #TODO:40 add cache-control headers to API
  - #TODO:20 save feed items/entries

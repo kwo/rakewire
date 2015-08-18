@@ -1,0 +1,77 @@
+{
+	"version": 0,
+	"dependencies": [
+		{
+			"importpath": "code.google.com/p/go-charset/charset",
+			"repository": "https://code.google.com/p/go-charset",
+			"revision": "ebbeafdc430e",
+			"branch": "default",
+			"path": "/charset"
+		},
+		{
+			"importpath": "code.google.com/p/go-charset/data",
+			"repository": "https://code.google.com/p/go-charset",
+			"revision": "ebbeafdc430e",
+			"branch": "default",
+			"path": "/data"
+		},
+		{
+			"importpath": "code.google.com/p/go-uuid/uuid",
+			"repository": "https://code.google.com/p/go-uuid",
+			"revision": "35bc42037350",
+			"branch": "default",
+			"path": "/uuid"
+		},
+		{
+			"importpath": "github.com/boltdb/bolt",
+			"repository": "https://github.com/boltdb/bolt",
+			"revision": "0f053fabc06119583d61937a0a06ef0ba0f1b301",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/codegangsta/negroni",
+			"repository": "https://github.com/codegangsta/negroni",
+			"revision": "c7477ad8e330bef55bf1ebe300cf8aa67c492d1b",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/gorilla/context",
+			"repository": "https://github.com/gorilla/context",
+			"revision": "215affda49addc4c8ef7e2534915df2c8c35c6cd",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/gorilla/mux",
+			"repository": "https://github.com/gorilla/mux",
+			"revision": "f8220e087da2fc83d083bfc0289ed7f9db3536bd",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/kwo/ocd/feeds",
+			"repository": "https://github.com/kwo/ocd",
+			"revision": "1a822820c7573fab7772c55e8389ecc6b7166039",
+			"branch": "master",
+			"path": "/feeds"
+		},
+		{
+			"importpath": "github.com/phyber/negroni-gzip/gzip",
+			"repository": "https://github.com/phyber/negroni-gzip",
+			"revision": "ff2754fcbd1ea465aadd7f74699aed5e483eda85",
+			"branch": "master",
+			"path": "/gzip"
+		},
+		{
+			"importpath": "github.com/stretchr/testify/assert",
+			"repository": "https://github.com/stretchr/testify",
+			"revision": "f5520455607c0233cb6d7b056f71b22c1d265ef1",
+			"branch": "master",
+			"path": "/assert"
+		},
+		{
+			"importpath": "gopkg.in/yaml.v2",
+			"repository": "https://gopkg.in/yaml.v2",
+			"revision": "7ad95dd0798a40da1ccdff6dff35fd177b5edf40",
+			"branch": "v2"
+		}
+	]
+}
