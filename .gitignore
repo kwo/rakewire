@@ -1,4 +1,3 @@
 test/*.db
-Godeps/_workspace
-Godeps/Readme
-tags
+pkg
+bin
