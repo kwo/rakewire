@@ -5,6 +5,7 @@
  - #TODO:30 better logging
  - #TODO:40 add cache-control headers to API
  - #TODO:20 save feed items/entries
+ - #DOING:0 rewrite feed parser using streaming model
  - #DOING:10 add feed header to feed log (perhaps divide into http and feed subsections)
  - #TODO:50 need save database channel
  - #DONE:50 v0.0.2 Conditional GETs
@@ -21,6 +22,7 @@
  - #BACKLOG:10 implememt Fever API
  - #BACKLOG:20 add support for Hot Links to Fever API support
  - #BACKLOG:0 html ui
+ - #BACKLOG:5 embed html ui with https://github.com/GeertJohan/go.rice
  - #BACKLOG:30 hub subscription support
  - #BACKLOG:40 TLS
  - #BACKLOG:50 http2 server push

@@ -49,7 +49,10 @@ type Person struct {
 // Parse feed
 func Parse(body []byte) (feed *Feed, err error) {
 
+	// #TODO:0 attach used charset to feed object
+
 	decoder := xml.NewDecoder(bytes.NewReader(body))
+	decoder.Strict = false
 	decoder.CharsetReader = charset.NewReader
 	a := &atom.Feed{}
 	err = decoder.Decode(a)
@@ -58,6 +61,7 @@ func Parse(body []byte) (feed *Feed, err error) {
 	}
 
 	decoder = xml.NewDecoder(bytes.NewReader(body))
+	decoder.Strict = false
 	decoder.CharsetReader = charset.NewReader
 	decoder.DefaultSpace = "rss"
 	r := &rss.Rss{}
