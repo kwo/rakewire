@@ -7,11 +7,45 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestAtom(t *testing.T) {
-	//t.SkipNow()
-	testFile(t, "../test/feed.xml")
+	f := testFile(t, "../../../test/feed/atomtest1.xml")
+
+	assert.Equal(t, "atom", f.Flavor)
+
+	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml", f.ID)
+
+	assert.Equal(t, "Sample Feed", f.Title.Text)
+	assert.Equal(t, "text", f.Title.Type)
+
+	assert.Equal(t, "For documentation <em>only</em>", f.Subtitle.Text)
+	assert.Equal(t, "html", f.Subtitle.Type)
+
+	assert.Equal(t, time.Date(2005, time.November, 9, 11, 56, 34, 0, time.UTC), f.Updated)
+
+	assert.Equal(t, "http://example.org/icon.jpg", f.Icon)
+
+	assert.Equal(t, "<p>Copyright 2005, Mark Pilgrim</p>", f.Rights.Text)
+	assert.Equal(t, "html", f.Rights.Type)
+
+	assert.Equal(t, "Sample Toolkit 4.0 (http://example.org/generator/)", f.Generator)
+
+	assert.Equal(t, 2, len(f.Links))
+	assert.Equal(t, "http://example.org/", f.Links["alternate"])
+	assert.Equal(t, "http://www.example.org/atom10.xml", f.Links["self"])
+
+	assert.Equal(t, 1, len(f.Authors))
+	assert.Equal(t, "Mark Pilgrim <mark@example.org> (http://diveintomark.org/)", f.Authors[0])
+
+	assert.Equal(t, 1, len(f.Entries))
+	e := f.Entries[0]
+	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3", e.ID)
+
+	assert.Equal(t, "First entry title", e.Title.Text)
+	assert.Equal(t, "text", e.Title.Type)
+
 }
 
 func TestRSS(t *testing.T) {
@@ -39,26 +73,25 @@ func TestRSSMalformed1(t *testing.T) {
 	testURL(t, "http://feeds.feedburner.com/auth0")
 }
 
-func testFeed(t *testing.T, reader io.Reader) {
-
+func testFeed(t *testing.T, reader io.Reader) *Feed {
 	feed, err := Parse(reader)
 	assert.Nil(t, err)
-	assert.Nil(t, feed)
-
+	assert.NotNil(t, feed)
+	return feed
 }
 
-func testFile(t *testing.T, filename string) {
+func testFile(t *testing.T, filename string) *Feed {
 	f, err := os.Open(filename)
 	require.Nil(t, err)
 	require.NotNil(t, f)
 	defer f.Close()
-	testFeed(t, f)
+	return testFeed(t, f)
 }
 
-func testURL(t *testing.T, url string) {
+func testURL(t *testing.T, url string) *Feed {
 	rsp, err := http.Get(url)
 	require.Nil(t, err)
 	require.NotNil(t, rsp)
 	defer rsp.Body.Close()
-	testFeed(t, rsp.Body)
+	return testFeed(t, rsp.Body)
 }
