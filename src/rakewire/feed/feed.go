@@ -23,7 +23,7 @@ type Feed struct {
 	Rights    string
 	Subtitle  string
 	Title     string
-	Updated   *time.Time
+	Updated   time.Time
 }
 
 // Entry entry
@@ -31,12 +31,12 @@ type Entry struct {
 	Authors    []*Person
 	Categories []string
 	Content    string
-	Created    *time.Time
+	Created    time.Time
 	ID         string
 	Links      map[string]string
 	Summary    string
 	Title      string
-	Updated    *time.Time
+	Updated    time.Time
 }
 
 // Person person
