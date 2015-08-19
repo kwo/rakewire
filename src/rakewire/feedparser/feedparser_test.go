@@ -75,8 +75,8 @@ func TestRSSMalformed1(t *testing.T) {
 
 func testFeed(t *testing.T, reader io.Reader) *Feed {
 	feed, err := Parse(reader)
-	assert.Nil(t, err)
-	assert.NotNil(t, feed)
+	require.Nil(t, err)
+	require.NotNil(t, feed)
 	return feed
 }
 

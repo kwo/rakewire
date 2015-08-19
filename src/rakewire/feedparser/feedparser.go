@@ -68,7 +68,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 	parser.CharsetReader = charset.NewReader
 	parser.Strict = false
 
-	var n xml.Name
+	elements := &Elements{}
 	var attr map[xml.Name]string
 	var baseURL string
 	var f *Feed
@@ -88,53 +88,53 @@ func Parse(reader io.Reader) (*Feed, error) {
 		switch t := token.(type) {
 
 		case xml.StartElement:
-			n = makeLowerName(t.Name)
-			attr = mapAttr(t.Attr)
+			attr = elementMapAttr(t.Attr)
+			elements.Push(t)
 			switch {
 
-			case entry == nil && n.Space == NSAtom && n.Local == "feed":
+			case elements.On(NSAtom, "feed"):
 				f = &Feed{}
 				f.Flavor = "atom"
 				f.Links = make(map[string]string)
-				baseURL = getAttr(attr, NSXml, "base")
-			case entry == nil && n.Space == NSRss && n.Local == "rss":
+				baseURL = elementAttr(attr, NSXml, "base")
+			case elements.On(NSRss, "rss"):
 				f = &Feed{}
-				f.Flavor = "rss" + getAttr(attr, NSRss, "version")
+				f.Flavor = "rss" + elementAttr(attr, NSRss, "version")
 				f.Links = make(map[string]string)
-				baseURL = getAttr(attr, NSXml, "base")
+				baseURL = elementAttr(attr, NSXml, "base")
 
-			case entry == nil && n.Space == NSAtom && n.Local == "entry":
+			case elements.In(NSAtom, "feed") && elements.On(NSAtom, "entry"):
 				entry = &Entry{}
 				entry.Links = make(map[string]string)
-			case entry == nil && n.Space == NSRss && n.Local == "item":
+			case elements.In(NSRss, "rss") && elements.On(NSRss, "item"):
 				entry = &Entry{}
 				entry.Links = make(map[string]string)
 
-			case n.Space == NSAtom && n.Local == "link":
+			case elements.On(NSAtom, "link"):
 				if entry == nil {
-					f.Links[getAttr(attr, NSNone, "rel")] = makeURL(baseURL, getAttr(attr, NSNone, "href"))
+					f.Links[elementAttr(attr, NSNone, "rel")] = makeURL(baseURL, elementAttr(attr, NSNone, "href"))
 				} else {
-					entry.Links[getAttr(attr, NSNone, "rel")] = makeURL(baseURL, getAttr(attr, NSNone, "href"))
+					entry.Links[elementAttr(attr, NSNone, "rel")] = makeURL(baseURL, elementAttr(attr, NSNone, "href"))
 				}
-			case n.Space == NSAtom && n.Local == "author":
+			case elements.On(NSAtom, "author"):
 				perso = &person{}
 
 			}
 
 		case xml.EndElement:
-			n2 := makeLowerName(t.Name)
+			n2, _ := elements.Pop(t)
 			switch {
-			case n2.Space == NSAtom && n2.Local == "feed":
+			case n2.Match(NSAtom, "feed"):
 				// send feed
-			case n2.Space == NSRss && n2.Local == "rss":
+			case n2.Match(NSRss, "rss"):
 				// send feed
-			case n2.Space == NSAtom && n2.Local == "entry":
+			case n2.Match(NSAtom, "entry"):
 				f.Entries = append(f.Entries, entry)
 				entry = nil
-			case n2.Space == NSRss && n2.Local == "item":
+			case n2.Match(NSRss, "item"):
 				f.Entries = append(f.Entries, entry)
 				entry = nil
-			case perso != nil && n2.Space == NSAtom && n2.Local == "author":
+			case perso != nil && n2.Match(NSAtom, "author"):
 				if entry == nil {
 					f.Authors = append(f.Authors, makePerson(perso))
 				} else {
@@ -152,23 +152,23 @@ func Parse(reader io.Reader) (*Feed, error) {
 				// feed header
 				switch {
 
-				case entry != nil && n.Space == NSAtom && n.Local == "content":
+				case elements.In(NSAtom, "entry") && elements.On(NSAtom, "content"):
 					entry.Content = makeText(text, attr)
 
-				case entry == nil && n.Space == NSAtom && n.Local == "generator":
+				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "generator"):
 					f.Generator = makeGenerator(text, attr)
 
-				case entry == nil && n.Space == NSAtom && n.Local == "icon":
+				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "icon"):
 					f.Icon = makeURL(baseURL, text)
 
-				case n.Space == NSAtom && n.Local == "id":
-					if entry == nil {
+				case elements.On(NSAtom, "id"):
+					if elements.In(NSAtom, "feed") {
 						f.ID = text
-					} else {
+					} else if elements.In(NSAtom, "entry") {
 						entry.ID = text
 					}
 
-				case n.Space == NSRss && n.Local == "pubdate":
+				case elements.On(NSRss, "pubdate"):
 					if entry == nil {
 						if f.Updated.IsZero() {
 							f.Updated = parseTime(text)
@@ -182,23 +182,23 @@ func Parse(reader io.Reader) (*Feed, error) {
 						}
 					}
 
-				case entry == nil && n.Space == NSAtom && n.Local == "rights":
+				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "rights"):
 					f.Rights = makeText(text, attr)
 
-				case entry == nil && n.Space == NSAtom && n.Local == "subtitle":
+				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "subtitle"):
 					f.Subtitle = makeText(text, attr)
 
-				case entry != nil && n.Space == NSAtom && n.Local == "summary":
+				case elements.In(NSAtom, "entry") && elements.On(NSAtom, "summary"):
 					entry.Summary = makeText(text, attr)
 
-				case n.Space == NSAtom && n.Local == "title":
-					if entry == nil {
+				case elements.On(NSAtom, "title"):
+					if elements.In(NSAtom, "feed") {
 						f.Title = makeText(text, attr)
-					} else {
+					} else if elements.In(NSAtom, "entry") {
 						entry.Title = makeText(text, attr)
 					}
 
-				case n.Space == NSAtom && n.Local == "updated":
+				case elements.On(NSAtom, "updated"):
 					if entry == nil {
 						f.Updated = parseTime(text)
 					} else {
@@ -208,13 +208,13 @@ func Parse(reader io.Reader) (*Feed, error) {
 						}
 					}
 
-				case perso != nil && n.Space == NSAtom && n.Local == "email":
+				case elements.In(NSAtom, "author") && elements.On(NSAtom, "email"):
 					perso.email = text
 
-				case perso != nil && n.Space == NSAtom && n.Local == "name":
+				case elements.In(NSAtom, "author") && elements.On(NSAtom, "name"):
 					perso.name = text
 
-				case perso != nil && n.Space == NSAtom && n.Local == "uri":
+				case elements.In(NSAtom, "author") && elements.On(NSAtom, "uri"):
 					perso.uri = text
 
 				}
@@ -229,36 +229,17 @@ func Parse(reader io.Reader) (*Feed, error) {
 
 }
 
-func getAttr(attrs map[xml.Name]string, space string, local string) string {
-	return attrs[xml.Name{Space: space, Local: local}]
-}
-
-func mapAttr(attrs []xml.Attr) map[xml.Name]string {
-	result := make(map[xml.Name]string)
-	for _, attr := range attrs {
-		result[makeLowerName(attr.Name)] = attr.Value
-	}
-	return result
-}
-
 func makeGenerator(text string, attrs map[xml.Name]string) string {
 	result := text
 	if result != "" {
-		if version := getAttr(attrs, NSNone, "version"); version != "" {
+		if version := elementAttr(attrs, NSNone, "version"); version != "" {
 			result += " " + version
 		}
-		if uri := getAttr(attrs, NSNone, "uri"); uri != "" {
+		if uri := elementAttr(attrs, NSNone, "uri"); uri != "" {
 			result += " (" + uri + ")"
 		}
 	}
 	return result
-}
-
-func makeLowerName(n xml.Name) xml.Name {
-	return xml.Name{
-		Local: strings.ToLower(n.Local),
-		Space: strings.ToLower(n.Space),
-	}
 }
 
 func makePerson(p *person) string {
@@ -276,7 +257,7 @@ func makePerson(p *person) string {
 }
 
 func makeText(text string, attr map[xml.Name]string) Text {
-	result := Text{Text: text, Type: getAttr(attr, NSNone, "type")}
+	result := Text{Text: text, Type: elementAttr(attr, NSNone, "type")}
 	if result.Type == "" {
 		result.Type = "text"
 	}
