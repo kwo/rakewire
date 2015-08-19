@@ -51,12 +51,12 @@ type person struct {
 	uri   string
 }
 
-// Namespace constants in lowercase
+// Namespace constants
 const (
-	NSAtom = "http://www.w3.org/2005/atom" // "http://www.w3.org/2005/Atom"
+	NSAtom = "http://www.w3.org/2005/Atom"
 	NSNone = ""
 	NSRss  = ""
-	NSXml  = "http://www.w3.org/xml/1998/namespace" // "http://www.w3.org/XML/1998/namespace"
+	NSXml  = "http://www.w3.org/XML/1998/namespace"
 )
 
 // Parse feed
@@ -69,8 +69,6 @@ func Parse(reader io.Reader) (*Feed, error) {
 	parser.Strict = false
 
 	elements := &Elements{}
-	var attr map[xml.Name]string
-	var baseURL string
 	var f *Feed
 	var entry *Entry
 	var perso *person
@@ -88,7 +86,6 @@ func Parse(reader io.Reader) (*Feed, error) {
 		switch t := token.(type) {
 
 		case xml.StartElement:
-			attr = elementMapAttr(t.Attr)
 			elements.Push(t)
 			switch {
 
@@ -96,12 +93,10 @@ func Parse(reader io.Reader) (*Feed, error) {
 				f = &Feed{}
 				f.Flavor = "atom"
 				f.Links = make(map[string]string)
-				baseURL = elementAttr(attr, NSXml, "base")
 			case elements.On(NSRss, "rss"):
 				f = &Feed{}
-				f.Flavor = "rss" + elementAttr(attr, NSRss, "version")
+				f.Flavor = "rss" + elements.Peek().Attr(NSRss, "version")
 				f.Links = make(map[string]string)
-				baseURL = elementAttr(attr, NSXml, "base")
 
 			case elements.In(NSAtom, "feed") && elements.On(NSAtom, "entry"):
 				entry = &Entry{}
@@ -111,10 +106,13 @@ func Parse(reader io.Reader) (*Feed, error) {
 				entry.Links = make(map[string]string)
 
 			case elements.On(NSAtom, "link"):
+				e := elements.Peek()
+				key := e.Attr(NSNone, "rel")
+				value := makeURL(elements.Attr(NSXml, "base"), e.Attr(NSNone, "href"))
 				if entry == nil {
-					f.Links[elementAttr(attr, NSNone, "rel")] = makeURL(baseURL, elementAttr(attr, NSNone, "href"))
+					f.Links[key] = value
 				} else {
-					entry.Links[elementAttr(attr, NSNone, "rel")] = makeURL(baseURL, elementAttr(attr, NSNone, "href"))
+					entry.Links[key] = value
 				}
 			case elements.On(NSAtom, "author"):
 				perso = &person{}
@@ -153,13 +151,13 @@ func Parse(reader io.Reader) (*Feed, error) {
 				switch {
 
 				case elements.In(NSAtom, "entry") && elements.On(NSAtom, "content"):
-					entry.Content = makeText(text, attr)
+					entry.Content = makeText(text, elements.Peek())
 
 				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "generator"):
-					f.Generator = makeGenerator(text, attr)
+					f.Generator = makeGenerator(text, elements.Peek())
 
 				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "icon"):
-					f.Icon = makeURL(baseURL, text)
+					f.Icon = makeURL(elements.Attr(NSXml, "base"), text)
 
 				case elements.On(NSAtom, "id"):
 					if elements.In(NSAtom, "feed") {
@@ -183,19 +181,19 @@ func Parse(reader io.Reader) (*Feed, error) {
 					}
 
 				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "rights"):
-					f.Rights = makeText(text, attr)
+					f.Rights = makeText(text, elements.Peek())
 
 				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "subtitle"):
-					f.Subtitle = makeText(text, attr)
+					f.Subtitle = makeText(text, elements.Peek())
 
 				case elements.In(NSAtom, "entry") && elements.On(NSAtom, "summary"):
-					entry.Summary = makeText(text, attr)
+					entry.Summary = makeText(text, elements.Peek())
 
 				case elements.On(NSAtom, "title"):
 					if elements.In(NSAtom, "feed") {
-						f.Title = makeText(text, attr)
+						f.Title = makeText(text, elements.Peek())
 					} else if elements.In(NSAtom, "entry") {
-						entry.Title = makeText(text, attr)
+						entry.Title = makeText(text, elements.Peek())
 					}
 
 				case elements.On(NSAtom, "updated"):
@@ -229,13 +227,13 @@ func Parse(reader io.Reader) (*Feed, error) {
 
 }
 
-func makeGenerator(text string, attrs map[xml.Name]string) string {
+func makeGenerator(text string, e *Element) string {
 	result := text
 	if result != "" {
-		if version := elementAttr(attrs, NSNone, "version"); version != "" {
+		if version := e.Attr(NSNone, "version"); version != "" {
 			result += " " + version
 		}
-		if uri := elementAttr(attrs, NSNone, "uri"); uri != "" {
+		if uri := e.Attr(NSNone, "uri"); uri != "" {
 			result += " (" + uri + ")"
 		}
 	}
@@ -256,8 +254,8 @@ func makePerson(p *person) string {
 	return result
 }
 
-func makeText(text string, attr map[xml.Name]string) Text {
-	result := Text{Text: text, Type: elementAttr(attr, NSNone, "type")}
+func makeText(text string, e *Element) Text {
+	result := Text{Text: text, Type: e.Attr(NSNone, "type")}
 	if result.Type == "" {
 		result.Type = "text"
 	}
