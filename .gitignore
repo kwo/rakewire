@@ -1,3 +1,4 @@
-/test/*.db
-/pkg
 /bin
+/pkg
+/vendor/pkg
+/test/*.db
