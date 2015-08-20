@@ -28,7 +28,7 @@ var (
 
 func TestMain(m *testing.M) {
 
-	testDatabaseFile := "../test/httpd.db"
+	testDatabaseFile := "../../../test/httpd.db"
 
 	cfg := db.Configuration{
 		Location: testDatabaseFile,
@@ -46,10 +46,8 @@ func TestMain(m *testing.M) {
 	}
 	go ws.Start(&Configuration{
 		Port:      4444,
-		WebAppDir: "../test/public_html",
+		WebAppDir: "../../../test/public_html",
 	}, chErrors)
-
-	// #TODO:70 probably need to wait before jumping to default case
 
 	select {
 	case err := <-chErrors:
@@ -57,7 +55,7 @@ func TestMain(m *testing.M) {
 		testDatabase.Close()
 		os.Remove(testDatabaseFile)
 		os.Exit(1)
-	default:
+	case <-time.After(1 * time.Second):
 		status := m.Run()
 		ws.Stop()
 		testDatabase.Close()
@@ -361,6 +359,7 @@ func getZBodyAsString(r io.Reader) (string, error) {
 }
 
 func newRequest(method string, path string) *http.Request {
+	fmt.Printf("ws: %t %t\n", ws == nil, ws.listener == nil)
 	req, _ := http.NewRequest(method, fmt.Sprintf("http://%s%s", ws.listener.Addr(), path), nil)
 	req.Header.Add(hAcceptEncoding, "gzip")
 	return req
