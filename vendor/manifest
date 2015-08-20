@@ -16,13 +16,13 @@
 		{
 			"importpath": "github.com/gorilla/context",
 			"repository": "https://github.com/gorilla/context",
-			"revision": "215affda49addc4c8ef7e2534915df2c8c35c6cd",
+			"revision": "1c83b3eabd45b6d76072b66b746c20815fb2872d",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/gorilla/mux",
 			"repository": "https://github.com/gorilla/mux",
-			"revision": "f8220e087da2fc83d083bfc0289ed7f9db3536bd",
+			"revision": "ee1815431e497d3850809578c93ab6705f1a19f7",
 			"branch": "master"
 		},
 		{
