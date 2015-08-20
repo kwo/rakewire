@@ -1,10 +1,11 @@
 package feedparser
 
 import (
-	"code.google.com/p/go-charset/charset"
-	// required by go-charset
-	_ "code.google.com/p/go-charset/data"
 	"encoding/xml"
+	"github.com/rogpeppe/go-charset/charset"
+	// required by go-charset
+	_ "github.com/rogpeppe/go-charset/data"
+	//"fmt"
 	"io"
 	"net/url"
 	"strings"
@@ -28,15 +29,16 @@ type Feed struct {
 
 // Entry entry
 type Entry struct {
-	Authors    []string
-	Categories []string
-	Content    Text
-	Created    time.Time
-	ID         string
-	Links      map[string]string
-	Summary    Text
-	Title      Text
-	Updated    time.Time
+	Authors      []string
+	Categories   []string
+	Content      Text
+	Contributors []string
+	Created      time.Time
+	ID           string
+	Links        map[string]string
+	Summary      Text
+	Title        Text
+	Updated      time.Time
 }
 
 // Text text
@@ -87,6 +89,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 
 		case xml.StartElement:
 			elements.Push(t)
+			//fmt.Printf("push: %s\n", e.name.Local)
 			switch {
 
 			case elements.On(NSAtom, "feed"):
@@ -101,7 +104,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 			case elements.In(NSAtom, "feed") && elements.On(NSAtom, "entry"):
 				entry = &Entry{}
 				entry.Links = make(map[string]string)
-			case elements.In(NSRss, "rss") && elements.On(NSRss, "item"):
+			case elements.In(NSRss, "channel") && elements.On(NSRss, "item"):
 				entry = &Entry{}
 				entry.Links = make(map[string]string)
 
@@ -109,115 +112,110 @@ func Parse(reader io.Reader) (*Feed, error) {
 				e := elements.Peek()
 				key := e.Attr(NSNone, "rel")
 				value := makeURL(elements.Attr(NSXml, "base"), e.Attr(NSNone, "href"))
-				if entry == nil {
+				if elements.In(NSAtom, "feed") {
 					f.Links[key] = value
-				} else {
+				} else if elements.In(NSAtom, "entry") {
 					entry.Links[key] = value
 				}
-			case elements.On(NSAtom, "author"):
+			case elements.On(NSAtom, "author") || elements.On(NSAtom, "contributor"):
 				perso = &person{}
 
 			}
 
 		case xml.EndElement:
-			n2, _ := elements.Pop(t)
+			e, _ := elements.Pop(t)
+			//fmt.Printf("pop:  %s\n", e.name.Local)
 			switch {
-			case n2.Match(NSAtom, "feed"):
+			case e.Match(NSAtom, "feed"):
 				// send feed
-			case n2.Match(NSRss, "rss"):
+			case e.Match(NSRss, "rss"):
 				// send feed
-			case n2.Match(NSAtom, "entry"):
+			case e.Match(NSAtom, "entry"):
 				f.Entries = append(f.Entries, entry)
 				entry = nil
-			case n2.Match(NSRss, "item"):
+			case e.Match(NSRss, "item"):
 				f.Entries = append(f.Entries, entry)
 				entry = nil
-			case perso != nil && n2.Match(NSAtom, "author"):
-				if entry == nil {
+			case e.Match(NSAtom, "author"):
+				if elements.On(NSAtom, "feed") {
 					f.Authors = append(f.Authors, makePerson(perso))
-				} else {
+				} else if elements.On(NSAtom, "entry") {
 					entry.Authors = append(entry.Authors, makePerson(perso))
+				}
+				perso = nil
+			case e.Match(NSAtom, "contributor"):
+				if elements.On(NSAtom, "entry") {
+					entry.Contributors = append(entry.Contributors, makePerson(perso))
 				}
 				perso = nil
 			}
 
 		case xml.CharData:
+			//fmt.Printf("char: %t %s\n", entry == nil, elements.Peek())
 			text := strings.TrimSpace(string([]byte(t)))
-			if text == "" {
+
+			switch {
+
+			case text == "":
 				continue
-			} else {
 
-				// feed header
+			case elements.In(NSAtom, "feed") || elements.In(NSRss, "rss"):
 				switch {
-
-				case elements.In(NSAtom, "entry") && elements.On(NSAtom, "content"):
-					entry.Content = makeText(text, elements.Peek())
-
-				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "generator"):
+				case elements.On(NSAtom, "generator"):
 					f.Generator = makeGenerator(text, elements.Peek())
-
-				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "icon"):
+				case elements.On(NSAtom, "icon"):
 					f.Icon = makeURL(elements.Attr(NSXml, "base"), text)
-
 				case elements.On(NSAtom, "id"):
-					if elements.In(NSAtom, "feed") {
-						f.ID = text
-					} else if elements.In(NSAtom, "entry") {
-						entry.ID = text
-					}
-
+					f.ID = text
 				case elements.On(NSRss, "pubdate"):
-					if entry == nil {
-						if f.Updated.IsZero() {
-							f.Updated = parseTime(text)
-						}
-					} else {
-						if entry.Updated.IsZero() {
-							entry.Updated = parseTime(text)
-							if entry.Updated.After(f.Updated) {
-								f.Updated = entry.Updated
-							}
-						}
-					}
-
-				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "rights"):
-					f.Rights = makeText(text, elements.Peek())
-
-				case elements.In(NSAtom, "feed") && elements.On(NSAtom, "subtitle"):
-					f.Subtitle = makeText(text, elements.Peek())
-
-				case elements.In(NSAtom, "entry") && elements.On(NSAtom, "summary"):
-					entry.Summary = makeText(text, elements.Peek())
-
-				case elements.On(NSAtom, "title"):
-					if elements.In(NSAtom, "feed") {
-						f.Title = makeText(text, elements.Peek())
-					} else if elements.In(NSAtom, "entry") {
-						entry.Title = makeText(text, elements.Peek())
-					}
-
-				case elements.On(NSAtom, "updated"):
-					if entry == nil {
+					if f.Updated.IsZero() {
 						f.Updated = parseTime(text)
-					} else {
+					}
+				case elements.On(NSAtom, "rights"):
+					f.Rights = makeText(text, elements.Peek())
+				case elements.On(NSAtom, "subtitle"):
+					f.Subtitle = makeText(text, elements.Peek())
+				case elements.On(NSAtom, "title"):
+					f.Title = makeText(text, elements.Peek())
+				case elements.On(NSAtom, "updated"):
+					f.Updated = parseTime(text)
+				} // feed switch
+
+			case elements.In(NSAtom, "entry") || elements.In(NSRss, "item"):
+				switch {
+				case elements.On(NSAtom, "content"):
+					entry.Content = makeText(text, elements.Peek())
+				case elements.On(NSAtom, "id"):
+					entry.ID = text
+				case elements.On(NSRss, "pubdate"):
+					if entry.Updated.IsZero() {
 						entry.Updated = parseTime(text)
 						if entry.Updated.After(f.Updated) {
 							f.Updated = entry.Updated
 						}
 					}
+				case elements.On(NSAtom, "summary"):
+					entry.Summary = makeText(text, elements.Peek())
+				case elements.On(NSAtom, "title"):
+					entry.Title = makeText(text, elements.Peek())
+				case elements.On(NSAtom, "updated"):
+					entry.Updated = parseTime(text)
+					if entry.Updated.After(f.Updated) {
+						f.Updated = entry.Updated
+					}
+				} // entry switch
 
-				case elements.In(NSAtom, "author") && elements.On(NSAtom, "email"):
+			case elements.In(NSAtom, "author") || elements.In(NSAtom, "contributor"):
+				switch {
+				case elements.On(NSAtom, "email"):
 					perso.email = text
-
-				case elements.In(NSAtom, "author") && elements.On(NSAtom, "name"):
+				case elements.On(NSAtom, "name"):
 					perso.name = text
-
-				case elements.In(NSAtom, "author") && elements.On(NSAtom, "uri"):
+				case elements.On(NSAtom, "uri"):
 					perso.uri = text
+				} // author switch
 
-				}
-
-			} // end
+			} // switch CharData
 
 		} // switch token
 

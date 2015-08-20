@@ -46,6 +46,8 @@ func TestAtom(t *testing.T) {
 	assert.Equal(t, "First entry title", e.Title.Text)
 	assert.Equal(t, "text", e.Title.Type)
 
+	assert.Equal(t, time.Date(2005, time.November, 9, 11, 56, 34, 0, time.UTC), e.Updated)
+
 }
 
 func TestRSS(t *testing.T) {
