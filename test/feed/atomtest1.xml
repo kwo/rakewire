@@ -44,12 +44,12 @@
     </author>
     <contributor>
       <name>Joe</name>
-      <url>http://example.org/joe/</url>
+      <uri>http://example.org/joe/</uri>
       <email>joe@example.org</email>
     </contributor>
     <contributor>
       <name>Sam</name>
-      <url>http://example.org/sam/</url>
+      <uri>http://example.org/sam/</uri>
       <email>sam@example.org</email>
     </contributor>
     <summary type="text">Watch out for nasty tricks</summary>

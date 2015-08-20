@@ -5,7 +5,6 @@ import (
 	"github.com/rogpeppe/go-charset/charset"
 	// required by go-charset
 	_ "github.com/rogpeppe/go-charset/data"
-	//"fmt"
 	"io"
 	"net/url"
 	"strings"
@@ -45,6 +44,13 @@ type Entry struct {
 type Text struct {
 	Type string
 	Text string
+}
+
+type divelement struct {
+	Div xmltext `xml:"div"`
+}
+type xmltext struct {
+	Text string `xml:",innerxml"`
 }
 
 type person struct {
@@ -108,6 +114,15 @@ func Parse(reader io.Reader) (*Feed, error) {
 				entry = &Entry{}
 				entry.Links = make(map[string]string)
 
+			case elements.On(NSAtom, "category"):
+				e := elements.Peek()
+				value := makeCategory(e.Attr(NSNone, "term"), e.Attr(NSNone, "label"))
+				if value != "" && (elements.In(NSAtom, "entry") || elements.On(NSRss, "item")) {
+					entry.Categories = append(entry.Categories, value)
+				}
+			case elements.In(NSAtom, "entry") && elements.On(NSAtom, "content"):
+				entry.Content = makeTextFromXML(parser, elements.Peek(), &t)
+
 			case elements.On(NSAtom, "link"):
 				e := elements.Peek()
 				key := e.Attr(NSNone, "rel")
@@ -126,14 +141,9 @@ func Parse(reader io.Reader) (*Feed, error) {
 			e, _ := elements.Pop(t)
 			//fmt.Printf("pop:  %s\n", e.name.Local)
 			switch {
-			case e.Match(NSAtom, "feed"):
+			case e.Match(NSAtom, "feed") || e.Match(NSRss, "rss"):
 				// send feed
-			case e.Match(NSRss, "rss"):
-				// send feed
-			case e.Match(NSAtom, "entry"):
-				f.Entries = append(f.Entries, entry)
-				entry = nil
-			case e.Match(NSRss, "item"):
+			case e.Match(NSAtom, "entry") || e.Match(NSRss, "item"):
 				f.Entries = append(f.Entries, entry)
 				entry = nil
 			case e.Match(NSAtom, "author"):
@@ -194,6 +204,8 @@ func Parse(reader io.Reader) (*Feed, error) {
 							f.Updated = entry.Updated
 						}
 					}
+				case elements.On(NSAtom, "published"):
+					entry.Created = parseTime(text)
 				case elements.On(NSAtom, "summary"):
 					entry.Summary = makeText(text, elements.Peek())
 				case elements.On(NSAtom, "title"):
@@ -223,6 +235,15 @@ func Parse(reader io.Reader) (*Feed, error) {
 
 	return f, nil
 
+}
+
+func makeCategory(term string, label string) string {
+	term = strings.TrimSpace(term)
+	label = strings.TrimSpace(label)
+	if label != "" {
+		return label
+	}
+	return term
 }
 
 func makeGenerator(text string, e *Element) string {
@@ -256,6 +277,24 @@ func makeText(text string, e *Element) Text {
 	result := Text{Text: text, Type: e.Attr(NSNone, "type")}
 	if result.Type == "" {
 		result.Type = "text"
+	} else if result.Type == "xhtml" {
+
+	}
+	return result
+}
+
+func makeTextFromXML(decoder *xml.Decoder, e *Element, start *xml.StartElement) Text {
+	result := Text{Type: e.Attr(NSNone, "type")}
+	if result.Type == "xhtml" {
+		x := &divelement{}
+		err := decoder.DecodeElement(x, start)
+		if err != nil {
+			result.Type = ""
+		} else {
+			result.Type = "html"
+			result.Text = strings.TrimSpace(x.Div.Text)
+			// #TODO:0 use base to fix relative HREFs in XML
+		}
 	}
 	return result
 }
