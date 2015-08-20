@@ -14,6 +14,7 @@ import (
 // Feed feed
 type Feed struct {
 	Authors   []string
+	ByteCount int
 	Entries   []*Entry
 	Flavor    string
 	Generator string
@@ -71,8 +72,11 @@ const (
 func Parse(reader io.Reader) (*Feed, error) {
 
 	// #TODO:0 attach used charset to feed object
+	// #DOING:0 attach byte count to feed
 
-	parser := xml.NewDecoder(reader)
+	counter := &ReadCounter{Reader: reader}
+
+	parser := xml.NewDecoder(counter)
 	parser.CharsetReader = charset.NewReader
 	parser.Strict = false
 
@@ -246,6 +250,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 
 	} // loop
 
+	f.ByteCount = counter.Size
 	return f, nil
 
 }

@@ -123,6 +123,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 		feed.Attempt.StatusCode = rsp.StatusCode
 		body, _ := readBody(rsp)
+		defer body.Close()
 
 		switch {
 
@@ -137,10 +138,8 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 			feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
-			// #DOING:0 feed.Attempt.ContentLength = len(body)
 
 			xmlFeed, err := feedparser.Parse(body)
-			defer body.Close()
 			if err != nil || xmlFeed == nil {
 				// cannot parse feed
 				feed.Attempt.Result = m.FetchResultFeedError
@@ -153,6 +152,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 				feed.AdjustFetchTime(1 * time.Hour) // give us time to work on solution
 			} else {
 				feed.Feed = xmlFeed
+				feed.Attempt.ContentLength = xmlFeed.ByteCount
 				feed.Attempt.IsUpdated = isFeedUpdated(feed.Feed.Updated, feed.LastUpdated)
 				feed.Attempt.UpdateCheck = m.UpdateCheckFeed
 				feed.UpdateFetchTime(&feed.Feed.Updated)
