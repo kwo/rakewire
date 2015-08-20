@@ -60,7 +60,7 @@ func TestAtomFeed(t *testing.T) {
 
 func TestRSSFeed(t *testing.T) {
 
-	f, err := os.Open("../test/wordpress.xml")
+	f, err := os.Open("../../../test/feed/wordpress.xml")
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 	defer f.Close()
