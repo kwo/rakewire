@@ -2,8 +2,8 @@ package model
 
 import (
 	"bufio"
-	"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
+	"github.com/pborman/uuid"
 	"io"
 	"rakewire/feed"
 	"strings"

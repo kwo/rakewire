@@ -2,27 +2,6 @@
 	"version": 0,
 	"dependencies": [
 		{
-			"importpath": "code.google.com/p/go-charset/charset",
-			"repository": "https://code.google.com/p/go-charset",
-			"revision": "ebbeafdc430e",
-			"branch": "default",
-			"path": "/charset"
-		},
-		{
-			"importpath": "code.google.com/p/go-charset/data",
-			"repository": "https://code.google.com/p/go-charset",
-			"revision": "ebbeafdc430e",
-			"branch": "default",
-			"path": "/data"
-		},
-		{
-			"importpath": "code.google.com/p/go-uuid/uuid",
-			"repository": "https://code.google.com/p/go-uuid",
-			"revision": "35bc42037350",
-			"branch": "default",
-			"path": "/uuid"
-		},
-		{
 			"importpath": "github.com/boltdb/bolt",
 			"repository": "https://github.com/boltdb/bolt",
 			"revision": "0f053fabc06119583d61937a0a06ef0ba0f1b301",
@@ -54,11 +33,31 @@
 			"path": "/feeds"
 		},
 		{
+			"importpath": "github.com/pborman/uuid",
+			"repository": "https://github.com/pborman/uuid",
+			"revision": "ca53cad383cad2479bbba7f7a1a05797ec1386e4",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/phyber/negroni-gzip/gzip",
 			"repository": "https://github.com/phyber/negroni-gzip",
 			"revision": "ff2754fcbd1ea465aadd7f74699aed5e483eda85",
 			"branch": "master",
 			"path": "/gzip"
+		},
+		{
+			"importpath": "github.com/rogpeppe/go-charset/charset",
+			"repository": "https://github.com/rogpeppe/go-charset",
+			"revision": "e9ff06f347d3f5d0013d59ed83754f0e88de10d4",
+			"branch": "master",
+			"path": "/charset"
+		},
+		{
+			"importpath": "github.com/rogpeppe/go-charset/data",
+			"repository": "https://github.com/rogpeppe/go-charset",
+			"revision": "e9ff06f347d3f5d0013d59ed83754f0e88de10d4",
+			"branch": "master",
+			"path": "/data"
 		},
 		{
 			"importpath": "github.com/stretchr/testify/assert",

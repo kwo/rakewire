@@ -2,12 +2,12 @@ package feed
 
 import (
 	"bytes"
-	"code.google.com/p/go-charset/charset"
-	// required by go-charset
-	_ "code.google.com/p/go-charset/data"
 	"encoding/xml"
 	"github.com/kwo/ocd/feeds/atom"
 	"github.com/kwo/ocd/feeds/rss"
+	"github.com/rogpeppe/go-charset/charset"
+	// required by go-charset
+	_ "github.com/rogpeppe/go-charset/data"
 	"time"
 )
 
