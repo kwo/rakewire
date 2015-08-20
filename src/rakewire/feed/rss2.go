@@ -2,6 +2,7 @@ package feed
 
 import (
 	"github.com/kwo/ocd/feeds/rss"
+	"time"
 )
 
 func rssToFeed(r *rss.Rss) (*Feed, error) {
@@ -16,7 +17,7 @@ func rssToFeed(r *rss.Rss) (*Feed, error) {
 	f.Rights = r.Channel.Copyright
 	f.Subtitle = r.Channel.Description
 	f.Title = r.Channel.Title
-	f.Updated = r.Channel.PubDate.GetTime()
+	f.Updated = getTime(r.Channel.PubDate.GetTime())
 
 	for i := range r.Channel.Items {
 
@@ -29,14 +30,14 @@ func rssToFeed(r *rss.Rss) (*Feed, error) {
 			entry.Content = r.Channel.Items[i].Encoded
 		}
 
-		entry.Created = r.Channel.Items[i].PubDate.GetTime()
+		entry.Created = getTime(r.Channel.Items[i].PubDate.GetTime())
 		entry.ID = r.Channel.Items[i].Guid.Text
 		entry.Links = make(map[string]string)
 		entry.Title = r.Channel.Items[i].Title
-		entry.Updated = r.Channel.Items[i].PubDate.GetTime()
+		entry.Updated = getTime(r.Channel.Items[i].PubDate.GetTime())
 		// use the dublincore date in no pubDate
 		if !r.Channel.Items[i].Date.IsZero() {
-			entry.Updated = r.Channel.Items[i].Date
+			entry.Updated = &r.Channel.Items[i].Date
 		}
 
 		if r.Channel.Items[i].Author != "" {
@@ -67,4 +68,8 @@ func rssToFeed(r *rss.Rss) (*Feed, error) {
 
 	return f, nil
 
+}
+
+func getTime(t time.Time) *time.Time {
+	return &t
 }

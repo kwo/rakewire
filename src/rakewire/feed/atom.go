@@ -21,7 +21,7 @@ func atomToFeed(a *atom.Feed) (*Feed, error) {
 	f.Rights = a.Metadata.Rights.Text
 	f.Subtitle = a.Metadata.Subtitle.Text
 	f.Title = a.Title
-	f.Updated = a.Metadata.Updated
+	f.Updated = &a.Metadata.Updated
 
 	for j := range a.Authors {
 		b := &Person{a.Authors[j].Name, a.Authors[j].Email, a.Authors[j].Uri}
@@ -38,12 +38,12 @@ func atomToFeed(a *atom.Feed) (*Feed, error) {
 		f.Entries = append(f.Entries, entry)
 
 		entry.Content = a.Entries[i].Content.Text
-		entry.Created = a.Entries[i].Published
+		entry.Created = &a.Entries[i].Published
 		entry.ID = a.Entries[i].Id
 		entry.Links = make(map[string]string)
 		entry.Summary = a.Entries[i].Summary.Text
 		entry.Title = a.Entries[i].Title
-		entry.Updated = a.Entries[i].Updated
+		entry.Updated = &a.Entries[i].Updated
 
 		for j := range a.Entries[i].Authors {
 			b := &Person{a.Entries[i].Authors[j].Name, a.Entries[i].Authors[j].Email, a.Entries[i].Authors[j].Uri}
