@@ -26,13 +26,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/kwo/ocd/feeds",
-			"repository": "https://github.com/kwo/ocd",
-			"revision": "1a822820c7573fab7772c55e8389ecc6b7166039",
-			"branch": "master",
-			"path": "/feeds"
-		},
-		{
 			"importpath": "github.com/pborman/uuid",
 			"repository": "https://github.com/pborman/uuid",
 			"revision": "ca53cad383cad2479bbba7f7a1a05797ec1386e4",
