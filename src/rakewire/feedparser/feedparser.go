@@ -46,17 +46,17 @@ type Text struct {
 	Text string
 }
 
+type person struct {
+	name  string
+	email string
+	uri   string
+}
+
 type divelement struct {
 	Div xmltext `xml:"div"`
 }
 type xmltext struct {
 	Text string `xml:",innerxml"`
-}
-
-type person struct {
-	name  string
-	email string
-	uri   string
 }
 
 // Namespace constants
@@ -76,10 +76,11 @@ func Parse(reader io.Reader) (*Feed, error) {
 	parser.CharsetReader = charset.NewReader
 	parser.Strict = false
 
-	elements := &Elements{}
-	var f *Feed
 	var entry *Entry
 	var perso *person
+	elements := &Elements{}
+	f := &Feed{}
+	f.Links = make(map[string]string)
 
 	for {
 
@@ -99,41 +100,37 @@ func Parse(reader io.Reader) (*Feed, error) {
 			switch {
 
 			case elements.On(NSAtom, "feed"):
-				f = &Feed{}
 				f.Flavor = "atom"
-				f.Links = make(map[string]string)
 			case elements.On(NSRss, "rss"):
-				f = &Feed{}
 				f.Flavor = "rss" + elements.Peek().Attr(NSRss, "version")
-				f.Links = make(map[string]string)
 
-			case elements.In(NSAtom, "feed") && elements.On(NSAtom, "entry"):
+			case elements.On(NSAtom, "entry") && elements.In(NSAtom, "feed"):
 				entry = &Entry{}
 				entry.Links = make(map[string]string)
-			case elements.In(NSRss, "channel") && elements.On(NSRss, "item"):
+			case elements.On(NSRss, "item") && elements.In(NSRss, "channel"):
 				entry = &Entry{}
 				entry.Links = make(map[string]string)
 
-			case elements.On(NSAtom, "category"):
+			case elements.On(NSAtom, "author") || elements.On(NSAtom, "contributor"):
+				perso = &person{}
+
+			case elements.On(NSAtom, "category") && (elements.In(NSAtom, "entry") || elements.On(NSRss, "item")):
 				e := elements.Peek()
 				value := makeCategory(e.Attr(NSNone, "term"), e.Attr(NSNone, "label"))
-				if value != "" && (elements.In(NSAtom, "entry") || elements.On(NSRss, "item")) {
+				if value != "" {
 					entry.Categories = append(entry.Categories, value)
 				}
-			case elements.In(NSAtom, "entry") && elements.On(NSAtom, "content"):
+			case elements.On(NSAtom, "content") && (elements.In(NSAtom, "entry") || elements.On(NSRss, "item")):
 				entry.Content = makeTextFromXML(parser, elements.Peek(), &t)
-
 			case elements.On(NSAtom, "link"):
 				e := elements.Peek()
 				key := e.Attr(NSNone, "rel")
 				value := makeURL(elements.Attr(NSXml, "base"), e.Attr(NSNone, "href"))
-				if elements.In(NSAtom, "feed") {
+				if elements.In(NSAtom, "feed") || elements.In(NSRss, "channel") {
 					f.Links[key] = value
-				} else if elements.In(NSAtom, "entry") {
+				} else if elements.In(NSAtom, "entry") || elements.On(NSRss, "item") {
 					entry.Links[key] = value
 				}
-			case elements.On(NSAtom, "author") || elements.On(NSAtom, "contributor"):
-				perso = &person{}
 
 			}
 
@@ -141,20 +138,26 @@ func Parse(reader io.Reader) (*Feed, error) {
 			e, _ := elements.Pop(t)
 			//fmt.Printf("pop:  %s\n", e.name.Local)
 			switch {
-			case e.Match(NSAtom, "feed") || e.Match(NSRss, "rss"):
+			case e.Match(NSAtom, "feed"):
+				// send feed
+			case e.Match(NSRss, "rss"):
+				// #DOING:0 more possibilities for IDs
+				if f.ID == "" {
+					f.ID = f.Links["self"]
+				}
 				// send feed
 			case e.Match(NSAtom, "entry") || e.Match(NSRss, "item"):
 				f.Entries = append(f.Entries, entry)
 				entry = nil
 			case e.Match(NSAtom, "author"):
-				if elements.On(NSAtom, "feed") {
+				if elements.On(NSAtom, "feed") || elements.On(NSRss, "channel") {
 					f.Authors = append(f.Authors, makePerson(perso))
-				} else if elements.On(NSAtom, "entry") {
+				} else if elements.On(NSAtom, "entry") || elements.On(NSRss, "item") {
 					entry.Authors = append(entry.Authors, makePerson(perso))
 				}
 				perso = nil
 			case e.Match(NSAtom, "contributor"):
-				if elements.On(NSAtom, "entry") {
+				if elements.On(NSAtom, "entry") || elements.On(NSRss, "item") {
 					entry.Contributors = append(entry.Contributors, makePerson(perso))
 				}
 				perso = nil
@@ -169,10 +172,14 @@ func Parse(reader io.Reader) (*Feed, error) {
 			case text == "":
 				continue
 
-			case elements.In(NSAtom, "feed") || elements.In(NSRss, "rss"):
+			case elements.In(NSAtom, "feed") || elements.In(NSRss, "channel"):
 				switch {
 				case elements.On(NSAtom, "generator"):
 					f.Generator = makeGenerator(text, elements.Peek())
+				case elements.On(NSRss, "generator"):
+					f.Generator = text
+				case elements.On(NSRss, "guid"):
+					f.ID = text
 				case elements.On(NSAtom, "icon"):
 					f.Icon = makeURL(elements.Attr(NSXml, "base"), text)
 				case elements.On(NSAtom, "id"):
@@ -181,12 +188,15 @@ func Parse(reader io.Reader) (*Feed, error) {
 					if f.Updated.IsZero() {
 						f.Updated = parseTime(text)
 					}
+				// #DOING:0 replace all Text type nodes with StartElement method
 				case elements.On(NSAtom, "rights"):
 					f.Rights = makeText(text, elements.Peek())
 				case elements.On(NSAtom, "subtitle"):
 					f.Subtitle = makeText(text, elements.Peek())
 				case elements.On(NSAtom, "title"):
 					f.Title = makeText(text, elements.Peek())
+				case elements.On(NSRss, "title"):
+					f.Title = Text{Type: "text", Text: text}
 				case elements.On(NSAtom, "updated"):
 					f.Updated = parseTime(text)
 				} // feed switch
@@ -194,7 +204,10 @@ func Parse(reader io.Reader) (*Feed, error) {
 			case elements.In(NSAtom, "entry") || elements.In(NSRss, "item"):
 				switch {
 				case elements.On(NSAtom, "content"):
-					entry.Content = makeText(text, elements.Peek())
+					// don't overwrite content if taken from xhtml element
+					if entry.Content.Text == "" {
+						entry.Content = makeText(text, elements.Peek())
+					}
 				case elements.On(NSAtom, "id"):
 					entry.ID = text
 				case elements.On(NSRss, "pubdate"):

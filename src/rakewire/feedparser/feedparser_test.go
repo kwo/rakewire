@@ -14,16 +14,13 @@ func TestAtom(t *testing.T) {
 	f := testFile(t, "../../../test/feed/atomtest1.xml")
 
 	assert.Equal(t, "atom", f.Flavor)
-
 	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml", f.ID)
-
+	assert.Equal(t, time.Date(2005, time.November, 9, 11, 56, 34, 0, time.UTC), f.Updated)
 	assert.Equal(t, "Sample Feed", f.Title.Text)
 	assert.Equal(t, "text", f.Title.Type)
 
 	assert.Equal(t, "For documentation <em>only</em>", f.Subtitle.Text)
 	assert.Equal(t, "html", f.Subtitle.Type)
-
-	assert.Equal(t, time.Date(2005, time.November, 9, 11, 56, 34, 0, time.UTC), f.Updated)
 
 	assert.Equal(t, "http://example.org/icon.jpg", f.Icon)
 
@@ -79,7 +76,15 @@ func TestAtom(t *testing.T) {
 
 func TestRSS(t *testing.T) {
 	//t.SkipNow()
-	testFile(t, "../test/wordpress.xml")
+	f := testFile(t, "../../../test/feed/wordpress.xml")
+
+	assert.Equal(t, "rss2.0", f.Flavor)
+	assert.Equal(t, "https://en.blog.wordpress.com/feed/", f.ID)
+	assert.True(t, time.Date(2015, time.July, 2, 17, 0, 4, 0, time.UTC).Equal(f.Updated))
+	assert.Equal(t, "WordPress.com News", f.Title.Text)
+	assert.Equal(t, "text", f.Title.Type)
+	assert.Equal(t, "http://wordpress.com/", f.Generator)
+
 }
 
 func TestAtomMalformed1(t *testing.T) {
