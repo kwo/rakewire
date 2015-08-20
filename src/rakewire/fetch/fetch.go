@@ -3,7 +3,7 @@ package fetch
 import (
 	"fmt"
 	"net/http"
-	xmlfeed "rakewire/feed"
+	"rakewire/feedparser"
 	"rakewire/logging"
 	m "rakewire/model"
 	"sync"
@@ -137,15 +137,16 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 			feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
-			feed.Attempt.ContentLength = len(body)
+			// #DOING:0 feed.Attempt.ContentLength = len(body)
 
-			xmlFeed, err := xmlfeed.Parse(body)
+			xmlFeed, err := feedparser.Parse(body)
+			defer body.Close()
 			if err != nil || xmlFeed == nil {
 				// cannot parse feed
 				feed.Attempt.Result = m.FetchResultFeedError
 				feed.Attempt.ResultMessage = err.Error()
 				feed.AdjustFetchTime(1 * time.Hour) // give us time to work on solution
-			} else if xmlFeed.Updated == nil {
+			} else if xmlFeed.Updated.IsZero() {
 				feed.Attempt.Result = m.FetchResultFeedTimeError
 				feed.Attempt.IsUpdated = false
 				feed.Attempt.UpdateCheck = m.UpdateCheckFeed
@@ -154,7 +155,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 				feed.Feed = xmlFeed
 				feed.Attempt.IsUpdated = isFeedUpdated(feed.Feed.Updated, feed.LastUpdated)
 				feed.Attempt.UpdateCheck = m.UpdateCheckFeed
-				feed.UpdateFetchTime(feed.Feed.Updated)
+				feed.UpdateFetchTime(&feed.Feed.Updated)
 			}
 
 		case rsp.StatusCode == http.StatusNotModified:

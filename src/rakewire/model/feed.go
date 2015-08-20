@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"github.com/pborman/uuid"
 	"io"
-	"rakewire/feed"
+	"rakewire/feedparser"
 	"strings"
 	"time"
 )
@@ -23,7 +23,7 @@ type Feed struct {
 	// Current fetch attempt for feed
 	Attempt *FeedLog `json:"-"`
 	// Feed object parsed from Body
-	Feed *feed.Feed `json:"-"`
+	Feed *feedparser.Feed `json:"-"`
 	// Type of feed: Atom, RSS2, etc.
 	Flavor string `json:"flavor,omitempty"`
 	// Feed generator

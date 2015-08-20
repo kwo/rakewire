@@ -42,11 +42,11 @@ func usesGzip(header string) bool {
 	return strings.Contains(header, "gzip")
 }
 
-func isFeedUpdated(newTime *time.Time, lastTime *time.Time) bool {
+func isFeedUpdated(newTime time.Time, lastTime *time.Time) bool {
 
-	if newTime != nil && lastTime != nil {
+	if !newTime.IsZero() && lastTime != nil {
 		return newTime.After(*lastTime)
-	} else if newTime != nil {
+	} else if !newTime.IsZero() {
 		return true
 	}
 
@@ -54,27 +54,23 @@ func isFeedUpdated(newTime *time.Time, lastTime *time.Time) bool {
 
 }
 
-func readBody(rsp *http.Response) (result []byte, err error) {
+func readBody(rsp *http.Response) (io.ReadCloser, error) {
 
 	if rsp.Body == nil {
-		return
+		return nil, nil
 	}
 
-	var reader io.ReadCloser
 	if usesGzip(rsp.Header.Get(hContentEncoding)) {
+		var reader io.ReadCloser
+		var err error
 		reader, err = gzip.NewReader(rsp.Body)
-	} else {
-		reader = rsp.Body
-	}
-	if err != nil {
-		return
+		if err != nil {
+			return nil, err
+		}
+		return reader, nil
 	}
 
-	buf := &bytes.Buffer{}
-	io.Copy(buf, reader)
-	reader.Close()
-	result = buf.Bytes()
-	return
+	return rsp.Body, nil
 
 }
 
