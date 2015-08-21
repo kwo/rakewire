@@ -60,16 +60,13 @@ func TestAtom(t *testing.T) {
 	assert.Equal(t, "atom", f.Flavor)
 	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml", f.ID)
 	assert.True(t, time.Date(2005, time.November, 11, 11, 56, 34, 0, time.UTC).Equal(f.Updated))
-	assert.Equal(t, "Sample Feed", f.Title.Text)
-	assert.Equal(t, "text", f.Title.Type)
+	assert.Equal(t, "Sample Feed", f.Title)
 
-	assert.Equal(t, "For documentation <em>only</em>", f.Subtitle.Text)
-	assert.Equal(t, "html", f.Subtitle.Type)
+	assert.Equal(t, "For documentation <em>only</em>", f.Subtitle)
 
 	assert.Equal(t, "http://example.org/icon.jpg", f.Icon)
 
-	assert.Equal(t, "<p>Copyright 2005, Mark Pilgrim</p>", f.Rights.Text)
-	assert.Equal(t, "html", f.Rights.Type)
+	assert.Equal(t, "<p>Copyright 2005, Mark Pilgrim</p>", f.Rights)
 
 	assert.Equal(t, "Sample Toolkit 4.0 (http://example.org/generator/)", f.Generator)
 
@@ -86,8 +83,7 @@ func TestAtom(t *testing.T) {
 	e := f.Entries[0]
 
 	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3", e.ID)
-	assert.Equal(t, "First entry title", e.Title.Text)
-	assert.Equal(t, "text", e.Title.Type)
+	assert.Equal(t, "First entry title", e.Title)
 	assert.Equal(t, time.Date(2005, time.November, 9, 11, 56, 34, 0, time.UTC), e.Updated)
 	assert.Equal(t, time.Date(2005, time.November, 9, 0, 23, 47, 0, time.UTC), e.Created)
 
@@ -108,15 +104,12 @@ func TestAtom(t *testing.T) {
 	assert.Equal(t, "Joe <joe@example.org> (http://example.org/joe/)", e.Contributors[0])
 	assert.Equal(t, "Sam <sam@example.org> (http://example.org/sam/)", e.Contributors[1])
 
-	assert.Equal(t, "Watch out for nasty tricks", e.Summary.Text)
-	assert.Equal(t, "text", e.Summary.Type)
-	assert.Equal(t, "Watch out for<span style=\"background-image: url(javascript:window.location=’http://example.org/’)\">nasty tricks</span>", e.Content.Text)
-	assert.Equal(t, "xhtml", e.Content.Type)
+	assert.Equal(t, "Watch out for nasty tricks", e.Summary)
+	assert.Equal(t, "Watch out for<span style=\"background-image: url(javascript:window.location=’http://example.org/’)\">nasty tricks</span>", e.Content)
 
 	e = f.Entries[1]
 	assert.Equal(t, "tag:feedparser.org,2005-11-11:/docs/examples/atom11.xml:1", e.ID)
-	assert.Equal(t, "Second entry title", e.Title.Text)
-	assert.Equal(t, "text", e.Title.Type)
+	assert.Equal(t, "Second entry title", e.Title)
 	assert.True(t, time.Date(2005, time.November, 11, 11, 56, 34, 0, time.UTC).Equal(f.Updated))
 	assert.True(t, e.Created.IsZero())
 
@@ -129,10 +122,8 @@ func TestAtom(t *testing.T) {
 
 	require.Equal(t, 0, len(e.Contributors))
 
-	assert.Equal(t, "Test content as text", e.Summary.Text)
-	assert.Equal(t, "text", e.Summary.Type)
-	assert.Equal(t, "Test content", e.Content.Text)
-	assert.Equal(t, "text", e.Content.Type)
+	assert.Equal(t, "Test content as text", e.Summary)
+	assert.Equal(t, "Test content", e.Content)
 
 }
 
@@ -143,8 +134,7 @@ func TestRSS(t *testing.T) {
 	assert.Equal(t, "rss2.0", f.Flavor)
 	assert.Equal(t, "https://en.blog.wordpress.com/feed/", f.ID)
 	assert.True(t, time.Date(2015, time.July, 2, 17, 0, 4, 0, time.UTC).Equal(f.Updated))
-	assert.Equal(t, "WordPress.com News", f.Title.Text)
-	assert.Equal(t, "text", f.Title.Type)
+	assert.Equal(t, "WordPress.com News", f.Title)
 	assert.Equal(t, "http://wordpress.com/", f.Generator)
 
 }
