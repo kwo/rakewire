@@ -13,7 +13,6 @@ import (
 func TestAtom(t *testing.T) {
 	f := testFile(t, "../../../test/feed/atomtest1.xml")
 
-	assert.Equal(t, 2812, f.ByteCount)
 	assert.Equal(t, "atom", f.Flavor)
 	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml", f.ID)
 	assert.Equal(t, time.Date(2005, time.November, 9, 11, 56, 34, 0, time.UTC), f.Updated)
@@ -79,7 +78,6 @@ func TestRSS(t *testing.T) {
 	//t.SkipNow()
 	f := testFile(t, "../../../test/feed/wordpress.xml")
 
-	assert.Equal(t, 68684, f.ByteCount)
 	assert.Equal(t, "rss2.0", f.Flavor)
 	assert.Equal(t, "https://en.blog.wordpress.com/feed/", f.ID)
 	assert.True(t, time.Date(2015, time.July, 2, 17, 0, 4, 0, time.UTC).Equal(f.Updated))

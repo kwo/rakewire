@@ -1,4 +1,4 @@
-package feedparser
+package fetch
 
 import (
 	"io"
@@ -6,12 +6,12 @@ import (
 
 // ReadCounter is a ReadCloser that counts the total bytes read
 type ReadCounter struct {
-	io.Reader
+	io.ReadCloser
 	Size int
 }
 
 func (z *ReadCounter) Read(p []byte) (int, error) {
-	n, err := z.Reader.Read(p)
+	n, err := z.ReadCloser.Read(p)
 	if err == nil {
 		z.Size += n
 	}
