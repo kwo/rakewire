@@ -65,4 +65,19 @@
 		</source>
 	</entry>
 
+	<entry>
+		<id>tag:feedparser.org,2005-11-11:/docs/examples/atom11.xml:1</id>
+    <title>Second entry title</title>
+		<updated>2005-11-11T11:56:34Z</updated>
+    <author>
+      <name>Mark Pilgrim</name>
+      <uri>http://diveintomark.org/</uri>
+      <email>mark@example.org</email>
+    </author>
+    <summary type="text">Test content as text</summary>
+    <content type="text">
+      Test content
+  	</content>
+	</entry>
+
 </feed>

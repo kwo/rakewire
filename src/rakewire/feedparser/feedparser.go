@@ -7,9 +7,12 @@ import (
 	_ "github.com/rogpeppe/go-charset/data"
 	"io"
 	"net/url"
+	"rakewire/logging"
 	"strings"
 	"time"
 )
+
+// #DOING: switch times back to pointer
 
 // Feed feed
 type Feed struct {
@@ -20,9 +23,9 @@ type Feed struct {
 	Icon      string
 	ID        string
 	Links     map[string]string
-	Rights    Text
-	Subtitle  Text
-	Title     Text
+	Rights    *Text
+	Subtitle  *Text
+	Title     *Text
 	Updated   time.Time
 }
 
@@ -30,13 +33,13 @@ type Feed struct {
 type Entry struct {
 	Authors      []string
 	Categories   []string
-	Content      Text
+	Content      *Text
 	Contributors []string
 	Created      time.Time
 	ID           string
 	Links        map[string]string
-	Summary      Text
-	Title        Text
+	Summary      *Text
+	Title        *Text
 	Updated      time.Time
 }
 
@@ -56,6 +59,10 @@ const (
 const (
 	flavorAtom = "atom"
 	flavorRSS  = "rss"
+)
+
+var (
+	logger = logging.Null("feedparser")
 )
 
 // Parse feed
@@ -85,7 +92,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 
 		case xml.StartElement:
 			e := elements.Push(t)
-			//fmt.Printf("Start %t %s :: %s\n", f == nil, e.name.Local, elements.String())
+			logger.Printf("Start %t %s :: %s\n", f == nil, e.name.Local, elements.String())
 
 			switch {
 			case f == nil:
@@ -107,20 +114,71 @@ func Parse(reader io.Reader) (*Feed, error) {
 
 				case flavorAtom:
 					switch {
+					case e.Match(nsAtom, "author"):
+						if value := makePerson(e, &t, parser).String(); value != "" {
+							f.Authors = append(f.Authors, value)
+						}
+						elements.Pop()
 					case e.Match(nsAtom, "entry"):
 						entry = &Entry{}
 						entry.Links = make(map[string]string)
+					case e.Match(nsAtom, "generator"):
+						if text := makeString(e, &t, parser); text != "" {
+							f.Generator = makeGenerator(text, e)
+						}
+						elements.Pop()
+					case e.Match(nsAtom, "icon"):
+						if text := makeString(e, &t, parser); text != "" {
+							f.Icon = makeURL(elements.Attr(nsXML, "base"), text)
+						}
+						elements.Pop()
+					case e.Match(nsAtom, "id"):
+						f.ID = makeString(e, &t, parser)
+						elements.Pop()
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
 						value := makeURL(elements.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 						f.Links[key] = value
-					case e.Match(nsAtom, "author"):
-						f.Authors = append(f.Authors, makePerson(e, &t, parser).String())
+					case e.Match(nsAtom, "rights"):
+						f.Rights = makeText(e, &t, parser)
+						elements.Pop()
+					case e.Match(nsAtom, "subtitle"):
+						f.Subtitle = makeText(e, &t, parser)
+						elements.Pop()
+					case e.Match(nsAtom, "title"):
+						f.Title = makeText(e, &t, parser)
+						elements.Pop()
+					case e.Match(nsAtom, "updated"):
+						if text := makeString(e, &t, parser); text != "" {
+							f.Updated = parseTime(text)
+						}
 						elements.Pop()
 					} // elements
 
 				case flavorRSS:
 					switch {
+					case e.Match(nsRSS, "generator"):
+						if text := makeString(e, &t, parser); text != "" {
+							f.Generator = text
+						}
+						elements.Pop()
+					case e.Match(nsRSS, "guid"):
+						if text := makeString(e, &t, parser); text != "" {
+							f.ID = text
+						}
+						elements.Pop()
+					case e.Match(nsRSS, "pubdate"):
+						if text := makeString(e, &t, parser); text != "" {
+							if f.Updated.IsZero() {
+								f.Updated = parseTime(text)
+							}
+						}
+						elements.Pop()
+					case e.Match(nsRSS, "title"):
+						if text := makeString(e, &t, parser); text != "" {
+							f.Title = &Text{Type: "text", Text: text}
+						}
+						elements.Pop()
 					case e.Match(nsRSS, "item"):
 						entry = &Entry{}
 						entry.Links = make(map[string]string)
@@ -138,22 +196,66 @@ func Parse(reader io.Reader) (*Feed, error) {
 				case flavorAtom:
 					switch {
 					case e.Match(nsAtom, "author"):
-						entry.Authors = append(entry.Authors, makePerson(e, &t, parser).String())
-						elements.Pop()
-					case e.Match(nsAtom, "contributor"):
-						entry.Contributors = append(entry.Contributors, makePerson(e, &t, parser).String())
+						if value := makePerson(e, &t, parser).String(); value != "" {
+							entry.Authors = append(entry.Authors, value)
+						}
 						elements.Pop()
 					case e.Match(nsAtom, "category"):
 						if value := makeCategory(e); value != "" {
 							entry.Categories = append(entry.Categories, value)
 						}
 					case e.Match(nsAtom, "content"):
-						entry.Content = makeTextFromXML(e, &t, parser)
+						entry.Content = makeText(e, &t, parser)
+						elements.Pop()
+					case e.Match(nsAtom, "contributor"):
+						if value := makePerson(e, &t, parser).String(); value != "" {
+							entry.Contributors = append(entry.Contributors, value)
+						}
+						elements.Pop()
+					case e.Match(nsAtom, "id"):
+						entry.ID = makeString(e, &t, parser)
 						elements.Pop()
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
 						value := makeURL(elements.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 						entry.Links[key] = value
+					case e.Match(nsAtom, "published"):
+						if text := makeString(e, &t, parser); text != "" {
+							entry.Created = parseTime(text)
+						}
+						elements.Pop()
+					case e.Match(nsAtom, "summary"):
+						entry.Summary = makeText(e, &t, parser)
+						elements.Pop()
+					case e.Match(nsAtom, "title"):
+						entry.Title = makeText(e, &t, parser)
+						elements.Pop()
+					case e.Match(nsAtom, "updated"):
+						if text := makeString(e, &t, parser); text != "" {
+							entry.Updated = parseTime(text)
+							if entry.Updated.After(f.Updated) {
+								f.Updated = entry.Updated
+							}
+						}
+						elements.Pop()
+					} // elements
+				case flavorRSS:
+					switch {
+					case e.Match(nsRSS, "guid"):
+						if text := makeString(e, &t, parser); text != "" {
+							entry.ID = text
+						}
+						elements.Pop()
+					case e.Match(nsRSS, "pubdate"):
+						if text := makeString(e, &t, parser); text != "" {
+							if entry.Updated.IsZero() {
+								entry.Updated = parseTime(text)
+								if entry.Updated.After(f.Updated) {
+									f.Updated = entry.Updated
+								}
+							}
+						}
+						elements.Pop()
 					} // elements
 
 				} // flavor
@@ -165,7 +267,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 			if err != nil {
 				return nil, err
 			}
-			//fmt.Printf("End   %t %s :: %s\n", elements.IsStackFeed(), e.name.Local, elements.String())
+			logger.Printf("End   %t %s :: %s\n", elements.IsStackFeed(), e.name.Local, elements.String())
 
 			switch {
 
@@ -207,87 +309,6 @@ func Parse(reader io.Reader) (*Feed, error) {
 			}
 			elements.Pop() // at the very end of EndElement
 
-		case xml.CharData:
-			e := elements.Peek()
-			text := strings.TrimSpace(string([]byte(t)))
-
-			switch {
-			case e == nil || text == "":
-				// do nothing
-			case f != nil && entry == nil && elements.IsStackFeed(1):
-				switch f.Flavor {
-				case flavorAtom:
-					switch {
-					case e.Match(nsAtom, "generator"):
-						f.Generator = makeGenerator(text, e)
-					case e.Match(nsAtom, "icon"):
-						f.Icon = makeURL(elements.Attr(nsXML, "base"), text)
-					case e.Match(nsAtom, "id"):
-						f.ID = text
-					case e.Match(nsAtom, "rights"):
-						// #DOING:0 replace all Text type nodes with StartElement method
-						f.Rights = makeText(text, e)
-					case e.Match(nsAtom, "subtitle"):
-						f.Subtitle = makeText(text, e)
-					case e.Match(nsAtom, "title"):
-						f.Title = makeText(text, e)
-					case e.Match(nsAtom, "updated"):
-						f.Updated = parseTime(text)
-					} // elements
-				case flavorRSS:
-					switch {
-					case e.Match(nsRSS, "generator"):
-						f.Generator = text
-					case e.Match(nsRSS, "guid"):
-						f.ID = text
-					case e.Match(nsRSS, "pubdate"):
-						if f.Updated.IsZero() {
-							f.Updated = parseTime(text)
-						}
-					case e.Match(nsRSS, "title"):
-						f.Title = Text{Type: "text", Text: text}
-					} // elements
-				} // flavor
-
-			case entry != nil && elements.IsStackEntry(1):
-				switch f.Flavor {
-				case flavorAtom:
-					switch {
-					case e.Match(nsAtom, "content"):
-						// don't overwrite content if taken from xhtml element
-						if entry.Content.Text == "" {
-							entry.Content = makeText(text, e)
-						}
-					case e.Match(nsAtom, "id"):
-						entry.ID = text
-					case e.Match(nsAtom, "published"):
-						entry.Created = parseTime(text)
-					case e.Match(nsAtom, "summary"):
-						entry.Summary = makeText(text, e)
-					case e.Match(nsAtom, "title"):
-						entry.Title = makeText(text, e)
-					case e.Match(nsAtom, "updated"):
-						entry.Updated = parseTime(text)
-						if entry.Updated.After(f.Updated) {
-							f.Updated = entry.Updated
-						}
-					} // elements
-				case flavorRSS:
-					switch {
-					case e.Match(nsRSS, "guid"):
-						entry.ID = text
-					case e.Match(nsRSS, "pubdate"):
-						// #DOING: switch times back to pointer
-						if entry.Updated.IsZero() {
-							entry.Updated = parseTime(text)
-							if entry.Updated.After(f.Updated) {
-								f.Updated = entry.Updated
-							}
-						}
-					} // elements
-				} // flavor
-			} // level
-
 		} // switch token
 
 	} // loop
@@ -318,35 +339,25 @@ func makeGenerator(text string, e *Element) string {
 	return result
 }
 
-func makePerson(e *Element, start *xml.StartElement, decoder *xml.Decoder) *Person {
-	result := &Person{}
+func makePerson(e *Element, start *xml.StartElement, decoder *xml.Decoder) *person {
+	result := &person{}
 	decoder.DecodeElement(result, start)
 	return result
 }
 
-func makeText(text string, e *Element) Text {
-	result := Text{Text: text, Type: e.Attr(nsNone, "type")}
-	if result.Type == "" {
-		result.Type = "text"
-	} else if result.Type == "xhtml" {
-
-	}
-	return result
+func makeString(e *Element, start *xml.StartElement, decoder *xml.Decoder) string {
+	x := &xmlString{}
+	decoder.DecodeElement(x, start)
+	return x.Text
 }
 
-func makeTextFromXML(e *Element, start *xml.StartElement, decoder *xml.Decoder) Text {
-	result := Text{Type: e.Attr(nsNone, "type")}
-	if result.Type == "xhtml" {
-		x := &divelement{}
-		err := decoder.DecodeElement(x, start)
-		if err != nil {
-			result.Type = ""
-		} else {
-			result.Text = strings.TrimSpace(x.Div.Text)
-			// #TODO:0 use base to fix relative HREFs in XML
-		}
+func makeText(e *Element, start *xml.StartElement, decoder *xml.Decoder) *Text {
+	x := &xmlText{}
+	err := decoder.DecodeElement(x, start)
+	if err == nil {
+		return x.GetText()
 	}
-	return result
+	return &Text{}
 }
 
 func makeURL(base string, urlstr string) string {

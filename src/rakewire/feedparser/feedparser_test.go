@@ -59,7 +59,7 @@ func TestAtom(t *testing.T) {
 
 	assert.Equal(t, "atom", f.Flavor)
 	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml", f.ID)
-	assert.Equal(t, time.Date(2005, time.November, 9, 11, 56, 34, 0, time.UTC), f.Updated)
+	assert.True(t, time.Date(2005, time.November, 11, 11, 56, 34, 0, time.UTC).Equal(f.Updated))
 	assert.Equal(t, "Sample Feed", f.Title.Text)
 	assert.Equal(t, "text", f.Title.Type)
 
@@ -82,13 +82,12 @@ func TestAtom(t *testing.T) {
 
 	// entries
 
-	require.Equal(t, 1, len(f.Entries))
+	require.Equal(t, 2, len(f.Entries))
 	e := f.Entries[0]
-	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3", e.ID)
 
+	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3", e.ID)
 	assert.Equal(t, "First entry title", e.Title.Text)
 	assert.Equal(t, "text", e.Title.Type)
-
 	assert.Equal(t, time.Date(2005, time.November, 9, 11, 56, 34, 0, time.UTC), e.Updated)
 	assert.Equal(t, time.Date(2005, time.November, 9, 0, 23, 47, 0, time.UTC), e.Created)
 
@@ -111,10 +110,29 @@ func TestAtom(t *testing.T) {
 
 	assert.Equal(t, "Watch out for nasty tricks", e.Summary.Text)
 	assert.Equal(t, "text", e.Summary.Type)
-
-	//t.Log(e.Content.Text)
-	assert.Equal(t, e.Content.Text, "Watch out for<span style=\"background-image: url(javascript:window.location=’http://example.org/’)\">nasty tricks</span>")
+	assert.Equal(t, "Watch out for<span style=\"background-image: url(javascript:window.location=’http://example.org/’)\">nasty tricks</span>", e.Content.Text)
 	assert.Equal(t, "xhtml", e.Content.Type)
+
+	e = f.Entries[1]
+	assert.Equal(t, "tag:feedparser.org,2005-11-11:/docs/examples/atom11.xml:1", e.ID)
+	assert.Equal(t, "Second entry title", e.Title.Text)
+	assert.Equal(t, "text", e.Title.Type)
+	assert.True(t, time.Date(2005, time.November, 11, 11, 56, 34, 0, time.UTC).Equal(f.Updated))
+	assert.True(t, e.Created.IsZero())
+
+	require.Equal(t, 0, len(e.Links))
+
+	require.Equal(t, 0, len(e.Categories))
+
+	require.Equal(t, 1, len(e.Authors))
+	assert.Equal(t, "Mark Pilgrim <mark@example.org> (http://diveintomark.org/)", e.Authors[0])
+
+	require.Equal(t, 0, len(e.Contributors))
+
+	assert.Equal(t, "Test content as text", e.Summary.Text)
+	assert.Equal(t, "text", e.Summary.Type)
+	assert.Equal(t, "Test content", e.Content.Text)
+	assert.Equal(t, "text", e.Content.Type)
 
 }
 

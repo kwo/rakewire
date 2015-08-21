@@ -6,7 +6,6 @@
  - #TODO:30 better logging
  - #TODO:40 add cache-control headers to API
  - #TODO:20 save feed items/entries
- - #DOING:0 rewrite feed parser using streaming model
  - #DOING:10 add feed header to feed log (perhaps divide into http and feed subsections)
  - #TODO:50 need save database channel
  - #DONE:50 v0.0.2 Conditional GETs
