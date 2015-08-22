@@ -12,12 +12,9 @@ import (
 	"time"
 )
 
-// #DOING:0 implement stepping decoder
-
 // Feed feed
 type Feed struct {
 	Authors   []string
-	Entries   []*Entry
 	Flavor    string
 	Generator string
 	Icon      string
@@ -29,7 +26,7 @@ type Feed struct {
 	Updated   time.Time
 }
 
-// Entry z.entry
+// Entry entry
 type Entry struct {
 	Authors      []string
 	Categories   []string
@@ -45,6 +42,8 @@ type Entry struct {
 
 // Parser can parse feeds
 type Parser struct {
+	Output  <-chan *Status
+	output  chan *Status
 	decoder *xml.Decoder
 	entry   *Entry
 	feed    *Feed
@@ -53,9 +52,8 @@ type Parser struct {
 
 // Status hold the status of a parse iteration
 type Status struct {
-	Feed    *Feed
-	Entry   *Entry
-	HasMore bool
+	Feed  *Feed
+	Entry *Entry
 }
 
 const (
@@ -74,8 +72,16 @@ var (
 	logger = logging.Null("feeddecoder")
 )
 
+// NewParser returns a new parser
+func NewParser() *Parser {
+	p := &Parser{}
+	p.output = make(chan *Status)
+	p.Output = p.output
+	return p
+}
+
 // Parse feed
-func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
+func (z *Parser) Parse(reader io.Reader) {
 
 	// #TODO:0 attach used charset to feed object
 	// #TODO:0 if decoder exits in error, the response body won't be read fully which will render a http connection un-reusable
@@ -93,7 +99,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 			if err == io.EOF {
 				break
 			}
-			return nil, err
+			// #DOING:0 return nil, err
 		}
 
 		switch t := token.(type) {
@@ -127,7 +133,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 		case xml.EndElement:
 			e, err := z.stack.PeekIf(t)
 			if err != nil {
-				return nil, err
+				// #DOING:0 return nil, err
 			}
 			logger.Printf("End   %s :: %s\n", e.name.Local, z.stack.String())
 
@@ -156,7 +162,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 
 	} // loop
 
-	return z.feed, nil
+	close(z.output)
 
 }
 
@@ -307,6 +313,7 @@ func (z *Parser) doEndFeedAtom(e *element) {
 	switch {
 	case e.Match(nsAtom, "feed"):
 		// finished: clean up atom feed here
+		z.output <- &Status{Feed: z.feed}
 	}
 }
 
@@ -319,13 +326,14 @@ func (z *Parser) doEndFeedRSS(e *element) {
 		}
 		// finished: clean up rss feed here
 		z.feed.Flavor = flavorRSS + z.stack.Attr(nsRSS, "version")
+		z.output <- &Status{Feed: z.feed}
 	}
 }
 
 func (z *Parser) doEndEntryAtom(e *element) {
 	switch {
 	case e.Match(nsAtom, "entry"):
-		z.feed.Entries = append(z.feed.Entries, z.entry)
+		z.output <- &Status{Entry: z.entry}
 		z.entry = nil
 	}
 }
@@ -333,7 +341,7 @@ func (z *Parser) doEndEntryAtom(e *element) {
 func (z *Parser) doEndEntryRSS(e *element) {
 	switch {
 	case e.Match(nsRSS, "item"):
-		z.feed.Entries = append(z.feed.Entries, z.entry)
+		z.output <- &Status{Entry: z.entry}
 		z.entry = nil
 	}
 }

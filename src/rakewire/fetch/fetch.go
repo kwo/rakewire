@@ -139,9 +139,19 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 			reader, _ := readBody(rsp)
 			body := &ReadCounter{ReadCloser: reader}
-			p := feedparser.Parser{}
-			xmlFeed, err := p.Parse(body)
-			body.Close()
+			defer body.Close()
+			p := feedparser.NewParser()
+			go p.Parse(body)
+			var xmlFeed *feedparser.Feed
+			//var entries []*Entry
+			for status := range p.Output {
+				if status.Feed != nil {
+					xmlFeed = status.Feed
+					// } else if status.Entry != nil {
+					// 	entries = append(entries, status.Entry)
+				}
+			}
+
 			if err != nil || xmlFeed == nil {
 				// cannot parse feed
 				feed.Attempt.Result = m.FetchResultFeedError
