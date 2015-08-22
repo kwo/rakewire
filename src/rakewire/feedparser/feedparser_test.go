@@ -11,43 +11,43 @@ import (
 	"time"
 )
 
-func TestElementsAtom(t *testing.T) {
+func TestelementsAtom(t *testing.T) {
 
-	elements := &Elements{}
-	elements.elements = append(elements.elements, &Element{name: xml.Name{Space: nsAtom, Local: "feed"}})
+	elements := &elements{}
+	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsAtom, Local: "feed"}})
 
 	require.Equal(t, 1, elements.Level())
 	assert.True(t, elements.IsStackFeed())
 
-	elements.elements = append(elements.elements, &Element{name: xml.Name{Space: nsAtom, Local: "entry"}})
+	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsAtom, Local: "entry"}})
 	require.Equal(t, 2, elements.Level())
 	assert.True(t, elements.IsStackEntry())
 	assert.True(t, elements.IsStackFeed(1))
 
-	elements.elements = append(elements.elements, &Element{name: xml.Name{Space: nsAtom, Local: "id"}})
+	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsAtom, Local: "id"}})
 	require.Equal(t, 3, elements.Level())
 	assert.True(t, elements.IsStackEntry(1))
 
 }
 
-func TestElementsRSS(t *testing.T) {
+func TestelementsRSS(t *testing.T) {
 
-	elements := &Elements{}
-	elements.elements = append(elements.elements, &Element{name: xml.Name{Space: nsRSS, Local: "rss"}})
+	elements := &elements{}
+	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsRSS, Local: "rss"}})
 
 	require.Equal(t, 1, elements.Level())
 	assert.False(t, elements.IsStackFeed())
 
-	elements.elements = append(elements.elements, &Element{name: xml.Name{Space: nsRSS, Local: "channel"}})
+	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsRSS, Local: "channel"}})
 	require.Equal(t, 2, elements.Level())
 	assert.True(t, elements.IsStackFeed())
 
-	elements.elements = append(elements.elements, &Element{name: xml.Name{Space: nsRSS, Local: "item"}})
+	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsRSS, Local: "item"}})
 	require.Equal(t, 3, elements.Level())
 	assert.True(t, elements.IsStackEntry())
 	assert.True(t, elements.IsStackFeed(1))
 
-	elements.elements = append(elements.elements, &Element{name: xml.Name{Space: nsRSS, Local: "guid"}})
+	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsRSS, Local: "guid"}})
 	require.Equal(t, 4, elements.Level())
 	assert.True(t, elements.IsStackEntry(1))
 

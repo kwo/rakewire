@@ -4,6 +4,26 @@ import (
 	"strings"
 )
 
+type content struct {
+	Type  string  `xml:"type,attr"`
+	Text  string  `xml:",chardata"`
+	XHtml xmlData `xml:"div"`
+}
+
+type xmlData struct {
+	Text string `xml:",innerxml"`
+}
+
+func (z *content) ToString() string {
+	// #TODO:0 use base to fix relative HREFs in XML
+	result := strings.TrimSpace(z.XHtml.Text)
+	if result == "" {
+		// #TODO:0 convert to HTML if type is Text
+		result = strings.TrimSpace(z.Text)
+	}
+	return result
+}
+
 type generator struct {
 	Text    string `xml:",chardata"`
 	URI     string `xml:"uri,attr"`
@@ -42,26 +62,6 @@ func (p *person) ToString() string {
 	}
 	if p.URI != "" {
 		result += " (" + p.URI + ")"
-	}
-	return result
-}
-
-type content struct {
-	Type  string  `xml:"type,attr"`
-	Text  string  `xml:",chardata"`
-	XHtml xmlData `xml:"div"`
-}
-
-type xmlData struct {
-	Text string `xml:",innerxml"`
-}
-
-func (z *content) ToString() string {
-	// #TODO:0 use base to fix relative HREFs in XML
-	result := strings.TrimSpace(z.XHtml.Text)
-	if result == "" {
-		// #TODO:0 convert to HTML if type is Text
-		result = strings.TrimSpace(z.Text)
 	}
 	return result
 }

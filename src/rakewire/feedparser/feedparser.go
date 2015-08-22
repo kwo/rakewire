@@ -43,6 +43,21 @@ type Entry struct {
 	Updated      time.Time
 }
 
+// Parser can parse feeds
+type Parser struct {
+	stack  *elements
+	entry  *Entry
+	feed   *Feed
+	parser *xml.Decoder
+}
+
+// Status hold the status of a parse iteration
+type Status struct {
+	Feed    *Feed
+	Entry   *Entry
+	HasMore bool
+}
+
 const (
 	nsAtom = "http://www.w3.org/2005/Atom"
 	nsNone = ""
@@ -71,7 +86,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 
 	var f *Feed
 	var entry *Entry
-	elements := &Elements{}
+	stack := &elements{}
 
 	for {
 
@@ -86,8 +101,8 @@ func Parse(reader io.Reader) (*Feed, error) {
 		switch t := token.(type) {
 
 		case xml.StartElement:
-			e := elements.Push(t)
-			logger.Printf("Start %t %s :: %s\n", f == nil, e.name.Local, elements.String())
+			e := stack.Push(t)
+			logger.Printf("Start %t %s :: %s\n", f == nil, e.name.Local, stack.String())
 
 			switch {
 			case f == nil:
@@ -103,7 +118,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 					} // switch
 				} // if
 
-			case f != nil && entry == nil && elements.IsStackFeed(1):
+			case f != nil && entry == nil && stack.IsStackFeed(1):
 
 				switch f.Flavor {
 
@@ -113,67 +128,67 @@ func Parse(reader io.Reader) (*Feed, error) {
 						if value := makePerson(e, &t, parser); value != "" {
 							f.Authors = append(f.Authors, value)
 						}
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "entry"):
 						entry = &Entry{}
 						entry.Links = make(map[string]string)
 					case e.Match(nsAtom, "generator"):
 						f.Generator = makeGenerator(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "icon"):
 						if text := makeText(e, &t, parser); text != "" {
-							f.Icon = makeURL(elements.Attr(nsXML, "base"), text)
+							f.Icon = makeURL(stack.Attr(nsXML, "base"), text)
 						}
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "id"):
 						f.ID = makeText(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
-						value := makeURL(elements.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
+						value := makeURL(stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 						f.Links[key] = value
 					case e.Match(nsAtom, "rights"):
 						f.Rights = makeContent(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "subtitle"):
 						f.Subtitle = makeContent(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "title"):
 						f.Title = makeContent(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "updated"):
 						f.Updated = parseTime(makeText(e, &t, parser))
-						elements.Pop()
-					} // elements
+						stack.Pop()
+					} // stack
 
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "generator"):
 						f.Generator = makeText(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsRSS, "guid"):
 						f.ID = makeText(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsRSS, "pubdate"):
 						if f.Updated.IsZero() {
 							f.Updated = parseTime(makeText(e, &t, parser))
 						}
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsRSS, "title"):
 						f.Title = makeText(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsRSS, "item"):
 						entry = &Entry{}
 						entry.Links = make(map[string]string)
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
-						value := makeURL(elements.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
+						value := makeURL(stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 						f.Links[key] = value
-					} // elements
+					} // stack
 
 				} // flavor
 
-			case entry != nil && elements.IsStackEntry(1):
+			case entry != nil && stack.IsStackEntry(1):
 				switch f.Flavor {
 
 				case flavorAtom:
@@ -182,35 +197,35 @@ func Parse(reader io.Reader) (*Feed, error) {
 						if value := makePerson(e, &t, parser); value != "" {
 							entry.Authors = append(entry.Authors, value)
 						}
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "category"):
 						if value := makeCategory(e); value != "" {
 							entry.Categories = append(entry.Categories, value)
 						}
 					case e.Match(nsAtom, "content"):
 						entry.Content = makeContent(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "contributor"):
 						if value := makePerson(e, &t, parser); value != "" {
 							entry.Contributors = append(entry.Contributors, value)
 						}
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "id"):
 						entry.ID = makeText(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
-						value := makeURL(elements.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
+						value := makeURL(stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 						entry.Links[key] = value
 					case e.Match(nsAtom, "published"):
 						entry.Created = parseTime(makeText(e, &t, parser))
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "summary"):
 						entry.Summary = makeContent(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "title"):
 						entry.Title = makeContent(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsAtom, "updated"):
 						if text := makeText(e, &t, parser); text != "" {
 							entry.Updated = parseTime(text)
@@ -218,13 +233,13 @@ func Parse(reader io.Reader) (*Feed, error) {
 								f.Updated = entry.Updated
 							}
 						}
-						elements.Pop()
-					} // elements
+						stack.Pop()
+					} // stack
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "guid"):
 						entry.ID = makeText(e, &t, parser)
-						elements.Pop()
+						stack.Pop()
 					case e.Match(nsRSS, "pubdate"):
 						if text := makeText(e, &t, parser); text != "" {
 							if entry.Updated.IsZero() {
@@ -234,23 +249,23 @@ func Parse(reader io.Reader) (*Feed, error) {
 								}
 							}
 						}
-						elements.Pop()
-					} // elements
+						stack.Pop()
+					} // stack
 
 				} // flavor
 
 			} // level
 
 		case xml.EndElement:
-			e, err := elements.PeekIf(t)
+			e, err := stack.PeekIf(t)
 			if err != nil {
 				return nil, err
 			}
-			logger.Printf("End   %t %s :: %s\n", elements.IsStackFeed(), e.name.Local, elements.String())
+			logger.Printf("End   %t %s :: %s\n", stack.IsStackFeed(), e.name.Local, stack.String())
 
 			switch {
 
-			case f != nil && entry == nil && elements.IsStackFeed():
+			case f != nil && entry == nil && stack.IsStackFeed():
 				switch f.Flavor {
 				case flavorAtom:
 					switch {
@@ -265,11 +280,11 @@ func Parse(reader io.Reader) (*Feed, error) {
 							f.ID = f.Links["self"]
 						}
 						// finished: clean up rss feed here
-						f.Flavor = flavorRSS + elements.Attr(nsRSS, "version")
+						f.Flavor = flavorRSS + stack.Attr(nsRSS, "version")
 					}
 				}
 
-			case entry != nil && elements.IsStackEntry():
+			case entry != nil && stack.IsStackEntry():
 				switch f.Flavor {
 				case flavorAtom:
 					switch {
@@ -286,7 +301,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 				}
 
 			}
-			elements.Pop() // at the very end of EndElement
+			stack.Pop() // at the very end of EndElement
 
 		} // switch token
 
@@ -296,7 +311,7 @@ func Parse(reader io.Reader) (*Feed, error) {
 
 }
 
-func makeCategory(e *Element) string {
+func makeCategory(e *element) string {
 	term := strings.TrimSpace(e.Attr(nsNone, "term"))
 	label := strings.TrimSpace(e.Attr(nsNone, "label"))
 	if label != "" {
@@ -305,25 +320,25 @@ func makeCategory(e *Element) string {
 	return term
 }
 
-func makeContent(e *Element, start *xml.StartElement, decoder *xml.Decoder) string {
+func makeContent(e *element, start *xml.StartElement, decoder *xml.Decoder) string {
 	x := &content{}
 	decoder.DecodeElement(x, start)
 	return x.ToString()
 }
 
-func makeGenerator(e *Element, start *xml.StartElement, decoder *xml.Decoder) string {
+func makeGenerator(e *element, start *xml.StartElement, decoder *xml.Decoder) string {
 	result := &generator{}
 	decoder.DecodeElement(result, start)
 	return result.ToString()
 }
 
-func makePerson(e *Element, start *xml.StartElement, decoder *xml.Decoder) string {
+func makePerson(e *element, start *xml.StartElement, decoder *xml.Decoder) string {
 	result := &person{}
 	decoder.DecodeElement(result, start)
 	return result.ToString()
 }
 
-func makeText(e *Element, start *xml.StartElement, decoder *xml.Decoder) string {
+func makeText(e *element, start *xml.StartElement, decoder *xml.Decoder) string {
 	x := &text{}
 	decoder.DecodeElement(x, start)
 	return x.ToString()

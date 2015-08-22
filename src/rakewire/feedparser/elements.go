@@ -7,18 +7,18 @@ import (
 )
 
 // Element encapsulates xml.Name plus attributes
-type Element struct {
+type element struct {
 	name xml.Name
 	attr []xml.Attr
 }
 
 // Match returns case-insensitive match of given xml.Name
-func (z *Element) Match(space string, local string) bool {
+func (z *element) Match(space string, local string) bool {
 	return strings.ToLower(z.name.Local) == strings.ToLower(local) && strings.ToLower(z.name.Space) == strings.ToLower(space)
 }
 
 // Attr returns the value for the given attribute
-func (z *Element) Attr(space string, local string) string {
+func (z *element) Attr(space string, local string) string {
 	for _, a := range z.attr {
 		if strings.ToLower(a.Name.Local) == strings.ToLower(local) && strings.ToLower(a.Name.Space) == strings.ToLower(space) {
 			return a.Value
@@ -27,13 +27,13 @@ func (z *Element) Attr(space string, local string) string {
 	return ""
 }
 
-// Elements maintains a stack of Element objects
-type Elements struct {
-	elements []*Element
+// elements maintains a stack of Element objects
+type elements struct {
+	stack []*element
 }
 
 // IsStackFeed if you are at the feed level
-func (z *Elements) IsStackFeed(args ...int) bool {
+func (z *elements) IsStackFeed(args ...int) bool {
 
 	offset := 0
 	if len(args) > 0 {
@@ -46,7 +46,7 @@ func (z *Elements) IsStackFeed(args ...int) bool {
 
 	case 1:
 		for i := 0; i < length; i++ {
-			e := z.elements[i]
+			e := z.stack[i]
 			switch i {
 			case 0:
 				if e.name.Space != nsAtom || e.name.Local != "feed" {
@@ -60,7 +60,7 @@ func (z *Elements) IsStackFeed(args ...int) bool {
 
 	case 2:
 		for i := 0; i < length; i++ {
-			e := z.elements[i]
+			e := z.stack[i]
 			switch i {
 			case 0:
 				if e.name.Space != nsRSS || e.name.Local != "rss" {
@@ -82,7 +82,7 @@ func (z *Elements) IsStackFeed(args ...int) bool {
 }
 
 // IsStackEntry if you are at the entry level
-func (z *Elements) IsStackEntry(args ...int) bool {
+func (z *elements) IsStackEntry(args ...int) bool {
 
 	offset := 0
 	if len(args) > 0 {
@@ -95,7 +95,7 @@ func (z *Elements) IsStackEntry(args ...int) bool {
 
 	case 2:
 		for i := 0; i < length; i++ {
-			e := z.elements[i]
+			e := z.stack[i]
 			switch i {
 			case 0:
 				if e.name.Space != nsAtom || e.name.Local != "feed" {
@@ -113,7 +113,7 @@ func (z *Elements) IsStackEntry(args ...int) bool {
 
 	case 3:
 		for i := 0; i < length; i++ {
-			e := z.elements[i]
+			e := z.stack[i]
 			switch i {
 			case 0:
 				if e.name.Space != nsRSS || e.name.Local != "rss" {
@@ -139,9 +139,9 @@ func (z *Elements) IsStackEntry(args ...int) bool {
 }
 
 // Attr walks down the stack delivering the first matching attribute value
-func (z *Elements) Attr(space string, local string) string {
-	for i := len(z.elements) - 1; i >= 0; i-- {
-		if value := z.elements[i].Attr(space, local); value != "" {
+func (z *elements) Attr(space string, local string) string {
+	for i := len(z.stack) - 1; i >= 0; i-- {
+		if value := z.stack[i].Attr(space, local); value != "" {
 			return value
 		}
 	}
@@ -149,17 +149,17 @@ func (z *Elements) Attr(space string, local string) string {
 }
 
 // Level returns the depth of the stack
-func (z *Elements) Level() int {
-	return len(z.elements)
+func (z *elements) Level() int {
+	return len(z.stack)
 }
 
 // Peek at the element on top of the stack
-func (z *Elements) Peek() *Element {
+func (z *elements) Peek() *element {
 	return z.peek(0)
 }
 
 // PeekIf at the element on top of the stack if match
-func (z *Elements) PeekIf(t xml.EndElement) (*Element, error) {
+func (z *elements) PeekIf(t xml.EndElement) (*element, error) {
 	e := z.Peek()
 	if e.Match(t.Name.Space, t.Name.Local) {
 		return e, nil
@@ -167,16 +167,16 @@ func (z *Elements) PeekIf(t xml.EndElement) (*Element, error) {
 	return nil, fmt.Errorf("%s:%s does not match %s:%s", e.name.Space, e.name.Local, t.Name.Space, t.Name.Local)
 }
 
-// Pop xml EndElement off of Elements stack
-func (z *Elements) Pop() *Element {
-	lastIndex := len(z.elements) - 1
-	e := z.elements[lastIndex]
-	z.elements = z.elements[:lastIndex]
+// Pop xml EndElement off of elements stack
+func (z *elements) Pop() *element {
+	lastIndex := len(z.stack) - 1
+	e := z.stack[lastIndex]
+	z.stack = z.stack[:lastIndex]
 	return e
 }
 
-// PopIf pop xml EndElement off of Elements stack if match
-func (z *Elements) PopIf(t xml.EndElement) (*Element, error) {
+// PopIf pop xml EndElement off of elements stack if match
+func (z *elements) PopIf(t xml.EndElement) (*element, error) {
 	e := z.Peek()
 	if e.Match(t.Name.Space, t.Name.Local) {
 		z.Pop()
@@ -185,26 +185,26 @@ func (z *Elements) PopIf(t xml.EndElement) (*Element, error) {
 	return nil, fmt.Errorf("%s:%s does not match %s:%s", e.name.Space, e.name.Local, t.Name.Space, t.Name.Local)
 }
 
-// Push xml StartElement on to Elements stack
-func (z *Elements) Push(t xml.StartElement) *Element {
-	e := &Element{name: t.Name, attr: t.Attr}
-	z.elements = append(z.elements, e)
+// Push xml StartElement on to elements stack
+func (z *elements) Push(t xml.StartElement) *element {
+	e := &element{name: t.Name, attr: t.Attr}
+	z.stack = append(z.stack, e)
 	return e
 }
 
 // String prints the stack
-func (z *Elements) String() string {
+func (z *elements) String() string {
 	var result []string
-	for _, e := range z.elements {
+	for _, e := range z.stack {
 		result = append(result, e.name.Local)
 	}
 	return strings.Join(result, ">")
 }
 
-func (z *Elements) peek(x int) *Element {
-	index := len(z.elements) - x - 1
-	if index < 0 || index >= len(z.elements) {
+func (z *elements) peek(x int) *element {
+	index := len(z.stack) - x - 1
+	if index < 0 || index >= len(z.stack) {
 		return nil
 	}
-	return z.elements[index]
+	return z.stack[index]
 }
