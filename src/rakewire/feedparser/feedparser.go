@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// #DOING:0 implement stepping decoder
+// #DOING:30 implement stepping decoder
 
 // Feed feed
 type Feed struct {
@@ -117,7 +117,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 					} // switch
 				} // if
 
-			case z.feed != nil && z.entry == nil && z.stack.IsStackFeed(1):
+			case z.feed != nil && z.entry == nil && z.stack.IsStackFeed(z.feed.Flavor, 1):
 
 				switch z.feed.Flavor {
 
@@ -187,7 +187,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 
 				} // flavor
 
-			case z.entry != nil && z.stack.IsStackEntry(1):
+			case z.entry != nil && z.stack.IsStackEntry(z.feed.Flavor, 1):
 				switch z.feed.Flavor {
 
 				case flavorAtom:
@@ -260,11 +260,11 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 			if err != nil {
 				return nil, err
 			}
-			logger.Printf("End   %t %s :: %s\n", z.stack.IsStackFeed(), e.name.Local, z.stack.String())
+			logger.Printf("End   %t %s :: %s\n", z.stack.IsStackFeed(z.feed.Flavor, 0), e.name.Local, z.stack.String())
 
 			switch {
 
-			case z.feed != nil && z.entry == nil && z.stack.IsStackFeed():
+			case z.feed != nil && z.entry == nil && z.stack.IsStackFeed(z.feed.Flavor, 0):
 				switch z.feed.Flavor {
 				case flavorAtom:
 					switch {
@@ -274,7 +274,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "channel"):
-						// #DOING:50 more possibilities for IDs
+						// #DOING:20 more possibilities for IDs
 						if z.feed.ID == "" {
 							z.feed.ID = z.feed.Links["self"]
 						}
@@ -283,7 +283,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 					}
 				}
 
-			case z.entry != nil && z.stack.IsStackEntry():
+			case z.entry != nil && z.stack.IsStackEntry(z.feed.Flavor, 0):
 				switch z.feed.Flavor {
 				case flavorAtom:
 					switch {
@@ -310,7 +310,6 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 
 }
 
-// #DOING:20 eliminate passing of start element to these functions
 func (z *Parser) makeCategory(start *xml.StartElement) string {
 	e := &element{name: start.Name, attr: start.Attr}
 	term := strings.TrimSpace(e.Attr(nsNone, "term"))

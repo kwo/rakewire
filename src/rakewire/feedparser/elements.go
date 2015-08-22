@@ -33,107 +33,38 @@ type elements struct {
 }
 
 // IsStackFeed if you are at the feed level
-func (z *elements) IsStackFeed(args ...int) bool {
+func (z *elements) IsStackFeed(flavor string, offset int) bool {
 
-	offset := 0
-	if len(args) > 0 {
-		offset = args[0]
+	switch flavor {
+	case flavorAtom:
+		return z.Level() == 1+offset &&
+			z.stack[0].Match(nsAtom, "feed")
+
+	case flavorRSS:
+		return z.Level() == 2+offset &&
+			z.stack[0].Match(nsRSS, "rss") &&
+			z.stack[1].Match(nsRSS, "channel")
 	}
-
-	length := z.Level() - offset
-
-	switch length {
-
-	case 1:
-		for i := 0; i < length; i++ {
-			e := z.stack[i]
-			switch i {
-			case 0:
-				if e.name.Space != nsAtom || e.name.Local != "feed" {
-					return false
-				}
-			default:
-				return false
-			} // switch
-		} // loop
-		return true
-
-	case 2:
-		for i := 0; i < length; i++ {
-			e := z.stack[i]
-			switch i {
-			case 0:
-				if e.name.Space != nsRSS || e.name.Local != "rss" {
-					return false
-				}
-			case 1:
-				if e.name.Space != nsRSS || e.name.Local != "channel" {
-					return false
-				}
-			default:
-				return false
-			} // switch
-		} // loop
-		return true
-	} // level switch
 
 	return false
 
 }
 
-// #DOING:30 isstack - just compare static stacks
 // IsStackEntry if you are at the entry level
-func (z *elements) IsStackEntry(args ...int) bool {
+func (z *elements) IsStackEntry(flavor string, offset int) bool {
 
-	offset := 0
-	if len(args) > 0 {
-		offset = args[0]
+	switch flavor {
+	case flavorAtom:
+		return z.Level() == 2+offset &&
+			z.stack[0].Match(nsAtom, "feed") &&
+			z.stack[1].Match(nsAtom, "entry")
+
+	case flavorRSS:
+		return z.Level() == 3+offset &&
+			z.stack[0].Match(nsRSS, "rss") &&
+			z.stack[1].Match(nsRSS, "channel") &&
+			z.stack[2].Match(nsRSS, "item")
 	}
-
-	length := z.Level() - offset
-
-	switch length {
-
-	case 2:
-		for i := 0; i < length; i++ {
-			e := z.stack[i]
-			switch i {
-			case 0:
-				if e.name.Space != nsAtom || e.name.Local != "feed" {
-					return false
-				}
-			case 1:
-				if e.name.Space != nsAtom || e.name.Local != "entry" {
-					return false
-				}
-			default:
-				return false
-			} // switch
-		} // loop
-		return true
-
-	case 3:
-		for i := 0; i < length; i++ {
-			e := z.stack[i]
-			switch i {
-			case 0:
-				if e.name.Space != nsRSS || e.name.Local != "rss" {
-					return false
-				}
-			case 1:
-				if e.name.Space != nsRSS || e.name.Local != "channel" {
-					return false
-				}
-			case 2:
-				if e.name.Space != nsRSS || e.name.Local != "item" {
-					return false
-				}
-			default:
-				return false
-			} // switch
-		} // loop
-		return true
-	} // level switch
 
 	return false
 

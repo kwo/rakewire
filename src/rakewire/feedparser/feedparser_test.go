@@ -17,16 +17,16 @@ func TestelementsAtom(t *testing.T) {
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsAtom, Local: "feed"}})
 
 	require.Equal(t, 1, elements.Level())
-	assert.True(t, elements.IsStackFeed())
+	assert.True(t, elements.IsStackFeed(flavorAtom, 0))
 
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsAtom, Local: "entry"}})
 	require.Equal(t, 2, elements.Level())
-	assert.True(t, elements.IsStackEntry())
-	assert.True(t, elements.IsStackFeed(1))
+	assert.True(t, elements.IsStackEntry(flavorAtom, 0))
+	assert.True(t, elements.IsStackFeed(flavorAtom, 1))
 
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsAtom, Local: "id"}})
 	require.Equal(t, 3, elements.Level())
-	assert.True(t, elements.IsStackEntry(1))
+	assert.True(t, elements.IsStackEntry(flavorAtom, 1))
 
 }
 
@@ -36,20 +36,20 @@ func TestelementsRSS(t *testing.T) {
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsRSS, Local: "rss"}})
 
 	require.Equal(t, 1, elements.Level())
-	assert.False(t, elements.IsStackFeed())
+	assert.False(t, elements.IsStackFeed(flavorRSS, 0))
 
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsRSS, Local: "channel"}})
 	require.Equal(t, 2, elements.Level())
-	assert.True(t, elements.IsStackFeed())
+	assert.True(t, elements.IsStackFeed(flavorRSS, 0))
 
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsRSS, Local: "item"}})
 	require.Equal(t, 3, elements.Level())
-	assert.True(t, elements.IsStackEntry())
-	assert.True(t, elements.IsStackFeed(1))
+	assert.True(t, elements.IsStackEntry(flavorRSS, 0))
+	assert.True(t, elements.IsStackFeed(flavorRSS, 1))
 
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsRSS, Local: "guid"}})
 	require.Equal(t, 4, elements.Level())
-	assert.True(t, elements.IsStackEntry(1))
+	assert.True(t, elements.IsStackEntry(flavorRSS, 1))
 
 }
 
