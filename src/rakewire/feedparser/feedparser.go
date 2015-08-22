@@ -29,7 +29,7 @@ type Feed struct {
 	Updated   time.Time
 }
 
-// Entry entry
+// Entry z.entry
 type Entry struct {
 	Authors      []string
 	Categories   []string
@@ -84,9 +84,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 	z.decoder.CharsetReader = charset.NewReader
 	z.decoder.Strict = false
 
-	var f *Feed
-	var entry *Entry
-	stack := &elements{}
+	z.stack = &elements{}
 
 	for {
 
@@ -101,172 +99,172 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 		switch t := token.(type) {
 
 		case xml.StartElement:
-			e := stack.Push(t)
-			logger.Printf("Start %t %s :: %s\n", f == nil, e.name.Local, stack.String())
+			e := z.stack.Push(t)
+			logger.Printf("Start %t %s :: %s\n", z.feed == nil, e.name.Local, z.stack.String())
 
 			switch {
-			case f == nil:
+			case z.feed == nil:
 
 				if e.Match(nsAtom, "feed") || e.Match(nsRSS, "rss") {
-					f = &Feed{}
-					f.Links = make(map[string]string)
+					z.feed = &Feed{}
+					z.feed.Links = make(map[string]string)
 					switch {
 					case e.Match(nsAtom, "feed"):
-						f.Flavor = flavorAtom
+						z.feed.Flavor = flavorAtom
 					case e.Match(nsRSS, "rss"):
-						f.Flavor = flavorRSS
+						z.feed.Flavor = flavorRSS
 					} // switch
 				} // if
 
-			case f != nil && entry == nil && stack.IsStackFeed(1):
+			case z.feed != nil && z.entry == nil && z.stack.IsStackFeed(1):
 
-				switch f.Flavor {
+				switch z.feed.Flavor {
 
 				case flavorAtom:
 					switch {
 					case e.Match(nsAtom, "author"):
 						if value := z.makePerson(e, &t); value != "" {
-							f.Authors = append(f.Authors, value)
+							z.feed.Authors = append(z.feed.Authors, value)
 						}
-						stack.Pop()
+						z.stack.Pop()
 					case e.Match(nsAtom, "entry"):
-						entry = &Entry{}
-						entry.Links = make(map[string]string)
+						z.entry = &Entry{}
+						z.entry.Links = make(map[string]string)
 					case e.Match(nsAtom, "generator"):
-						f.Generator = z.makeGenerator(e, &t)
-						stack.Pop()
+						z.feed.Generator = z.makeGenerator(e, &t)
+						z.stack.Pop()
 					case e.Match(nsAtom, "icon"):
 						if text := z.makeText(e, &t); text != "" {
-							f.Icon = z.makeURL(stack.Attr(nsXML, "base"), text)
+							z.feed.Icon = z.makeURL(z.stack.Attr(nsXML, "base"), text)
 						}
-						stack.Pop()
+						z.stack.Pop()
 					case e.Match(nsAtom, "id"):
-						f.ID = z.makeText(e, &t)
-						stack.Pop()
+						z.feed.ID = z.makeText(e, &t)
+						z.stack.Pop()
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
-						value := z.makeURL(stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
-						f.Links[key] = value
+						value := z.makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
+						z.feed.Links[key] = value
 					case e.Match(nsAtom, "rights"):
-						f.Rights = z.makeContent(e, &t)
-						stack.Pop()
+						z.feed.Rights = z.makeContent(e, &t)
+						z.stack.Pop()
 					case e.Match(nsAtom, "subtitle"):
-						f.Subtitle = z.makeContent(e, &t)
-						stack.Pop()
+						z.feed.Subtitle = z.makeContent(e, &t)
+						z.stack.Pop()
 					case e.Match(nsAtom, "title"):
-						f.Title = z.makeContent(e, &t)
-						stack.Pop()
+						z.feed.Title = z.makeContent(e, &t)
+						z.stack.Pop()
 					case e.Match(nsAtom, "updated"):
-						f.Updated = z.parseTime(z.makeText(e, &t))
-						stack.Pop()
-					} // stack
+						z.feed.Updated = z.parseTime(z.makeText(e, &t))
+						z.stack.Pop()
+					} // z.stack
 
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "generator"):
-						f.Generator = z.makeText(e, &t)
-						stack.Pop()
+						z.feed.Generator = z.makeText(e, &t)
+						z.stack.Pop()
 					case e.Match(nsRSS, "guid"):
-						f.ID = z.makeText(e, &t)
-						stack.Pop()
+						z.feed.ID = z.makeText(e, &t)
+						z.stack.Pop()
 					case e.Match(nsRSS, "pubdate"):
-						if f.Updated.IsZero() {
-							f.Updated = z.parseTime(z.makeText(e, &t))
+						if z.feed.Updated.IsZero() {
+							z.feed.Updated = z.parseTime(z.makeText(e, &t))
 						}
-						stack.Pop()
+						z.stack.Pop()
 					case e.Match(nsRSS, "title"):
-						f.Title = z.makeText(e, &t)
-						stack.Pop()
+						z.feed.Title = z.makeText(e, &t)
+						z.stack.Pop()
 					case e.Match(nsRSS, "item"):
-						entry = &Entry{}
-						entry.Links = make(map[string]string)
+						z.entry = &Entry{}
+						z.entry.Links = make(map[string]string)
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
-						value := z.makeURL(stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
-						f.Links[key] = value
-					} // stack
+						value := z.makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
+						z.feed.Links[key] = value
+					} // z.stack
 
 				} // flavor
 
-			case entry != nil && stack.IsStackEntry(1):
-				switch f.Flavor {
+			case z.entry != nil && z.stack.IsStackEntry(1):
+				switch z.feed.Flavor {
 
 				case flavorAtom:
 					switch {
 					case e.Match(nsAtom, "author"):
 						if value := z.makePerson(e, &t); value != "" {
-							entry.Authors = append(entry.Authors, value)
+							z.entry.Authors = append(z.entry.Authors, value)
 						}
-						stack.Pop()
+						z.stack.Pop()
 					case e.Match(nsAtom, "category"):
 						if value := z.makeCategory(e); value != "" {
-							entry.Categories = append(entry.Categories, value)
+							z.entry.Categories = append(z.entry.Categories, value)
 						}
 					case e.Match(nsAtom, "content"):
-						entry.Content = z.makeContent(e, &t)
-						stack.Pop()
+						z.entry.Content = z.makeContent(e, &t)
+						z.stack.Pop()
 					case e.Match(nsAtom, "contributor"):
 						if value := z.makePerson(e, &t); value != "" {
-							entry.Contributors = append(entry.Contributors, value)
+							z.entry.Contributors = append(z.entry.Contributors, value)
 						}
-						stack.Pop()
+						z.stack.Pop()
 					case e.Match(nsAtom, "id"):
-						entry.ID = z.makeText(e, &t)
-						stack.Pop()
+						z.entry.ID = z.makeText(e, &t)
+						z.stack.Pop()
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
-						value := z.makeURL(stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
-						entry.Links[key] = value
+						value := z.makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
+						z.entry.Links[key] = value
 					case e.Match(nsAtom, "published"):
-						entry.Created = z.parseTime(z.makeText(e, &t))
-						stack.Pop()
+						z.entry.Created = z.parseTime(z.makeText(e, &t))
+						z.stack.Pop()
 					case e.Match(nsAtom, "summary"):
-						entry.Summary = z.makeContent(e, &t)
-						stack.Pop()
+						z.entry.Summary = z.makeContent(e, &t)
+						z.stack.Pop()
 					case e.Match(nsAtom, "title"):
-						entry.Title = z.makeContent(e, &t)
-						stack.Pop()
+						z.entry.Title = z.makeContent(e, &t)
+						z.stack.Pop()
 					case e.Match(nsAtom, "updated"):
 						if text := z.makeText(e, &t); text != "" {
-							entry.Updated = z.parseTime(text)
-							if entry.Updated.After(f.Updated) {
-								f.Updated = entry.Updated
+							z.entry.Updated = z.parseTime(text)
+							if z.entry.Updated.After(z.feed.Updated) {
+								z.feed.Updated = z.entry.Updated
 							}
 						}
-						stack.Pop()
-					} // stack
+						z.stack.Pop()
+					} // z.stack
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "guid"):
-						entry.ID = z.makeText(e, &t)
-						stack.Pop()
+						z.entry.ID = z.makeText(e, &t)
+						z.stack.Pop()
 					case e.Match(nsRSS, "pubdate"):
 						if text := z.makeText(e, &t); text != "" {
-							if entry.Updated.IsZero() {
-								entry.Updated = z.parseTime(text)
-								if entry.Updated.After(f.Updated) {
-									f.Updated = entry.Updated
+							if z.entry.Updated.IsZero() {
+								z.entry.Updated = z.parseTime(text)
+								if z.entry.Updated.After(z.feed.Updated) {
+									z.feed.Updated = z.entry.Updated
 								}
 							}
 						}
-						stack.Pop()
-					} // stack
+						z.stack.Pop()
+					} // z.stack
 
 				} // flavor
 
 			} // level
 
 		case xml.EndElement:
-			e, err := stack.PeekIf(t)
+			e, err := z.stack.PeekIf(t)
 			if err != nil {
 				return nil, err
 			}
-			logger.Printf("End   %t %s :: %s\n", stack.IsStackFeed(), e.name.Local, stack.String())
+			logger.Printf("End   %t %s :: %s\n", z.stack.IsStackFeed(), e.name.Local, z.stack.String())
 
 			switch {
 
-			case f != nil && entry == nil && stack.IsStackFeed():
-				switch f.Flavor {
+			case z.feed != nil && z.entry == nil && z.stack.IsStackFeed():
+				switch z.feed.Flavor {
 				case flavorAtom:
 					switch {
 					case e.Match(nsAtom, "feed"):
@@ -276,38 +274,38 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 					switch {
 					case e.Match(nsRSS, "channel"):
 						// #DOING:20 more possibilities for IDs
-						if f.ID == "" {
-							f.ID = f.Links["self"]
+						if z.feed.ID == "" {
+							z.feed.ID = z.feed.Links["self"]
 						}
 						// finished: clean up rss feed here
-						f.Flavor = flavorRSS + stack.Attr(nsRSS, "version")
+						z.feed.Flavor = flavorRSS + z.stack.Attr(nsRSS, "version")
 					}
 				}
 
-			case entry != nil && stack.IsStackEntry():
-				switch f.Flavor {
+			case z.entry != nil && z.stack.IsStackEntry():
+				switch z.feed.Flavor {
 				case flavorAtom:
 					switch {
 					case e.Match(nsAtom, "entry"):
-						f.Entries = append(f.Entries, entry)
-						entry = nil
+						z.feed.Entries = append(z.feed.Entries, z.entry)
+						z.entry = nil
 					}
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "item"):
-						f.Entries = append(f.Entries, entry)
-						entry = nil
+						z.feed.Entries = append(z.feed.Entries, z.entry)
+						z.entry = nil
 					}
 				}
 
 			}
-			stack.Pop() // at the very end of EndElement
+			z.stack.Pop() // at the very end of EndElement
 
 		} // switch token
 
 	} // loop
 
-	return f, nil
+	return z.feed, nil
 
 }
 
