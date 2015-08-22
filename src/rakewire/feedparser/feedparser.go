@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// #DOING:10 implement stepping parser
+// #DOING:10 implement stepping decoder
 
 // Feed feed
 type Feed struct {
@@ -45,10 +45,10 @@ type Entry struct {
 
 // Parser can parse feeds
 type Parser struct {
-	stack  *elements
-	entry  *Entry
-	feed   *Feed
-	parser *xml.Decoder
+	decoder *xml.Decoder
+	entry   *Entry
+	feed    *Feed
+	stack   *elements
 }
 
 // Status hold the status of a parse iteration
@@ -71,18 +71,18 @@ const (
 )
 
 var (
-	logger = logging.Null("feedparser")
+	logger = logging.Null("feeddecoder")
 )
 
 // Parse feed
 func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 
 	// #TODO:0 attach used charset to feed object
-	// #TODO:0 if parser exits in error, the response body won't be read fully which will render a http connection un-reusable
+	// #TODO:0 if decoder exits in error, the response body won't be read fully which will render a http connection un-reusable
 
-	parser := xml.NewDecoder(reader)
-	parser.CharsetReader = charset.NewReader
-	parser.Strict = false
+	z.decoder = xml.NewDecoder(reader)
+	z.decoder.CharsetReader = charset.NewReader
+	z.decoder.Strict = false
 
 	var f *Feed
 	var entry *Entry
@@ -90,7 +90,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 
 	for {
 
-		token, err := parser.Token()
+		token, err := z.decoder.Token()
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -125,7 +125,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 				case flavorAtom:
 					switch {
 					case e.Match(nsAtom, "author"):
-						if value := z.makePerson(e, &t, parser); value != "" {
+						if value := z.makePerson(e, &t); value != "" {
 							f.Authors = append(f.Authors, value)
 						}
 						stack.Pop()
@@ -133,49 +133,49 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 						entry = &Entry{}
 						entry.Links = make(map[string]string)
 					case e.Match(nsAtom, "generator"):
-						f.Generator = z.makeGenerator(e, &t, parser)
+						f.Generator = z.makeGenerator(e, &t)
 						stack.Pop()
 					case e.Match(nsAtom, "icon"):
-						if text := z.makeText(e, &t, parser); text != "" {
+						if text := z.makeText(e, &t); text != "" {
 							f.Icon = z.makeURL(stack.Attr(nsXML, "base"), text)
 						}
 						stack.Pop()
 					case e.Match(nsAtom, "id"):
-						f.ID = z.makeText(e, &t, parser)
+						f.ID = z.makeText(e, &t)
 						stack.Pop()
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
 						value := z.makeURL(stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 						f.Links[key] = value
 					case e.Match(nsAtom, "rights"):
-						f.Rights = z.makeContent(e, &t, parser)
+						f.Rights = z.makeContent(e, &t)
 						stack.Pop()
 					case e.Match(nsAtom, "subtitle"):
-						f.Subtitle = z.makeContent(e, &t, parser)
+						f.Subtitle = z.makeContent(e, &t)
 						stack.Pop()
 					case e.Match(nsAtom, "title"):
-						f.Title = z.makeContent(e, &t, parser)
+						f.Title = z.makeContent(e, &t)
 						stack.Pop()
 					case e.Match(nsAtom, "updated"):
-						f.Updated = z.parseTime(z.makeText(e, &t, parser))
+						f.Updated = z.parseTime(z.makeText(e, &t))
 						stack.Pop()
 					} // stack
 
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "generator"):
-						f.Generator = z.makeText(e, &t, parser)
+						f.Generator = z.makeText(e, &t)
 						stack.Pop()
 					case e.Match(nsRSS, "guid"):
-						f.ID = z.makeText(e, &t, parser)
+						f.ID = z.makeText(e, &t)
 						stack.Pop()
 					case e.Match(nsRSS, "pubdate"):
 						if f.Updated.IsZero() {
-							f.Updated = z.parseTime(z.makeText(e, &t, parser))
+							f.Updated = z.parseTime(z.makeText(e, &t))
 						}
 						stack.Pop()
 					case e.Match(nsRSS, "title"):
-						f.Title = z.makeText(e, &t, parser)
+						f.Title = z.makeText(e, &t)
 						stack.Pop()
 					case e.Match(nsRSS, "item"):
 						entry = &Entry{}
@@ -194,7 +194,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 				case flavorAtom:
 					switch {
 					case e.Match(nsAtom, "author"):
-						if value := z.makePerson(e, &t, parser); value != "" {
+						if value := z.makePerson(e, &t); value != "" {
 							entry.Authors = append(entry.Authors, value)
 						}
 						stack.Pop()
@@ -203,31 +203,31 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 							entry.Categories = append(entry.Categories, value)
 						}
 					case e.Match(nsAtom, "content"):
-						entry.Content = z.makeContent(e, &t, parser)
+						entry.Content = z.makeContent(e, &t)
 						stack.Pop()
 					case e.Match(nsAtom, "contributor"):
-						if value := z.makePerson(e, &t, parser); value != "" {
+						if value := z.makePerson(e, &t); value != "" {
 							entry.Contributors = append(entry.Contributors, value)
 						}
 						stack.Pop()
 					case e.Match(nsAtom, "id"):
-						entry.ID = z.makeText(e, &t, parser)
+						entry.ID = z.makeText(e, &t)
 						stack.Pop()
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
 						value := z.makeURL(stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 						entry.Links[key] = value
 					case e.Match(nsAtom, "published"):
-						entry.Created = z.parseTime(z.makeText(e, &t, parser))
+						entry.Created = z.parseTime(z.makeText(e, &t))
 						stack.Pop()
 					case e.Match(nsAtom, "summary"):
-						entry.Summary = z.makeContent(e, &t, parser)
+						entry.Summary = z.makeContent(e, &t)
 						stack.Pop()
 					case e.Match(nsAtom, "title"):
-						entry.Title = z.makeContent(e, &t, parser)
+						entry.Title = z.makeContent(e, &t)
 						stack.Pop()
 					case e.Match(nsAtom, "updated"):
-						if text := z.makeText(e, &t, parser); text != "" {
+						if text := z.makeText(e, &t); text != "" {
 							entry.Updated = z.parseTime(text)
 							if entry.Updated.After(f.Updated) {
 								f.Updated = entry.Updated
@@ -238,10 +238,10 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "guid"):
-						entry.ID = z.makeText(e, &t, parser)
+						entry.ID = z.makeText(e, &t)
 						stack.Pop()
 					case e.Match(nsRSS, "pubdate"):
-						if text := z.makeText(e, &t, parser); text != "" {
+						if text := z.makeText(e, &t); text != "" {
 							if entry.Updated.IsZero() {
 								entry.Updated = z.parseTime(text)
 								if entry.Updated.After(f.Updated) {
@@ -320,27 +320,27 @@ func (z *Parser) makeCategory(e *element) string {
 	return term
 }
 
-func (z *Parser) makeContent(e *element, start *xml.StartElement, decoder *xml.Decoder) string {
+func (z *Parser) makeContent(e *element, start *xml.StartElement) string {
 	x := &content{}
-	decoder.DecodeElement(x, start)
+	z.decoder.DecodeElement(x, start)
 	return x.ToString()
 }
 
-func (z *Parser) makeGenerator(e *element, start *xml.StartElement, decoder *xml.Decoder) string {
+func (z *Parser) makeGenerator(e *element, start *xml.StartElement) string {
 	result := &generator{}
-	decoder.DecodeElement(result, start)
+	z.decoder.DecodeElement(result, start)
 	return result.ToString()
 }
 
-func (z *Parser) makePerson(e *element, start *xml.StartElement, decoder *xml.Decoder) string {
+func (z *Parser) makePerson(e *element, start *xml.StartElement) string {
 	result := &person{}
-	decoder.DecodeElement(result, start)
+	z.decoder.DecodeElement(result, start)
 	return result.ToString()
 }
 
-func (z *Parser) makeText(e *element, start *xml.StartElement, decoder *xml.Decoder) string {
+func (z *Parser) makeText(e *element, start *xml.StartElement) string {
 	x := &text{}
-	decoder.DecodeElement(x, start)
+	z.decoder.DecodeElement(x, start)
 	return x.ToString()
 }
 
@@ -357,7 +357,7 @@ func (z *Parser) makeURL(base string, urlstr string) string {
 	return urlstr
 }
 
-// taken from https://github.com/jteeuwen/go-pkg-rss/ timeparser.go
+// taken from https://github.com/jteeuwen/go-pkg-rss/ timedecoder.go
 func (z *Parser) parseTime(formatted string) (t time.Time) {
 	var layouts = [...]string{
 		"Mon, _2 Jan 2006 15:04:05 MST",
