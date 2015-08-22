@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-// #DOING:10 implement stepping decoder
+// #DOING:0 implement stepping decoder
 
 // Feed feed
 type Feed struct {
@@ -79,6 +79,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 
 	// #TODO:0 attach used charset to feed object
 	// #TODO:0 if decoder exits in error, the response body won't be read fully which will render a http connection un-reusable
+	// #DOING:10 break Parse up into smaller functions
 
 	z.decoder = xml.NewDecoder(reader)
 	z.decoder.CharsetReader = charset.NewReader
@@ -123,7 +124,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 				case flavorAtom:
 					switch {
 					case e.Match(nsAtom, "author"):
-						if value := z.makePerson(e, &t); value != "" {
+						if value := z.makePerson(&t); value != "" {
 							z.feed.Authors = append(z.feed.Authors, value)
 						}
 						z.stack.Pop()
@@ -131,49 +132,49 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 						z.entry = &Entry{}
 						z.entry.Links = make(map[string]string)
 					case e.Match(nsAtom, "generator"):
-						z.feed.Generator = z.makeGenerator(e, &t)
+						z.feed.Generator = z.makeGenerator(&t)
 						z.stack.Pop()
 					case e.Match(nsAtom, "icon"):
-						if text := z.makeText(e, &t); text != "" {
+						if text := z.makeText(&t); text != "" {
 							z.feed.Icon = z.makeURL(z.stack.Attr(nsXML, "base"), text)
 						}
 						z.stack.Pop()
 					case e.Match(nsAtom, "id"):
-						z.feed.ID = z.makeText(e, &t)
+						z.feed.ID = z.makeText(&t)
 						z.stack.Pop()
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
 						value := z.makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 						z.feed.Links[key] = value
 					case e.Match(nsAtom, "rights"):
-						z.feed.Rights = z.makeContent(e, &t)
+						z.feed.Rights = z.makeContent(&t)
 						z.stack.Pop()
 					case e.Match(nsAtom, "subtitle"):
-						z.feed.Subtitle = z.makeContent(e, &t)
+						z.feed.Subtitle = z.makeContent(&t)
 						z.stack.Pop()
 					case e.Match(nsAtom, "title"):
-						z.feed.Title = z.makeContent(e, &t)
+						z.feed.Title = z.makeContent(&t)
 						z.stack.Pop()
 					case e.Match(nsAtom, "updated"):
-						z.feed.Updated = z.parseTime(z.makeText(e, &t))
+						z.feed.Updated = z.parseTime(z.makeText(&t))
 						z.stack.Pop()
 					} // z.stack
 
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "generator"):
-						z.feed.Generator = z.makeText(e, &t)
+						z.feed.Generator = z.makeText(&t)
 						z.stack.Pop()
 					case e.Match(nsRSS, "guid"):
-						z.feed.ID = z.makeText(e, &t)
+						z.feed.ID = z.makeText(&t)
 						z.stack.Pop()
 					case e.Match(nsRSS, "pubdate"):
 						if z.feed.Updated.IsZero() {
-							z.feed.Updated = z.parseTime(z.makeText(e, &t))
+							z.feed.Updated = z.parseTime(z.makeText(&t))
 						}
 						z.stack.Pop()
 					case e.Match(nsRSS, "title"):
-						z.feed.Title = z.makeText(e, &t)
+						z.feed.Title = z.makeText(&t)
 						z.stack.Pop()
 					case e.Match(nsRSS, "item"):
 						z.entry = &Entry{}
@@ -192,40 +193,40 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 				case flavorAtom:
 					switch {
 					case e.Match(nsAtom, "author"):
-						if value := z.makePerson(e, &t); value != "" {
+						if value := z.makePerson(&t); value != "" {
 							z.entry.Authors = append(z.entry.Authors, value)
 						}
 						z.stack.Pop()
 					case e.Match(nsAtom, "category"):
-						if value := z.makeCategory(e); value != "" {
+						if value := z.makeCategory(&t); value != "" {
 							z.entry.Categories = append(z.entry.Categories, value)
 						}
 					case e.Match(nsAtom, "content"):
-						z.entry.Content = z.makeContent(e, &t)
+						z.entry.Content = z.makeContent(&t)
 						z.stack.Pop()
 					case e.Match(nsAtom, "contributor"):
-						if value := z.makePerson(e, &t); value != "" {
+						if value := z.makePerson(&t); value != "" {
 							z.entry.Contributors = append(z.entry.Contributors, value)
 						}
 						z.stack.Pop()
 					case e.Match(nsAtom, "id"):
-						z.entry.ID = z.makeText(e, &t)
+						z.entry.ID = z.makeText(&t)
 						z.stack.Pop()
 					case e.Match(nsAtom, "link"):
 						key := e.Attr(nsNone, "rel")
 						value := z.makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 						z.entry.Links[key] = value
 					case e.Match(nsAtom, "published"):
-						z.entry.Created = z.parseTime(z.makeText(e, &t))
+						z.entry.Created = z.parseTime(z.makeText(&t))
 						z.stack.Pop()
 					case e.Match(nsAtom, "summary"):
-						z.entry.Summary = z.makeContent(e, &t)
+						z.entry.Summary = z.makeContent(&t)
 						z.stack.Pop()
 					case e.Match(nsAtom, "title"):
-						z.entry.Title = z.makeContent(e, &t)
+						z.entry.Title = z.makeContent(&t)
 						z.stack.Pop()
 					case e.Match(nsAtom, "updated"):
-						if text := z.makeText(e, &t); text != "" {
+						if text := z.makeText(&t); text != "" {
 							z.entry.Updated = z.parseTime(text)
 							if z.entry.Updated.After(z.feed.Updated) {
 								z.feed.Updated = z.entry.Updated
@@ -236,10 +237,10 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "guid"):
-						z.entry.ID = z.makeText(e, &t)
+						z.entry.ID = z.makeText(&t)
 						z.stack.Pop()
 					case e.Match(nsRSS, "pubdate"):
-						if text := z.makeText(e, &t); text != "" {
+						if text := z.makeText(&t); text != "" {
 							if z.entry.Updated.IsZero() {
 								z.entry.Updated = z.parseTime(text)
 								if z.entry.Updated.After(z.feed.Updated) {
@@ -273,7 +274,7 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 				case flavorRSS:
 					switch {
 					case e.Match(nsRSS, "channel"):
-						// #DOING:20 more possibilities for IDs
+						// #DOING:50 more possibilities for IDs
 						if z.feed.ID == "" {
 							z.feed.ID = z.feed.Links["self"]
 						}
@@ -309,7 +310,9 @@ func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 
 }
 
-func (z *Parser) makeCategory(e *element) string {
+// #DOING:20 eliminate passing of start element to these functions
+func (z *Parser) makeCategory(start *xml.StartElement) string {
+	e := &element{name: start.Name, attr: start.Attr}
 	term := strings.TrimSpace(e.Attr(nsNone, "term"))
 	label := strings.TrimSpace(e.Attr(nsNone, "label"))
 	if label != "" {
@@ -318,25 +321,25 @@ func (z *Parser) makeCategory(e *element) string {
 	return term
 }
 
-func (z *Parser) makeContent(e *element, start *xml.StartElement) string {
+func (z *Parser) makeContent(start *xml.StartElement) string {
 	x := &content{}
 	z.decoder.DecodeElement(x, start)
 	return x.ToString()
 }
 
-func (z *Parser) makeGenerator(e *element, start *xml.StartElement) string {
+func (z *Parser) makeGenerator(start *xml.StartElement) string {
 	result := &generator{}
 	z.decoder.DecodeElement(result, start)
 	return result.ToString()
 }
 
-func (z *Parser) makePerson(e *element, start *xml.StartElement) string {
+func (z *Parser) makePerson(start *xml.StartElement) string {
 	result := &person{}
 	z.decoder.DecodeElement(result, start)
 	return result.ToString()
 }
 
-func (z *Parser) makeText(e *element, start *xml.StartElement) string {
+func (z *Parser) makeText(start *xml.StartElement) string {
 	x := &text{}
 	z.decoder.DecodeElement(x, start)
 	return x.ToString()

@@ -81,6 +81,7 @@ func (z *elements) IsStackFeed(args ...int) bool {
 
 }
 
+// #DOING:30 isstack - just compare static stacks
 // IsStackEntry if you are at the entry level
 func (z *elements) IsStackEntry(args ...int) bool {
 

@@ -18,7 +18,7 @@ type Feeds struct {
 	Index  map[string]*Feed
 }
 
-// #DOING:0 switch times back to values
+// #DOING:40 switch times back to values
 
 // Feed feed descriptior
 type Feed struct {
