@@ -160,7 +160,8 @@ func TestRSSMalformed1(t *testing.T) {
 }
 
 func testFeed(t *testing.T, reader io.Reader) *Feed {
-	feed, err := Parse(reader)
+	p := &Parser{}
+	feed, err := p.Parse(reader)
 	require.Nil(t, err)
 	require.NotNil(t, feed)
 	return feed
