@@ -135,7 +135,14 @@ func TestRSS(t *testing.T) {
 	assert.Equal(t, "https://en.blog.wordpress.com/feed/", f.ID)
 	assert.True(t, time.Date(2015, time.July, 2, 17, 0, 4, 0, time.UTC).Equal(f.Updated))
 	assert.Equal(t, "WordPress.com News", f.Title)
+	assert.Equal(t, "The latest news on WordPress.com and the WordPress community.", f.Subtitle)
 	assert.Equal(t, "http://wordpress.com/", f.Generator)
+
+	require.Equal(t, 4, len(f.Links))
+	assert.Equal(t, "https://en.blog.wordpress.com", f.Links["alternate"])
+	assert.Equal(t, "https://en.blog.wordpress.com/feed/", f.Links["self"])
+	assert.Equal(t, "https://en.blog.wordpress.com/osd.xml", f.Links["search"])
+	assert.Equal(t, "https://en.blog.wordpress.com/?pushpress=hub", f.Links["hub"])
 
 }
 

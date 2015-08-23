@@ -230,14 +230,14 @@ func (z *Parser) doStartFeedAtom(e *element, start *xml.StartElement) {
 func (z *Parser) doStartFeedRSS(e *element, start *xml.StartElement) {
 	// #DOING:0 finish RSS parser
 	switch {
+	case e.Match(nsRSS, "description"):
+		z.feed.Subtitle = z.makeText(e, start)
 	case e.Match(nsRSS, "generator"):
 		z.feed.Generator = z.makeText(e, start)
 	case e.Match(nsRSS, "guid"):
 		z.feed.ID = z.makeText(e, start)
 	case e.Match(nsRSS, "pubdate"):
-		if z.feed.Updated.IsZero() {
-			z.feed.Updated = z.parseTime(z.makeText(e, start))
-		}
+		z.feed.Updated = z.parseTime(z.makeText(e, start))
 	case e.Match(nsRSS, "title"):
 		z.feed.Title = z.makeText(e, start)
 	case e.Match(nsRSS, "item"):
@@ -247,6 +247,8 @@ func (z *Parser) doStartFeedRSS(e *element, start *xml.StartElement) {
 		key := e.Attr(nsNone, "rel")
 		value := z.makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 		z.feed.Links[key] = value
+	case e.Match(nsRSS, "link"):
+		z.feed.Links["alternate"] = z.makeText(e, start)
 	} // z.stack
 }
 
