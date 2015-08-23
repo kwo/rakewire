@@ -108,7 +108,10 @@ Loop:
 
 			switch {
 			case z.feed == nil:
-				z.doStartFeedNil(e, &t)
+				if err := z.doStartFeedNil(e, &t); err != nil {
+					exitError = err
+					break Loop
+				}
 
 			case z.feed != nil && z.entry == nil && z.stack.IsStackFeed(z.feed.Flavor, 1):
 				switch z.feed.Flavor {
@@ -176,7 +179,7 @@ Loop:
 
 }
 
-func (z *Parser) doStartFeedNil(e *element, start *xml.StartElement) {
+func (z *Parser) doStartFeedNil(e *element, start *xml.StartElement) error {
 	if e.Match(nsAtom, "feed") || e.Match(nsRSS, "rss") {
 		z.feed = &Feed{}
 		z.feed.Links = make(map[string]string)
@@ -186,7 +189,10 @@ func (z *Parser) doStartFeedNil(e *element, start *xml.StartElement) {
 		case e.Match(nsRSS, "rss"):
 			z.feed.Flavor = flavorRSS
 		} // switch
-	} // if
+	} else {
+		return fmt.Errorf("Cannot parse %s:%s", e.name.Space, e.name.Local)
+	}
+	return nil
 }
 
 func (z *Parser) doStartFeedAtom(e *element, start *xml.StartElement) {
