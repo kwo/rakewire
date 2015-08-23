@@ -42,10 +42,10 @@ func usesGzip(header string) bool {
 	return strings.Contains(header, "gzip")
 }
 
-func isFeedUpdated(newTime time.Time, lastTime *time.Time) bool {
+func isFeedUpdated(newTime time.Time, lastTime time.Time) bool {
 
-	if !newTime.IsZero() && lastTime != nil {
-		return newTime.After(*lastTime)
+	if !newTime.IsZero() && !lastTime.IsZero() {
+		return newTime.After(lastTime)
 	} else if !newTime.IsZero() {
 		return true
 	}

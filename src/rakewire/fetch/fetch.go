@@ -71,7 +71,7 @@ func (z *Service) Start() {
 // Stop service
 func (z *Service) Stop() {
 	logger.Println("service stopping...")
-	if z != nil { // #TODO:110 remove hack because on app close object is apparently already garbage collected
+	if z != nil { // #TODO:80 remove hack because on app close object is apparently already garbage collected
 		z.latch.Wait()
 		z.input = nil
 		z.output = nil
@@ -157,7 +157,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 				feed.Attempt.ContentLength = body.Size
 				feed.Attempt.IsUpdated = isFeedUpdated(feed.Feed.Updated, feed.LastUpdated)
 				feed.Attempt.UpdateCheck = m.UpdateCheckFeed
-				feed.UpdateFetchTime(&feed.Feed.Updated)
+				feed.UpdateFetchTime(feed.Feed.Updated)
 			}
 
 		case rsp.StatusCode == http.StatusNotModified:
@@ -166,7 +166,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.UpdateCheck = m.UpdateCheck304
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
-			feed.UpdateFetchTime(nil)
+			feed.UpdateFetchTime(time.Time{})
 
 		case rsp.StatusCode >= 400:
 			feed.Attempt.Result = m.FetchResultServerError

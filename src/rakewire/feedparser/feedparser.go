@@ -171,8 +171,8 @@ Loop:
 	}
 	reader.Close()
 
-	if z.feed == nil {
-		return nil, fmt.Errorf("Cannot parse feed")
+	if exitError == nil && z.feed == nil {
+		exitError = fmt.Errorf("Cannot parse feed")
 	}
 
 	return z.feed, exitError

@@ -15,7 +15,7 @@ func formatFeedLogKey(id string, dt *time.Time) string {
 }
 
 func fetchKey(f *m.Feed) string {
-	return fmt.Sprintf("%s!%s", formatTimeKey(*f.NextFetch), f.ID)
+	return fmt.Sprintf("%s!%s", formatTimeKey(f.NextFetch), f.ID)
 }
 
 func formatTimeKey(t time.Time) string {

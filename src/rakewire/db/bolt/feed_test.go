@@ -139,7 +139,7 @@ func TestNextFetchKeyCompare(t *testing.T) {
 	assert.NotNil(t, f.NextFetch)
 
 	key := fetchKey(f)
-	max := formatMaxTime(*f.NextFetch)
+	max := formatMaxTime(f.NextFetch)
 	assert.Equal(t, 1, bytes.Compare([]byte(max), []byte(key)))
 
 }

@@ -18,8 +18,6 @@ type Feeds struct {
 	Index  map[string]*Feed
 }
 
-// #DOING:20 switch times back to values
-
 // Feed feed descriptior
 type Feed struct {
 	// Current fetch attempt for feed
@@ -37,7 +35,7 @@ type Feed struct {
 	// UUID
 	ID string `json:"id"`
 	// Time the feed was last updated
-	LastUpdated *time.Time `json:"lastUpdated,omitempty"`
+	LastUpdated time.Time `json:"lastUpdated,omitempty"`
 	// Last fetch
 	Last *FeedLog `json:"last"`
 	// Last successful fetch with status code 200
@@ -45,7 +43,7 @@ type Feed struct {
 	// Past fetch attempts for feed
 	Log []*FeedLog `json:"-"`
 	// Time of next scheduled fetch
-	NextFetch *time.Time `json:"nextFetch"`
+	NextFetch time.Time `json:"nextFetch"`
 	// Feed title
 	Title string `json:"title"`
 	// URL updated if feed is permenently redirected
@@ -63,7 +61,7 @@ func NewFeed(url string) *Feed {
 		URL:       url,
 		Last:      &FeedLog{},
 		Last200:   &FeedLog{},
-		NextFetch: &nextFetch,
+		NextFetch: nextFetch,
 	}
 	return &x
 }
@@ -79,19 +77,18 @@ func (z *Feed) Encode() ([]byte, error) {
 }
 
 // UpdateFetchTime increases the fetch interval
-func (z *Feed) UpdateFetchTime(lastUpdated *time.Time) {
+func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
-	if lastUpdated != nil {
+	if !lastUpdated.IsZero() {
 		z.LastUpdated = lastUpdated
 	}
 
 	now := time.Now().UTC().Truncate(time.Second)
-	lu := z.LastUpdated
-	if lu == nil {
-		lu = &now
+	if z.LastUpdated.IsZero() {
+		z.LastUpdated = now
 	}
 
-	d := now.Sub(*lu) // how long since the last update?
+	d := now.Sub(z.LastUpdated) // how long since the last update?
 
 	switch {
 	case d < 30*time.Minute:
@@ -108,7 +105,7 @@ func (z *Feed) UpdateFetchTime(lastUpdated *time.Time) {
 func (z *Feed) AdjustFetchTime(interval time.Duration) {
 	now := time.Now().UTC().Truncate(time.Second)
 	nextFetch := now.Add(interval)
-	z.NextFetch = &nextFetch
+	z.NextFetch = nextFetch
 }
 
 // ========== Feeds ==========
