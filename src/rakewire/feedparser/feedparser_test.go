@@ -55,7 +55,7 @@ func TestelementsRSS(t *testing.T) {
 
 func TestAtom(t *testing.T) {
 	//t.SkipNow()
-	f, entries := testFile(t, "../../../test/feed/atomtest1.xml")
+	f := testFile(t, "../../../test/feed/atomtest1.xml")
 
 	assert.Equal(t, "atom", f.Flavor)
 	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml", f.ID)
@@ -79,8 +79,8 @@ func TestAtom(t *testing.T) {
 
 	// entries
 
-	require.Equal(t, 2, len(entries))
-	e := entries[0]
+	require.Equal(t, 2, len(f.Entries))
+	e := f.Entries[0]
 
 	assert.Equal(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml:3", e.ID)
 	assert.Equal(t, "First entry title", e.Title)
@@ -107,7 +107,7 @@ func TestAtom(t *testing.T) {
 	assert.Equal(t, "Watch out for nasty tricks", e.Summary)
 	assert.Equal(t, "Watch out for<span style=\"background-image: url(javascript:window.location=’http://example.org/’)\">nasty tricks</span>", e.Content)
 
-	e = entries[1]
+	e = f.Entries[1]
 	assert.Equal(t, "tag:feedparser.org,2005-11-11:/docs/examples/atom11.xml:1", e.ID)
 	assert.Equal(t, "Second entry title", e.Title)
 	assert.True(t, time.Date(2005, time.November, 11, 11, 56, 34, 0, time.UTC).Equal(f.Updated))
@@ -129,7 +129,7 @@ func TestAtom(t *testing.T) {
 
 func TestRSS(t *testing.T) {
 	//t.SkipNow()
-	f, _ := testFile(t, "../../../test/feed/wordpress.xml")
+	f := testFile(t, "../../../test/feed/wordpress.xml")
 
 	assert.Equal(t, "rss2.0", f.Flavor)
 	assert.Equal(t, "https://en.blog.wordpress.com/feed/", f.ID)
@@ -159,24 +159,15 @@ func TestRSSMalformed1(t *testing.T) {
 	testURL(t, "http://feeds.feedburner.com/auth0")
 }
 
-func testFeed(t *testing.T, reader io.Reader) (*Feed, []*Entry) {
+func testFeed(t *testing.T, reader io.ReadCloser) *Feed {
 	p := NewParser()
-	go p.Parse(reader)
-	var feed *Feed
-	var entries []*Entry
-	for status := range p.Output {
-		require.Nil(t, status.Error)
-		if status.Feed != nil {
-			feed = status.Feed
-		} else if status.Entry != nil {
-			entries = append(entries, status.Entry)
-		}
-	}
+	feed, err := p.Parse(reader)
+	require.Nil(t, err)
 	require.NotNil(t, feed)
-	return feed, entries
+	return feed
 }
 
-func testFile(t *testing.T, filename string) (*Feed, []*Entry) {
+func testFile(t *testing.T, filename string) *Feed {
 	f, err := os.Open(filename)
 	require.Nil(t, err)
 	require.NotNil(t, f)
@@ -184,7 +175,7 @@ func testFile(t *testing.T, filename string) (*Feed, []*Entry) {
 	return testFeed(t, f)
 }
 
-func testURL(t *testing.T, url string) (*Feed, []*Entry) {
+func testURL(t *testing.T, url string) *Feed {
 	rsp, err := http.Get(url)
 	require.Nil(t, err)
 	require.NotNil(t, rsp)

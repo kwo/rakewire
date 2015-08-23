@@ -2,6 +2,7 @@ package feedparser
 
 import (
 	"encoding/xml"
+	"fmt"
 	"github.com/rogpeppe/go-charset/charset"
 	// required by go-charset
 	_ "github.com/rogpeppe/go-charset/data"
@@ -16,6 +17,7 @@ import (
 // Feed feed
 type Feed struct {
 	Authors   []string
+	Entries   []*Entry
 	Flavor    string
 	Generator string
 	Icon      string
@@ -43,19 +45,10 @@ type Entry struct {
 
 // Parser can parse feeds
 type Parser struct {
-	Output  <-chan *Status
-	output  chan *Status
 	decoder *xml.Decoder
 	entry   *Entry
 	feed    *Feed
 	stack   *elements
-}
-
-// Status hold the status of a parse iteration
-type Status struct {
-	Feed  *Feed
-	Entry *Entry
-	Error error
 }
 
 const (
@@ -71,19 +64,17 @@ const (
 )
 
 var (
-	logger = logging.Null("feeddecoder")
+	logger = logging.Null("feedparser")
 )
 
 // NewParser returns a new parser
 func NewParser() *Parser {
 	p := &Parser{}
-	p.output = make(chan *Status)
-	p.Output = p.output
 	return p
 }
 
 // Parse feed
-func (z *Parser) Parse(reader io.Reader) {
+func (z *Parser) Parse(reader io.ReadCloser) (*Feed, error) {
 
 	// #TODO:20 attach used charset to feed object
 
@@ -92,7 +83,10 @@ func (z *Parser) Parse(reader io.Reader) {
 	z.decoder.Strict = false
 
 	z.stack = &elements{}
-	var exitError *error
+	z.feed = nil
+	z.entry = nil
+
+	var exitError error
 
 Loop:
 	for {
@@ -102,7 +96,7 @@ Loop:
 			if err == io.EOF {
 				break
 			}
-			exitError = &err
+			exitError = err
 			break
 		}
 
@@ -137,7 +131,7 @@ Loop:
 		case xml.EndElement:
 			e, err := z.stack.PeekIf(t)
 			if err != nil {
-				exitError = &err
+				exitError = err
 				break Loop
 			}
 			logger.Printf("End   %s :: %s\n", e.name.Local, z.stack.String())
@@ -167,12 +161,18 @@ Loop:
 
 	} // loop
 
+	logger.Printf("exitError: %s", exitError)
+
 	if exitError != nil {
-		z.output <- &Status{Error: *exitError}
 		ioutil.ReadAll(reader)
 	}
+	reader.Close()
 
-	close(z.output)
+	if z.feed == nil {
+		return nil, fmt.Errorf("Cannot parse feed")
+	}
+
+	return z.feed, exitError
 
 }
 
@@ -323,7 +323,6 @@ func (z *Parser) doEndFeedAtom(e *element) {
 	switch {
 	case e.Match(nsAtom, "feed"):
 		// finished: clean up atom feed here
-		z.output <- &Status{Feed: z.feed}
 	}
 }
 
@@ -336,14 +335,13 @@ func (z *Parser) doEndFeedRSS(e *element) {
 		}
 		// finished: clean up rss feed here
 		z.feed.Flavor = flavorRSS + z.stack.Attr(nsRSS, "version")
-		z.output <- &Status{Feed: z.feed}
 	}
 }
 
 func (z *Parser) doEndEntryAtom(e *element) {
 	switch {
 	case e.Match(nsAtom, "entry"):
-		z.output <- &Status{Entry: z.entry}
+		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
 	}
 }
@@ -351,7 +349,7 @@ func (z *Parser) doEndEntryAtom(e *element) {
 func (z *Parser) doEndEntryRSS(e *element) {
 	switch {
 	case e.Match(nsRSS, "item"):
-		z.output <- &Status{Entry: z.entry}
+		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
 	}
 }
