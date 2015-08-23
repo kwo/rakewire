@@ -2,19 +2,19 @@
 
 ## v0.0.2
 
- - #TODO:0 move test out of src
- - #TODO:30 better logging
- - #TODO:40 add cache-control headers to API
- - #TODO:20 save feed items/entries
+ - #TODO:40 move test out of src
+ - #TODO:70 better logging
+ - #TODO:80 add cache-control headers to API
+ - #TODO:60 save feed items/entries
  - #DOING:30 add feed header to feed log (perhaps divide into http and feed subsections)
- - #TODO:50 need save database channel
+ - #TODO:90 need save database channel
  - #DONE:50 v0.0.2 Conditional GETs
  - #DONE:60 v0.0.2 feed log history - which feeds have errors, were redirected?
  - #DONE:70 v0.0.2 follow redirects, update url automatically
  - #DONE:80 v0.0.2 improve polling algorithm (automatic mode with backoff algorithm)
- - #TODO:60 bugfix feeds next on empty db or db with feeds but before first poll
- - #TODO:10 handle feeds without dates on entries - save items, check for new ones, assign new current time, update feed.LastUpdated
- - #TODO:0 bring back checksum function for comparing entries during save
+ - #TODO:100 bugfix feeds next on empty db or db with feeds but before first poll
+ - #TODO:50 handle feeds without dates on entries - save items, check for new ones, assign new current time, update feed.LastUpdated
+ - #TODO:30 bring back checksum function for comparing entries during save
 
 ## BACKLOG
 

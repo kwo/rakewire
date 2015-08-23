@@ -6,6 +6,7 @@ import (
 	// required by go-charset
 	_ "github.com/rogpeppe/go-charset/data"
 	"io"
+	"io/ioutil"
 	"net/url"
 	"rakewire/logging"
 	"strings"
@@ -54,6 +55,7 @@ type Parser struct {
 type Status struct {
 	Feed  *Feed
 	Entry *Entry
+	Error error
 }
 
 const (
@@ -83,15 +85,16 @@ func NewParser() *Parser {
 // Parse feed
 func (z *Parser) Parse(reader io.Reader) {
 
-	// #TODO:0 attach used charset to feed object
-	// #TODO:0 if decoder exits in error, the response body won't be read fully which will render a http connection un-reusable
+	// #TODO:20 attach used charset to feed object
 
 	z.decoder = xml.NewDecoder(reader)
 	z.decoder.CharsetReader = charset.NewReader
 	z.decoder.Strict = false
 
 	z.stack = &elements{}
+	var exitError *error
 
+Loop:
 	for {
 
 		token, err := z.decoder.Token()
@@ -99,7 +102,8 @@ func (z *Parser) Parse(reader io.Reader) {
 			if err == io.EOF {
 				break
 			}
-			// #DOING:0 return nil, err
+			exitError = &err
+			break
 		}
 
 		switch t := token.(type) {
@@ -133,7 +137,8 @@ func (z *Parser) Parse(reader io.Reader) {
 		case xml.EndElement:
 			e, err := z.stack.PeekIf(t)
 			if err != nil {
-				// #DOING:0 return nil, err
+				exitError = &err
+				break Loop
 			}
 			logger.Printf("End   %s :: %s\n", e.name.Local, z.stack.String())
 
@@ -161,6 +166,11 @@ func (z *Parser) Parse(reader io.Reader) {
 		} // switch token
 
 	} // loop
+
+	if exitError != nil {
+		z.output <- &Status{Error: *exitError}
+		ioutil.ReadAll(reader)
+	}
 
 	close(z.output)
 

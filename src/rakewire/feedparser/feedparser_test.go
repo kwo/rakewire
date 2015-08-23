@@ -165,13 +165,13 @@ func testFeed(t *testing.T, reader io.Reader) (*Feed, []*Entry) {
 	var feed *Feed
 	var entries []*Entry
 	for status := range p.Output {
+		require.Nil(t, status.Error)
 		if status.Feed != nil {
 			feed = status.Feed
 		} else if status.Entry != nil {
 			entries = append(entries, status.Entry)
 		}
 	}
-	// #DOING:0 require.Nil(t, err)
 	require.NotNil(t, feed)
 	return feed, entries
 }

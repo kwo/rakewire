@@ -18,7 +18,7 @@ func (z *content) ToString() string {
 	// #TODO:0 use base to fix relative HREFs in XML
 	result := strings.TrimSpace(z.XHtml.Text)
 	if result == "" {
-		// #TODO:0 convert to HTML if type is Text
+		// #TODO:10 convert to HTML if type is Text
 		result = strings.TrimSpace(z.Text)
 	}
 	return result
