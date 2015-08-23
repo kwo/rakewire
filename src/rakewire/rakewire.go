@@ -26,7 +26,6 @@ var (
 
 func main() {
 
-	runtime.GOMAXPROCS(runtime.NumCPU())
 	logger.Printf("Rakewire %s starting with %d CPUs", model.VERSION, runtime.NumCPU())
 
 	cfg := config.GetConfig()
