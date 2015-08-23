@@ -76,7 +76,7 @@ func NewParser() *Parser {
 // Parse feed
 func (z *Parser) Parse(reader io.ReadCloser) (*Feed, error) {
 
-	// #TODO:20 attach used charset to feed object
+	// #DOING:50 attach used charset to feed object
 
 	z.decoder = xml.NewDecoder(reader)
 	z.decoder.CharsetReader = charset.NewReader
@@ -236,6 +236,7 @@ func (z *Parser) doStartFeedAtom(e *element, start *xml.StartElement) {
 }
 
 func (z *Parser) doStartFeedRSS(e *element, start *xml.StartElement) {
+	// #DOING:0 finish RSS parser
 	switch {
 	case e.Match(nsRSS, "generator"):
 		z.feed.Generator = z.makeText(e, start)

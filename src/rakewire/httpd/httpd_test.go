@@ -136,7 +136,7 @@ func TestStaticRedirects(t *testing.T) {
 	assert.Equal(t, "/", rsp.Header.Get("Location"))
 	assert.Equal(t, 0, int(rsp.ContentLength))
 
-	// #TODO:120 static redirect cannot be to /./
+	// #TODO:90 static redirect cannot be to /./
 	// req = newRequest(mGet, "/index.html")
 	// rsp, err = c.Do(req)
 	// assert.NotNil(t, err)
