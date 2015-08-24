@@ -65,6 +65,11 @@ const (
 	flavorRSS  = "rss"
 )
 
+const (
+	linkSelf      = "self"
+	linkAlternate = "alternate"
+)
+
 var (
 	logger = logging.Null("feedparser")
 )
@@ -253,7 +258,7 @@ func (z *Parser) doStartFeedRSS(e *element, start *xml.StartElement) {
 		z.entry = &Entry{}
 		z.entry.Links = make(map[string]string)
 	case e.Match(nsRSS, "link"):
-		z.feed.Links["alternate"] = z.makeURL(z.stack.Attr(nsXML, "base"), z.makeText(e, start))
+		z.feed.Links[linkAlternate] = z.makeURL(z.stack.Attr(nsXML, "base"), z.makeText(e, start))
 	}
 }
 
@@ -323,7 +328,7 @@ func (z *Parser) doStartEntryRSS(e *element, start *xml.StartElement) {
 	case e.Match(nsRSS, "guid"):
 		z.entry.ID = z.makeText(e, start)
 	case e.Match(nsRSS, "link"):
-		z.entry.Links["alternate"] = z.makeURL(z.stack.Attr(nsXML, "base"), z.makeText(e, start))
+		z.entry.Links[linkAlternate] = z.makeURL(z.stack.Attr(nsXML, "base"), z.makeText(e, start))
 	case e.Match(nsRSS, "pubdate"):
 		if text := z.makeText(e, start); text != "" {
 			z.entry.Updated = z.parseTime(text)
@@ -344,10 +349,10 @@ func (z *Parser) doEndFeedRSS(e *element) {
 	switch {
 	case e.Match(nsRSS, "channel"):
 		if z.feed.ID == "" {
-			z.feed.ID = z.feed.Links["self"]
+			z.feed.ID = z.feed.Links[linkSelf]
 		}
 		if z.feed.ID == "" {
-			z.feed.ID = z.feed.Links["alternate"]
+			z.feed.ID = z.feed.Links[linkAlternate]
 		}
 		// finished: clean up rss feed here
 		z.feed.Flavor = flavorRSS + z.stack.Attr(nsRSS, "version")
