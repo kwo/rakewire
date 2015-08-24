@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func TestelementsAtom(t *testing.T) {
+func TestElementsAtom(t *testing.T) {
 
 	elements := &elements{}
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsAtom, Local: "feed"}})
@@ -30,7 +30,7 @@ func TestelementsAtom(t *testing.T) {
 
 }
 
-func TestelementsRSS(t *testing.T) {
+func TestElementsRSS(t *testing.T) {
 
 	elements := &elements{}
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsRSS, Local: "rss"}})
