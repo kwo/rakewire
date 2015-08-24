@@ -20,9 +20,8 @@ type Service struct {
 
 // Configuration configuration
 type Configuration struct {
-	Address   string
-	Port      int
-	WebAppDir string
+	Address string
+	Port    int
 }
 
 const (

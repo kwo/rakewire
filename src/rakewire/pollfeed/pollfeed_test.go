@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	databaseFile = "../test/pollfeed.db"
+	databaseFile = "../../../test/pollfeed.db"
 )
 
 func TestTickerKillSignal(t *testing.T) {

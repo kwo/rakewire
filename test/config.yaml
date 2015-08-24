@@ -1,6 +1,5 @@
 httpd:
   port: 4444
-  webappdir: "/Users/karl/projects/go/src/rakewire.com/test/public_html"
 
 database:
   location: "/Users/karl/.rakewire/data.db"

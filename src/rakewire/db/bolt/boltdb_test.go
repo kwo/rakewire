@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	feedFile     = "../../test/feedlist.txt"
-	databaseFile = "../../test/bolt.db"
+	feedFile     = "../../../../test/feedlist.txt"
+	databaseFile = "../../../../test/bolt.db"
 )
 
 func TestInterface(t *testing.T) {

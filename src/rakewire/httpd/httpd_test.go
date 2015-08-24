@@ -45,8 +45,7 @@ func TestMain(m *testing.M) {
 		Database: testDatabase,
 	}
 	go ws.Start(&Configuration{
-		Port:      4444,
-		WebAppDir: "../../../test/public_html",
+		Port: 4444,
 	}, chErrors)
 
 	select {
