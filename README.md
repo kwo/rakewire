@@ -3,8 +3,6 @@
 ## v0.0.3
 
  - #DOING:0 html ui
- - #DOING:10 embed html ui with https://github.com/GeertJohan/go.rice
- - #TODO:0 move test out of src
  - #TODO:10 better logging
  - #TODO:20 need save database mutex
  - #FIXME:0 bugfix feeds next on empty db or db with feeds but before first poll
