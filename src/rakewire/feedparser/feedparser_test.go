@@ -176,7 +176,7 @@ func TestAtomMalformed2(t *testing.T) {
 
 func TestHtml1(t *testing.T) {
 	t.SkipNow()
-	testURL(t, "https://clusterhq.com/?cat=1&feed=rss2")
+	testURL(t, "http://intertwingly.net/blog/")
 }
 
 func TestRSSMalformed1(t *testing.T) {
@@ -184,9 +184,9 @@ func TestRSSMalformed1(t *testing.T) {
 	testURL(t, "http://feeds.feedburner.com/auth0")
 }
 
-func testFeed(t *testing.T, reader io.ReadCloser) *Feed {
+func testFeed(t *testing.T, reader io.ReadCloser, contentType string) *Feed {
 	p := NewParser()
-	feed, err := p.Parse(reader)
+	feed, err := p.Parse(reader, contentType)
 	require.Nil(t, err)
 	require.NotNil(t, feed)
 	return feed
@@ -197,13 +197,14 @@ func testFile(t *testing.T, filename string) *Feed {
 	require.Nil(t, err)
 	require.NotNil(t, f)
 	defer f.Close()
-	return testFeed(t, f)
+	return testFeed(t, f, "")
 }
 
 func testURL(t *testing.T, url string) *Feed {
 	rsp, err := http.Get(url)
+	contentType := rsp.Header.Get("Content-Type")
 	require.Nil(t, err)
 	require.NotNil(t, rsp)
 	defer rsp.Body.Close()
-	return testFeed(t, rsp.Body)
+	return testFeed(t, rsp.Body, contentType)
 }

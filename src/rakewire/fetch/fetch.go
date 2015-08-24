@@ -15,6 +15,7 @@ const (
 	httpUserAgent    = "Rakewire " + m.VERSION
 	hAcceptEncoding  = "Accept-Encoding"
 	hContentEncoding = "Content-Encoding"
+	hContentType     = "Content-Type"
 	hEtag            = "ETag"
 	hIfModifiedSince = "If-Modified-Since"
 	hIfNoneMatch     = "If-None-Match"
@@ -133,6 +134,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 		case rsp.StatusCode == http.StatusOK:
 			feed.Attempt.Result = m.FetchResultOK
+			feed.Attempt.ContentType = rsp.Header.Get(hContentType)
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 			feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
@@ -140,7 +142,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			reader, _ := readBody(rsp)
 			body := &ReadCounter{ReadCloser: reader}
 			p := feedparser.NewParser()
-			xmlFeed, err := p.Parse(body)
+			xmlFeed, err := p.Parse(body, feed.Attempt.ContentType)
 
 			if err != nil || xmlFeed == nil {
 				// cannot parse feed
@@ -181,7 +183,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
 
-	logger.Printf("fetch %2d: %2s  %3d  %5t  %2s  %s  %s\n", id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage)
+	logger.Printf("fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s\n", id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.ContentType)
 	z.output <- feed
 
 }

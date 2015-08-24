@@ -81,9 +81,9 @@ func NewParser() *Parser {
 }
 
 // Parse feed
-func (z *Parser) Parse(reader io.ReadCloser) (*Feed, error) {
+func (z *Parser) Parse(reader io.ReadCloser, contentType string) (*Feed, error) {
 
-	// #DOING:0 attach used charset to feed object
+	// #TODO:120 attach used charset to feed object
 
 	z.decoder = xml.NewDecoder(reader)
 	z.decoder.CharsetReader = charset.NewReader

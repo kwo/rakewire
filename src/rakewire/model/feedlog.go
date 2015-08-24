@@ -24,6 +24,7 @@ const (
 // FeedLog represents an attempted HTTP request to a feed
 type FeedLog struct {
 	ContentLength int           `json:"contentLength,omitempty"` // Length of the HTTP Response
+	ContentType   string        `json:"contentType,omitempty"`   // Content-Type header
 	Duration      time.Duration `json:"duration"`                // duration of http request plus feed processing
 	ETag          string        `json:"etag,omitempty"`          // ETag from HTTP Request
 	IsUpdated     bool          `json:"updated"`                 // flag indicating updated content, see UpdateCheck
