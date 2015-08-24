@@ -52,10 +52,12 @@ type Parser struct {
 }
 
 const (
-	nsAtom = "http://www.w3.org/2005/Atom"
-	nsNone = ""
-	nsRSS  = ""
-	nsXML  = "http://www.w3.org/XML/1998/namespace"
+	nsAtom       = "http://www.w3.org/2005/Atom"
+	nsContent    = "http://purl.org/rss/1.0/modules/content/"
+	nsDublinCore = "http://purl.org/dc/elements/1.1/"
+	nsNone       = ""
+	nsRSS        = ""
+	nsXML        = "http://www.w3.org/XML/1998/namespace"
 )
 
 const (
@@ -76,7 +78,7 @@ func NewParser() *Parser {
 // Parse feed
 func (z *Parser) Parse(reader io.ReadCloser) (*Feed, error) {
 
-	// #DOING:50 attach used charset to feed object
+	// #DOING:0 attach used charset to feed object
 
 	z.decoder = xml.NewDecoder(reader)
 	z.decoder.CharsetReader = charset.NewReader
@@ -222,34 +224,37 @@ func (z *Parser) doStartFeedAtom(e *element, start *xml.StartElement) {
 		z.feed.Subtitle = z.makeContent(e, start)
 	case e.Match(nsAtom, "title"):
 		z.feed.Title = z.makeContent(e, start)
-	case e.Match(nsAtom, "updated"):
-		z.feed.Updated = z.parseTime(z.makeText(e, start))
+		// case e.Match(nsAtom, "updated"):
+		// 	z.feed.Updated = z.parseTime(z.makeText(e, start))
 	} // z.stack
 }
 
 func (z *Parser) doStartFeedRSS(e *element, start *xml.StartElement) {
-	// #DOING:0 finish RSS parser
 	switch {
+	case e.Match(nsAtom, "link"):
+		key := e.Attr(nsNone, "rel")
+		value := z.makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
+		z.feed.Links[key] = value
+	case e.Match(nsRSS, "copyright"):
+		z.feed.Rights = z.makeText(e, start)
 	case e.Match(nsRSS, "description"):
 		z.feed.Subtitle = z.makeText(e, start)
 	case e.Match(nsRSS, "generator"):
 		z.feed.Generator = z.makeText(e, start)
-	case e.Match(nsRSS, "guid"):
-		z.feed.ID = z.makeText(e, start)
-	case e.Match(nsRSS, "pubdate"):
-		z.feed.Updated = z.parseTime(z.makeText(e, start))
+	case e.Match(nsRSS, "image"):
+		if image := z.makeRSSImage(e, start); image != nil {
+			z.feed.Icon = image.URL
+		}
+	// case e.Match(nsRSS, "pubdate"):
+	// 	z.feed.Updated = z.parseTime(z.makeText(e, start))
 	case e.Match(nsRSS, "title"):
 		z.feed.Title = z.makeText(e, start)
 	case e.Match(nsRSS, "item"):
 		z.entry = &Entry{}
 		z.entry.Links = make(map[string]string)
-	case e.Match(nsAtom, "link"):
-		key := e.Attr(nsNone, "rel")
-		value := z.makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
-		z.feed.Links[key] = value
 	case e.Match(nsRSS, "link"):
-		z.feed.Links["alternate"] = z.makeText(e, start)
-	} // z.stack
+		z.feed.Links["alternate"] = z.makeURL(z.stack.Attr(nsXML, "base"), z.makeText(e, start))
+	}
 }
 
 func (z *Parser) doStartEntryAtom(e *element, start *xml.StartElement) {
@@ -283,27 +288,49 @@ func (z *Parser) doStartEntryAtom(e *element, start *xml.StartElement) {
 	case e.Match(nsAtom, "updated"):
 		if text := z.makeText(e, start); text != "" {
 			z.entry.Updated = z.parseTime(text)
-			if z.entry.Updated.After(z.feed.Updated) {
-				z.feed.Updated = z.entry.Updated
-			}
 		}
-	} // z.stack
+	}
 }
 
 func (z *Parser) doStartEntryRSS(e *element, start *xml.StartElement) {
 	switch {
-	case e.Match(nsRSS, "guid"):
-		z.entry.ID = z.makeText(e, start)
-	case e.Match(nsRSS, "pubdate"):
-		if text := z.makeText(e, start); text != "" {
-			if z.entry.Updated.IsZero() {
+	case e.Match(nsAtom, "link"):
+		key := e.Attr(nsNone, "rel")
+		value := z.makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
+		z.entry.Links[key] = value
+	case e.Match(nsContent, "encoded"):
+		z.entry.Content = z.makeText(e, start)
+	case e.Match(nsDublinCore, "creator"):
+		if creator := z.makeText(e, start); creator != "" {
+			z.entry.Authors = append(z.entry.Authors, creator)
+		}
+	case e.Match(nsDublinCore, "date"):
+		if z.entry.Updated.IsZero() {
+			if text := z.makeText(e, start); text != "" {
 				z.entry.Updated = z.parseTime(text)
-				if z.entry.Updated.After(z.feed.Updated) {
-					z.feed.Updated = z.entry.Updated
-				}
 			}
 		}
-	} // z.stack
+	case e.Match(nsRSS, "author"):
+		if value := z.makeText(e, start); value != "" {
+			z.entry.Authors = append(z.entry.Authors, value)
+		}
+	case e.Match(nsRSS, "category"):
+		if value := z.makeText(e, start); value != "" {
+			z.entry.Categories = append(z.entry.Categories, value)
+		}
+	case e.Match(nsRSS, "description"):
+		z.entry.Summary = z.makeText(e, start)
+	case e.Match(nsRSS, "guid"):
+		z.entry.ID = z.makeText(e, start)
+	case e.Match(nsRSS, "link"):
+		z.entry.Links["alternate"] = z.makeURL(z.stack.Attr(nsXML, "base"), z.makeText(e, start))
+	case e.Match(nsRSS, "pubdate"):
+		if text := z.makeText(e, start); text != "" {
+			z.entry.Updated = z.parseTime(text)
+		}
+	case e.Match(nsRSS, "title"):
+		z.entry.Title = z.makeText(e, start)
+	}
 }
 
 func (z *Parser) doEndFeedAtom(e *element) {
@@ -316,9 +343,11 @@ func (z *Parser) doEndFeedAtom(e *element) {
 func (z *Parser) doEndFeedRSS(e *element) {
 	switch {
 	case e.Match(nsRSS, "channel"):
-		// #DOING:10 more possibilities for IDs
 		if z.feed.ID == "" {
 			z.feed.ID = z.feed.Links["self"]
+		}
+		if z.feed.ID == "" {
+			z.feed.ID = z.feed.Links["alternate"]
 		}
 		// finished: clean up rss feed here
 		z.feed.Flavor = flavorRSS + z.stack.Attr(nsRSS, "version")
@@ -328,6 +357,12 @@ func (z *Parser) doEndFeedRSS(e *element) {
 func (z *Parser) doEndEntryAtom(e *element) {
 	switch {
 	case e.Match(nsAtom, "entry"):
+		if z.entry.Created.IsZero() {
+			z.entry.Created = z.entry.Updated
+		}
+		if z.entry.Updated.After(z.feed.Updated) {
+			z.feed.Updated = z.entry.Updated
+		}
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
 	}
@@ -336,6 +371,16 @@ func (z *Parser) doEndEntryAtom(e *element) {
 func (z *Parser) doEndEntryRSS(e *element) {
 	switch {
 	case e.Match(nsRSS, "item"):
+		if z.entry.Summary != "" && z.entry.Content == "" {
+			z.entry.Content = z.entry.Summary
+			z.entry.Summary = ""
+		}
+		if z.entry.Created.IsZero() {
+			z.entry.Created = z.entry.Updated
+		}
+		if z.entry.Updated.After(z.feed.Updated) {
+			z.feed.Updated = z.entry.Updated
+		}
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
 	}
@@ -369,6 +414,16 @@ func (z *Parser) makePerson(e *element, start *xml.StartElement) string {
 	z.decoder.DecodeElement(result, start)
 	z.stack.Pop()
 	return result.ToString()
+}
+
+func (z *Parser) makeRSSImage(e *element, start *xml.StartElement) *rssImage {
+	x := &rssImage{}
+	err := z.decoder.DecodeElement(x, start)
+	z.stack.Pop()
+	if err == nil {
+		return x
+	}
+	return nil
 }
 
 func (z *Parser) makeText(e *element, start *xml.StartElement) string {

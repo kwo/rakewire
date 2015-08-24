@@ -111,7 +111,7 @@ func TestAtom(t *testing.T) {
 	assert.Equal(t, "tag:feedparser.org,2005-11-11:/docs/examples/atom11.xml:1", e.ID)
 	assert.Equal(t, "Second entry title", e.Title)
 	assert.True(t, time.Date(2005, time.November, 11, 11, 56, 34, 0, time.UTC).Equal(f.Updated))
-	assert.True(t, e.Created.IsZero())
+	assert.True(t, e.Created.Equal(e.Updated))
 
 	require.Equal(t, 0, len(e.Links))
 
@@ -128,7 +128,7 @@ func TestAtom(t *testing.T) {
 }
 
 func TestRSS(t *testing.T) {
-	//t.SkipNow()
+
 	f := testFile(t, "../../../test/feed/wordpress.xml")
 
 	assert.Equal(t, "rss2.0", f.Flavor)
@@ -137,12 +137,30 @@ func TestRSS(t *testing.T) {
 	assert.Equal(t, "WordPress.com News", f.Title)
 	assert.Equal(t, "The latest news on WordPress.com and the WordPress community.", f.Subtitle)
 	assert.Equal(t, "http://wordpress.com/", f.Generator)
+	assert.Equal(t, "https://secure.gravatar.com/blavatar/e6392390e3bcfadff3671c5a5653d95b?s=96&d=https%3A%2F%2Fs2.wp.com%2Fi%2Fbuttonw-com.png", f.Icon)
 
 	require.Equal(t, 4, len(f.Links))
 	assert.Equal(t, "https://en.blog.wordpress.com", f.Links["alternate"])
 	assert.Equal(t, "https://en.blog.wordpress.com/feed/", f.Links["self"])
 	assert.Equal(t, "https://en.blog.wordpress.com/osd.xml", f.Links["search"])
 	assert.Equal(t, "https://en.blog.wordpress.com/?pushpress=hub", f.Links["hub"])
+
+	require.Equal(t, 10, len(f.Entries))
+	e := f.Entries[0]
+
+	assert.Equal(t, "http://en.blog.wordpress.com/?p=31505", e.ID)
+	assert.Equal(t, "New Theme: Libre", e.Title)
+	assert.True(t, time.Date(2015, time.July, 2, 17, 0, 4, 0, time.UTC).Equal(e.Updated))
+	assert.True(t, e.Created.Equal(e.Updated))
+
+	require.Equal(t, 1, len(e.Categories))
+	require.Equal(t, "Themes", e.Categories[0])
+
+	require.Equal(t, 1, len(e.Links))
+	require.Equal(t, "https://en.blog.wordpress.com/2015/07/02/libre/", e.Links["alternate"])
+
+	assert.Equal(t, "<em>Libre</em> brings a stylish, classic look to your personal blog or longform writing site.<img alt=\"\" border=\"0\" src=\"https://pixel.wp.com/b.gif?host=en.blog.wordpress.com&#038;blog=3584907&#038;post=31505&#038;subd=en.blog&#038;ref=&#038;feed=1\" width=\"1\" height=\"1\" />", e.Summary)
+	assert.Equal(t, "<p>Happy Theme Thursday, all! Today I&#8217;m happy to introduce <em>Libre</em>, a new free theme designed by <a href=\"http://carolinethemes.com/\">yours truly</a>.</p>\n<h3><a href=\"http://wordpress.com/themes/libre/\">Libre</a></h3>\n<p><a href=\"http://wordpress.com/themes/libre/\"><img class=\"aligncenter size-full wp-image-31516\" src=\"https://en-blog.files.wordpress.com/2015/06/librelg.png?w=635&#038;h=476\" alt=\"Libre\" width=\"635\" height=\"476\" /></a></p>\n<p><em>Libre</em> brings a stylish, classic look to your personal blog or longform writing site. The main navigation bar stays fixed to the top while your visitors read, keeping your most important content at hand. At the bottom of your site, three footer widget areas give your secondary content a comfortable home.</p>\n<p>Customize <em>Libre</em> with a logo or a header image to make it your own, or use one of two custom templates &#8212; including a full-width template\u00a0with no sidebar &#8212; to change up the look of your pages. <em>Libre</em> sports a clean, responsive design that works seamlessly on screens of any size.</p>\n<p><img class=\"aligncenter size-full wp-image-31517\" src=\"https://en-blog.files.wordpress.com/2015/06/libreresponsive.jpg?w=635&#038;h=252\" alt=\"Responsive design\" width=\"635\" height=\"252\" /></p>\n<p>Read more about <em>Libre</em> on the <a href=\"https://wordpress.com/themes/libre/\">Theme Showcase</a>, or activate it on your site from <em>Appearance → Themes</em>!</p><br />Filed under: <a href='https://en.blog.wordpress.com/category/themes/'>Themes</a>  <a rel=\"nofollow\" href=\"http://feeds.wordpress.com/1.0/gocomments/en.blog.wordpress.com/31505/\"><img alt=\"\" border=\"0\" src=\"http://feeds.wordpress.com/1.0/comments/en.blog.wordpress.com/31505/\" /></a> <img alt=\"\" border=\"0\" src=\"https://pixel.wp.com/b.gif?host=en.blog.wordpress.com&#038;blog=3584907&#038;post=31505&#038;subd=en.blog&#038;ref=&#038;feed=1\" width=\"1\" height=\"1\" />", e.Content)
 
 }
 

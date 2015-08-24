@@ -15,10 +15,10 @@ type xmlData struct {
 }
 
 func (z *content) ToString() string {
-	// #DOING:30 use base to fix relative HREFs in XML
+	// #TODO:100 use base to fix relative HREFs in XML
 	result := strings.TrimSpace(z.XHtml.Text)
 	if result == "" {
-		// #DOING:40 convert to HTML if type is Text
+		// #TODO:110 convert to HTML if type is Text
 		result = strings.TrimSpace(z.Text)
 	}
 	return result
@@ -44,6 +44,10 @@ func (z *generator) ToString() string {
 		}
 	}
 	return result
+}
+
+type rssImage struct {
+	URL string `xml:"url"`
 }
 
 type person struct {
