@@ -164,6 +164,27 @@ func TestRSS(t *testing.T) {
 
 }
 
+// func TestContentType(t *testing.T) {
+// 	t.SkipNow()
+// 	f, err := os.Open("../../../test/feed/intertwingly-net-blog.html")
+// 	require.Nil(t, err)
+// 	require.NotNil(t, f)
+// 	defer f.Close()
+//
+// 	body, err := ioutil.ReadAll(f)
+// 	require.Nil(t, err)
+// 	require.NotNil(t, body)
+//
+// 	ct := http.DetectContentType(body)
+// 	_, name, certain := charset.DetermineEncoding(body, "application/xml")
+// 	//t.Logf("encoding: %s", encoding)
+//
+// 	assert.Equal(t, ct, "text/html; charset=utf-8")
+// 	assert.Equal(t, "utf-8", name)
+// 	assert.True(t, certain)
+//
+// }
+
 func TestAtomMalformed1(t *testing.T) {
 	t.SkipNow()
 	testURL(t, "http://www.quirksmode.org/blog/atom.xml")
