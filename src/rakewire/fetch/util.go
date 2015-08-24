@@ -29,11 +29,11 @@ func URLListToFeeds(r io.Reader) *m.Feeds {
 
 }
 
-func parseDateHeader(value string) *time.Time {
-	var result *time.Time
+func parseDateHeader(value string) time.Time {
+	var result time.Time
 	m, err := http.ParseTime(value)
 	if err == nil && !m.IsZero() {
-		result = &m
+		result = m
 	}
 	return result
 }

@@ -6,7 +6,6 @@
  - #TODO:40 better logging
  - #TODO:50 add cache-control headers to API
  - #TODO:0 save feed items/entries
- - #DOING:0 add feed header to feed log (perhaps divide into http and feed subsections)
  - #TODO:60 need save database mutex
  - #DONE:50 v0.0.2 Conditional GETs
  - #DONE:60 v0.0.2 feed log history - which feeds have errors, were redirected?

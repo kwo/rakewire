@@ -56,7 +56,7 @@ func (z *Database) addFeedLog(tx *bolt.Tx, id string, entry *m.FeedLog) error {
 	b := tx.Bucket([]byte(bucketFeedLog))
 
 	// save record
-	if err = b.Put([]byte(formatFeedLogKey(id, entry.StartTime)), data); err != nil {
+	if err = b.Put([]byte(formatFeedLogKey(id, &entry.StartTime)), data); err != nil {
 		return err
 	}
 

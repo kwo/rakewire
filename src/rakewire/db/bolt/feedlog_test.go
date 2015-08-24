@@ -26,7 +26,7 @@ func TestSaveFeedLog(t *testing.T) {
 		for i := 1; i <= 100; i++ {
 			dt := now.Add(time.Hour * time.Duration(-i))
 			entry := &m.FeedLog{}
-			entry.StartTime = &dt
+			entry.StartTime = dt
 			entry.Duration = time.Duration(i)
 			err := database.addFeedLog(tx, feedID, entry)
 			assert.Nil(t, err)

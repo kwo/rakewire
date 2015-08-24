@@ -98,11 +98,11 @@ func (z *Service) newRequest(feed *m.Feed) *http.Request {
 	req.Header.Set(hUserAgent, httpUserAgent)
 	req.Header.Set(hAcceptEncoding, "gzip")
 	if feed.Last200 != nil && feed.Last200.Result == m.FetchResultOK {
-		if feed.Last200.LastModified != nil {
-			req.Header.Set(hIfModifiedSince, feed.Last200.LastModified.UTC().Format(http.TimeFormat))
+		if !feed.Last200.HTTP.LastModified.IsZero() {
+			req.Header.Set(hIfModifiedSince, feed.Last200.HTTP.LastModified.UTC().Format(http.TimeFormat))
 		}
-		if feed.Last200.ETag != "" {
-			req.Header.Set(hIfNoneMatch, feed.Last200.ETag)
+		if feed.Last200.HTTP.ETag != "" {
+			req.Header.Set(hIfNoneMatch, feed.Last200.HTTP.ETag)
 		}
 	}
 	return req
@@ -112,9 +112,10 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	startTime := time.Now().UTC().Truncate(time.Millisecond)
 	now := startTime.Truncate(time.Second)
-	feed.Attempt = &m.FeedLog{}
+	feed.Attempt = m.NewFeedLog()
 
-	feed.Attempt.StartTime = &now
+	feed.Attempt.URL = feed.URL
+	feed.Attempt.StartTime = now
 
 	rsp, err := z.client.Do(z.newRequest(feed))
 	if err != nil && (rsp == nil || rsp.StatusCode != http.StatusMovedPermanently) {
@@ -122,7 +123,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 		feed.Attempt.ResultMessage = err.Error()
 	} else {
 
-		feed.Attempt.StatusCode = rsp.StatusCode
+		feed.Attempt.HTTP.StatusCode = rsp.StatusCode
 
 		switch {
 
@@ -134,40 +135,46 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 		case rsp.StatusCode == http.StatusOK:
 			feed.Attempt.Result = m.FetchResultOK
-			feed.Attempt.ContentType = rsp.Header.Get(hContentType)
-			feed.Attempt.ETag = rsp.Header.Get(hEtag)
-			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
-			feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
+			feed.Attempt.HTTP.ContentType = rsp.Header.Get(hContentType)
+			feed.Attempt.HTTP.ETag = rsp.Header.Get(hEtag)
+			feed.Attempt.HTTP.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
+			feed.Attempt.HTTP.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
 
 			reader, _ := readBody(rsp)
 			body := &ReadCounter{ReadCloser: reader}
 			p := feedparser.NewParser()
-			xmlFeed, err := p.Parse(body, feed.Attempt.ContentType)
+			xmlFeed, err := p.Parse(body, feed.Attempt.HTTP.ContentType)
 
 			if err != nil || xmlFeed == nil {
 				// cannot parse feed
 				feed.Attempt.Result = m.FetchResultFeedError
 				feed.Attempt.ResultMessage = err.Error()
 				feed.AdjustFetchTime(1 * time.Hour) // give us time to work on solution
-			} else if xmlFeed.Updated.IsZero() {
-				feed.Attempt.Result = m.FetchResultFeedTimeError
-				feed.Attempt.IsUpdated = false
-				feed.Attempt.UpdateCheck = m.UpdateCheckFeed
-				feed.AdjustFetchTime(1 * time.Hour) // give us time to work on solution
 			} else {
-				feed.Feed = xmlFeed
-				feed.Attempt.ContentLength = body.Size
-				feed.Attempt.IsUpdated = isFeedUpdated(feed.Feed.Updated, feed.LastUpdated)
-				feed.Attempt.UpdateCheck = m.UpdateCheckFeed
-				feed.UpdateFetchTime(feed.Feed.Updated)
+				feed.Attempt.HTTP.ContentLength = body.Size
+				feed.Attempt.Feed.Flavor = xmlFeed.Flavor
+				feed.Attempt.Feed.Generator = xmlFeed.Generator
+				feed.Attempt.Feed.Title = xmlFeed.Title
+				feed.Attempt.Feed.Updated = xmlFeed.Updated
+				if xmlFeed.Updated.IsZero() {
+					feed.Attempt.Result = m.FetchResultFeedTimeError
+					feed.Attempt.IsUpdated = false
+					feed.Attempt.UpdateCheck = m.UpdateCheckFeed
+					feed.AdjustFetchTime(1 * time.Hour) // give us time to work on solution
+				} else {
+					feed.Feed = xmlFeed
+					feed.Attempt.IsUpdated = isFeedUpdated(feed.Feed.Updated, feed.LastUpdated)
+					feed.Attempt.UpdateCheck = m.UpdateCheckFeed
+					feed.UpdateFetchTime(feed.Feed.Updated)
+				}
 			}
 
 		case rsp.StatusCode == http.StatusNotModified:
 			feed.Attempt.Result = m.FetchResultOK
 			feed.Attempt.IsUpdated = false
 			feed.Attempt.UpdateCheck = m.UpdateCheck304
-			feed.Attempt.ETag = rsp.Header.Get(hEtag)
-			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
+			feed.Attempt.HTTP.ETag = rsp.Header.Get(hEtag)
+			feed.Attempt.HTTP.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 			feed.UpdateFetchTime(time.Time{})
 
 		case rsp.StatusCode >= 400:
@@ -183,7 +190,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
 
-	logger.Printf("fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s\n", id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.ContentType)
+	logger.Printf("fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s\n", id, feed.Attempt.Result, feed.Attempt.HTTP.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.HTTP.ContentType)
 	z.output <- feed
 
 }

@@ -21,20 +21,43 @@ const (
 	UpdateCheckFeed = "LU" // No 304  but feed LastUpdated is the same
 )
 
+// NewFeedLog create new FeedLog
+func NewFeedLog() *FeedLog {
+	result := &FeedLog{}
+	result.HTTP = HTTPInfo{}
+	result.Feed = FeedInfo{}
+	return result
+}
+
 // FeedLog represents an attempted HTTP request to a feed
 type FeedLog struct {
-	ContentLength int           `json:"contentLength,omitempty"` // Length of the HTTP Response
-	ContentType   string        `json:"contentType,omitempty"`   // Content-Type header
 	Duration      time.Duration `json:"duration"`                // duration of http request plus feed processing
-	ETag          string        `json:"etag,omitempty"`          // ETag from HTTP Request
 	IsUpdated     bool          `json:"updated"`                 // flag indicating updated content, see UpdateCheck
-	LastModified  *time.Time    `json:"lastModified,omitempty"`  // Last-Modified time from HTTP Request
 	Result        string        `json:"result"`                  // result code of fetch attempt
 	ResultMessage string        `json:"resultMessage,omitempty"` // optional error message for result
-	StartTime     *time.Time    `json:"startTime"`               // The time the fetch process started
-	StatusCode    int           `json:"statusCode,omitempty"`    // HTTP status code
 	UpdateCheck   string        `json:"updateCheck,omitempty"`   // 304, Checksum or Feed inspection
-	UsesGzip      bool          `json:"gzip,omitempty"`          // if the remote http server serves the feed compressed
+	StartTime     time.Time     `json:"startTime"`               // The time the fetch process started
+	URL           string        `json:"url"`
+	Feed          FeedInfo      `json:"feed"`
+	HTTP          HTTPInfo      `json:"http"`
+}
+
+// HTTPInfo log information about the HTTP request
+type HTTPInfo struct {
+	ContentLength int       `json:"contentLength,omitempty"` // Length of the HTTP Response
+	ContentType   string    `json:"contentType,omitempty"`   // Content-Type header
+	ETag          string    `json:"etag,omitempty"`          // ETag from HTTP Request
+	LastModified  time.Time `json:"lastModified,omitempty"`  // Last-Modified time from HTTP Request
+	StatusCode    int       `json:"statusCode,omitempty"`    // HTTP status code
+	UsesGzip      bool      `json:"gzip,omitempty"`          // if the remote http server serves the feed compressed
+}
+
+// FeedInfo log information about the feed
+type FeedInfo struct {
+	Flavor    string    `json:"flavor"`
+	Generator string    `json:"generator,omitempty"`
+	Title     string    `json:"title"`
+	Updated   time.Time `json:"updated"`
 }
 
 // Decode FeedLog object from bytes
