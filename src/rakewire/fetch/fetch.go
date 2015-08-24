@@ -190,7 +190,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
 
-	logger.Printf("fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s\n", id, feed.Attempt.Result, feed.Attempt.HTTP.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.HTTP.ContentType)
+	logger.Printf("fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s\n", id, feed.Attempt.Result, feed.Attempt.HTTP.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.Feed.Flavor)
 	z.output <- feed
 
 }
