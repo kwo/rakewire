@@ -1,49 +1,49 @@
 # Rakewire
 
-## v0.0.2
+## v0.0.3
 
- - #TODO:30 move test out of src
- - #TODO:40 better logging
- - #TODO:50 add cache-control headers to API
- - #TODO:0 save feed items/entries
- - #TODO:60 need save database mutex
- - #TODO:70 bugfix feeds next on empty db or db with feeds but before first poll
- - #TODO:20 handle feeds without dates on entries - save items, check for new ones, assign new current time, update feed.LastUpdated
- - #TODO:10 bring back checksum function for comparing entries during save
+ - #DOING:0 html ui
+ - #DOING:10 embed html ui with https://github.com/GeertJohan/go.rice
+ - #TODO:0 move test out of src
+ - #TODO:10 better logging
+ - #TODO:20 need save database mutex
+ - #FIXME:0 bugfix feeds next on empty db or db with feeds but before first poll
+ - #FIXME:30 handle feeds without dates on entries - save items, check for new ones, assign new current time, update feed.LastUpdated
 
 ## BACKLOG
 
  - #BACKLOG:0 have fetchers signal when they are idle, FetcherService signal when it is idle
- - #BACKLOG:10 implememt Fever API
- - #BACKLOG:20 add support for Hot Links to Fever API support
- - #BACKLOG:0 html ui
- - #BACKLOG:5 embed html ui with https://github.com/GeertJohan/go.rice
- - #BACKLOG:30 hub subscription support
- - #BACKLOG:40 TLS
- - #BACKLOG:50 http2 server push
- - #BACKLOG:60 Smart feeds based on filters (by keyword, category, author)
- - #BACKLOG:70 subscribe to web pages without a feed
- - #BACKLOG:80 plugin API for plugins for others services (Slack, XMPP, HipChat)
- - #BACKLOG:90 Twitter plugin
- - #BACKLOG:100 republish feeds (mark for publication)
- - #BACKLOG:110 hub publish support
- - #BACKLOG:120 mashup feeds, assign individual posts to new feeds
- - #BACKLOG:130 published feeds send PubSubHubbub ping
- - #BACKLOG:140 annotate entries (edit posts)
- - #BACKLOG:150 ReadLater - suck down web page and add to feed
- - #BACKLOG:160 multi-user support
- - #BACKLOG:170 automatic certificate via Let's Encrypt API
- - #BACKLOG:180 monitor mailing lists (plugin)
- - #BACKLOG:190 Full text search (Bleve)
- - #BACKLOG:200 Feeds based on filters or full-text search
- - #BACKLOG:210 database backup to tar file or something similar
- - #BACKLOG:220 limit listener to x connections
- - #BACKLOG:230 use alternative libC implementation
- - #BACKLOG:240 Mac Taskbar icon
- - #BACKLOG:250 add login for single user
- - #BACKLOG:260 pre gzip webapp
- - #BACKLOG:270 cryptographically signing of entries, feeds with nice UI lock symbol as proof (see [Atom Digital Signatures](https://tools.ietf.org/html/rfc4287#section-5.1))
- - #BACKLOG:280 manually specify feed fetchTime interval for strange feeds: Eilmeldungen, z.B.
+ - #BACKLOG:10 save feed items/entries
+ - #BACKLOG:30 add cache-control headers to API
+ - #BACKLOG:30 add cache-control headers to API
+ - #BACKLOG:40 implememt Fever API
+ - #BACKLOG:50 add support for Hot Links to Fever API support
+ - #BACKLOG:60 hub subscription support
+ - #BACKLOG:70 TLS
+ - #BACKLOG:80 http2 server push
+ - #BACKLOG:90 Smart feeds based on filters (by keyword, category, author)
+ - #BACKLOG:100 subscribe to web pages without a feed
+ - #BACKLOG:110 plugin API for plugins for others services (Slack, XMPP, HipChat)
+ - #BACKLOG:120 Twitter plugin
+ - #BACKLOG:130 republish feeds (mark for publication)
+ - #BACKLOG:140 hub publish support
+ - #BACKLOG:150 mashup feeds, assign individual posts to new feeds
+ - #BACKLOG:160 published feeds send PubSubHubbub ping
+ - #BACKLOG:170 annotate entries (edit posts)
+ - #BACKLOG:180 ReadLater - suck down web page and add to feed
+ - #BACKLOG:190 multi-user support
+ - #BACKLOG:200 automatic certificate via Let's Encrypt API
+ - #BACKLOG:210 monitor mailing lists (plugin)
+ - #BACKLOG:220 Full text search (Bleve)
+ - #BACKLOG:230 Feeds based on filters or full-text search
+ - #BACKLOG:240 database backup to tar file or something similar
+ - #FIXME:60 limit listener to x connections
+ - #FIXME:70 use alternative libC implementation
+ - #BACKLOG:270 Mac Taskbar icon
+ - #BACKLOG:280 add login for single user
+ - #BACKLOG:290 pre gzip webapp
+ - #BACKLOG:300 cryptographically signing of entries, feeds with nice UI lock symbol as proof (see [Atom Digital Signatures](https://tools.ietf.org/html/rfc4287#section-5.1))
+ - #BACKLOG:310 manually specify feed fetchTime interval for strange feeds: Eilmeldungen, z.B.
 
 ## Changelog
 

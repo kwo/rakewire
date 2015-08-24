@@ -15,10 +15,10 @@ type xmlData struct {
 }
 
 func (z *content) ToString() string {
-	// #TODO:100 use base to fix relative HREFs in XML
+	// #FIXME:40 use base to fix relative HREFs in XML
 	result := strings.TrimSpace(z.XHtml.Text)
 	if result == "" {
-		// #TODO:110 convert to HTML if type is Text
+		// #FIXME:50 convert to HTML if type is Text
 		result = strings.TrimSpace(z.Text)
 	}
 	return result
