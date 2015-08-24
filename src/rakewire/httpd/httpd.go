@@ -3,6 +3,7 @@ package httpd
 import (
 	"errors"
 	"fmt"
+	"github.com/GeertJohan/go.rice"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
 	"github.com/phyber/negroni-gzip/gzip"
@@ -36,6 +37,7 @@ const (
 	mimeHTML         = "text/html; charset=utf-8"
 	mimeJSON         = "application/json"
 	mimeText         = "text/plain; charset=utf-8"
+	pathUI           = "../../../ui"
 )
 
 var (
@@ -59,9 +61,15 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 	))
 
 	// static web site
+	box, err := rice.FindBox(pathUI)
+	if err != nil {
+		logger.Printf("Cannot find box: %s\n", err.Error())
+		chErrors <- err
+		return
+	}
 	router.PathPrefix("/").Handler(negroni.New(
 		gzip.Gzip(gzip.BestCompression),
-		negroni.Wrap(http.FileServer(http.Dir(cfg.WebAppDir))),
+		negroni.Wrap(http.FileServer(box.HTTPBox())),
 	))
 
 	n := negroni.New()
