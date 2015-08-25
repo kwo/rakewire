@@ -2,3 +2,6 @@
 /pkg
 /vendor/pkg
 /test/*.db
+/ui/app/lib
+/ui/app/modules
+/ui/node_modules
