@@ -36,7 +36,7 @@ const (
 	mimeHTML         = "text/html; charset=utf-8"
 	mimeJSON         = "application/json"
 	mimeText         = "text/plain; charset=utf-8"
-	pathUI           = "../../../ui"
+	pathUI           = "../../../ui/app"
 )
 
 var (
@@ -66,6 +66,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 		chErrors <- err
 		return
 	}
+	// #DOING:0 block /src folder
 	router.PathPrefix("/").Handler(negroni.New(
 		gzip.Gzip(gzip.BestCompression),
 		negroni.Wrap(http.FileServer(box.HTTPBox())),

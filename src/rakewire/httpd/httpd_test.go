@@ -77,25 +77,25 @@ func TestStaticPaths(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, mimeHTML, rsp.Header.Get(hContentType))
 	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
-	assert.Equal(t, "23", rsp.Header.Get(hContentLength))
+	//assert.Equal(t, "23", rsp.Header.Get(hContentLength))
 
-	req = newRequest(mGet, "/humans.txt")
+	req = newRequest(mGet, "/robots.txt")
 	rsp, err = c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
-	assert.Equal(t, "37", rsp.Header.Get(hContentLength))
+	//assert.Equal(t, "37", rsp.Header.Get(hContentLength))
 
-	req = newRequest(mGet, "/hello/world.txt")
+	req = newRequest(mGet, "/lib/main.js")
 	rsp, err = c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
+	assert.Equal(t, "application/javascript", rsp.Header.Get(hContentType))
 	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
-	assert.Equal(t, "41", rsp.Header.Get(hContentLength))
+	//assert.Equal(t, "41", rsp.Header.Get(hContentLength))
 
 }
 
