@@ -17,7 +17,6 @@
  - #BACKLOG:40 implememt Fever API
  - #BACKLOG:50 add support for Hot Links to Fever API support
  - #BACKLOG:60 hub subscription support
- - #BACKLOG:70 TLS
  - #BACKLOG:80 http2 server push
  - #BACKLOG:90 Smart feeds based on filters (by keyword, category, author)
  - #BACKLOG:100 subscribe to web pages without a feed

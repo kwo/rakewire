@@ -22,6 +22,8 @@ type Service struct {
 type Configuration struct {
 	Address string
 	Port    int
+	TLSCert string
+	TLSKey  string
 }
 
 const (
@@ -83,6 +85,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 		chErrors <- err
 		return
 	}
+	// #DOING:70 TLS wrap listener in tls.NewListener
 	z.listener = l
 	server := http.Server{
 		Handler: n,
