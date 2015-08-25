@@ -1,0 +1,26 @@
+{
+  "name": "jui",
+  "version": "1.0.0",
+  "description": "React app using ES6 and SystemJS",
+  "main": "gulpfile.js",
+  "private": true,
+  "author": "Karl Ostendorf <karl@ostendorf.com> (https://ostendorf.com/)",
+  "license": "Copyright 2015 Karl Ostendorf",
+  "scripts": {},
+  "dependencies": {
+    "babel-runtime": "^5.8.20",
+    "react": "^0.13.3",
+    "react-router": "^0.13.3",
+    "systemjs": "^0.18.14"
+  },
+  "devDependencies": {
+    "del": "^1.0.0",
+    "eslint": "^1.0.0",
+    "eslint-plugin-react": "^3.0.0",
+    "gulp": "^3.0.0",
+    "gulp-babel": "^5.0.0",
+    "gulp-eslint": "^1.0.0",
+    "gulp-ignore": "^1.0.0",
+    "gulp-plumber": "^1.0.0"
+  }
+}

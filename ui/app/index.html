@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Rakewire</title>
+	<link rel="stylesheet" type="text/css" href="site.css">
+</head>
+
+<body>
+
+	<div id="app"/>
+
+	<script src="modules/system.js"></script>
+	<script>
+	System.config({
+		defaultJSExtensions: true,
+		baseUrl: 'lib/',
+		paths: {
+			'*': '*.js',
+			'modules:*': 'modules/*.js'
+		},
+		map: {
+    	'react': 'modules:react.min'
+			, 'babel-runtime': 'modules:babel-runtime'
+			, 'core-js': 'modules:babel-runtime/core-js'
+			, 'react-router': 'modules:ReactRouter.min'
+  	},
+		transpiler: 'babel',
+	  babelOptions: {
+	    optional: [
+	      'runtime'
+	    ]
+	  }
+	});
+	System.import('lib/main');
+	</script>
+
+</body>
+
+</html>

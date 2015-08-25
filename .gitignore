@@ -5,3 +5,4 @@
 /ui/app/lib
 /ui/app/modules
 /ui/node_modules
+.DS_Store
