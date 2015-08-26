@@ -12,6 +12,7 @@
 	gulp.task('clean', clean);
 	gulp.task('build', ['clean', 'lint'], build);
 	gulp.task('monitor', ['build'], monitor);
+	gulp.task('deploy', ['build'], deploy);
 
 	function makePaths() {
 
@@ -57,7 +58,7 @@
 		log('cleaning...');
 		const del = require('del');
 		return new Promise(function(resolve, reject) {
-			del([paths.dst.all, paths.dst.base, paths.vendor.all, paths.vendor.base], {dot: true}, function(err) {
+			del([paths.dst.all, paths.dst.base], {dot: true}, function(err) {
 				if (err) return reject(err);
 				resolve();
 			});
@@ -65,35 +66,18 @@
 	}
 
 	function build() {
-		return Promise.all([resources(), transpile(), vendor()]);
+		return Promise.all([resources(), transpile()]);
 	}
 
-	function vendor() {
-		log('copying vendor resources...');
-		// #DOING:0 allow renaming of files
-		const resmap = {
-			'systemjs/dist/system.js': null
-			, 'babel-runtime/core-js/**': 'babel-runtime/core-js'
-			, 'babel-runtime/helpers/**': 'babel-runtime/helpers'
-			, 'react/dist/react.min.js': null
-			, 'react-router/umd/ReactRouter.min.js': null
-		};
-		let promises = [];
-		for (let src in resmap) {
-			if (resmap.hasOwnProperty(src)) {
-				let dst = resmap[src] ? paths.vendor.base + '/' + resmap[src] : paths.vendor.base;
-				promises.push(
-					new Promise(function(resolve, reject) {
-						log('copying ' + src + ' to ' + dst);
-						gulp.src(paths.vendor.src + '/' + src)
-							.pipe(gulp.dest(dst))
-							.on('end', resolve)
-							.on('error', reject);
-					})
-				);
-			}
-		} // for
-		return Promise.all(promises);
+	function bundle() {
+		log('bundling certain JSPM packages...');
+		const jspm = require('jspm');
+		const path = require('path');
+		return jspm.bundle(
+			'react + react-router + react-bootstrap + react-router-bootstrap + fetch',
+			path.join(paths.dst.base, 'bundle.js'),
+			{ inject: true, mangle: true, minify: true, sourceMaps: false }
+		);
 	}
 
 	function resources() {
@@ -187,6 +171,10 @@
 			}
 		});
 
+	}
+
+	function deploy() {
+		log('not implemented');
 	}
 
 })();

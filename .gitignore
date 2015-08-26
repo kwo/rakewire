@@ -3,6 +3,6 @@
 /vendor/pkg
 /test/*.db
 /ui/app/lib
-/ui/app/modules
+/ui/app/jspm_packages
 /ui/node_modules
 .DS_Store

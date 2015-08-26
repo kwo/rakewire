@@ -1,18 +1,15 @@
 {
-  "name": "jui",
+  "name": "rakewire",
   "version": "1.0.0",
-  "description": "React app using ES6 and SystemJS",
+  "description": "Rakewire UI",
   "main": "gulpfile.js",
   "private": true,
   "author": "Karl Ostendorf <karl@ostendorf.com> (https://ostendorf.com/)",
   "license": "Copyright 2015 Karl Ostendorf",
-  "scripts": {},
-  "dependencies": {
-    "babel-runtime": "^5.8.20",
-    "react": "^0.13.3",
-    "react-router": "^0.13.3",
-    "systemjs": "^0.18.14"
+  "scripts": {
+    "postinstall": "jspm install -y"
   },
+  "dependencies": {},
   "devDependencies": {
     "del": "^1.0.0",
     "eslint": "^1.0.0",
@@ -21,6 +18,21 @@
     "gulp-babel": "^5.0.0",
     "gulp-eslint": "^1.0.0",
     "gulp-ignore": "^1.0.0",
-    "gulp-plumber": "^1.0.0"
+    "gulp-plumber": "^1.0.0",
+    "jspm": "^0.16.0"
+  },
+  "jspm": {
+    "directories": {
+      "baseURL": "app"
+    },
+    "dependencies": {
+      "react": "npm:react@^0.13.3",
+      "react-router": "npm:react-router@^0.13.3"
+    },
+    "devDependencies": {
+      "babel": "npm:babel-core@^5.8.22",
+      "babel-runtime": "npm:babel-runtime@^5.8.20",
+      "core-js": "npm:core-js@^1.1.0"
+    }
   }
 }

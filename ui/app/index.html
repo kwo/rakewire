@@ -13,30 +13,9 @@
 
 	<div id="app"/>
 
-	<script src="modules/system.js"></script>
-	<script>
-	System.config({
-		defaultJSExtensions: true,
-		baseUrl: 'lib/',
-		paths: {
-			'*': '*.js',
-			'modules:*': 'modules/*.js'
-		},
-		map: {
-    	'react': 'modules:react.min'
-			, 'babel-runtime': 'modules:babel-runtime'
-			, 'core-js': 'modules:babel-runtime/core-js'
-			, 'react-router': 'modules:ReactRouter.min'
-  	},
-		transpiler: 'babel',
-	  babelOptions: {
-	    optional: [
-	      'runtime'
-	    ]
-	  }
-	});
-	System.import('lib/main');
-	</script>
+	<script src="jspm_packages/system.js"></script>
+	<script src="config.js"></script>
+	<script>System.import('lib/main');</script>
 
 </body>
 
