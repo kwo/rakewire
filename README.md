@@ -3,6 +3,9 @@
 ## v0.0.3
 
  - #DOING:0 html ui
+ - #DOING:20 second route
+ - #DOING:30 switch between dev and prod modes - version stamp files
+ - #DOING:40 material-ui
  - #TODO:10 better logging
  - #TODO:20 need save database mutex
  - #FIXME:0 bugfix feeds next on empty db or db with feeds but before first poll

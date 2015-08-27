@@ -68,7 +68,8 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 		chErrors <- err
 		return
 	}
-	// #DOING:0 block /src folder
+
+	// #DOING:10 always load index.html for HTML5 paths
 	router.PathPrefix("/").Handler(negroni.New(
 		gzip.Gzip(gzip.BestCompression),
 		negroni.Wrap(http.FileServer(box.HTTPBox())),
@@ -85,7 +86,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 		chErrors <- err
 		return
 	}
-	// #DOING:70 TLS wrap listener in tls.NewListener
+	// #TODO:70 TLS wrap listener in tls.NewListener
 	z.listener = l
 	server := http.Server{
 		Handler: n,
