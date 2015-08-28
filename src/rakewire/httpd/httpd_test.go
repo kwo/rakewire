@@ -2,7 +2,6 @@ package httpd
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -12,7 +11,7 @@ import (
 	"os"
 	"rakewire/db"
 	"rakewire/db/bolt"
-	m "rakewire/model"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -72,30 +71,64 @@ func TestStaticPaths(t *testing.T) {
 
 	req := newRequest(mGet, "/")
 	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeHTML, rsp.Header.Get(hContentType))
-	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, "23", rsp.Header.Get(hContentLength))
+	assertHTML(t, rsp, err)
 
 	req = newRequest(mGet, "/robots.txt")
 	rsp, err = c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
-	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, "37", rsp.Header.Get(hContentLength))
+	assertText(t, rsp, err)
 
 	req = newRequest(mGet, "/lib/main.js")
 	rsp, err = c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, "application/javascript", rsp.Header.Get(hContentType))
-	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, "41", rsp.Header.Get(hContentLength))
+	assert200OK(t, rsp, err, "application/javascript")
+
+}
+
+func TestHTML5Paths(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := newHTTPClient()
+
+	req := newRequest(mGet, "/")
+	rsp, err := c.Do(req)
+	assertHTML(t, rsp, err)
+	abody, err := ioutil.ReadAll(rsp.Body)
+	require.Nil(t, err)
+	require.NotNil(t, abody)
+	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
+
+	req = newRequest(mGet, "/route")
+	rsp, err = c.Do(req)
+	assertHTML(t, rsp, err)
+	body, err := ioutil.ReadAll(rsp.Body)
+	require.Nil(t, err)
+	require.NotNil(t, body)
+	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
+	assert.Equal(t, abody, body)
+
+	req = newRequest(mGet, "/home")
+	rsp, err = c.Do(req)
+	assertHTML(t, rsp, err)
+	body, err = ioutil.ReadAll(rsp.Body)
+	require.Nil(t, err)
+	require.NotNil(t, body)
+	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
+	assert.Equal(t, abody, body)
+
+	// only all lowercase
+	req = newRequest(mGet, "/Route")
+	rsp, err = c.Do(req)
+	assert404NotFound(t, rsp, err)
+
+	// only a-z, not dot or slashes
+	req = newRequest(mGet, "/route.html")
+	rsp, err = c.Do(req)
+	assert404NotFound(t, rsp, err)
+
+	// only a-z, not dot or slashes
+	req = newRequest(mGet, "/route/route")
+	rsp, err = c.Do(req)
+	assert404NotFound(t, rsp, err)
 
 }
 
@@ -107,11 +140,7 @@ func TestStatic404(t *testing.T) {
 
 	req := newRequest(mGet, "/favicon.ico")
 	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
-	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
-	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
+	assert404NotFound(t, rsp, err)
 
 	expectedText := "404 page not found\n"
 	assert.Equal(t, 43 /* len(expectedText) */, int(rsp.ContentLength)) // gzip expands from 19 to 43
@@ -145,205 +174,36 @@ func TestStaticRedirects(t *testing.T) {
 
 }
 
-func TestFeedsPut(t *testing.T) {
+func assertHTML(t *testing.T, rsp *http.Response, err error) {
+	assert200OK(t, rsp, err, mimeHTML)
+}
 
-	require.NotNil(t, ws)
+func assertText(t *testing.T, rsp *http.Response, err error) {
+	assert200OK(t, rsp, err, mimeText)
+}
 
-	c := newHTTPClient()
-
-	req := newRequest(mPut, "/api/feeds")
-	req.Header.Add(hContentType, mimeJSON)
-
-	buf := bytes.Buffer{}
-	feeds := m.NewFeeds()
-	feed := m.NewFeed(feedURL)
-	feedID = feed.ID
-	feeds.Add(feed)
-	feeds.Serialize(&buf)
-	req.Body = ioutil.NopCloser(&buf)
-
-	rsp, err := c.Do(req)
+func assert200OK(t *testing.T, rsp *http.Response, err error, mimeType string) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-
-	jsonRsp := SaveFeedsResponse{}
-	err = json.NewDecoder(rsp.Body).Decode(&jsonRsp)
-	assert.Nil(t, err)
-	assert.NotNil(t, jsonRsp)
-	assert.Equal(t, 1, jsonRsp.Count)
-
+	assert.Equal(t, mimeType, rsp.Header.Get(hContentType))
+	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
 }
 
-func TestFeedsPutNoContent(t *testing.T) {
-
-	require.NotNil(t, ws)
-
-	c := newHTTPClient()
-
-	req := newRequest(mPut, "/api/feeds")
-	req.Header.Add(hContentType, mimeJSON)
-	rsp, err := c.Do(req)
+func assert404NotFound(t *testing.T, rsp *http.Response, err error) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusNoContent, rsp.StatusCode)
+	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
 	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-
-	// expectedText := "204 No Content\n"
-	// assert.Equal(t, len(expectedText), int(rsp.ContentLength))
-	// bodyText, err := getBodyAsString(rsp.Body)
-	// assert.Nil(t, err)
-	// assert.Equal(t, expectedText, bodyText)
-
+	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
 }
 
-func TestFeedsMethodNotAllowed(t *testing.T) {
-
-	require.NotNil(t, ws)
-
-	c := newHTTPClient()
-
-	req := newRequest(mPost, "/api/feeds")
-	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusMethodNotAllowed, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-
-	expectedText := "Method Not Allowed\n"
-	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
-	bodyText, err := getBodyAsString(rsp.Body)
-	assert.Nil(t, err)
-	assert.Equal(t, expectedText, bodyText)
-
-}
-
-func TestFeedsGet(t *testing.T) {
-
-	require.NotNil(t, ws)
-
-	c := newHTTPClient()
-
-	req := newRequest(mGet, "/api/feeds")
-	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, 98, int(rsp.ContentLength))
-
-	buf := bytes.Buffer{}
-	n, err := buf.ReadFrom(rsp.Body)
-	assert.Nil(t, err)
-	assert.Equal(t, rsp.ContentLength, n)
-	feeds := m.NewFeeds()
-	err = feeds.Deserialize(&buf)
-	assert.Nil(t, err)
-	assert.Equal(t, 1, feeds.Size())
-	feed := feeds.Values[0]
-	assert.Equal(t, feedURL, feed.URL)
-
-}
-
-func TestFeedGetByURL(t *testing.T) {
-
-	require.NotNil(t, ws)
-
-	c := newHTTPClient()
-
-	req := newRequest(mGet, "/api/feeds?url=http%3A%2F%2Flocalhost%3A5555%2Ffeed.xml")
-	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, 106, int(rsp.ContentLength))
-
-	buf := bytes.Buffer{}
-	n, err := buf.ReadFrom(rsp.Body)
-	assert.Nil(t, err)
-	assert.Equal(t, rsp.ContentLength, n)
-	feed := m.Feed{}
-	err = feed.Decode(buf.Bytes())
-	assert.Nil(t, err)
-	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
-
-}
-
-func TestFeedGetByURL404(t *testing.T) {
-
-	require.NotNil(t, ws)
-
-	c := newHTTPClient()
-
-	req := newRequest(mGet, "/api/feeds?url=http%3A%2F%2Flocalhost%3A5555%2Ffeed.XML")
-	rsp, err := c.Do(req)
+func assert404NotFoundNoGzip(t *testing.T, rsp *http.Response, err error) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
 	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-
-	expectedText := "Not Found\n"
-	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
-	bodyText, err := getBodyAsString(rsp.Body)
-	assert.Nil(t, err)
-	assert.Equal(t, expectedText, bodyText)
-
-}
-
-func TestFeedGetByID(t *testing.T) {
-
-	require.NotNil(t, ws)
-
-	c := newHTTPClient()
-
-	req := newRequest(mGet, "/api/feeds/"+feedID)
-	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, 106, int(rsp.ContentLength))
-
-	buf := bytes.Buffer{}
-	n, err := buf.ReadFrom(rsp.Body)
-	assert.Nil(t, err)
-	assert.Equal(t, rsp.ContentLength, n)
-	feed := m.Feed{}
-	err = feed.Decode(buf.Bytes())
-	assert.Nil(t, err)
-	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
-
-}
-
-func TestFeedGetByID404(t *testing.T) {
-
-	require.NotNil(t, ws)
-
-	c := newHTTPClient()
-
-	req := newRequest(mGet, "/api/feeds/helloworld")
-	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-
-	expectedText := "Not Found\n"
-	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
-	bodyText, err := getBodyAsString(rsp.Body)
-	assert.Nil(t, err)
-	assert.Equal(t, expectedText, bodyText)
-
 }
 
 func getBodyAsString(r io.Reader) (string, error) {

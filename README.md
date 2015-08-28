@@ -5,7 +5,7 @@
  - #DOING:0 html ui
  - #DOING:20 second route
  - #DOING:30 switch between dev and prod modes - version stamp files
- - #DOING:40 material-ui
+ - #DOING:40 [react-mdl](https://github.com/tleunen/react-mdl)
  - #TODO:10 better logging
  - #TODO:20 need save database mutex
  - #FIXME:0 bugfix feeds next on empty db or db with feeds but before first poll
@@ -44,6 +44,7 @@
  - #BACKLOG:290 pre gzip webapp
  - #BACKLOG:300 cryptographically signing of entries, feeds with nice UI lock symbol as proof (see [Atom Digital Signatures](https://tools.ietf.org/html/rfc4287#section-5.1))
  - #BACKLOG:310 manually specify feed fetchTime interval for strange feeds: Eilmeldungen, z.B.
+ - #BACKLOG:320 rackt redux (flux like state replay)
 
 ## Changelog
 
@@ -57,3 +58,9 @@
  - #DONE:70 v0.0.2 follow redirects, update url automatically
  - #DONE:80 v0.0.2 improve polling algorithm (automatic mode with backoff algorithm)
  - #DONE:90 v0.0.2 log fetches with http and feed information
+
+## Articles
+
+  - [Generate RESTful API Documentation From Annotations in Go](https://engineroom.teamwork.com/generate-api-from-annotations-in-go/)
+  - [Solving the OPTIONS performance issue with single page apps](http://www.soasta.com/blog/options-web-performance-with-single-page-applications/?utm_source=webopsweekly&utm_medium=email)
+  - [Principles of designing Go APIs with channels](https://inconshreveable.com/07-08-2014/principles-of-designing-go-apis-with-channels/)
