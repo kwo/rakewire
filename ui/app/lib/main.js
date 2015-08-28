@@ -1,6 +1,7 @@
 import React from 'react';
 import Router from 'react-router';
 
+import About from './AboutComponent';
 import Home from './HomeComponent';
 
 const Route = Router.Route;
@@ -23,7 +24,7 @@ class App extends React.Component {
 			<div className="container">
 
 				<div className="page-header">
-					<Link to="home">Rakewire</Link>
+					<Link to="home">Rakewire</Link> | <Link to="about">About</Link>
 				</div>
 
 				<RouteHandler />
@@ -46,6 +47,7 @@ App.displayName = 'app';
 const routes = (
 	<Route handler={App} name="app" path="/" >
 		<Route handler={Home} name="home" path="/" />
+		<Route handler={About} name="about" path="/about" />
 		<DefaultRoute handler={Home} />
 		<Redirect from="*" to="home" />
 	</Route>
