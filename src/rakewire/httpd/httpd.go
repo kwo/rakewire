@@ -45,6 +45,16 @@ var (
 	logger = newInternalLogger()
 )
 
+type singleFileSystem struct {
+	name string
+	root http.FileSystem
+}
+
+func (z singleFileSystem) Open(name string) (http.File, error) {
+	// ignore name and use z.name
+	return z.root.Open(z.name)
+}
+
 // Start web service
 func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 
@@ -68,11 +78,18 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 		chErrors <- err
 		return
 	}
+	bfs := box.HTTPBox()
 
-	// #DOING:10 always load index.html for HTML5 paths
+	// HTML5 routes
+	sfs := singleFileSystem{name: "/index.html", root: bfs}
+	router.Path("/{route:[a-z]+}").Handler(negroni.New(
+		gzip.Gzip(gzip.BestCompression),
+		negroni.Wrap(http.FileServer(sfs)),
+	))
+
 	router.PathPrefix("/").Handler(negroni.New(
 		gzip.Gzip(gzip.BestCompression),
-		negroni.Wrap(http.FileServer(box.HTTPBox())),
+		negroni.Wrap(http.FileServer(bfs)),
 	))
 
 	n := negroni.New()
