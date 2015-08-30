@@ -2,7 +2,7 @@
 /pkg
 /vendor/pkg
 /test/*.db
-/ui/development/jspm_packages
+/ui/app/jspm_packages
 /ui/node_modules
-/ui/production
+/ui/build
 .DS_Store

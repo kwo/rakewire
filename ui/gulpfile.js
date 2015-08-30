@@ -15,8 +15,8 @@
 
 	function makePaths() {
 
-		let src = 'development';
-		let dst = 'production';
+		let src = 'app';
+		let dst = 'build';
 
 		let p = {
 			src: {
