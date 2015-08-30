@@ -11,7 +11,7 @@
 	gulp.task('clean', clean);
 	gulp.task('resources', ['clean'], resources);
 	gulp.task('build', ['resources'], build);
-	gulp.task('deploy', ['build'], deploy);
+	gulp.task('webapp', webapp);
 
 	function makePaths() {
 
@@ -92,8 +92,27 @@
 		);
 	}
 
-	function deploy() {
-		log('not implemented');
+	function webapp() {
+
+		let src = 'build';
+		let mode = process.argv.slice(3);
+
+		if (mode == '-app') {
+			src = 'app';
+		} else if (mode == '-build') {
+			src = 'build';
+		} else {
+			return log('unknown mode: ' + mode);
+		}
+
+		const symlink = require('gulp-sym');
+
+		gulp
+			.src(src)
+			.pipe(symlink(function(/*source*/) {
+				return 'webapp';
+			}, { force: true, relative: true }));
+
 	}
 
 })();
