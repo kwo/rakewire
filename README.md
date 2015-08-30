@@ -3,7 +3,6 @@
 ## v0.0.3
 
  - #DOING:0 html ui
- - #DOING:30 switch between dev and prod modes - version stamp files
  - #DOING:40 [react-mdl](https://github.com/tleunen/react-mdl)
  - #TODO:10 better logging
  - #TODO:20 need save database mutex
