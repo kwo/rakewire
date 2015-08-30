@@ -4,4 +4,5 @@
 /test/*.db
 /ui/development/jspm_packages
 /ui/node_modules
+/ui/production
 .DS_Store

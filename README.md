@@ -44,6 +44,7 @@
  - #BACKLOG:300 cryptographically signing of entries, feeds with nice UI lock symbol as proof (see [Atom Digital Signatures](https://tools.ietf.org/html/rfc4287#section-5.1))
  - #BACKLOG:310 manually specify feed fetchTime interval for strange feeds: Eilmeldungen, z.B.
  - #BACKLOG:320 rackt redux (flux like state replay)
+ - #BACKLOG:330 stamp windows executables https://github.com/josephspurrier/goversioninfo
 
 ## Changelog
 
