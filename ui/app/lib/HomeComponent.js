@@ -1,7 +1,10 @@
 import React from 'react';
 import mui from 'material-ui';
 
-const RaisedButton = mui.RaisedButton;
+const FloatingActionButton = mui.FloatingActionButton;
+const Colors = mui.Styles.Colors;
+const FontIcon = mui.FontIcon;
+
 
 class Home extends React.Component {
 
@@ -16,7 +19,9 @@ class Home extends React.Component {
 			<div>
 
 				<p>Welcome to Rakewire.</p>
-				<RaisedButton label="Hello"/>
+				<FloatingActionButton mini={true} secondary={true} >
+					<FontIcon className="material-icons" hoverColor={Colors.red500}>star</FontIcon>
+				</FloatingActionButton>
 
 			</div>
 		);

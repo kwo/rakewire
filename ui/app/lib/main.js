@@ -6,6 +6,7 @@ import injectTapEventPlugin from 'npm:react-tap-event-plugin@0.1.7/src/injectTap
 import 'site.css!';
 const ThemeManager = new Styles.ThemeManager();
 injectTapEventPlugin();
+ThemeManager.setTheme(ThemeManager.types.LIGHT);
 
 import About from './AboutComponent';
 import Home from './HomeComponent';

@@ -76,6 +76,13 @@
 				.on('error', reject);
 		}));
 
+		promises.push(new Promise(function(resolve, reject) {
+			gulp.src(path.join(paths.src.base, 'fonts/*'))
+				.pipe(gulp.dest(path.join(paths.dst.base, 'fonts')))
+				.on('end', resolve)
+				.on('error', reject);
+		}));
+
 		return Promise.all(promises);
 
 	}
