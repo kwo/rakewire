@@ -19,13 +19,17 @@ class Home extends React.Component {
 			<div>
 
 				<p>Welcome to Rakewire.</p>
-				<FloatingActionButton mini={true} secondary={true} >
+				<FloatingActionButton mini={true} secondary={true} onTouchTap={this.handleTouchTap} >
 					<FontIcon className="material-icons" hoverColor={Colors.red500}>star</FontIcon>
 				</FloatingActionButton>
 
 			</div>
 		);
 
+	}
+
+	handleTouchTap() {
+		console.log('juhu');
 	}
 
 }

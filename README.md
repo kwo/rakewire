@@ -3,7 +3,6 @@
 ## v0.0.3
 
  - #DOING:0 html ui
- - #DOING:10 set theme
  - #DOING:20 load roboto font locally
  - #DOING:30 add version stamp to app.{js,css}
  - #TODO:10 better logging
