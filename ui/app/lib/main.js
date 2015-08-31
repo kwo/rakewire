@@ -1,24 +1,27 @@
-import 'react-mdl/extra/material.css!';
-import 'site.css!';
 import React from 'react';
-import Router from 'react-router';
+import Router, {DefaultRoute, Link, Redirect, Route, RouteHandler} from 'react-router';
+import { Styles } from 'material-ui';
+import injectTapEventPlugin from 'npm:react-tap-event-plugin@0.1.7/src/injectTapEventPlugin'; // WTF?
+
+import 'site.css!';
+const ThemeManager = new Styles.ThemeManager();
+injectTapEventPlugin();
 
 import About from './AboutComponent';
 import Home from './HomeComponent';
 
-const Route = Router.Route;
-const DefaultRoute = Router.DefaultRoute;
-const Link = Router.Link;
-const Redirect = Router.Redirect;
-const RouteHandler = Router.RouteHandler;
-
 // -------------------- app component --------------------
-
 class App extends React.Component {
 
 	constructor(props) {
 		super(props);
 		this.state = {};
+	}
+
+	getChildContext () {
+		return {
+			muiTheme : ThemeManager.getCurrentTheme()
+		};
 	}
 
 	render() {
@@ -43,6 +46,11 @@ class App extends React.Component {
 
 }
 App.displayName = 'app';
+// only necessary by App (outermost parent component)
+App.childContextTypes = {
+	muiTheme : React.PropTypes.object
+};
+
 
 // -------------------- routes --------------------
 

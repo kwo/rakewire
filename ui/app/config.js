@@ -21,6 +21,7 @@ System.config({
     "clean-css": "npm:clean-css@3.4.1",
     "core-js": "npm:core-js@1.1.1",
     "css": "github:systemjs/plugin-css@0.1.15",
+    "material-ui": "npm:material-ui@0.11.0",
     "react": "npm:react@0.13.3",
     "react-router": "npm:react-router@0.13.3",
     "github:jspm/nodelibs-assert@0.1.0": {
@@ -133,6 +134,13 @@ System.config({
       "process": "github:jspm/nodelibs-process@0.1.1",
       "source-map": "npm:source-map@0.1.31"
     },
+    "npm:material-ui@0.11.0": {
+      "path": "github:jspm/nodelibs-path@0.1.0",
+      "process": "github:jspm/nodelibs-process@0.1.1",
+      "react": "npm:react@0.13.3",
+      "react-draggable2": "npm:react-draggable2@0.5.1",
+      "react-tap-event-plugin": "npm:react-tap-event-plugin@0.1.7"
+    },
     "npm:os-browserify@0.1.2": {
       "os": "github:jspm/nodelibs-os@0.1.0"
     },
@@ -146,6 +154,10 @@ System.config({
       "object-assign": "npm:object-assign@2.1.1",
       "process": "github:jspm/nodelibs-process@0.1.1",
       "qs": "npm:qs@2.4.1",
+      "react": "npm:react@0.13.3"
+    },
+    "npm:react-tap-event-plugin@0.1.7": {
+      "process": "github:jspm/nodelibs-process@0.1.1",
       "react": "npm:react@0.13.3"
     },
     "npm:react@0.13.3": {
