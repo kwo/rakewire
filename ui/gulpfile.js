@@ -26,7 +26,7 @@
 			},
 			dst: {
 				base: dst,
-				all:  dst + '/**/*'
+				all:  dst + '/**'
 			}
 		};
 
@@ -49,12 +49,7 @@
 	function clean() {
 		log('cleaning...');
 		const del = require('del');
-		return new Promise(function(resolve, reject) {
-			del([paths.dst.all, paths.dst.base], {dot: true}, function(err) {
-				if (err) return reject(err);
-				resolve();
-			});
-		});
+		return del(paths.dst.all, {dot: true});
 	}
 
 	function resources() {
@@ -68,6 +63,13 @@
 					'js':  'app.js',
 					'css': 'app.css'
 				}))
+				.pipe(gulp.dest(paths.dst.base))
+				.on('end', resolve)
+				.on('error', reject);
+		}));
+
+		promises.push(new Promise(function(resolve, reject) {
+			gulp.src(paths.src.base + '/*.txt')
 				.pipe(gulp.dest(paths.dst.base))
 				.on('end', resolve)
 				.on('error', reject);
