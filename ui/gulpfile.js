@@ -65,15 +65,9 @@
 		promises.push(new Promise(function(resolve, reject) {
 			gulp.src(paths.src.base + '/index.html')
 				.pipe(htmlreplace({
-					'js': 'app.js'
+					'js':  'app.js',
+					'css': 'app.css'
 				}))
-				.pipe(gulp.dest(paths.dst.base))
-				.on('end', resolve)
-				.on('error', reject);
-		}));
-
-		promises.push(new Promise(function(resolve, reject) {
-			gulp.src(paths.src.base + '/site.css')
 				.pipe(gulp.dest(paths.dst.base))
 				.on('end', resolve)
 				.on('error', reject);
