@@ -29,6 +29,7 @@
     },
     "dependencies": {
       "react": "npm:react@^0.13.3",
+      "react-mdl": "npm:react-mdl@^0.11.1",
       "react-router": "npm:react-router@^0.13.3"
     },
     "devDependencies": {
