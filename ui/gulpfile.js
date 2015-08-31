@@ -21,7 +21,6 @@
 		let p = {
 			src: {
 				base: src,
-				all:  src + '/**/*',
 				js:   src + '/lib/**/*.js'
 			},
 			dst: {
