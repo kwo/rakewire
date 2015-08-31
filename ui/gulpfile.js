@@ -10,7 +10,7 @@
 	gulp.task('lint', lint);
 	gulp.task('clean', clean);
 	gulp.task('resources', ['clean'], resources);
-	gulp.task('build', ['resources'], build);
+	gulp.task('build', ['lint', 'resources'], build);
 	gulp.task('webapp', webapp);
 
 	function makePaths() {
@@ -22,7 +22,7 @@
 			src: {
 				base: src,
 				all:  src + '/**/*',
-				js:   src + '/**/*.js'
+				js:   src + '/lib/**/*.js'
 			},
 			dst: {
 				base: dst,
@@ -54,11 +54,12 @@
 
 	function resources() {
 		log('copying resources...');
+		const path = require('path');
 		const htmlreplace = require('gulp-html-replace');
 		let promises = [];
 
 		promises.push(new Promise(function(resolve, reject) {
-			gulp.src(paths.src.base + '/index.html')
+			gulp.src(path.join(paths.src.base, 'index.html'))
 				.pipe(htmlreplace({
 					'js':  'app.js',
 					'css': 'app.css'
@@ -69,7 +70,7 @@
 		}));
 
 		promises.push(new Promise(function(resolve, reject) {
-			gulp.src(paths.src.base + '/*.txt')
+			gulp.src(path.join(paths.src.base, '*.txt'))
 				.pipe(gulp.dest(paths.dst.base))
 				.on('end', resolve)
 				.on('error', reject);
