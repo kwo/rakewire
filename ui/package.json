@@ -31,7 +31,6 @@
       "clean-css": "npm:clean-css@^3.4.1",
       "css": "github:systemjs/plugin-css@^0.1.15",
       "react": "npm:react@^0.13.3",
-      "react-mdl": "npm:react-mdl@^0.11.1",
       "react-router": "npm:react-router@^0.13.3"
     },
     "devDependencies": {

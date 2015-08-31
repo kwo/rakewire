@@ -22,7 +22,6 @@ System.config({
     "core-js": "npm:core-js@1.1.1",
     "css": "github:systemjs/plugin-css@0.1.15",
     "react": "npm:react@0.13.3",
-    "react-mdl": "npm:react-mdl@0.11.1",
     "react-router": "npm:react-router@0.13.3",
     "github:jspm/nodelibs-assert@0.1.0": {
       "assert": "npm:assert@1.3.0"
@@ -78,11 +77,6 @@ System.config({
       "base64-js": "npm:base64-js@0.0.8",
       "ieee754": "npm:ieee754@1.1.6",
       "is-array": "npm:is-array@1.0.1"
-    },
-    "npm:classnames@2.1.3": {
-      "assert": "github:jspm/nodelibs-assert@0.1.0",
-      "process": "github:jspm/nodelibs-process@0.1.1",
-      "systemjs-json": "github:systemjs/plugin-json@0.1.0"
     },
     "npm:clean-css@3.4.1": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
@@ -147,12 +141,6 @@ System.config({
     },
     "npm:punycode@1.3.2": {
       "process": "github:jspm/nodelibs-process@0.1.1"
-    },
-    "npm:react-mdl@0.11.1": {
-      "clamp": "npm:clamp@1.0.1",
-      "classnames": "npm:classnames@2.1.3",
-      "process": "github:jspm/nodelibs-process@0.1.1",
-      "react": "npm:react@0.13.3"
     },
     "npm:react-router@0.13.3": {
       "object-assign": "npm:object-assign@2.1.1",
