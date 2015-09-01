@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PropTypes} from 'react';
 import { Link, RouteHandler } from 'react-router';
 import { AppBar, IconButton, Styles, Tab, Tabs } from 'material-ui';
 const ThemeManager = new Styles.ThemeManager();
@@ -7,13 +7,16 @@ class App extends React.Component {
 
 	static displayName = 'app';
 
+	// static propTypes = {
+	// 	max: PropTypes.number
+	// };
+
 	static contextTypes = {
-		router: React.PropTypes.func
+		router: PropTypes.func
 	};
 
-	// only necessary by App (outermost parent component)
 	static childContextTypes = {
-		muiTheme : React.PropTypes.object
+		muiTheme : PropTypes.object
 	};
 
 	constructor(props, context) {
@@ -26,11 +29,17 @@ class App extends React.Component {
 			tab: activeRouteName
 		};
 
-		this.onLogoClick = this.onLogoClick.bind(this);
-		this.onChangeTabs = this.onChangeTabs.bind(this);
 		this.navigateTo = this.navigateTo.bind(this);
+		this.onChangeTabs = this.onChangeTabs.bind(this);
+		this.onLogoClick = this.onLogoClick.bind(this);
 
 	}
+
+	// getDefaultProps() {
+	// 	return {
+	// 		max: 100
+	// 	};
+	// }
 
 	getChildContext () {
 		return {
@@ -63,7 +72,6 @@ class App extends React.Component {
 				width: '25%',
 			}
 		};
-
 
 		const logoButton = (
 			<IconButton
