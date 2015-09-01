@@ -3,7 +3,6 @@
 ## v0.0.3
 
  - #DOING:0 html ui
- - #DOING:10 app bar, click logo, title back to home, integrated tabs
  - #TODO:40 load roboto font locally
  - #DOING:20 add version stamp to app.{js,css}
  - #TODO:0 better logging

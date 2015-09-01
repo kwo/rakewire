@@ -1,15 +1,19 @@
 import React, {PropTypes} from 'react';
-import { Link, RouteHandler } from 'react-router';
+import { RouteHandler } from 'react-router';
 import { AppBar, IconButton, Styles, Tab, Tabs } from 'material-ui';
 const ThemeManager = new Styles.ThemeManager();
+
+import TitleComponent from './TitleComponent';
+
+// #DOING:10 hook current tab into router onChange event
 
 class App extends React.Component {
 
 	static displayName = 'app';
 
-	// static propTypes = {
-	// 	max: PropTypes.number
-	// };
+	static propTypes = {
+		title: PropTypes.string
+	};
 
 	static contextTypes = {
 		router: PropTypes.func
@@ -18,6 +22,10 @@ class App extends React.Component {
 	static childContextTypes = {
 		muiTheme : PropTypes.object
 	};
+
+	static defaultProps = {
+		title: 'Rakewire'
+	}
 
 	constructor(props, context) {
 
@@ -35,15 +43,9 @@ class App extends React.Component {
 
 	}
 
-	// getDefaultProps() {
-	// 	return {
-	// 		max: 100
-	// 	};
-	// }
-
 	getChildContext () {
 		return {
-			muiTheme : ThemeManager.getCurrentTheme()
+			muiTheme: ThemeManager.getCurrentTheme()
 		};
 	}
 
@@ -75,7 +77,6 @@ class App extends React.Component {
 
 		const logoButton = (
 			<IconButton
-				containerElement={<Link to="/home" />}
 				iconClassName="material-icons"
 				linkButton={true}
 				onTouchTap={this.onLogoClick}>
@@ -89,7 +90,7 @@ class App extends React.Component {
 				<AppBar
 					iconElementLeft={logoButton}
 					style={styles.appBar}
-					title="Rakewire">
+					title={<TitleComponent onClick={this.onLogoClick} title={this.props.title} />}>
 					<Tabs
 						onChange={this.onChangeTabs}
 						style={styles.tabs}
