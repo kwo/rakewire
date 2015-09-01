@@ -5,6 +5,17 @@ const ThemeManager = new Styles.ThemeManager();
 
 class App extends React.Component {
 
+	static displayName = 'app';
+
+	static contextTypes = {
+		router: React.PropTypes.func
+	};
+
+	// only necessary by App (outermost parent component)
+	static childContextTypes = {
+		muiTheme : React.PropTypes.object
+	};
+
 	constructor(props, context) {
 
 		super(props, context);
@@ -68,12 +79,13 @@ class App extends React.Component {
 			<div>
 
 				<AppBar
-					title="Rakewire"
 					iconElementLeft={logoButton}
-					style={styles.appBar}>
+					style={styles.appBar}
+					title="Rakewire">
 					<Tabs
-						value={this.state.tab}
-						onChange={this.onChangeTabs} style={styles.tabs}>
+						onChange={this.onChangeTabs}
+						style={styles.tabs}
+						value={this.state.tab}>
 						<Tab label="Home" value="home" />
 						<Tab label="About" value="about" />
 					</Tabs>
@@ -87,16 +99,5 @@ class App extends React.Component {
 	}
 
 }
-
-App.displayName = 'app';
-
-App.contextTypes = {
-	router: React.PropTypes.func
-};
-
-// only necessary by App (outermost parent component)
-App.childContextTypes = {
-	muiTheme : React.PropTypes.object
-};
 
 export default App;

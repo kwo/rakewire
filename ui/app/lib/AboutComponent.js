@@ -2,6 +2,8 @@ import React from 'react';
 
 class About extends React.Component {
 
+	static displayName = 'about';
+
 	constructor(props, context) {
 		super(props, context);
 		this.state = {};
@@ -18,7 +20,5 @@ class About extends React.Component {
 	}
 
 }
-
-About.displayName = 'about';
 
 export default About;

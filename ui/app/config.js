@@ -5,6 +5,7 @@ System.config({
   transpiler: "babel",
   babelOptions: {
     "optional": [
+      "es7.classProperties",
       "runtime"
     ]
   },
