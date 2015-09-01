@@ -5,7 +5,7 @@ class Home extends React.Component {
 	static displayName = 'home';
 
 	// static propTypes = {
-	// 	max: PropTypes.number
+	// 	title: PropTypes.string
 	// };
 
 	static contextTypes = {
@@ -17,16 +17,14 @@ class Home extends React.Component {
 		muiTheme : PropTypes.object
 	};
 
+	// static defaultProps = {
+	// 	title: 'title'
+	// }
+
 	constructor(props, context) {
 		super(props, context);
 		this.state = {};
 	}
-
-	// getDefaultProps() {
-	// 	return {
-	// 		max: 100
-	// 	};
-	// }
 
 	getChildContext () {
 		return {

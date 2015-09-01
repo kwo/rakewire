@@ -5,7 +5,7 @@ class About extends React.Component {
 	static displayName = 'about';
 
 	// static propTypes = {
-	// 	max: PropTypes.number
+	// 	title: PropTypes.string
 	// };
 
 	static contextTypes = {
@@ -17,16 +17,14 @@ class About extends React.Component {
 		muiTheme : PropTypes.object
 	};
 
+	// static defaultProps = {
+	// 	title: 'title'
+	// }
+
 	constructor(props, context) {
 		super(props, context);
 		this.state = {};
 	}
-
-	// getDefaultProps() {
-	// 	return {
-	// 		max: 100
-	// 	};
-	// }
 
 	getChildContext () {
 		return {
