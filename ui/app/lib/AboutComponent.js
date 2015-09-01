@@ -2,8 +2,8 @@ import React from 'react';
 
 class About extends React.Component {
 
-	constructor(opts) {
-		super(opts);
+	constructor(props) {
+		super(props);
 		this.state = {};
 	}
 

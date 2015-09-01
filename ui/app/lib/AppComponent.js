@@ -5,9 +5,9 @@ const ThemeManager = new Styles.ThemeManager();
 
 class App extends React.Component {
 
+	constructor(props) {
+		super(props);
 		this.state = {};
-	constructor(opts) {
-		super(opts);
 	}
 
 	getChildContext () {
