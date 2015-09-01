@@ -6,13 +6,19 @@ const ThemeManager = new Styles.ThemeManager();
 class App extends React.Component {
 
 	constructor(props, context) {
+
 		super(props, context);
+
+		const currentRoutes = this.context.router.getCurrentRoutes();
+		const activeRouteName = currentRoutes[currentRoutes.length - 1].name;
 		this.state = {
-			tab: 'home'
+			tab: activeRouteName
 		};
+
 		this.onLogoClick = this.onLogoClick.bind(this);
 		this.onChangeTabs = this.onChangeTabs.bind(this);
 		this.navigateTo = this.navigateTo.bind(this);
+
 	}
 
 	getChildContext () {
