@@ -2,20 +2,6 @@ html {
   font-family: 'Roboto', sans-serif;
 }
 
-body {
-  /* Margin bottom by footer height */
-  margin-bottom: 60px;
-  font-size: large;
-}
-
-.footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  /* Set the fixed height of the footer here */
-  height: 60px;
-}
-
 /* HOWTO:   http://google.github.io/material-design-icons/#icon-font-for-the-web */
 /* project: https://github.com/google/material-design-icons */
 

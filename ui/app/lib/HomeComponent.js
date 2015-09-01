@@ -1,10 +1,4 @@
 import React from 'react';
-import mui from 'material-ui';
-
-const FloatingActionButton = mui.FloatingActionButton;
-const Colors = mui.Styles.Colors;
-const FontIcon = mui.FontIcon;
-
 
 class Home extends React.Component {
 
@@ -17,19 +11,10 @@ class Home extends React.Component {
 
 		return (
 			<div>
-
 				<p>Welcome to Rakewire.</p>
-				<FloatingActionButton mini={true} secondary={true} onTouchTap={this.handleTouchTap} >
-					<FontIcon className="material-icons" hoverColor={Colors.red500}>star</FontIcon>
-				</FloatingActionButton>
-
 			</div>
 		);
 
-	}
-
-	handleTouchTap() {
-		console.log('juhu');
 	}
 
 }
