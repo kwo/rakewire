@@ -1,3 +1,4 @@
+/* eslint indent: 0, quotes: 0 */
 System.config({
   baseURL: "/",
   defaultJSExtensions: true,
