@@ -3,9 +3,13 @@
 ## v0.0.3
 
  - #DOING:0 html ui
- - #DOING:4 order of methods
  - #TODO:40 load roboto font locally
- - #DOING:20 add version stamp to app.{js,css}
+ - #DOING:21 set cache-control headers on static assets
+ - #DOING:40 list feeds
+ - #DOING:50 list feed log
+ - #DOING:60 list next feeds
+ - #DOING:70 list fetcher activity
+ - #DOING:30 tests
  - #TODO:0 better logging
  - #TODO:20 http2
  - #TODO:30 need save database mutex

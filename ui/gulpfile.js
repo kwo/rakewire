@@ -5,11 +5,13 @@
 	const gulp = require('gulp');
 	const gutil = require('gulp/node_modules/gulp-util');
 	const paths = makePaths();
+	let buildversion;
 
 	gulp.task('default', ['build']);
 	gulp.task('lint', lint);
 	gulp.task('clean', clean);
-	gulp.task('resources', ['clean'], resources);
+	gulp.task('version', version);
+	gulp.task('resources', ['clean', 'version'], resources);
 	gulp.task('build', ['lint', 'resources'], build);
 	gulp.task('devmode', devmode);
 	gulp.task('buildmode', buildmode);
@@ -52,8 +54,17 @@
 		return del(paths.dst.all, {dot: true});
 	}
 
+	function version() {
+		const uuid = require('node-uuid');
+		return new Promise(function(resolve/*, reject*/) {
+			buildversion = uuid.v1().substr(0, 8);
+			log('buildversion:', buildversion);
+			resolve(buildversion);
+		});
+	}
+
 	function resources() {
-		log('copying resources...');
+		log('copying resources... ');
 		const path = require('path');
 		const htmlreplace = require('gulp-html-replace');
 		let promises = [];
@@ -61,8 +72,8 @@
 		promises.push(new Promise(function(resolve, reject) {
 			gulp.src(path.join(paths.src.base, 'index.html'))
 				.pipe(htmlreplace({
-					'js':  'app.js',
-					'css': 'app.css'
+					'js':  'app-' + buildversion + '.js',
+					'css': 'app-' + buildversion + '.css'
 				}))
 				.pipe(gulp.dest(paths.dst.base))
 				.on('end', resolve)
@@ -91,7 +102,7 @@
 		log('building...');
 		const jspm = require('jspm');
 		const path = require('path');
-		return jspm.bundleSFX('lib/main', path.join(paths.dst.base, 'app.js'),
+		return jspm.bundleSFX('lib/main', path.join(paths.dst.base, 'app-' + buildversion + '.js'),
 			{ mangle: true, minify: true, lowResSourceMaps: false, sourceMaps: false }
 		);
 	}
