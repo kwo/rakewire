@@ -32,6 +32,7 @@ const (
 	hContentEncoding = "Content-Encoding"
 	hContentLength   = "Content-Length"
 	hContentType     = "Content-Type"
+	hVary            = "Vary"
 	mGet             = "GET"
 	mPost            = "POST"
 	mPut             = "PUT"
@@ -68,6 +69,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 
 	// api router
 	router.PathPrefix(apiPrefix).Handler(negroni.New(
+		NoCache(),
 		negroni.Wrap(z.apiRouter(apiPrefix)),
 	))
 
@@ -84,11 +86,13 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 	sfs := singleFileSystem{name: "/index.html", root: bfs}
 	router.Path("/{route:[a-z]+}").Handler(negroni.New(
 		gzip.Gzip(gzip.BestCompression),
+		NoCache(),
 		negroni.Wrap(http.FileServer(sfs)),
 	))
 
 	router.PathPrefix("/").Handler(negroni.New(
 		gzip.Gzip(gzip.BestCompression),
+		NoCache(),
 		negroni.Wrap(http.FileServer(bfs)),
 	))
 
@@ -103,7 +107,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 		chErrors <- err
 		return
 	}
-	// #TODO:10 TLS wrap listener in tls.NewListener
+	// #TODO:50 TLS wrap listener in tls.NewListener
 	z.listener = l
 	server := http.Server{
 		Handler: n,

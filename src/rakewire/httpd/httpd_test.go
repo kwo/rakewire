@@ -25,6 +25,8 @@ var (
 	feedID string
 )
 
+// #TODO:30 rewrite HTTP tests with httptest package
+
 func TestMain(m *testing.M) {
 
 	testDatabaseFile := "../../../test/httpd.db"
@@ -182,12 +184,28 @@ func assertText(t *testing.T, rsp *http.Response, err error) {
 	assert200OK(t, rsp, err, mimeText)
 }
 
+func assertJSONAPI(t *testing.T, rsp *http.Response, err error) {
+	assert200OKAPI(t, rsp, err, mimeJSON)
+}
+
 func assert200OK(t *testing.T, rsp *http.Response, err error, mimeType string) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, mimeType, rsp.Header.Get(hContentType))
 	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
+	assert.Equal(t, hAcceptEncoding, rsp.Header.Get(hVary))
+	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
+}
+
+func assert200OKAPI(t *testing.T, rsp *http.Response, err error, mimeType string) {
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
+	assert.Equal(t, mimeType, rsp.Header.Get(hContentType))
+	//assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
+	//assert.Equal(t, hAcceptEncoding, rsp.Header.Get(hVary))
+	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
 }
 
 func assert404NotFound(t *testing.T, rsp *http.Response, err error) {
@@ -196,14 +214,18 @@ func assert404NotFound(t *testing.T, rsp *http.Response, err error) {
 	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
 	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
+	assert.Equal(t, hAcceptEncoding, rsp.Header.Get(hVary))
+	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
 }
 
-func assert404NotFoundNoGzip(t *testing.T, rsp *http.Response, err error) {
+func assert404NotFoundAPI(t *testing.T, rsp *http.Response, err error) {
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
 	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
+	//assert.Equal(t, hAcceptEncoding, rsp.Header.Get(hVary))
+	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
 }
 
 func getBodyAsString(r io.Reader) (string, error) {
@@ -218,7 +240,7 @@ func getZBodyAsString(r io.Reader) (string, error) {
 }
 
 func newRequest(method string, path string) *http.Request {
-	fmt.Printf("ws: %t %t\n", ws == nil, ws.listener == nil)
+	//fmt.Printf("ws: %t %t\n", ws == nil, ws.listener == nil)
 	req, _ := http.NewRequest(method, fmt.Sprintf("http://%s%s", ws.listener.Addr(), path), nil)
 	req.Header.Add(hAcceptEncoding, "gzip")
 	return req

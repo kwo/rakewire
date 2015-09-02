@@ -31,9 +31,7 @@ func TestFeedsPut(t *testing.T) {
 	rsp, err := c.Do(req)
 	assert.Nil(t, err)
 	assert.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
+	assertJSONAPI(t, rsp, err)
 
 	jsonRsp := SaveFeedsResponse{}
 	err = json.NewDecoder(rsp.Body).Decode(&jsonRsp)
@@ -150,7 +148,7 @@ func TestFeedGetByURL404(t *testing.T) {
 
 	req := newRequest(mGet, "/api/feeds?url=http%3A%2F%2Flocalhost%3A5555%2Ffeed.XML")
 	rsp, err := c.Do(req)
-	assert404NotFoundNoGzip(t, rsp, err)
+	assert404NotFoundAPI(t, rsp, err)
 
 	expectedText := "Not Found\n"
 	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
@@ -194,6 +192,6 @@ func TestFeedGetByID404(t *testing.T) {
 
 	req := newRequest(mGet, "/api/feeds/helloworld")
 	rsp, err := c.Do(req)
-	assert404NotFoundNoGzip(t, rsp, err)
+	assert404NotFoundAPI(t, rsp, err)
 
 }
