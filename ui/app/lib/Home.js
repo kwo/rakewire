@@ -9,12 +9,7 @@ class Home extends React.Component {
 	// };
 
 	static contextTypes = {
-		router: PropTypes.func,
 		muiTheme : PropTypes.object.isRequired
-	};
-
-	static childContextTypes = {
-		muiTheme : PropTypes.object
 	};
 
 	// static defaultProps = {
@@ -24,12 +19,6 @@ class Home extends React.Component {
 	constructor(props, context) {
 		super(props, context);
 		this.state = {};
-	}
-
-	getChildContext () {
-		return {
-			muiTheme : this.context.muiTheme
-		};
 	}
 
 	render() {

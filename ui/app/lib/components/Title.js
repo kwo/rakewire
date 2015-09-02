@@ -18,10 +18,6 @@ class Title extends React.Component {
 		muiTheme : PropTypes.object.isRequired
 	};
 
-	static childContextTypes = {
-		muiTheme : PropTypes.object
-	};
-
 	static defaultProps = {
 		title: 'title'
 	}
@@ -29,12 +25,6 @@ class Title extends React.Component {
 	constructor(props, context) {
 		super(props, context);
 		this.state = {};
-	}
-
-	getChildContext () {
-		return {
-			muiTheme : this.context.muiTheme
-		};
 	}
 
 	// from AppBar

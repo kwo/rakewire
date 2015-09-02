@@ -3,7 +3,6 @@
 ## v0.0.3
 
  - #DOING:0 html ui
- - #DOING:3 getChildContext only on grandfather
  - #DOING:4 order of methods
  - #TODO:40 load roboto font locally
  - #DOING:20 add version stamp to app.{js,css}

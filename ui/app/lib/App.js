@@ -14,7 +14,7 @@ class App extends React.Component {
 	};
 
 	static contextTypes = {
-		router: PropTypes.func
+		router: PropTypes.func.isRequired
 	};
 
 	static childContextTypes = {
