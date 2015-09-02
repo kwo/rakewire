@@ -13,7 +13,7 @@
 	gulp.task('clean', clean);
 	gulp.task('version', version);
 	gulp.task('resources', ['clean', 'version'], resources);
-	gulp.task('build', ['test', 'resources'], build);
+	gulp.task('build', ['lint', 'resources'], build);
 	gulp.task('devmode', devmode);
 	gulp.task('buildmode', buildmode);
 
