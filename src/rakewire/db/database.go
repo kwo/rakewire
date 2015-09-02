@@ -15,6 +15,7 @@ type Database interface {
 	GetFeedByID(id string) (*m.Feed, error)
 	GetFeedByURL(url string) (*m.Feed, error)
 	GetFeeds() (*m.Feeds, error)
+	// GetFetchFeeds get feeds to be fetched within the given max time parameter.
 	GetFetchFeeds(max *time.Time) (*m.Feeds, error)
 	SaveFeeds(*m.Feeds) error
 	// GetFeedLog retrieves the past fetch attempts for the feed in reverse chronological order.

@@ -38,7 +38,7 @@ func (z *Database) GetFeeds() (*m.Feeds, error) {
 
 }
 
-// GetFetchFeeds get feeds to be fetched
+// GetFetchFeeds get feeds to be fetched within the given max time parameter.
 func (z *Database) GetFetchFeeds(maxTime *time.Time) (*m.Feeds, error) {
 
 	var max []byte
