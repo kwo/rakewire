@@ -3,16 +3,16 @@
 ## v0.0.3
 
  - #DOING:0 html ui
- - #TODO:80 load roboto font locally
+ - #TODO:100 load roboto font locally
  - #TODO:10 set cache-control headers on static assets
- - #DOING:20 list feeds
- - #DOING:30 list feed log
- - #DOING:40 list next feeds
- - #DOING:50 list fetcher activity
- - #DOING:10 tests
+ - #DOING:10 list feeds
+ - #DOING:20 list feed log
+ - #DOING:30 list next feeds
+ - #DOING:40 list fetcher activity
+ - #TODO:90 tests
  - #TODO:0 better logging
- - #TODO:60 http2
- - #TODO:70 need save database mutex
+ - #TODO:70 http2
+ - #TODO:80 need save database mutex
  - #FIXME:0 bugfix feeds next on empty db or db with feeds but before first poll
  - #FIXME:30 handle feeds without dates on entries - save items, check for new ones, assign new current time, update feed.LastUpdated
 

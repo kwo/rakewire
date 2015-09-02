@@ -25,7 +25,7 @@ var (
 	feedID string
 )
 
-// #TODO:30 rewrite HTTP tests with httptest package
+// #TODO:40 rewrite HTTP tests with httptest package
 
 func TestMain(m *testing.M) {
 
