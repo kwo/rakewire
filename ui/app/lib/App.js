@@ -3,7 +3,7 @@ import { RouteHandler } from 'react-router';
 import { AppBar, IconButton, Styles, Tab, Tabs } from 'material-ui';
 const ThemeManager = new Styles.ThemeManager();
 
-import TitleComponent from './TitleComponent';
+import TitleComponent from './components/Title';
 
 // #DOING:10 hook current tab into router onChange event
 

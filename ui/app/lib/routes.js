@@ -1,9 +1,9 @@
 /* eslint no-unused-vars: 0 */
 import React from 'react';
 import {DefaultRoute, Redirect, Route} from 'react-router';
-import App from './AppComponent';
-import About from './AboutComponent';
-import Home from './HomeComponent';
+import App from './App';
+import About from './About';
+import Home from './Home';
 
 // -------------------- routes --------------------
 

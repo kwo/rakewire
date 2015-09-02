@@ -3,6 +3,8 @@
 ## v0.0.3
 
  - #DOING:0 html ui
+ - #DOING:2 make routes into Routes, pass ref of runction to instance and pass to App (should Routes be a react component?)
+ - #DOING:3 getChildContext only on grandfather
  - #TODO:40 load roboto font locally
  - #DOING:20 add version stamp to app.{js,css}
  - #TODO:0 better logging
