@@ -9,10 +9,11 @@
 
 	gulp.task('default', ['build']);
 	gulp.task('lint', lint);
+	gulp.task('test', ['lint'], test);
 	gulp.task('clean', clean);
 	gulp.task('version', version);
 	gulp.task('resources', ['clean', 'version'], resources);
-	gulp.task('build', ['lint', 'resources'], build);
+	gulp.task('build', ['test', 'resources'], build);
 	gulp.task('devmode', devmode);
 	gulp.task('buildmode', buildmode);
 
@@ -46,6 +47,24 @@
 		return gulp.src(paths.src.js)
 			.pipe(eslint())
 			.pipe(eslint.format());
+	}
+
+	function test() {
+		const childp = require('child_process');
+		return new Promise(function(resolve, reject) {
+			let app = childp.spawn(
+				'/bin/bash',
+				['-c', './node_modules/.bin/babel-node ./test/*.js | ./node_modules/.bin/faucet'],
+				{stdio: 'inherit'}
+			);
+			app.on('close', function (code) {
+				if (code != 0) {
+					reject();
+				} else {
+					resolve();
+				}
+			});
+		});
 	}
 
 	function clean() {

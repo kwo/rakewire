@@ -11,10 +11,12 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "babel": "^5.0.0",
     "babel-eslint": "^4.0.0",
     "del": "^2.0.0",
     "eslint": "^1.0.0",
     "eslint-plugin-react": "^3.0.0",
+    "faucet": "0.0.1",
     "gulp": "^3.0.0",
     "gulp-babel": "^5.0.0",
     "gulp-eslint": "^1.0.0",
@@ -23,7 +25,8 @@
     "gulp-plumber": "^1.0.0",
     "gulp-sym": "0.0.14",
     "jspm": "^0.16.0",
-    "node-uuid": "^1.4.3"
+    "node-uuid": "^1.0.0",
+    "tape": "^4.0.0"
   },
   "jspm": {
     "directories": {
