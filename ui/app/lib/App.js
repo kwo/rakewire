@@ -5,8 +5,6 @@ const ThemeManager = new Styles.ThemeManager();
 
 import TitleComponent from './components/Title';
 
-// #DOING:10 hook current tab into router onChange event
-
 class App extends React.Component {
 
 	static displayName = 'app';
@@ -31,15 +29,16 @@ class App extends React.Component {
 
 		super(props, context);
 
-		const currentRoutes = this.context.router.getCurrentRoutes();
-		const activeRouteName = currentRoutes[currentRoutes.length - 1].name;
 		this.state = {
-			tab: activeRouteName
+			tab: this.context.router.getLocation().getCurrentPath()
 		};
 
 		this.navigateTo = this.navigateTo.bind(this);
 		this.onChangeTabs = this.onChangeTabs.bind(this);
 		this.onLogoClick = this.onLogoClick.bind(this);
+		this.onRouteChange = this.onRouteChange.bind(this);
+
+		this.context.router.getLocation().addChangeListener(this.onRouteChange);
 
 	}
 
@@ -49,19 +48,27 @@ class App extends React.Component {
 		};
 	}
 
-	navigateTo(name) {
-		const state = this.state;
-		state.tab = name;
-		this.setState(state);
-		this.context.router.transitionTo(state.tab);
+	navigateTo(path) {
+		const currentPath = this.context.router.getLocation().getCurrentPath();
+		if (currentPath !== path) {
+			this.context.router.transitionTo(path);
+		}
 	}
 
-	onChangeTabs(name /*, event, tab*/) {
-		this.navigateTo(name);
+	onChangeTabs(path /*, event, tab*/) {
+		this.navigateTo(path);
 	}
 
 	onLogoClick(/*event*/) {
-		this.navigateTo('home');
+		this.navigateTo('/');
+	}
+
+	onRouteChange(event) {
+		// types: pop, push, replace
+		// console.log(event);
+		const state = this.state;
+		state.tab = event.path;
+		this.setState(state);
 	}
 
 	render() {
@@ -95,8 +102,8 @@ class App extends React.Component {
 						onChange={this.onChangeTabs}
 						style={styles.tabs}
 						value={this.state.tab}>
-						<Tab label="Home" value="home" />
-						<Tab label="About" value="about" />
+						<Tab label="Home" value="/" />
+						<Tab label="About" value="/about" />
 					</Tabs>
 				</AppBar>
 
