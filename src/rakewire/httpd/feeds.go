@@ -2,7 +2,6 @@ package httpd
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 	m "rakewire/model"
@@ -37,7 +36,7 @@ func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
 
 func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 
-	maxTime := time.Now().Truncate(time.Second).Add(48 * time.Hour)
+	maxTime := time.Now().Truncate(time.Second).Add(36 * time.Hour)
 	feeds, err := z.Database.GetFetchFeeds(&maxTime)
 	if err != nil {
 		logger.Printf("Error in db.GetFetchFeeds: %s\n", err.Error())
@@ -47,18 +46,12 @@ func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 
 	logger.Printf("Getting feeds: %d", feeds.Size())
 
-	w.Header().Set(hContentType, mimeText)
-	line := fmt.Sprintf("%-8s  %-8s %6s %6s %7s %5s %s\n", "Next", "Last", "Result", "Status", "Updated", "Check", "URL")
-	w.Write([]byte(line))
-
-	for _, f := range feeds.Values {
-		dtNext := f.NextFetch.Local().Format("Mon 15:04:05")
-		dtLast := ""
-		if f.Last != nil {
-			dtLast = f.Last.StartTime.Local().Format("Mon 15:04:05")
-		}
-		line := fmt.Sprintf("%-8s  %-8s %6s %6d %7t %-5s %s\n", dtNext, dtLast, f.Last.Result, f.Last.HTTP.StatusCode, f.Last.IsUpdated, f.Last.UpdateCheck, f.URL)
-		w.Write([]byte(line))
+	w.Header().Set(hContentType, mimeJSON)
+	err = feeds.Serialize(w)
+	if err != nil {
+		logger.Printf("Error in db.GetFeedsNext: %s\n", err.Error())
+		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)
+		return
 	}
 
 }

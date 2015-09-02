@@ -34,8 +34,10 @@
     },
     "dependencies": {
       "material-ui": "npm:material-ui@^0.11.0",
+      "moment": "npm:moment@^2.10.6",
       "react": "npm:react@^0.13.3",
-      "react-router": "npm:react-router@^0.13.3"
+      "react-router": "npm:react-router@^0.13.3",
+      "superagent": "npm:superagent@^1.3.0"
     },
     "devDependencies": {
       "babel": "npm:babel-core@^5.8.22",

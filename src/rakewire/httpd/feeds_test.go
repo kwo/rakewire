@@ -114,6 +114,34 @@ func TestFeedsGet(t *testing.T) {
 
 }
 
+func TestFeedsGetNext(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := newHTTPClient()
+
+	req := newRequest(mGet, "/api/feeds/next")
+	rsp, err := c.Do(req)
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
+	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
+	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
+	//assert.Equal(t, 98, int(rsp.ContentLength))
+
+	buf := bytes.Buffer{}
+	n, err := buf.ReadFrom(rsp.Body)
+	assert.Nil(t, err)
+	assert.Equal(t, rsp.ContentLength, n)
+	feeds := m.NewFeeds()
+	err = feeds.Deserialize(&buf)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, feeds.Size())
+	feed := feeds.Values[0]
+	assert.Equal(t, feedURL, feed.URL)
+
+}
+
 func TestFeedGetByURL(t *testing.T) {
 
 	require.NotNil(t, ws)

@@ -5,6 +5,10 @@ const ThemeManager = new Styles.ThemeManager();
 
 import TitleComponent from './components/Title';
 
+const Config = {
+	rootURL: '/api'
+};
+
 class App extends React.Component {
 
 	static displayName = 'app';
@@ -18,7 +22,8 @@ class App extends React.Component {
 	};
 
 	static childContextTypes = {
-		muiTheme : PropTypes.object
+		config: PropTypes.object,
+		muiTheme: PropTypes.object
 	};
 
 	static defaultProps = {
@@ -44,6 +49,7 @@ class App extends React.Component {
 
 	getChildContext () {
 		return {
+			config: Config,
 			muiTheme: ThemeManager.getCurrentTheme()
 		};
 	}
@@ -103,6 +109,7 @@ class App extends React.Component {
 						style={styles.tabs}
 						value={this.state.tab}>
 						<Tab label="Home" value="/" />
+						<Tab label="Next" value="/nextfeeds" />
 						<Tab label="About" value="/about" />
 					</Tabs>
 				</AppBar>

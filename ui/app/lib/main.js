@@ -9,14 +9,16 @@ const ThemeManager = new Styles.ThemeManager();
 ThemeManager.setTheme(ThemeManager.types.LIGHT);
 injectTapEventPlugin();
 
-import App from './App';
 import About from './About';
+import App from './App';
 import Home from './Home';
+import NextFeeds from './NextFeeds';
 
 const routes = (
 	<Route handler={App} name="app" path="/" >
 		<Route handler={Home} name="home" path="/" />
 		<Route handler={About} name="about" path="/about" />
+		<Route handler={NextFeeds} name="nextfeeds" path="/nextfeeds" />
 		<DefaultRoute handler={Home} />
 		<Redirect from="*" to="home" />
 	</Route>
