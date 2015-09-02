@@ -44,7 +44,9 @@ type Feed struct {
 	Log []*FeedLog `json:"-"`
 	// Time of next scheduled fetch
 	NextFetch time.Time `json:"nextFetch"`
-	// Feed title
+	// User notes of the feed
+	Notes string `json:"notes,omitifempty"`
+	// User defined title of the feed
 	Title string `json:"title"`
 	// URL updated if feed is permenently redirected
 	URL string `json:"url"`
