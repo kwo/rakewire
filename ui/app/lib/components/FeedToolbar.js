@@ -30,7 +30,7 @@ class FeedToolbar extends React.Component {
 	render() {
 
 		const formatDate = function(dt) {
-			if (!dt) return '';
+			if (!dt || dt.valueOf() === 0) return '';
 			return moment(dt).format('dd HH:mm:ss');
 		};
 

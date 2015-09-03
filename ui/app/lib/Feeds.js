@@ -1,4 +1,5 @@
 import React, { PropTypes } from 'react';
+import { Table, TableBody, TableHeader } from 'material-ui';
 import agent from 'superagent';
 import FeedItem from './components/FeedItem';
 import FeedToolbar from './components/FeedToolbar';
@@ -21,7 +22,8 @@ class Feeds extends React.Component {
 	};
 
 	static defaultProps = {
-		feeds: []
+		feeds: [],
+		lastRefresh: new Date(0)
 	}
 
 	constructor(props, context) {
@@ -32,7 +34,6 @@ class Feeds extends React.Component {
 		};
 		this.getNextFeeds = this.getNextFeeds.bind(this);
 		this.refresh = this.refresh.bind(this);
-		if (!this.state.lastRefresh) this.refresh();
 	}
 
 	getNextFeeds() {
@@ -71,14 +72,22 @@ class Feeds extends React.Component {
 
 				<FeedToolbar lastRefresh={this.state.lastRefresh} onRefreshClick={this.refresh} />
 
-				<table>
-					<thead>
+				<Table
+					fixedFooter={false}
+					fixedHeader={true}
+					selectable={true}>
+					<TableHeader displaySelectAll={false} enableSelectAll={false} selectAllSelected={false}>
 						<FeedItem feed={null} />
-					</thead>
-					<tbody>
+					</TableHeader>
+					<TableBody
+						deselectOnClickAway={false}
+						displayRowCheckbox={false}
+						selectable={true}
+						showRowHover={true}
+						stripedRows={true}>
 						{rows}
-					</tbody>
-				</table>
+					</TableBody>
+				</Table>
 
 			</div>
 		);
