@@ -2,7 +2,6 @@ import React, { PropTypes } from 'react';
 import { TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui';
 import moment from 'moment';
 
-// #DOING:30 tooltips for abbr
 // #DOING:70 click to detail view
 
 class FeedItem extends React.Component {
@@ -31,8 +30,13 @@ class FeedItem extends React.Component {
 			hoverCol: this.props.hoverCol,
 			hovered: this.props.hovered
 		};
+		this.onCellClick = this.onCellClick.bind(this);
 		this.onCellHover = this.onCellHover.bind(this);
 		this.onCellHoverExit = this.onCellHoverExit.bind(this);
+	}
+
+	onCellClick(/*e, id*/) {
+		console.log(this.props.feed);
 	}
 
 	onCellHover(e, row, col) {
@@ -96,21 +100,70 @@ class FeedItem extends React.Component {
 			return moment(dt).format('dd HH:mm');
 		};
 
-		const title = (this.state.hovered && this.state.hoverCol == 7) ? feed.url : feed.title || feed.last200.feed.title || feed.url;
-		const isUpdated = feed.last.updated ? 'Yes' : '';
+		const formatMessage = function(f) {
+			return f.last.resultMessage ? ': ' + f.last.resultMessage : '';
+		}
+
+		const formatStatus = function(value) {
+			switch (value) {
+			case 'OK':
+				return 'OK';
+			case 'MV':
+				return 'MV = redirected';
+			case 'EC':
+				return 'EC = error client' + formatMessage(feed);
+			case 'ES':
+				return 'ES = error server' + formatMessage(feed);
+			case 'FP':
+				return 'FP = cannot parse feed' + formatMessage(feed);
+			case 'FT':
+				return 'FT = cannot parse feed time' + formatMessage(feed);
+			}
+			return value + ' = unknown';
+		};
+
+		const formatUpdateCheck = function(value) {
+			switch (value) {
+			case 'LU':
+				return 'LU = Last Updated';
+			case 'NM':
+				return 'NM = Not Modifed';
+			}
+			return value + ' = Unknown';
+		};
+
+		let status = feed.last.result;
+		let isUpdated = feed.last.updated ? 'Yes' : '';
+		let updateCheck = feed.last.updateCheck;
+		let title = feed.title || feed.last200.feed.title || feed.url;
+
+		if (this.state.hovered) {
+			switch (this.state.hoverCol) {
+			case 3:
+				title = formatStatus(feed.last.result);
+				break;
+			case 6:
+				title = formatUpdateCheck(feed.last.updateCheck);
+				break;
+			case 7:
+				title = feed.url;
+				break;
+			}
+		}
 
 		return (
 			<TableRow
 				hoverable={true}
 				key={feed.id}
 				onCellHover={this.onCellHover}
-				onCellHoverExit={this.onCellHoverExit}>
+				onCellHoverExit={this.onCellHoverExit}
+				onClick={this.onCellClick}>
 				<TableRowColumn style={style.td}>{formatDate(feed.nextFetch)}</TableRowColumn>
 				<TableRowColumn style={style.td}>{formatDate(feed.last.startTime)}</TableRowColumn>
-				<TableRowColumn style={style.td}>{feed.last.result}</TableRowColumn>
+				<TableRowColumn style={style.td}>{status}</TableRowColumn>
 				<TableRowColumn style={style.td}>{feed.last.http.statusCode}</TableRowColumn>
 				<TableRowColumn style={style.td}>{isUpdated}</TableRowColumn>
-				<TableRowColumn style={style.td}>{feed.last.updateCheck}</TableRowColumn>
+				<TableRowColumn style={style.td}>{updateCheck}</TableRowColumn>
 				<TableRowColumn style={style.tdFeed}>{title}</TableRowColumn>
 			</TableRow>
 		);
