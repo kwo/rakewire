@@ -1,17 +1,18 @@
 import React, { PropTypes } from 'react';
-import { FlatButton, FontIcon } from 'material-ui';
 import agent from 'superagent';
 import FeedItem from './components/FeedItem';
+import FeedToolbar from './components/FeedToolbar';
 
-// #DOING:60 lose state after route change - save to app-wide repository - localstate
-// #DOING:30 save last refresh time, auto-reload if state too old
+// #DOING:50 lose state after route change - save to app-wide repository - localstate
+// #DOING:60 auto-reload if state too old
 
 class Feeds extends React.Component {
 
 	static displayName = 'feeds';
 
 	static propTypes = {
-		feeds: PropTypes.array
+		feeds: PropTypes.array,
+		lastRefresh: PropTypes.object
 	};
 
 	static contextTypes = {
@@ -26,10 +27,12 @@ class Feeds extends React.Component {
 	constructor(props, context) {
 		super(props, context);
 		this.state = {
-			feeds: this.props.feeds
+			feeds: this.props.feeds,
+			lastRefresh: this.props.lastRefresh
 		};
 		this.getNextFeeds = this.getNextFeeds.bind(this);
-		this.onRefreshClick = this.onRefreshClick.bind(this);
+		this.refresh = this.refresh.bind(this);
+		if (!this.state.lastRefresh) this.refresh();
 	}
 
 	getNextFeeds() {
@@ -43,12 +46,16 @@ class Feeds extends React.Component {
 		});
 	}
 
-	onRefreshClick() {
+	refresh() {
+		this.setState({
+			feeds: [],
+			lastRefresh: null
+		});
 		this.getNextFeeds().then((feeds) => {
 			this.setState({
-				feeds: feeds
+				feeds: feeds,
+				lastRefresh: new Date()
 			});
-			console.log(feeds);
 		});
 	}
 
@@ -62,14 +69,7 @@ class Feeds extends React.Component {
 		return (
 			<div>
 
-				<FlatButton
-					label="Refresh"
-					onTouchTap={this.onRefreshClick}
-					secondary={true}>
-					<FontIcon className="material-icons">refresh</FontIcon>
-				</FlatButton>
-
-				<hr/>
+				<FeedToolbar lastRefresh={this.state.lastRefresh} onRefreshClick={this.refresh} />
 
 				<table>
 					<thead>

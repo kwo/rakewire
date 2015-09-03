@@ -2,7 +2,7 @@ import React, { PropTypes } from 'react';
 import moment from 'moment';
 
 // #DOING:20 add style to row element (gray text, more spacing)
-// #DOING:40 tooltips for abbr
+// #DOING:30 tooltips for abbr
 // #DOING:70 click to detail view
 
 class FeedItem extends React.Component {
@@ -10,7 +10,7 @@ class FeedItem extends React.Component {
 	static displayName = 'feeditem';
 
 	static propTypes = {
-		feed: PropTypes.object.isRequired
+		feed: PropTypes.object
 	};
 
 	static contextTypes = {
@@ -32,7 +32,7 @@ class FeedItem extends React.Component {
 
 		if (!feed) {
 			return (
-				<tr>
+				<tr key={0}>
 					<th>Next</th>
 					<th>Last</th>
 					<th>Status</th>
