@@ -40,7 +40,7 @@ type Service struct {
 	input   chan *m.Feed
 	output  chan *m.Feed
 	workers int
-	latch   sync.WaitGroup
+	latch   *sync.WaitGroup
 	client  *http.Client
 }
 
@@ -54,6 +54,7 @@ func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Se
 		input:   input,
 		output:  output,
 		workers: cfg.Workers,
+		latch:   &sync.WaitGroup{},
 		client:  newInternalClient(timeout),
 	}
 }
