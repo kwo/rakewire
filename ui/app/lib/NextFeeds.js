@@ -72,23 +72,12 @@ class NextFeeds extends React.Component {
 				<hr/>
 
 				<table>
-
 					<thead>
-						<tr>
-							<th>Next</th>
-							<th>Last</th>
-							<th>Status</th>
-							<th>Code</th>
-							<th>Updated</th>
-							<th>Check</th>
-							<th>Feed</th>
-						</tr>
+						<FeedRow feed={null} />
 					</thead>
-
 					<tbody>
 						{rows}
 					</tbody>
-
 				</table>
 
 			</div>

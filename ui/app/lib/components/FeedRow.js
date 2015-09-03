@@ -18,7 +18,7 @@ class FeedRow extends React.Component {
 	};
 
 	static defaultProps = {
-		feed: {}
+		feed: null
 	}
 
 	constructor(props, context) {
@@ -28,11 +28,26 @@ class FeedRow extends React.Component {
 
 	render() {
 
+		const feed = this.props.feed;
+
+		if (!feed) {
+			return (
+				<tr>
+					<th>Next</th>
+					<th>Last</th>
+					<th>Status</th>
+					<th>Code</th>
+					<th>Updated</th>
+					<th>Check</th>
+					<th>Feed</th>
+				</tr>
+			);
+		}
+
 		const formatDate = function(dt) {
 			return moment(dt).format('dd HH:mm');
 		};
 
-		const feed = this.props.feed;
 		const title = feed.title || feed.last200.title || feed.url;
 		const isUpdated = feed.last.updated ? 'Yes' : '';
 
@@ -46,7 +61,8 @@ class FeedRow extends React.Component {
 				<td>{feed.last.updateCheck}</td>
 				<td>{title}</td>
 			</tr>
-		)
+		);
+
 	}
 
 }
