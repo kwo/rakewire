@@ -1,13 +1,13 @@
 import React, { PropTypes } from 'react';
 import moment from 'moment';
 
-// #DOING:10 add style to row element (gray text, more spacing)
-// #DOING:10 tooltips for abbr
-// #DOING:10 click to detail view
+// #DOING:20 add style to row element (gray text, more spacing)
+// #DOING:40 tooltips for abbr
+// #DOING:70 click to detail view
 
-class FeedRow extends React.Component {
+class FeedItem extends React.Component {
 
-	static displayName = 'feedrow';
+	static displayName = 'feeditem';
 
 	static propTypes = {
 		feed: PropTypes.object.isRequired
@@ -67,4 +67,4 @@ class FeedRow extends React.Component {
 
 }
 
-export default FeedRow;
+export default FeedItem;

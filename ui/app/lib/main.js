@@ -12,13 +12,13 @@ injectTapEventPlugin();
 import About from './About';
 import App from './App';
 import Home from './Home';
-import NextFeeds from './NextFeeds';
+import Feeds from './Feeds';
 
 const routes = (
 	<Route handler={App} name="app" path="/" >
 		<Route handler={Home} name="home" path="/" />
 		<Route handler={About} name="about" path="/about" />
-		<Route handler={NextFeeds} name="nextfeeds" path="/nextfeeds" />
+		<Route handler={Feeds} name="feeds" path="/feeds" />
 		<DefaultRoute handler={Home} />
 		<Redirect from="*" to="home" />
 	</Route>

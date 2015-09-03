@@ -1,14 +1,14 @@
 import React, { PropTypes } from 'react';
 import { FlatButton, FontIcon } from 'material-ui';
 import agent from 'superagent';
-import FeedRow from './components/FeedRow';
+import FeedItem from './components/FeedItem';
 
-// #DOING:10 lose state after route change - save to app-wide repository - localstate
-// #DOING:10 save last refresh time, auto-reload if state too old
+// #DOING:60 lose state after route change - save to app-wide repository - localstate
+// #DOING:30 save last refresh time, auto-reload if state too old
 
-class NextFeeds extends React.Component {
+class Feeds extends React.Component {
 
-	static displayName = 'nextfeeds';
+	static displayName = 'feeds';
 
 	static propTypes = {
 		feeds: PropTypes.array
@@ -56,7 +56,7 @@ class NextFeeds extends React.Component {
 
 		const rows = [];
 		this.state.feeds.forEach((feed) => {
-			rows.push(<FeedRow feed={feed}/>);
+			rows.push(<FeedItem feed={feed}/>);
 		});
 
 		return (
@@ -73,7 +73,7 @@ class NextFeeds extends React.Component {
 
 				<table>
 					<thead>
-						<FeedRow feed={null} />
+						<FeedItem feed={null} />
 					</thead>
 					<tbody>
 						{rows}
@@ -87,4 +87,4 @@ class NextFeeds extends React.Component {
 
 }
 
-export default NextFeeds;
+export default Feeds;

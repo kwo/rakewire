@@ -109,7 +109,7 @@ class App extends React.Component {
 						style={styles.tabs}
 						value={this.state.tab}>
 						<Tab label="Home" value="/" />
-						<Tab label="Next" value="/nextfeeds" />
+						<Tab label="Feeds" value="/feeds" />
 						<Tab label="About" value="/about" />
 					</Tabs>
 				</AppBar>
