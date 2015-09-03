@@ -4,8 +4,8 @@ import agent from 'superagent';
 import FeedItem from './components/FeedItem';
 import FeedToolbar from './components/FeedToolbar';
 
-// #DOING:50 lose state after route change - save to app-wide repository - localstate
-// #DOING:60 auto-reload if state too old
+// #DOING:30 lose state after route change - save to app-wide repository - localstate
+// #DOING:40 auto-reload if state too old
 
 class Feeds extends React.Component {
 
@@ -33,6 +33,7 @@ class Feeds extends React.Component {
 			lastRefresh: this.props.lastRefresh
 		};
 		this.getNextFeeds = this.getNextFeeds.bind(this);
+		this.onRowClick = this.onRowClick.bind(this);
 		this.refresh = this.refresh.bind(this);
 	}
 
@@ -45,6 +46,10 @@ class Feeds extends React.Component {
 					resolve(rsp.body);
 				});
 		});
+	}
+
+	onRowClick() {
+		console.log(arguments);
 	}
 
 	refresh() {
@@ -82,6 +87,7 @@ class Feeds extends React.Component {
 					<TableBody
 						deselectOnClickAway={false}
 						displayRowCheckbox={false}
+						onRowSelection={this.onRowClick}
 						selectable={true}
 						showRowHover={true}
 						stripedRows={true}>

@@ -5,9 +5,9 @@
  - #DOING:0 html ui
  - #TODO:100 load roboto font locally
  - #TODO:10 set cache-control headers on static assets
- - #DOING:80 list feed log
- - #DOING:40 add client sort to feed list
- - #DOING:90 list fetcher activity
+ - #DOING:50 list feed log
+ - #DOING:20 add client sort to feed list
+ - #DOING:60 list fetcher activity
  - #TODO:90 tests
  - #TODO:0 better logging
  - #TODO:70 http2
