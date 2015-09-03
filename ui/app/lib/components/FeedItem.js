@@ -2,16 +2,14 @@ import React, { PropTypes } from 'react';
 import { TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui';
 import moment from 'moment';
 
-// #DOING:70 click to detail view
+// #DOING:10 click to detail view
 
 class FeedItem extends React.Component {
 
 	static displayName = 'feeditem';
 
 	static propTypes = {
-		feed: PropTypes.object,
-		hoverCol: PropTypes.number,
-		hovered: PropTypes.bool
+		feed: PropTypes.object
 	};
 
 	static contextTypes = {
@@ -19,44 +17,19 @@ class FeedItem extends React.Component {
 	};
 
 	static defaultProps = {
-		feed: null,
-		hoverCol: 0,
-		hovered: false
+		feed: null
 	}
 
 	constructor(props, context) {
 		super(props, context);
-		this.state = {
-			hoverCol: this.props.hoverCol,
-			hovered: this.props.hovered
-		};
-		this.onCellClick = this.onCellClick.bind(this);
-		this.onCellHover = this.onCellHover.bind(this);
-		this.onCellHoverExit = this.onCellHoverExit.bind(this);
-	}
-
-	onCellClick(/*e, id*/) {
-		console.log(this.props.feed);
-	}
-
-	onCellHover(e, row, col) {
-		const state = this.state;
-		state.hovered = true;
-		state.hoverCol = col;
-		this.setState(state);
-	}
-
-	onCellHoverExit(e, row, col) {
-		const state = this.state;
-		state.hovered = false;
-		state.hoverCol = col;
-		this.setState(state);
+		this.state = {};
 	}
 
 	render() {
 
 		const style = {
 			td: {
+				cursor: 'pointer',
 				height: 24,
 				paddingLeft: 12,
 				paddingRight: 12,
@@ -64,6 +37,7 @@ class FeedItem extends React.Component {
 				width: 40
 			},
 			tdFeed: {
+				cursor: 'pointer',
 				height: 24,
 				textAlign: 'left',
 				width: '50%'
@@ -85,8 +59,8 @@ class FeedItem extends React.Component {
 		if (!feed) {
 			return (
 				<TableRow key={0}>
-					<TableHeaderColumn style={style.th} tooltip="time of the next scheduled fetch">Next</TableHeaderColumn>
-					<TableHeaderColumn style={style.th} tooltip="the time of the last attempted fetch">Last</TableHeaderColumn>
+					<TableHeaderColumn style={style.th}>Next</TableHeaderColumn>
+					<TableHeaderColumn style={style.th}>Last</TableHeaderColumn>
 					<TableHeaderColumn style={style.th}>Status</TableHeaderColumn>
 					<TableHeaderColumn style={style.th}>Code</TableHeaderColumn>
 					<TableHeaderColumn style={style.th}>Updated</TableHeaderColumn>
@@ -100,64 +74,15 @@ class FeedItem extends React.Component {
 			return moment(dt).format('dd HH:mm');
 		};
 
-		const formatMessage = function(f) {
-			return f.last.resultMessage ? ': ' + f.last.resultMessage : '';
-		}
-
-		const formatStatus = function(value) {
-			switch (value) {
-			case 'OK':
-				return 'OK';
-			case 'MV':
-				return 'MV = redirected';
-			case 'EC':
-				return 'EC = error client' + formatMessage(feed);
-			case 'ES':
-				return 'ES = error server' + formatMessage(feed);
-			case 'FP':
-				return 'FP = cannot parse feed' + formatMessage(feed);
-			case 'FT':
-				return 'FT = cannot parse feed time' + formatMessage(feed);
-			}
-			return value + ' = unknown';
-		};
-
-		const formatUpdateCheck = function(value) {
-			switch (value) {
-			case 'LU':
-				return 'LU = Last Updated';
-			case 'NM':
-				return 'NM = Not Modifed';
-			}
-			return value + ' = Unknown';
-		};
-
-		let status = feed.last.result;
-		let isUpdated = feed.last.updated ? 'Yes' : '';
-		let updateCheck = feed.last.updateCheck;
-		let title = feed.title || feed.last200.feed.title || feed.url;
-
-		if (this.state.hovered) {
-			switch (this.state.hoverCol) {
-			case 3:
-				title = formatStatus(feed.last.result);
-				break;
-			case 6:
-				title = formatUpdateCheck(feed.last.updateCheck);
-				break;
-			case 7:
-				title = feed.url;
-				break;
-			}
-		}
+		const status = feed.last.result;
+		const isUpdated = feed.last.updated ? 'Yes' : '';
+		const updateCheck = feed.last.updateCheck;
+		const title = feed.title || feed.last200.feed.title || feed.url;
 
 		return (
 			<TableRow
 				hoverable={true}
-				key={feed.id}
-				onCellHover={this.onCellHover}
-				onCellHoverExit={this.onCellHoverExit}
-				onClick={this.onCellClick}>
+				key={feed.id}>
 				<TableRowColumn style={style.td}>{formatDate(feed.nextFetch)}</TableRowColumn>
 				<TableRowColumn style={style.td}>{formatDate(feed.last.startTime)}</TableRowColumn>
 				<TableRowColumn style={style.td}>{status}</TableRowColumn>
