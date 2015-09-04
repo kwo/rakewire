@@ -1,6 +1,5 @@
 import React, { PropTypes } from 'react';
 import { Table, TableBody, TableHeader } from 'material-ui';
-import agent from 'superagent';
 import FeedItem from './components/FeedItem';
 import FeedToolbar from './components/FeedToolbar';
 
@@ -39,11 +38,13 @@ class Feeds extends React.Component {
 
 	getNextFeeds() {
 		return new Promise((resolve, reject) => {
-			agent
-				.get(this.context.config.rootURL + '/feeds/next')
-				.end((err, rsp) => {
-					if (err) return reject();
-					resolve(rsp.body);
+			fetch(this.context.config.rootURL + '/feeds/next')
+				.then((rsp) => {
+					if (rsp && rsp.ok) {
+						resolve(rsp.json());
+					} else {
+						reject(rsp.status);
+					}
 				});
 		});
 	}
