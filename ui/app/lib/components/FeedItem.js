@@ -23,6 +23,11 @@ class FeedItem extends React.Component {
 	constructor(props, context) {
 		super(props, context);
 		this.state = {};
+		this.onRowClick = this.onRowClick.bind(this);
+	}
+
+	onRowClick() {
+		console.log(this.props.feed.id);
 	}
 
 	render() {
@@ -82,7 +87,7 @@ class FeedItem extends React.Component {
 		return (
 			<TableRow
 				hoverable={true}
-				key={feed.id}>
+				onRowClick={this.onRowClick}>
 				<TableRowColumn style={style.td}>{formatDate(feed.nextFetch)}</TableRowColumn>
 				<TableRowColumn style={style.td}>{formatDate(feed.last.startTime)}</TableRowColumn>
 				<TableRowColumn style={style.td}>{status}</TableRowColumn>

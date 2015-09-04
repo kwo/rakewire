@@ -32,7 +32,6 @@ class Feeds extends React.Component {
 			lastRefresh: this.props.lastRefresh
 		};
 		this.getNextFeeds = this.getNextFeeds.bind(this);
-		this.onRowClick = this.onRowClick.bind(this);
 		this.refresh = this.refresh.bind(this);
 	}
 
@@ -47,10 +46,6 @@ class Feeds extends React.Component {
 					}
 				});
 		});
-	}
-
-	onRowClick() {
-		console.log(arguments);
 	}
 
 	refresh() {
@@ -70,7 +65,7 @@ class Feeds extends React.Component {
 
 		const rows = [];
 		this.state.feeds.forEach((feed) => {
-			rows.push(<FeedItem feed={feed}/>);
+			rows.push(<FeedItem feed={feed} key={feed.id} />);
 		});
 
 		return (
@@ -88,7 +83,6 @@ class Feeds extends React.Component {
 					<TableBody
 						deselectOnClickAway={false}
 						displayRowCheckbox={false}
-						onRowSelection={this.onRowClick}
 						selectable={true}
 						showRowHover={true}
 						stripedRows={true}>
