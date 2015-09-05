@@ -38,13 +38,9 @@ class Feeds extends React.Component {
 	getNextFeeds() {
 		return new Promise((resolve, reject) => {
 			fetch(this.context.config.rootURL + '/feeds/next')
-				.then((rsp) => {
-					if (rsp && rsp.ok) {
-						resolve(rsp.json());
-					} else {
-						reject(rsp.status);
-					}
-				});
+				.then(rsp => rsp.json())
+				.then(feeds => resolve(feeds))
+				.catch(e => reject(e));
 		});
 	}
 
@@ -53,12 +49,14 @@ class Feeds extends React.Component {
 			feeds: [],
 			lastRefresh: null
 		});
-		this.getNextFeeds().then((feeds) => {
-			this.setState({
-				feeds: feeds,
-				lastRefresh: new Date()
-			});
-		});
+		this.getNextFeeds()
+			.then(feeds => {
+				this.setState({
+					feeds: feeds,
+					lastRefresh: new Date()
+				});
+			})
+			.catch(e => console.log('Cannot load feeds:', e));
 	}
 
 	render() {
