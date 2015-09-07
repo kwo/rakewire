@@ -2,12 +2,14 @@
 
 ## v0.0.3
 
+ - #DOING:10 manage deps with gvt
+ - #DOING:20 remove negroni, [use normal http handlers](https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81)
  - #DOING:0 html ui
  - #TODO:100 load roboto font locally
  - #TODO:10 set cache-control headers on static assets
- - #DOING:50 list feed log
- - #DOING:20 add client sort to feed list
- - #DOING:60 list fetcher activity
+ - #DOING:70 list feed log
+ - #DOING:40 add client sort to feed list
+ - #DOING:80 list fetcher activity
  - #TODO:90 tests
  - #TODO:0 better logging
  - #TODO:70 http2
