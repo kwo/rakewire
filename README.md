@@ -26,7 +26,7 @@
  - #BACKLOG:40 implememt Fever API
  - #BACKLOG:50 add support for Hot Links to Fever API support
  - #BACKLOG:60 hub subscription support
- - #BACKLOG:80 http2 server push
+ - #BACKLOG:80 http2 server push or SSE
  - #BACKLOG:90 Smart feeds based on filters (by keyword, category, author)
  - #BACKLOG:100 subscribe to web pages without a feed
  - #BACKLOG:110 plugin API for plugins for others services (Slack, XMPP, HipChat)
