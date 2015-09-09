@@ -25,7 +25,7 @@ var (
 	feedID string
 )
 
-// #TODO:40 rewrite HTTP tests with httptest package
+// TODO rewrite HTTP tests with httptest package
 
 func TestMain(m *testing.M) {
 
@@ -166,7 +166,7 @@ func TestStaticRedirects(t *testing.T) {
 	assert.Equal(t, "/", rsp.Header.Get("Location"))
 	assert.Equal(t, 0, int(rsp.ContentLength))
 
-	// #FIXME:10 static redirect cannot be to /./
+	// FIXME static redirect cannot be to /./
 	// req = newRequest(mGet, "/index.html")
 	// rsp, err = c.Do(req)
 	// assert.NotNil(t, err)

@@ -1,4 +1,4 @@
-import 'site.css!'; // #TODO:50 css is missing entries for individual icons
+import 'site.css!'; // TODO css is missing entries for individual icons
 import 'fetch';
 
 import React from 'react';

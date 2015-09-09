@@ -2,7 +2,7 @@ import React, { PropTypes } from 'react';
 import { TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui';
 import moment from 'moment';
 
-// #DOING:30 click to detail view
+// DOING click to detail view
 
 class FeedItem extends React.Component {
 

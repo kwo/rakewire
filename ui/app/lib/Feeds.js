@@ -3,8 +3,8 @@ import { Table, TableBody, TableHeader } from 'material-ui';
 import FeedItem from './components/FeedItem';
 import FeedToolbar from './components/FeedToolbar';
 
-// #DOING:50 lose state after route change - save to app-wide repository - localstate
-// #DOING:60 auto-reload if state too old
+// DOING lose state after route change - save to app-wide repository - localstate
+// DOING auto-reload if state too old
 
 class Feeds extends React.Component {
 

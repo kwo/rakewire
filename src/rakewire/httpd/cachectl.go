@@ -27,8 +27,8 @@ func NoCache() *CacheControl {
 
 // ServeHTTP modifies Cache-Control headers in the http.ResponseWriter
 func (h *CacheControl) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-	// #TODO:20 add ETag and Last-Modified headers
-	// #TODO:30 use negroni.NewResponseWriter?
+	// TODO add ETag and Last-Modified headers
+	// TODO use negroni.NewResponseWriter?
 	switch h.option {
 	case optionNone:
 		w.Header().Set(hCacheControl, vNoCache)

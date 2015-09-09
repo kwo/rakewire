@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// #TODO: eliminate Feeds struct
+// TODO eliminate Feeds struct
 
 // Feeds collection of Feed
 type Feeds struct {
