@@ -36,7 +36,7 @@
 		"space-before-blocks": [1, "always" ],
 
 		"react/display-name": 1,
-    "react/jsx-boolean-value": 1,
+    "react/jsx-boolean-value": [1, {"always"} ],
     "react/jsx-closing-bracket-location": [1, {"location": "after-props"}],
     "react/jsx-curly-spacing": 1,
     "react/jsx-indent-props": [1, "tab"],
