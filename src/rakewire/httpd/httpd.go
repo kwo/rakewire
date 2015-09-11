@@ -82,9 +82,9 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 	}
 	bfs := box.HTTPBox()
 
-	// HTML5 routes
+	// HTML5 routes: any path without an entension
 	sfs := singleFileSystem{name: "/index.html", root: bfs}
-	router.Path("/{route:[a-z]+}").Handler(negroni.New(
+	router.Path("/{route:[a-z0-9/-]+}").Handler(negroni.New(
 		gzip.Gzip(gzip.BestCompression),
 		NoCache(),
 		negroni.Wrap(http.FileServer(sfs)),
@@ -107,7 +107,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 		chErrors <- err
 		return
 	}
-	// TODO TLS wrap listener in tls.NewListener
+	// BACKLOG TLS wrap listener in tls.NewListener
 	z.listener = l
 	server := http.Server{
 		Handler: n,

@@ -25,8 +25,6 @@ var (
 	feedID string
 )
 
-// TODO rewrite HTTP tests with httptest package
-
 func TestMain(m *testing.M) {
 
 	testDatabaseFile := "../../../test/httpd.db"
@@ -108,6 +106,26 @@ func TestHTML5Paths(t *testing.T) {
 	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
 	assert.Equal(t, abody, body)
 
+	// also multi-level paths
+	req = newRequest(mGet, "/route/route")
+	rsp, err = c.Do(req)
+	assertHTML(t, rsp, err)
+	body, err = ioutil.ReadAll(rsp.Body)
+	require.Nil(t, err)
+	require.NotNil(t, body)
+	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
+	assert.Equal(t, abody, body)
+
+	// include paths with uuids
+	req = newRequest(mGet, "/feed/bf24f476-5899-11e5-af27-5cf938992b62/log")
+	rsp, err = c.Do(req)
+	assertHTML(t, rsp, err)
+	body, err = ioutil.ReadAll(rsp.Body)
+	require.Nil(t, err)
+	require.NotNil(t, body)
+	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
+	assert.Equal(t, abody, body)
+
 	req = newRequest(mGet, "/home")
 	rsp, err = c.Do(req)
 	assertHTML(t, rsp, err)
@@ -127,8 +145,8 @@ func TestHTML5Paths(t *testing.T) {
 	rsp, err = c.Do(req)
 	assert404NotFound(t, rsp, err)
 
-	// only a-z, not dot or slashes
-	req = newRequest(mGet, "/route/route")
+	// no paths with extensions
+	req = newRequest(mGet, "/route/route.txt")
 	rsp, err = c.Do(req)
 	assert404NotFound(t, rsp, err)
 
@@ -166,7 +184,7 @@ func TestStaticRedirects(t *testing.T) {
 	assert.Equal(t, "/", rsp.Header.Get("Location"))
 	assert.Equal(t, 0, int(rsp.ContentLength))
 
-	// FIXME static redirect cannot be to /./
+	// HACK static redirect cannot be to /./
 	// req = newRequest(mGet, "/index.html")
 	// rsp, err = c.Do(req)
 	// assert.NotNil(t, err)

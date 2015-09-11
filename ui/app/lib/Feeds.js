@@ -3,36 +3,31 @@ import { Table, TableBody, TableHeader } from 'material-ui';
 import FeedItem from './components/FeedItem';
 import FeedToolbar from './components/FeedToolbar';
 
-// DOING lose state after route change - save to app-wide repository - localstate
-// DOING auto-reload if state too old
+// XXX lose state after route change - save to app-wide repository - localstate
+// XXX auto-reload if state too old
 
 class Feeds extends React.Component {
 
 	static displayName = 'feeds';
-
-	static propTypes = {
-		feeds: PropTypes.array,
-		lastRefresh: PropTypes.object
-	};
 
 	static contextTypes = {
 		config: PropTypes.object.isRequired,
 		muiTheme: PropTypes.object.isRequired
 	};
 
-	static defaultProps = {
-		feeds: [],
-		lastRefresh: new Date(0)
-	}
-
 	constructor(props, context) {
 		super(props, context);
 		this.state = {
-			feeds: this.props.feeds,
-			lastRefresh: this.props.lastRefresh
+			feeds: [],
+			lastRefresh: null
 		};
 		this.getNextFeeds = this.getNextFeeds.bind(this);
 		this.refresh = this.refresh.bind(this);
+	}
+
+	componentDidMount() {
+		this.refresh(); // XXX: load from local state somehow
+		// XXX: live refresh via server-sent events (needs client-side update)
 	}
 
 	getNextFeeds() {
@@ -56,7 +51,7 @@ class Feeds extends React.Component {
 					lastRefresh: new Date()
 				});
 			})
-			.catch(e => console.log('Cannot load feeds:', e));
+			.catch(e => console.log('Cannot load feeds:', e)); // XXX: display on view
 	}
 
 	render() {

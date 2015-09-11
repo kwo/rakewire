@@ -1,8 +1,9 @@
 import React, { PropTypes } from 'react';
+import { Link } from 'react-router';
 import { TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui';
 import moment from 'moment';
 
-// DOING click to detail view
+// XXX click to detail view
 
 class FeedItem extends React.Component {
 
@@ -83,6 +84,7 @@ class FeedItem extends React.Component {
 		const isUpdated = feed.last.updated ? 'Yes' : '';
 		const updateCheck = feed.last.updateCheck;
 		const title = feed.title || feed.last200.feed.title || feed.url;
+		const feedLinkURL = '/feeds/' + feed.id;
 
 		return (
 			<TableRow
@@ -94,7 +96,7 @@ class FeedItem extends React.Component {
 				<TableRowColumn style={style.td}>{feed.last.http.statusCode}</TableRowColumn>
 				<TableRowColumn style={style.td}>{isUpdated}</TableRowColumn>
 				<TableRowColumn style={style.td}>{updateCheck}</TableRowColumn>
-				<TableRowColumn style={style.tdFeed}>{title}</TableRowColumn>
+				<TableRowColumn style={style.tdFeed}><Link to={feedLinkURL}>{title}</Link></TableRowColumn>
 			</TableRow>
 		);
 
