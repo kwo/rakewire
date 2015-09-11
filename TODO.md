@@ -2,19 +2,19 @@
 
 ## v0.0.3
 
- - DOING: remove negroni, [use normal http handlers](https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81)
- - DOING: html ui
- - TODO: load roboto font locally
+ - TODO: remove negroni, [use normal http handlers](https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81)
+ - TODO: html ui
+ - HACK: load roboto font locally
  - TODO: set cache-control headers on static assets
- - DOING: list feed log
- - DOING: add client sort to feed list
- - DOING: list fetcher activity
+ - XXX: list feed log
+ - XXX: add client sort to feed list
+ - TODO: list fetcher activity
  - TODO: tests
  - TODO: better logging
- - TODO: http2
- - TODO: need save database mutex
- - FIXME: bugfix feeds next on empty db or db with feeds but before first poll
- - FIXME: handle feeds without dates on entries - save items, check for new ones, assign new current time, update feed.LastUpdated
+ - BACKLOG: http2
+ - HACK: need save database mutex
+ - TODO: bugfix feeds next on empty db or db with feeds but before first poll
+ - TODO: handle feeds without dates on entries - save items, check for new ones, assign new current time, update feed.LastUpdated
 
 ## IDEAS
 
@@ -42,8 +42,8 @@
  - BACKLOG: Full text search (Bleve)
  - BACKLOG: Feeds based on filters or full-text search
  - BACKLOG: database backup to tar file or something similar
- - FIXME: limit listener to x connections
- - FIXME: use alternative libC implementation
+ - BACKLOG: limit listener to x connections
+ - BACKLOG: use alternative libC implementation
  - BACKLOG: Mac Taskbar icon
  - BACKLOG: add login for single user
  - BACKLOG: pre gzip webapp
