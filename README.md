@@ -17,7 +17,7 @@
  - FIXME: bugfix feeds next on empty db or db with feeds but before first poll
  - FIXME: handle feeds without dates on entries - save items, check for new ones, assign new current time, update feed.LastUpdated
 
-## BACKLOG
+## IDEAS
 
  - BACKLOG: have fetchers signal when they are idle, FetcherService signal when it is idle
  - BACKLOG: save feed items/entries
