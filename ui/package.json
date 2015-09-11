@@ -7,7 +7,7 @@
   "author": "Karl Ostendorf <karl@ostendorf.com> (https://ostendorf.com/)",
   "license": "Copyright 2015 Karl Ostendorf",
   "scripts": {
-    "postinstall": "jspm install -y"
+    "postinstall": "jspm install -y && rm -f ./webapp && ln -s app webapp"
   },
   "dependencies": {},
   "devDependencies": {
