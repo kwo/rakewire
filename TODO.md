@@ -2,7 +2,6 @@
 
 ## v0.0.3
 
- - DOING: manage deps with gvt
  - DOING: remove negroni, [use normal http handlers](https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81)
  - DOING: html ui
  - TODO: load roboto font locally
