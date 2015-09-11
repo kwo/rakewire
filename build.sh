@@ -20,6 +20,11 @@ case $CMD in
 		go install ./src/rakewire/rakewire.go
 	  ;;
 
+	"update")
+		cd $GOPATH/src/rakewire
+		gvt update -all
+	  ;;
+
 	"depgraph")
 		godepgraph -s rakewire | dot -Tsvg -o depgraph.svg
 		open depgraph.svg
@@ -27,7 +32,7 @@ case $CMD in
 
   *)
 	  echo "unknown command: $CMD"
-		echo "Usage `basename $0`: run | test | build | install | depgraph"
+		echo "Usage `basename $0`: run | test | build | install | update | depgraph"
 		;;
 
 esac
