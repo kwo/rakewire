@@ -19,12 +19,12 @@ Therefore, set the following environment varibles:
 ### Build
 
 	cd $PROJECT_ROOT
-	go build ./src/rakewire/rakewire.go
+	./build.sh build
 
 ### Run
 
 	cd $PROJECT_ROOT
-	go run ./src/rakewire/rakewire.go
+	./build.sh run
 
 ### Top-Level Dependencies
 
@@ -41,3 +41,25 @@ Therefore, set the following environment varibles:
 
 
 ## UI
+
+### Prepare Environment
+
+Install the node modules and jspm packages
+
+	npm install
+
+
+### Run
+
+Simple accessing the UI at the test URL (localhost:4444) will cause JSPM to compile the application with Babel and JSX.
+
+	cd $PROJECT_ROOT
+	./build.sh run
+
+### Build
+
+To compile a UI fit for production.
+
+	gulp build
+
+Use `gulp buildmode` to access the production-mode version. Use `gulp devmode` to switch back.
