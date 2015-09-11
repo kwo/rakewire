@@ -65,9 +65,3 @@
  - DONE: v0.0.2 follow redirects, update url automatically
  - DONE: v0.0.2 improve polling algorithm (automatic mode with backoff algorithm)
  - DONE: v0.0.2 log fetches with http and feed information
-
-## Articles
-
-  - [Generate RESTful API Documentation From Annotations in Go](https://engineroom.teamwork.com/generate-api-from-annotations-in-go/)
-  - [Solving the OPTIONS performance issue with single page apps](http://www.soasta.com/blog/options-web-performance-with-single-page-applications/?utm_source=webopsweekly&utm_medium=email)
-  - [Principles of designing Go APIs with channels](https://inconshreveable.com/07-08-2014/principles-of-designing-go-apis-with-channels/)
