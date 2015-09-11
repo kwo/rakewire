@@ -17,15 +17,28 @@ Therefore, set the following environment varibles:
 	export GOBIN=$GOPATH/bin
 	export GO15VENDOREXPERIMENT=1
 
-## Build
+### Build
 
 	cd $PROJECT_ROOT
 	go build src/rakewire/rakewire.go
 
-## Run
+### Run
 
 	cd $PROJECT_ROOT
 	go run src/rakewire/rakewire.go
+
+### Top-Level Dependencies
+
+	github.com/GeertJohan/go.rice
+	github.com/boltdb/bolt
+	github.com/codegangsta/negroni
+	github.com/gorilla/mux
+	github.com/pborman/uuid
+	github.com/phyber/negroni-gzip/gzip
+	github.com/rogpeppe/go-charset/charset
+	github.com/rogpeppe/go-charset/data
+	github.com/stretchr/testify/assert
+	gopkg.in/yaml.v2
 
 
 ## UI
