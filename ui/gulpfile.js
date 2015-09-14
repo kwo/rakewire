@@ -54,7 +54,7 @@
 		return new Promise(function(resolve, reject) {
 			let app = childp.spawn(
 				'/bin/bash',
-				['-c', './node_modules/.bin/babel-node ./test/*.js | ./node_modules/.bin/faucet'],
+				['-c', './node_modules/.bin/babel-node ./app/test/*.js | ./node_modules/.bin/faucet'],
 				{stdio: 'inherit'}
 			);
 			app.on('close', function (code) {
