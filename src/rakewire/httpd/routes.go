@@ -7,14 +7,12 @@ import (
 	"net/http"
 )
 
-func (z *Service) mainRouter(chErrors chan<- error) *mux.Router {
+func (z *Service) mainRouter() (*mux.Router, error) {
 
 	// get box for static web site
 	box, err := rice.FindBox(pathUI)
 	if err != nil {
-		logger.Printf("Cannot find box: %s\n", err.Error())
-		chErrors <- err
-		return nil
+		return nil, err
 	}
 	bfs := box.HTTPBox()
 
@@ -36,7 +34,7 @@ func (z *Service) mainRouter(chErrors chan<- error) *mux.Router {
 		Adapt(http.FileServer(bfs), NoCache(), gorillaHandlers.CompressHandler),
 	)
 
-	return router
+	return router, nil
 
 }
 

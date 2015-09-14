@@ -62,8 +62,10 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 		return
 	}
 
-	router := z.mainRouter(chErrors)
-	if router == nil {
+	router, err := z.mainRouter()
+	if err != nil {
+		logger.Printf("Cannot find box: %s\n", err.Error())
+		chErrors <- err
 		return
 	}
 	mainHandler := Adapt(router, LogAdapter())
