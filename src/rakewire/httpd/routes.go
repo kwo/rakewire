@@ -19,7 +19,7 @@ func (z *Service) mainRouter() (*mux.Router, error) {
 	router := mux.NewRouter()
 
 	// api router
-	// TODO: subrouter
+	apiPrefix := "/api"
 	router.PathPrefix(apiPrefix).Handler(
 		Adapt(z.apiRouter(apiPrefix), NoCache()),
 	)

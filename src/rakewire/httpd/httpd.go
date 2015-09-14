@@ -24,7 +24,6 @@ type Configuration struct {
 }
 
 const (
-	apiPrefix        = "/api"
 	hAcceptEncoding  = "Accept-Encoding"
 	hContentEncoding = "Content-Encoding"
 	hContentLength   = "Content-Length"
