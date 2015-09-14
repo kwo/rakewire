@@ -19,6 +19,7 @@ func (z *Service) mainRouter() (*mux.Router, error) {
 	router := mux.NewRouter()
 
 	// api router
+	// TODO: subrouter
 	router.PathPrefix(apiPrefix).Handler(
 		Adapt(z.apiRouter(apiPrefix), NoCache()),
 	)
@@ -27,6 +28,11 @@ func (z *Service) mainRouter() (*mux.Router, error) {
 	sfs := singleFileSystem{name: "/index.html", root: bfs}
 	router.Path("/{route:[a-z0-9/-]+}").Handler(
 		Adapt(http.FileServer(sfs), NoCache(), gorillaHandlers.CompressHandler),
+	)
+
+	// always redirect index to /
+	router.Path("/index.html").Handler(
+		RedirectHandler("/"),
 	)
 
 	// static web site

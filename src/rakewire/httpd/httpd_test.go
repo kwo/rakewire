@@ -185,13 +185,13 @@ func TestStaticRedirects(t *testing.T) {
 	assert.Equal(t, "/", rsp.Header.Get("Location"))
 	assert.Equal(t, 0, int(rsp.ContentLength))
 
-	// HACK static redirect cannot be to /./
-	// req = newRequest(mGet, "/index.html")
-	// rsp, err = c.Do(req)
-	// assert.NotNil(t, err)
-	// assert.NotNil(t, rsp)
-	// assert.Equal(t, 301, rsp.StatusCode)
-	// assert.Equal(t, "/", rsp.Header.Get("Location"))
+	// static redirect cannot be to /./
+	req = newRequest(mGet, "/index.html")
+	rsp, err = c.Do(req)
+	assert.NotNil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, 301, rsp.StatusCode)
+	assert.Equal(t, "/", rsp.Header.Get("Location"))
 
 }
 

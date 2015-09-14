@@ -33,6 +33,13 @@ func LogAdapter() Adapter {
 	}
 }
 
+// RedirectHandler permanently redirects to the given location
+func RedirectHandler(location string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, location, http.StatusMovedPermanently)
+	})
+}
+
 // NoCache adds cache-control headers so that the content is not cached
 func NoCache() Adapter {
 	return cacheControl(optionNone)
