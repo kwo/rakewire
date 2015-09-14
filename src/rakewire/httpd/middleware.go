@@ -19,17 +19,17 @@ const (
 type Adapter func(http.Handler) http.Handler
 
 // Adapt calls adapters for http handler
-func Adapt(next http.Handler, adapters ...Adapter) http.Handler {
+func Adapt(h http.Handler, adapters ...Adapter) http.Handler {
 	for i := len(adapters) - 1; i >= 0; i-- {
-		next = adapters[i](next)
+		h = adapters[i](h)
 	}
-	return next
+	return h
 }
 
 // LogAdapter log requests and responses
 func LogAdapter() Adapter {
-	return func(next http.Handler) http.Handler {
-		return gorillaHandlers.CombinedLoggingHandler(os.Stdout, next)
+	return func(h http.Handler) http.Handler {
+		return gorillaHandlers.CombinedLoggingHandler(os.Stdout, h)
 	}
 }
 
@@ -39,13 +39,13 @@ func NoCache() Adapter {
 }
 
 func cacheControl(option int) Adapter {
-	return func(next http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch option {
 			case optionNone:
 				w.Header().Set(hCacheControl, vNoCache)
 			}
-			next.ServeHTTP(w, r)
+			h.ServeHTTP(w, r)
 		})
 	}
 }
