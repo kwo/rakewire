@@ -2,7 +2,6 @@
 
 ## v0.0.3
 
- - TODO: remove negroni, [use normal http handlers](https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81)
  - TODO: html ui
  - HACK: load roboto font locally
  - TODO: set cache-control headers on static assets

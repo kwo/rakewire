@@ -3,13 +3,10 @@ package httpd
 import (
 	"errors"
 	"fmt"
-	"github.com/GeertJohan/go.rice"
-	"github.com/codegangsta/negroni"
-	"github.com/gorilla/mux"
-	"github.com/phyber/negroni-gzip/gzip"
 	"net"
 	"net/http"
 	"rakewire/db"
+	"rakewire/logging"
 )
 
 // Service server
@@ -43,7 +40,7 @@ const (
 )
 
 var (
-	logger = newInternalLogger()
+	logger = logging.New("httpd")
 )
 
 type singleFileSystem struct {
@@ -57,7 +54,7 @@ func (z singleFileSystem) Open(name string) (http.File, error) {
 }
 
 // Start web service
-func (z *Service) Start(cfg *Configuration, chErrors chan error) {
+func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 
 	if z.Database == nil {
 		logger.Println("Cannot start httpd, no database provided")
@@ -65,41 +62,11 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 		return
 	}
 
-	router := mux.NewRouter()
-
-	// api router
-	router.PathPrefix(apiPrefix).Handler(negroni.New(
-		NoCache(),
-		negroni.Wrap(z.apiRouter(apiPrefix)),
-	))
-
-	// static web site
-	box, err := rice.FindBox(pathUI)
-	if err != nil {
-		logger.Printf("Cannot find box: %s\n", err.Error())
-		chErrors <- err
+	router := z.mainRouter(chErrors)
+	if router == nil {
 		return
 	}
-	bfs := box.HTTPBox()
-
-	// HTML5 routes: any path without an entension
-	sfs := singleFileSystem{name: "/index.html", root: bfs}
-	router.Path("/{route:[a-z0-9/-]+}").Handler(negroni.New(
-		gzip.Gzip(gzip.BestCompression),
-		NoCache(),
-		negroni.Wrap(http.FileServer(sfs)),
-	))
-
-	router.PathPrefix("/").Handler(negroni.New(
-		gzip.Gzip(gzip.BestCompression),
-		NoCache(),
-		negroni.Wrap(http.FileServer(bfs)),
-	))
-
-	n := negroni.New()
-	n.Use(negroni.NewRecovery())
-	n.Use(logger)
-	n.UseHandler(router)
+	mainHandler := Adapt(router, LogAdapter())
 
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Address, cfg.Port))
 	if err != nil {
@@ -110,7 +77,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan error) {
 	// BACKLOG TLS wrap listener in tls.NewListener
 	z.listener = l
 	server := http.Server{
-		Handler: n,
+		Handler: mainHandler,
 	}
 	logger.Printf("Started httpd on http://%s", z.listener.Addr())
 	err = server.Serve(z.listener)

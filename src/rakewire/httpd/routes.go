@@ -1,9 +1,44 @@
 package httpd
 
 import (
+	"github.com/GeertJohan/go.rice"
+	gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"net/http"
 )
+
+func (z *Service) mainRouter(chErrors chan<- error) *mux.Router {
+
+	// get box for static web site
+	box, err := rice.FindBox(pathUI)
+	if err != nil {
+		logger.Printf("Cannot find box: %s\n", err.Error())
+		chErrors <- err
+		return nil
+	}
+	bfs := box.HTTPBox()
+
+	router := mux.NewRouter()
+
+	// api router
+	router.PathPrefix(apiPrefix).Handler(
+		Adapt(z.apiRouter(apiPrefix), NoCache()),
+	)
+
+	// HTML5 routes: any path without an entension
+	sfs := singleFileSystem{name: "/index.html", root: bfs}
+	router.Path("/{route:[a-z0-9/-]+}").Handler(
+		Adapt(http.FileServer(sfs), NoCache(), gorillaHandlers.CompressHandler),
+	)
+
+	// static web site
+	router.PathPrefix("/").Handler(
+		Adapt(http.FileServer(bfs), NoCache(), gorillaHandlers.CompressHandler),
+	)
+
+	return router
+
+}
 
 func (z *Service) apiRouter(prefix string) *mux.Router {
 

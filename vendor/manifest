@@ -34,12 +34,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/codegangsta/negroni",
-			"repository": "https://github.com/codegangsta/negroni",
-			"revision": "c7477ad8e330bef55bf1ebe300cf8aa67c492d1b",
-			"branch": "master"
-		},
-		{
 			"importpath": "github.com/daaku/go.zipexe",
 			"repository": "https://github.com/daaku/go.zipexe",
 			"revision": "a5fe2436ffcb3236e175e5149162b41cd28bd27d",
@@ -56,6 +50,12 @@
 			"importpath": "github.com/gorilla/context",
 			"repository": "https://github.com/gorilla/context",
 			"revision": "1c83b3eabd45b6d76072b66b746c20815fb2872d",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/gorilla/handlers",
+			"repository": "https://github.com/gorilla/handlers",
+			"revision": "40694b40f4a928c062f56849989d3e9cd0570e5f",
 			"branch": "master"
 		},
 		{
@@ -81,13 +81,6 @@
 			"repository": "https://github.com/pborman/uuid",
 			"revision": "cccd189d45f7ac3368a0d127efb7f4d08ae0b655",
 			"branch": "master"
-		},
-		{
-			"importpath": "github.com/phyber/negroni-gzip/gzip",
-			"repository": "https://github.com/phyber/negroni-gzip",
-			"revision": "81b13afed9e4d729ce7dfd1305f143f07aa50ed0",
-			"branch": "master",
-			"path": "/gzip"
 		},
 		{
 			"importpath": "github.com/rogpeppe/go-charset/charset",

@@ -2,6 +2,7 @@ package httpd
 
 import (
 	"bytes"
+	"compress/gzip"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -271,4 +272,20 @@ func newHTTPClient() *http.Client {
 		},
 		Timeout: 1 * time.Second,
 	}
+}
+
+func unzipReader(data io.Reader) ([]byte, error) {
+
+	r, err := gzip.NewReader(data)
+	if err != nil {
+		return nil, err
+	}
+
+	var uncompressedData bytes.Buffer
+	if _, err = io.Copy(&uncompressedData, r); err != nil {
+		return nil, err
+	}
+
+	return uncompressedData.Bytes(), nil
+
 }
