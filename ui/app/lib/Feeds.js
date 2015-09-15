@@ -23,8 +23,26 @@ class Feeds extends React.Component {
 	}
 
 	componentDidMount() {
-		this.refresh(); // XXX: load from local state somehow
-		// XXX: live refresh via websockets
+		// TODO: slim size of data, perhaps change api for slimmer payload or use paging
+		const json = sessionStorage.getItem('feeds.state');
+		if (json) {
+			try {
+				const state = JSON.parse(json);
+				this.setState(state);
+			} catch (x) {
+				// ignore
+			}
+		}
+	}
+
+	componentWillUnmount() {
+		const state = this.state;
+		if (state) {
+			const json = JSON.stringify(state);
+			sessionStorage.setItem('feeds.state', json);
+		} else {
+			sessionStorage.setItem('feeds.state', null);
+		}
 	}
 
 	getNextFeeds() {
