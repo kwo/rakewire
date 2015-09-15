@@ -2,21 +2,22 @@
 
 ## v0.0.3
 
+ - XXX: list feed log
+ - TODO: live refresh via websockets
+ - TODO: add client sort to feed list
  - TODO: html ui
  - HACK: load roboto font locally
- - TODO: set cache-control headers on static assets
- - XXX: list feed log
- - XXX: add client sort to feed list
+ - TODO: set ETag, Last-Modified headers on static assets
  - TODO: list fetcher activity
  - TODO: tests
  - TODO: better logging
- - BACKLOG: http2
  - HACK: need save database mutex
  - TODO: bugfix feeds next on empty db or db with feeds but before first poll
  - TODO: handle feeds without dates on entries - save items, check for new ones, assign new current time, update feed.LastUpdated
 
 ## IDEAS
 
+ - BACKLOG: http2
  - BACKLOG: have fetchers signal when they are idle, FetcherService signal when it is idle
  - BACKLOG: save feed items/entries
  - BACKLOG: add cache-control headers to API
