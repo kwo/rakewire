@@ -3,9 +3,6 @@ import { Table, TableBody, TableHeader } from 'material-ui';
 import FeedItem from './components/FeedItem';
 import FeedToolbar from './components/FeedToolbar';
 
-// XXX lose state after route change - save to app-wide repository - localstate
-// XXX auto-reload if state too old
-
 class Feeds extends React.Component {
 
 	static displayName = 'feeds';
@@ -27,7 +24,7 @@ class Feeds extends React.Component {
 
 	componentDidMount() {
 		this.refresh(); // XXX: load from local state somehow
-		// XXX: live refresh via server-sent events (needs client-side update)
+		// XXX: live refresh via websockets
 	}
 
 	getNextFeeds() {
@@ -51,7 +48,7 @@ class Feeds extends React.Component {
 					lastRefresh: new Date()
 				});
 			})
-			.catch(e => console.log('Cannot load feeds:', e)); // XXX: display on view
+			.catch(e => console.log('Cannot load feeds:', e)); // XXX: display error in UI
 	}
 
 	render() {

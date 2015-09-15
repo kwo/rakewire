@@ -3,8 +3,6 @@ import { Link } from 'react-router';
 import { TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui';
 import moment from 'moment';
 
-// XXX click to detail view
-
 class FeedItem extends React.Component {
 
 	static displayName = 'feeditem';
