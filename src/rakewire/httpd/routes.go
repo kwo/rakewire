@@ -7,6 +7,16 @@ import (
 	"net/http"
 )
 
+type singleFileSystem struct {
+	name string
+	root http.FileSystem
+}
+
+func (z singleFileSystem) Open(name string) (http.File, error) {
+	// ignore name and use z.name
+	return z.root.Open(z.name)
+}
+
 func (z *Service) mainRouter() (*mux.Router, error) {
 
 	// get box for static web site
@@ -14,7 +24,9 @@ func (z *Service) mainRouter() (*mux.Router, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	bfs := box.HTTPBox()
+	sfs := singleFileSystem{name: "/index.html", root: bfs}
 
 	router := mux.NewRouter()
 
@@ -24,13 +36,12 @@ func (z *Service) mainRouter() (*mux.Router, error) {
 		Adapt(z.apiRouter(apiPrefix), NoCache()),
 	)
 
-	// HTML5 routes: any path without an entension
-	sfs := singleFileSystem{name: "/index.html", root: bfs}
+	// HTML5 routes: any path without a dot (thus an extension)
 	router.Path("/{route:[a-z0-9/-]+}").Handler(
 		Adapt(http.FileServer(sfs), NoCache(), gorillaHandlers.CompressHandler),
 	)
 
-	// always redirect index to /
+	// always redirect /index.html to /
 	router.Path("/index.html").Handler(
 		RedirectHandler("/"),
 	)

@@ -42,16 +42,6 @@ var (
 	logger = logging.New("httpd")
 )
 
-type singleFileSystem struct {
-	name string
-	root http.FileSystem
-}
-
-func (z singleFileSystem) Open(name string) (http.File, error) {
-	// ignore name and use z.name
-	return z.root.Open(z.name)
-}
-
 // Start web service
 func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 
@@ -63,7 +53,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 
 	router, err := z.mainRouter()
 	if err != nil {
-		logger.Printf("Cannot find box: %s\n", err.Error())
+		logger.Printf("Cannot load router: %s\n", err.Error())
 		chErrors <- err
 		return
 	}
