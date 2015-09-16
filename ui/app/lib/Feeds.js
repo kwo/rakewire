@@ -60,6 +60,7 @@ class Feeds extends React.Component {
 					feeds: feeds,
 					lastRefresh: new Date()
 				});
+				sessionStorage.setItem('feeds.state', JSON.stringify(this.state));
 			})
 			.catch(e => console.log('Cannot load feeds:', e)); // XXX: display error in UI
 	}
