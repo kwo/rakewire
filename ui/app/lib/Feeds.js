@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react';
 import { Table, TableBody, TableHeader } from 'material-ui';
-import FeedItem from './components/FeedItem';
+import FeedEntry from './components/FeedEntry';
 import FeedToolbar from './components/FeedToolbar';
 
 class Feeds extends React.Component {
@@ -68,7 +68,7 @@ class Feeds extends React.Component {
 
 		const rows = [];
 		this.state.feeds.forEach((feed) => {
-			rows.push(<FeedItem feed={feed} key={feed.id} />);
+			rows.push(<FeedEntry feed={feed} key={feed.id} />);
 		});
 
 		return (
@@ -81,7 +81,7 @@ class Feeds extends React.Component {
 					fixedHeader={true}
 					selectable={true}>
 					<TableHeader displaySelectAll={false} enableSelectAll={false} selectAllSelected={false}>
-						<FeedItem feed={null} />
+						<FeedEntry feed={null} />
 					</TableHeader>
 					<TableBody
 						deselectOnClickAway={false}

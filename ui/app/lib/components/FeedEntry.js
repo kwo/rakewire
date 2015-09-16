@@ -3,9 +3,9 @@ import { Link } from 'react-router';
 import { TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui';
 import moment from 'moment';
 
-class FeedItem extends React.Component {
+class FeedEntry extends React.Component {
 
-	static displayName = 'feeditem';
+	static displayName = 'feedentry';
 
 	static propTypes = {
 		feed: PropTypes.object
@@ -102,4 +102,4 @@ class FeedItem extends React.Component {
 
 }
 
-export default FeedItem;
+export default FeedEntry;
