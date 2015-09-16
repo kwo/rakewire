@@ -1,5 +1,7 @@
 import React, { PropTypes } from 'react';
+import moment from 'moment';
 import FeedInfo from './components/FeedInfo';
+import FeedLogEntry from './components/FeedLogEntry';
 
 class Feed extends React.Component {
 
@@ -34,8 +36,18 @@ class Feed extends React.Component {
 				fetch(feedLogURL)
 			])
 			.then(results => {
-				const feed = results[0].json();
-				feed.log = results[1].json();
+				const p = [];
+				results.forEach(r => {
+					p.push(r.json());
+				});
+				return Promise.all(p);
+			})
+			.then(results => {
+				const feed = results[0];
+				feed.log = results[1];
+				feed.log.forEach(log => {
+					log.startTime = moment(log.startTime);
+				});
 				return feed;
 			})
 			.then(feed => {
@@ -63,11 +75,20 @@ class Feed extends React.Component {
 
 		const feed = this.state.feed;
 
+		const logEntries = [];
+		feed.log.forEach(logEntry => {
+			logEntries.push(<FeedLogEntry key={logEntry.startTime.format('x')} logEntry={logEntry} />);
+		});
+
 		return (
 
 			<table style={style.table}>
 
 				<FeedInfo feed={feed}/>
+
+				<tbody>
+					{logEntries}
+				</tbody>
 
 			</table>
 
