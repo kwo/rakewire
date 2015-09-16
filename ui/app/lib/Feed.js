@@ -1,5 +1,5 @@
 import React, { PropTypes } from 'react';
-//import moment from 'moment';
+import FeedInfo from './components/FeedInfo';
 
 class Feed extends React.Component {
 
@@ -58,42 +58,16 @@ class Feed extends React.Component {
 		const style = {
 			table: {
 				width: '100%'
-			},
-			td: {
-				height: 24,
-				paddingLeft: 12,
-				paddingRight: 12,
-				textAlign: 'left',
-				width: 40
-			},
-			th: {
-				paddingLeft: 12,
-				paddingRight: 12,
-				textAlign: 'left',
-				width: 40
 			}
 		};
 
 		const feed = this.state.feed;
-		const title = feed.title || feed.last200.feed.title || feed.url;
 
 		return (
 
 			<table style={style.table}>
 
-				<thead>
-
-					<tr key={0}>
-						<th style={style.th}>Title</th>
-						<td style={style.td}>{title}</td>
-					</tr>
-
-					<tr key={1}>
-						<th style={style.th}>URL</th>
-						<td style={style.td}>{feed.url}</td>
-					</tr>
-
-				</thead>
+				<FeedInfo feed={feed}/>
 
 			</table>
 
