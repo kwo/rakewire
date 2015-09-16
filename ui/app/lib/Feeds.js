@@ -24,25 +24,20 @@ class Feeds extends React.Component {
 
 	componentDidMount() {
 		// TODO: slim size of data, perhaps change api for slimmer payload or use paging
-		const json = sessionStorage.getItem('feeds.state');
-		if (json) {
-			try {
-				const state = JSON.parse(json);
-				this.setState(state);
-			} catch (x) {
-				// ignore
-			}
-		}
+
+		const asyncParse = function(json) {
+			if (!json) return Promise.reject('Skipping, no json provided.');
+			return (new Response(json)).json();
+		};
+
+		asyncParse(sessionStorage.getItem('feeds.state'))
+			.then(state => this.setState(state))
+			.catch(e => console.log('Cannot load state', e)); // TODO: handle errors in UI
+
 	}
 
 	componentWillUnmount() {
-		const state = this.state;
-		if (state) {
-			const json = JSON.stringify(state);
-			sessionStorage.setItem('feeds.state', json);
-		} else {
-			sessionStorage.setItem('feeds.state', null);
-		}
+		sessionStorage.setItem('feeds.state', JSON.stringify(this.state));
 	}
 
 	getNextFeeds() {
