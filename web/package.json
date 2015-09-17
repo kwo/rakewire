@@ -36,6 +36,7 @@
       "fetch": "github:github/fetch@^0.9.0",
       "moment": "npm:moment@^2.10.6",
       "react": "npm:react@^0.13.3",
+      "react-bootstrap": "npm:react-bootstrap@^0.25.2",
       "react-router": "npm:react-router@^0.13.3"
     },
     "devDependencies": {
