@@ -28,19 +28,17 @@ Therefore, set the following environment varibles:
 
 ### Top-Level Dependencies
 
-	github.com/GeertJohan/go.rice
-	github.com/boltdb/bolt
-	github.com/codegangsta/negroni
-	github.com/gorilla/mux
-	github.com/pborman/uuid
-	github.com/phyber/negroni-gzip/gzip
-	github.com/rogpeppe/go-charset/charset
-	github.com/rogpeppe/go-charset/data
-	github.com/stretchr/testify/assert
-	gopkg.in/yaml.v2
+ - [github.com/GeertJohan/go.rice](https://github.com/GeertJohan/go.rice)
+ - [github.com/boltdb/bolt](https://github.com/boltdb/bolt)
+ - [github.com/gorilla/handlers](https://github.com/gorilla/handlers)
+ - [github.com/gorilla/mux](https://github.com/gorilla/mux)
+ - [github.com/pborman/uuid](https://github.com/pborman/uuid)
+ - [github.com/rogpeppe/go-charset/charset](https://github.com/rogpeppe/go-charset/charset)
+ - [github.com/rogpeppe/go-charset/data](https://github.com/rogpeppe/go-charset/data)
+ - [github.com/stretchr/testify/assert](https://github.com/stretchr/testify)
+ - [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)
 
-
-## UI
+## Web
 
 ### Prepare Environment
 
