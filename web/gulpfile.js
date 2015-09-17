@@ -131,7 +131,7 @@
 		gulp
 			.src('app')
 			.pipe(symlink(function(/*source*/) {
-				return 'webapp';
+				return 'public';
 			}, { force: true, relative: true }));
 	}
 
@@ -140,7 +140,7 @@
 		gulp
 			.src('build')
 			.pipe(symlink(function(/*source*/) {
-				return 'webapp';
+				return 'public';
 			}, { force: true, relative: true }));
 	}
 

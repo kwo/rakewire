@@ -1,10 +1,10 @@
 /bin
 /pkg
 /test/*.db
-/ui/app/jspm_packages
-/ui/build
-/ui/node_modules
-/ui/webapp
 /vendor/pkg
+/web/app/jspm_packages
+/web/build
+/web/node_modules
+/web/public
 .DS_Store
 depgraph.svg

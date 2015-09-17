@@ -35,7 +35,7 @@ const (
 	mimeHTML         = "text/html; charset=utf-8"
 	mimeJSON         = "application/json"
 	mimeText         = "text/plain; charset=utf-8"
-	pathUI           = "../../../ui/webapp"
+	pathUI           = "../../../web/public"
 )
 
 var (
