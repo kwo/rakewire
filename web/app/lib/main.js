@@ -1,3 +1,4 @@
+import 'paper.css!';
 import 'site.css!';
 import 'fetch';
 
