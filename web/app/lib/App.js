@@ -1,9 +1,5 @@
 import React, {PropTypes} from 'react';
 import { RouteHandler } from 'react-router';
-import { AppBar, IconButton, Styles, Tab, Tabs } from 'material-ui';
-const ThemeManager = new Styles.ThemeManager();
-
-import TitleComponent from './components/Title';
 
 const Config = {
 	rootURL: '/api'
@@ -22,8 +18,7 @@ class App extends React.Component {
 	};
 
 	static childContextTypes = {
-		config: PropTypes.object,
-		muiTheme: PropTypes.object
+		config: PropTypes.object
 	};
 
 	static defaultProps = {
@@ -49,8 +44,7 @@ class App extends React.Component {
 
 	getChildContext () {
 		return {
-			config: Config,
-			muiTheme: ThemeManager.getCurrentTheme()
+			config: Config
 		};
 	}
 
@@ -79,40 +73,8 @@ class App extends React.Component {
 
 	render() {
 
-		const styles = {
-			appBar: {
-				flexWrap: 'wrap',
-			},
-			tabs: {
-				width: '25%',
-			}
-		};
-
-		const logoButton = (
-			<IconButton
-				iconClassName="material-icons"
-				linkButton={true}
-				onTouchTap={this.onLogoClick}>
-				star
-			</IconButton>
-		);
-
 		return (
-			<div>
-
-				<AppBar
-					iconElementLeft={logoButton}
-					style={styles.appBar}
-					title={<TitleComponent onClick={this.onLogoClick} title={this.props.title} />}>
-					<Tabs
-						onChange={this.onChangeTabs}
-						style={styles.tabs}
-						value={this.state.tab}>
-						<Tab label="Home" value="/" />
-						<Tab label="Feeds" value="/feeds" />
-						<Tab label="About" value="/about" />
-					</Tabs>
-				</AppBar>
+			<div className="container">
 
 				<RouteHandler />
 

@@ -1,5 +1,4 @@
 import React, { PropTypes } from 'react';
-import { Table, TableBody, TableHeader } from 'material-ui';
 import FeedEntry from './components/FeedEntry';
 import FeedToolbar from './components/FeedToolbar';
 
@@ -8,8 +7,7 @@ class Feeds extends React.Component {
 	static displayName = 'feeds';
 
 	static contextTypes = {
-		config: PropTypes.object.isRequired,
-		muiTheme: PropTypes.object.isRequired
+		config: PropTypes.object.isRequired
 	};
 
 	constructor(props, context) {
@@ -77,22 +75,14 @@ class Feeds extends React.Component {
 
 				<FeedToolbar lastRefresh={this.state.lastRefresh} onRefreshClick={this.refresh} />
 
-				<Table
-					fixedFooter={false}
-					fixedHeader={true}
-					selectable={true}>
-					<TableHeader displaySelectAll={false} enableSelectAll={false} selectAllSelected={false}>
+				<table>
+					<thead>
 						<FeedEntry feed={null} />
-					</TableHeader>
-					<TableBody
-						deselectOnClickAway={false}
-						displayRowCheckbox={false}
-						selectable={true}
-						showRowHover={true}
-						stripedRows={true}>
+					</thead>
+					<tbody>
 						{rows}
-					</TableBody>
-				</Table>
+					</tbody>
+				</table>
 
 			</div>
 		);

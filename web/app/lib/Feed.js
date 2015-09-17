@@ -12,8 +12,7 @@ class Feed extends React.Component {
 	};
 
 	static contextTypes = {
-		config: PropTypes.object.isRequired,
-		muiTheme: PropTypes.object
+		config: PropTypes.object.isRequired
 	};
 
 	static defaultProps = {

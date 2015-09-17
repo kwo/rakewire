@@ -1,12 +1,8 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
 
 class About extends React.Component {
 
 	static displayName = 'about';
-
-	static contextTypes = {
-		muiTheme : PropTypes.object.isRequired
-	};
 
 	constructor(props, context) {
 		super(props, context);

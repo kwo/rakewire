@@ -1,6 +1,5 @@
 import React, { PropTypes } from 'react';
 import { Link } from 'react-router';
-import { TableHeaderColumn, TableRow, TableRowColumn } from 'material-ui';
 import moment from 'moment';
 
 class FeedEntry extends React.Component {
@@ -9,10 +8,6 @@ class FeedEntry extends React.Component {
 
 	static propTypes = {
 		feed: PropTypes.object
-	};
-
-	static contextTypes = {
-		muiTheme : PropTypes.object
 	};
 
 	static defaultProps = {
@@ -77,16 +72,16 @@ class FeedEntry extends React.Component {
 
 		if (!feed) {
 			return (
-				<TableRow key={0}>
-					<TableHeaderColumn style={style.th}>Next</TableHeaderColumn>
-					<TableHeaderColumn style={style.th}>Last</TableHeaderColumn>
-					<TableHeaderColumn style={style.th}>Status</TableHeaderColumn>
-					<TableHeaderColumn style={style.th}>Code</TableHeaderColumn>
-					<TableHeaderColumn style={style.th}>Updated</TableHeaderColumn>
-					<TableHeaderColumn style={style.th}>Check</TableHeaderColumn>
-					<TableHeaderColumn style={style.thLU}>Last Updated</TableHeaderColumn>
-					<TableHeaderColumn style={style.thFeed}>Feed</TableHeaderColumn>
-				</TableRow>
+				<tr key={0}>
+					<th style={style.th}>Next</th>
+					<th style={style.th}>Last</th>
+					<th style={style.th}>Status</th>
+					<th style={style.th}>Code</th>
+					<th style={style.th}>Updated</th>
+					<th style={style.th}>Check</th>
+					<th style={style.thLU}>Last Updated</th>
+					<th style={style.thFeed}>Feed</th>
+				</tr>
 			);
 		}
 
@@ -105,18 +100,16 @@ class FeedEntry extends React.Component {
 		const feedLinkURL = '/feeds/' + feed.id;
 
 		return (
-			<TableRow
-				hoverable={true}
-				onRowClick={this.onRowClick}>
-				<TableRowColumn style={style.td}>{formatTime(feed.nextFetch)}</TableRowColumn>
-				<TableRowColumn style={style.td}>{formatTime(feed.last.startTime)}</TableRowColumn>
-				<TableRowColumn style={style.td}>{status}</TableRowColumn>
-				<TableRowColumn style={style.td}>{feed.last.http.statusCode}</TableRowColumn>
-				<TableRowColumn style={style.td}>{isUpdated}</TableRowColumn>
-				<TableRowColumn style={style.td}>{updateCheck}</TableRowColumn>
-				<TableRowColumn style={style.tdLU}>{formatDate(feed.lastUpdated)}</TableRowColumn>
-				<TableRowColumn style={style.tdFeed}><Link to={feedLinkURL}>{title}</Link></TableRowColumn>
-			</TableRow>
+			<tr onClick={this.onRowClick}>
+				<td style={style.td}>{formatTime(feed.nextFetch)}</td>
+				<td style={style.td}>{formatTime(feed.last.startTime)}</td>
+				<td style={style.td}>{status}</td>
+				<td style={style.td}>{feed.last.http.statusCode}</td>
+				<td style={style.td}>{isUpdated}</td>
+				<td style={style.td}>{updateCheck}</td>
+				<td style={style.tdLU}>{formatDate(feed.lastUpdated)}</td>
+				<td style={style.tdFeed}><Link to={feedLinkURL}>{title}</Link></td>
+			</tr>
 		);
 
 	}

@@ -1,12 +1,8 @@
-import React, { PropTypes } from 'react';
+import React from 'react';
 
 class Home extends React.Component {
 
 	static displayName = 'home';
-
-	static contextTypes = {
-		muiTheme : PropTypes.object.isRequired
-	};
 
 	constructor(props, context) {
 		super(props, context);

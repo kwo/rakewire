@@ -9,10 +9,6 @@ class FeedInfo extends React.Component {
 		feed: PropTypes.object
 	};
 
-	static contextTypes = {
-		muiTheme : PropTypes.object
-	};
-
 	static defaultProps = {
 		feed: null
 	}

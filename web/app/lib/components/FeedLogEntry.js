@@ -9,10 +9,6 @@ class FeedLogEntry extends React.Component {
 		logEntry: PropTypes.object
 	};
 
-	static contextTypes = {
-		muiTheme : PropTypes.object
-	};
-
 	static defaultProps = {
 		logEntry: null
 	}
