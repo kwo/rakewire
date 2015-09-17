@@ -17,11 +17,11 @@ System.config({
   baseUrl: "lib",
 
   map: {
-    "babel": "npm:babel-core@5.8.22",
+    "babel": "npm:babel-core@5.8.24",
     "babel-runtime": "npm:babel-runtime@5.8.24",
-    "clean-css": "npm:clean-css@3.4.1",
+    "clean-css": "npm:clean-css@3.4.3",
     "core-js": "npm:core-js@1.1.4",
-    "css": "github:systemjs/plugin-css@0.1.15",
+    "css": "github:systemjs/plugin-css@0.1.16",
     "fetch": "github:github/fetch@0.9.0",
     "moment": "npm:moment@2.10.6",
     "react": "npm:react@0.13.3",
@@ -94,7 +94,7 @@ System.config({
       "process": "github:jspm/nodelibs-process@0.1.1",
       "systemjs-json": "github:systemjs/plugin-json@0.1.0"
     },
-    "npm:clean-css@3.4.1": {
+    "npm:clean-css@3.4.3": {
       "buffer": "github:jspm/nodelibs-buffer@0.1.0",
       "commander": "npm:commander@2.8.1",
       "fs": "github:jspm/nodelibs-fs@0.1.2",
@@ -188,14 +188,14 @@ System.config({
       "keycode": "npm:keycode@2.1.0",
       "lodash": "npm:lodash@3.10.1",
       "process": "github:jspm/nodelibs-process@0.1.1",
-      "react": "npm:react@0.14.0-rc1",
+      "react": "npm:react@0.13.3",
       "react-overlays": "npm:react-overlays@0.4.4",
       "uncontrollable": "npm:uncontrollable@3.1.2"
     },
     "npm:react-overlays@0.4.4": {
       "classnames": "npm:classnames@2.1.3",
       "dom-helpers": "npm:dom-helpers@2.4.0",
-      "react": "npm:react@0.14.0-rc1",
+      "react": "npm:react@0.13.3",
       "react-prop-types": "npm:react-prop-types@0.2.2",
       "warning": "npm:warning@2.0.0"
     },
