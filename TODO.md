@@ -3,7 +3,6 @@
 ## v0.0.3
 
  - XXX: complete migration to React-Bootstrap
-   - XXX: import CSS from site.css
    - XXX: get icon fonts working
  - XXX: list feed log
  - XXX: test full build

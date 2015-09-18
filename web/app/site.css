@@ -1,9 +1,18 @@
+@import 'paper.css';
+
+/* @import url("https://fonts.googleapis.com/css?family=Roboto:300,400,500,700"); */
+
 html {
   font-family: 'Roboto', sans-serif;
 }
 
-/* HOWTO:   http://google.github.io/material-design-icons/#icon-font-for-the-web */
-/* project: https://github.com/google/material-design-icons */
+.footer {
+  bottom: 0;
+  height: 30px;
+  padding: 0 10px;
+  position: absolute;
+  width: 100%;
+}
 
 @font-face {
   font-family: 'Material Icons';
