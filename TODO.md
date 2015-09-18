@@ -2,7 +2,8 @@
 
 ## v0.0.3
 
- - XXX: list feed log
+ - XXX: finish feed info
+ - XXX: try webpack
  - XXX: test full build
  - TODO: live refresh via websockets
  - TODO: add client sort to feed list

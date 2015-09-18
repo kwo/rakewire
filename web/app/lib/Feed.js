@@ -47,6 +47,7 @@ class Feed extends React.Component {
 				feed.log = results[1];
 				feed.log.forEach(log => {
 					log.startTime = moment(log.startTime);
+					log.feed.updated = moment(log.feed.updated);
 				});
 				return feed;
 			})
@@ -76,15 +77,20 @@ class Feed extends React.Component {
 
 		return (
 
-			<Table condensed={true} hover={true} responsive={true}>
+			<div>
 
-				<FeedInfo feed={feed}/>
+				<Table condensed={true} hover={true} responsive={true}>
+					<FeedInfo feed={feed}/>
+				</Table>
 
-				<tbody>
-					{logEntries}
-				</tbody>
+				<Table>
+					(<FeedLogEntry logEntry={null} />
+					<tbody>
+						{logEntries}
+					</tbody>
+				</Table>
 
-			</Table>
+			</div>
 
 		);
 

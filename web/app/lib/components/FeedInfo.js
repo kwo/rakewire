@@ -43,7 +43,7 @@ class FeedInfo extends React.Component {
 
 				<tr key={1}>
 					<td><strong>URL</strong></td>
-					<td>{feed.url}</td>
+					<td><a href={feed.url}>{feed.url}</a></td>
 				</tr>
 			</thead>
 		);
