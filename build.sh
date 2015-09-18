@@ -9,7 +9,11 @@ case $CMD in
 		;;
 
 	"build")
+		#cd web
+		#gulp build
+		#gulp buildmode
 		go build ./src/rakewire/rakewire.go
+		rice append --exec rakewire -i ./src/rakewire/httpd
 	  ;;
 
 	"depgraph")
