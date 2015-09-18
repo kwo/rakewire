@@ -26,7 +26,7 @@ class FeedEntry extends React.Component {
 	render() {
 
 		const displayRefresh = function(dt) {
-			if (!dt) return 'refreshing...';
+			if (!dt) return (<i className="material-icons">loop</i>);
 			return formatTime(dt);
 		};
 
