@@ -76,10 +76,7 @@ class Feed extends React.Component {
 
 		return (
 
-			<Table
-				condensed={true}
-				hover={true}
-				responsive={true}>
+			<Table condensed={true} hover={true} responsive={true}>
 
 				<FeedInfo feed={feed}/>
 

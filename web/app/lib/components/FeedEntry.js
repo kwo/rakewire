@@ -52,11 +52,10 @@ class FeedEntry extends React.Component {
 					<th>Last Updated</th>
 					<th>
 						Feed
-						<span
-							className="pull-right"
-							onClick={this.props.onRefreshClick}
-							style={{cursor: 'pointer'}}
-							tooltip="Refresh">
+						<span className="pull-right"
+									onClick={this.props.onRefreshClick}
+									style={{cursor: 'pointer'}}
+									tooltip="Refresh">
 							{displayRefresh(this.props.lastRefresh)}
 						</span>
 					</th>

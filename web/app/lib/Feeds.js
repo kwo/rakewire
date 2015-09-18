@@ -73,11 +73,7 @@ class Feeds extends React.Component {
 		return (
 			<div>
 
-				<Table
-					condensed={true}
-					hover={true}
-					responsive={true}
-					striped={true} >
+				<Table condensed={true} hover={true} responsive={true} striped={true} >
 
 					<thead>
 						<FeedEntry feed={null} lastRefresh={this.state.lastRefresh} onRefreshClick={this.refresh} />
