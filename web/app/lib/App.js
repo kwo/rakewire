@@ -1,5 +1,6 @@
 import React, {PropTypes} from 'react';
 import { RouteHandler } from 'react-router';
+import AppHeader from './components/AppHeader';
 
 const Config = {
 	rootURL: '/api'
@@ -74,10 +75,11 @@ class App extends React.Component {
 	render() {
 
 		return (
-			<div className="container">
-
-				<RouteHandler />
-
+			<div>
+				<AppHeader />
+				<div className="container-fluid">
+					<RouteHandler />
+				</div>
 			</div>
 		);
 
