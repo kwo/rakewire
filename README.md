@@ -46,6 +46,12 @@ Install the node modules and jspm packages
 
 	npm install
 
+### JSPM
+
+Sometimes dependencies will upgrade react to a still-in-beta version. Therefore is must be set back as follows
+
+	jspm resolve --only npm:react@0.13.3
+	jspm clean
 
 ### Run
 
