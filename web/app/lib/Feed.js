@@ -1,7 +1,8 @@
 import React, { PropTypes } from 'react';
-import moment from 'moment';
+import {Table} from 'react-bootstrap';
 import FeedInfo from './components/FeedInfo';
 import FeedLogEntry from './components/FeedLogEntry';
+import moment from 'moment';
 
 class Feed extends React.Component {
 
@@ -66,12 +67,6 @@ class Feed extends React.Component {
 			);
 		}
 
-		const style = {
-			table: {
-				width: '100%'
-			}
-		};
-
 		const feed = this.state.feed;
 
 		const logEntries = [];
@@ -81,7 +76,10 @@ class Feed extends React.Component {
 
 		return (
 
-			<table style={style.table}>
+			<Table
+				condensed={true}
+				hover={true}
+				responsive={true}>
 
 				<FeedInfo feed={feed}/>
 
@@ -89,7 +87,7 @@ class Feed extends React.Component {
 					{logEntries}
 				</tbody>
 
-			</table>
+			</Table>
 
 		);
 

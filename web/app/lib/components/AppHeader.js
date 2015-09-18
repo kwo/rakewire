@@ -16,7 +16,10 @@ class AppHeader extends React.Component {
 
 		return (
 			<header>
-				<Navbar brand={<Link to="home">Rakewire</Link>} fluid={true} toggleNavKey={0}>
+				<Navbar brand={<Link to="home">Rakewire</Link>}
+								fluid={true}
+								inverse={true}
+								toggleNavKey={0}>
 					<CollapsibleNav eventKey={0} fluid={true} >
 						<Nav navbar>
 							<NavLink to="feeds">Feeds</NavLink>

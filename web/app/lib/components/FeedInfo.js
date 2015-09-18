@@ -1,5 +1,5 @@
 import React, { PropTypes } from 'react';
-import moment from 'moment';
+//import moment from 'moment';
 
 class FeedInfo extends React.Component {
 
@@ -28,38 +28,22 @@ class FeedInfo extends React.Component {
 			);
 		}
 
-		const formatDate = function(dt) {
-			return moment(dt).format('dd HH:mm');
-		};
-
-		const style = {
-			td: {
-				height: 24,
-				paddingLeft: 12,
-				paddingRight: 12,
-				textAlign: 'left',
-				width: 40
-			},
-			th: {
-				paddingLeft: 12,
-				paddingRight: 12,
-				textAlign: 'left',
-				width: 40
-			}
-		};
+		// const formatDate = function(dt) {
+		// 	return moment(dt).format('dd HH:mm');
+		// };
 
 		const title = feed.title || feed.last200.feed.title || feed.url;
 
 		return (
 			<thead>
 				<tr key={0}>
-					<th style={style.th}>Title</th>
-					<td style={style.td}>{title}</td>
+					<td><strong>Title</strong></td>
+					<td>{title}</td>
 				</tr>
 
 				<tr key={1}>
-					<th style={style.th}>URL</th>
-					<td style={style.td}>{feed.url}</td>
+					<td><strong>URL</strong></td>
+					<td>{feed.url}</td>
 				</tr>
 			</thead>
 		);

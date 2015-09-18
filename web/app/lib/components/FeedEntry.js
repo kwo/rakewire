@@ -7,83 +7,28 @@ class FeedEntry extends React.Component {
 	static displayName = 'feedentry';
 
 	static propTypes = {
-		feed: PropTypes.object
+		feed: PropTypes.object,
+		lastRefresh: PropTypes.object,
+		onRefreshClick: PropTypes.func
 	};
 
 	static defaultProps = {
-		feed: null
+		feed: null,
+		lastRefresh: null,
+		onRefreshClick: function() {}
 	}
 
 	constructor(props, context) {
 		super(props, context);
 		this.state = {};
-		this.onRowClick = this.onRowClick.bind(this);
-	}
-
-	onRowClick() {
-		console.log(this.props.feed.id);
 	}
 
 	render() {
 
-		const style = {
-			th: {
-				paddingLeft: 6,
-				paddingRight: 6,
-				textAlign: 'left',
-				width: '40px'
-			},
-			thLU: {
-				paddingLeft: 6,
-				paddingRight: 6,
-				textAlign: 'left',
-				width: '50px'
-			},
-			thFeed: {
-				paddingLeft: 6,
-				paddingRight: 6,
-				textAlign: 'left',
-				width: '40%'
-			},
-			td: {
-				height: 24,
-				paddingLeft: 6,
-				paddingRight: 6,
-				textAlign: 'left',
-				width: '40px'
-			},
-			tdLU: {
-				height: 24,
-				paddingLeft: 6,
-				paddingRight: 6,
-				textAlign: 'left',
-				width: '50px'
-			},
-			tdFeed: {
-				height: 24,
-				paddingLeft: 6,
-				paddingRight: 6,
-				textAlign: 'left',
-				width: '40%'
-			}
+		const displayRefresh = function(dt) {
+			if (!dt) return 'refreshing...';
+			return formatTime(dt);
 		};
-
-		const feed = this.props.feed;
-
-		if (!feed) {
-			return (
-				<tr key={0}>
-					<th style={style.th}>Next</th>
-					<th style={style.th}>Last</th>
-					<th style={style.th}>Status</th>
-					<th style={style.th}>Code</th>
-					<th style={style.th}>Updated</th>
-					<th style={style.th}>Check</th>
-					<th style={style.thLU}>Last Updated</th>
-					<th style={style.thFeed}>Feed</th>
-				</tr>
-			);
-		}
 
 		const formatDate = function(dt) {
 			return moment(dt).format('YYYY-MM-DD');
@@ -93,6 +38,32 @@ class FeedEntry extends React.Component {
 			return moment(dt).format('dd HH:mm');
 		};
 
+		const feed = this.props.feed;
+
+		if (!feed) {
+			return (
+				<tr key={0}>
+					<th>Next</th>
+					<th>Last</th>
+					<th>Status</th>
+					<th>Code</th>
+					<th>Updated</th>
+					<th>Check</th>
+					<th>Last Updated</th>
+					<th>
+						Feed
+						<span
+							className="pull-right"
+							onClick={this.props.onRefreshClick}
+							style={{cursor: 'pointer'}}
+							tooltip="Refresh">
+							{displayRefresh(this.props.lastRefresh)}
+						</span>
+					</th>
+				</tr>
+			);
+		}
+
 		const status = feed.last.result;
 		const isUpdated = feed.last.updated ? 'Yes' : '';
 		const updateCheck = feed.last.updateCheck;
@@ -100,15 +71,15 @@ class FeedEntry extends React.Component {
 		const feedLinkURL = '/feeds/' + feed.id;
 
 		return (
-			<tr onClick={this.onRowClick}>
-				<td style={style.td}>{formatTime(feed.nextFetch)}</td>
-				<td style={style.td}>{formatTime(feed.last.startTime)}</td>
-				<td style={style.td}>{status}</td>
-				<td style={style.td}>{feed.last.http.statusCode}</td>
-				<td style={style.td}>{isUpdated}</td>
-				<td style={style.td}>{updateCheck}</td>
-				<td style={style.tdLU}>{formatDate(feed.lastUpdated)}</td>
-				<td style={style.tdFeed}><Link to={feedLinkURL}>{title}</Link></td>
+			<tr>
+				<td>{formatTime(feed.nextFetch)}</td>
+				<td>{formatTime(feed.last.startTime)}</td>
+				<td>{status}</td>
+				<td>{feed.last.http.statusCode}</td>
+				<td>{isUpdated}</td>
+				<td>{updateCheck}</td>
+				<td>{formatDate(feed.lastUpdated)}</td>
+				<td><Link to={feedLinkURL}>{title}</Link></td>
 			</tr>
 		);
 

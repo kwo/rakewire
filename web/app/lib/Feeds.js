@@ -1,6 +1,6 @@
 import React, { PropTypes } from 'react';
+import {Table} from 'react-bootstrap';
 import FeedEntry from './components/FeedEntry';
-import FeedToolbar from './components/FeedToolbar';
 
 class Feeds extends React.Component {
 
@@ -73,16 +73,21 @@ class Feeds extends React.Component {
 		return (
 			<div>
 
-				<FeedToolbar lastRefresh={this.state.lastRefresh} onRefreshClick={this.refresh} />
+				<Table
+					condensed={true}
+					hover={true}
+					responsive={true}
+					striped={true} >
 
-				<table>
 					<thead>
-						<FeedEntry feed={null} />
+						<FeedEntry feed={null} lastRefresh={this.state.lastRefresh} onRefreshClick={this.refresh} />
 					</thead>
+
 					<tbody>
 						{rows}
 					</tbody>
-				</table>
+
+				</Table>
 
 			</div>
 		);
