@@ -21,7 +21,6 @@ class Feeds extends React.Component {
 	}
 
 	componentDidMount() {
-		// TODO: slim size of data, perhaps change api for slimmer payload or use paging
 
 		const asyncParse = function(json) {
 			if (!json) return Promise.reject('Skipping, no json provided.');
@@ -30,7 +29,7 @@ class Feeds extends React.Component {
 
 		asyncParse(sessionStorage.getItem('feeds.state'))
 			.then(state => this.setState(state))
-			.catch(e => console.log('Cannot load state', e)); // TODO: handle errors in UI
+			.catch(e => console.log('Cannot load state', e)); // XXX: handle errors in UI
 
 	}
 

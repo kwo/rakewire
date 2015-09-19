@@ -64,7 +64,6 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 		chErrors <- err
 		return
 	}
-	// BACKLOG TLS wrap listener in tls.NewListener
 	z.listener = l
 	server := http.Server{
 		Handler: mainHandler,
