@@ -22,14 +22,6 @@ type Feed struct {
 	Attempt *FeedLog `json:"-"`
 	// Feed object parsed from Body
 	Feed *feedparser.Feed `json:"-"`
-	// Type of feed: Atom, RSS2, etc.
-	Flavor string `json:"flavor,omitempty"`
-	// Feed generator
-	Generator string `json:"generator,omitempty"`
-	// Hub URL
-	Hub string `json:"hub,omitempty"`
-	// Feed icon
-	Icon string `json:"icon,omitempty"`
 	// UUID
 	ID string `json:"id"`
 	// Time the feed was last updated
