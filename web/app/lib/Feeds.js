@@ -1,5 +1,5 @@
 import React, { PropTypes } from 'react';
-import {Table} from 'react-bootstrap';
+import {Alert, Button, Table} from 'react-bootstrap';
 import FeedEntry from './components/FeedEntry';
 
 class Feeds extends React.Component {
@@ -13,11 +13,14 @@ class Feeds extends React.Component {
 	constructor(props, context) {
 		super(props, context);
 		this.state = {
-			feeds: [],
+			notification: null,
+			feeds: null,
 			lastRefresh: null
 		};
 		this.getNextFeeds = this.getNextFeeds.bind(this);
 		this.refresh = this.refresh.bind(this);
+		this.loadState = this.loadState.bind(this);
+		this.saveState = this.saveState.bind(this);
 	}
 
 	componentDidMount() {
@@ -27,14 +30,17 @@ class Feeds extends React.Component {
 			return (new Response(json)).json();
 		};
 
-		asyncParse(sessionStorage.getItem('feeds.state'))
+		asyncParse(this.loadState())
 			.then(state => this.setState(state))
-			.catch(e => console.log('Cannot load state', e)); // XXX: handle errors in UI
+			.catch(e => {
+				console.log('Cannot load feeds.state from localstorage, refreshing.', e);
+				this.refresh();
+			});
 
 	}
 
 	componentWillUnmount() {
-		sessionStorage.setItem('feeds.state', JSON.stringify(this.state));
+		//this.saveState();
 	}
 
 	getNextFeeds() {
@@ -48,26 +54,66 @@ class Feeds extends React.Component {
 
 	refresh() {
 		this.setState({
-			feeds: [],
+			notification: {type: 'info', message: 'loading feeds...'},
+			feeds: null,
 			lastRefresh: null
 		});
 		this.getNextFeeds()
 			.then(feeds => {
 				this.setState({
+					notification: null,
 					feeds: feeds,
 					lastRefresh: new Date()
 				});
-				sessionStorage.setItem('feeds.state', JSON.stringify(this.state));
+				this.saveState();
 			})
-			.catch(e => console.log('Cannot load feeds:', e)); // XXX: display error in UI
+			.catch(e => {
+				this.setState({
+					notification: {type: 'warning', message: 'Cannot load feeds: ' + e},
+					feeds: null,
+					lastRefresh: null
+				});
+			});
+	}
+
+	loadState() {
+		return sessionStorage.getItem('feeds.state');
+	}
+
+	saveState() {
+		sessionStorage.setItem('feeds.state', JSON.stringify({
+			feeds: this.state.feeds,
+			lastRefresh: this.state.lastRefresh
+		}));
 	}
 
 	render() {
 
+		if (this.state.notification) {
+			let refreshButton = '';
+			if (this.state.notification.type === 'warning') {
+				refreshButton = (
+					<p>
+						<Button bsStyle="default" onClick={this.refresh}>
+							Refresh
+						</Button>
+					</p>
+				);
+			}
+			return (
+				<Alert bsStyle={this.state.notification.type}>
+					<h4>{this.state.notification.message}</h4>
+					{refreshButton}
+				</Alert>
+			);
+		}
+
 		const rows = [];
-		this.state.feeds.forEach((feed) => {
-			rows.push(<FeedEntry feed={feed} key={feed.id} />);
-		});
+		if (this.state.feeds) {
+			this.state.feeds.forEach((feed) => {
+				rows.push(<FeedEntry feed={feed} key={feed.id} />);
+			});
+		}
 
 		return (
 			<div>
