@@ -45,7 +45,7 @@ class Feeds extends React.Component {
 
 	getNextFeeds() {
 		return new Promise((resolve, reject) => {
-			fetch(this.context.config.rootURL + '/feeds/next')
+			fetch(`${this.context.config.rootURL}/feeds/next`)
 				.then(rsp => rsp.json())
 				.then(feeds => resolve(feeds))
 				.catch(e => reject(e));
@@ -69,7 +69,7 @@ class Feeds extends React.Component {
 			})
 			.catch(e => {
 				this.setState({
-					notification: {type: 'warning', message: 'Cannot load feeds: ' + e},
+					notification: {type: 'warning', message: `Cannot load feeds: ${e}`},
 					feeds: null,
 					lastRefresh: null
 				});

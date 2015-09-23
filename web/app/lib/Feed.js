@@ -29,8 +29,8 @@ class Feed extends React.Component {
 
 	componentDidMount() {
 		if (this.props.params.id) {
-			const feedURL = this.context.config.rootURL + '/feeds/' + this.props.params.id;
-			const feedLogURL = feedURL + '/log';
+			const feedURL = `${this.context.config.rootURL}/feeds/${this.props.params.id}`;
+			const feedLogURL = `${feedURL}/log`;
 			Promise.all([
 				fetch(feedURL),
 				fetch(feedLogURL)

@@ -69,8 +69,9 @@ class FeedLogEntry extends React.Component {
 
 		const formatBool = function(value, name) {
 			if (value) {
+				const elementId = `${logEntry.startTime.format('x')} - ${name}`;
 				return (
-					<OverlayTrigger overlay={<Tooltip id={logEntry.startTime.format('x') + '-' + name}>{String(value)}</Tooltip>} placement="top">
+					<OverlayTrigger overlay={<Tooltip id={elementId}>{String(value)}</Tooltip>} placement="top">
 						<i className="material-icons"
 							style={{cursor: 'pointer'}}>
 							done
@@ -83,8 +84,9 @@ class FeedLogEntry extends React.Component {
 
 		const formatValue = function(value, message, name) {
 			if (message) {
+				const elementId = `${logEntry.startTime.format('x')} - ${name}`;
 				return (
-					<OverlayTrigger overlay={<Tooltip id={logEntry.startTime.format('x') + '-' + name}>{String(message)}</Tooltip>} placement="top">
+					<OverlayTrigger overlay={<Tooltip id={elementId}>{String(message)}</Tooltip>} placement="top">
 						<span style={{cursor: 'pointer', textDecoration: 'underline'}}>
 							{value}
 						</span>

@@ -67,7 +67,7 @@ class FeedEntry extends React.Component {
 		const isUpdated = feed.last.updated ? 'Yes' : '';
 		const updateCheck = feed.last.updateCheck;
 		const title = feed.title || feed.last200.feed.title || feed.url;
-		const feedLinkURL = '/feeds/' + feed.id;
+		const feedLinkURL = `/feeds/${feed.id}`;
 
 		return (
 			<tr>
