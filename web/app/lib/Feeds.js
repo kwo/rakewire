@@ -77,13 +77,15 @@ class Feeds extends React.Component {
 	}
 
 	loadState() {
-		return sessionStorage.getItem('feeds.state');
+		const state = sessionStorage.getItem('feeds.state');
+		if (state.lastRefresh) state.lastRefresh = new Date(state.lastRefresh);
+		return state;
 	}
 
 	saveState() {
 		sessionStorage.setItem('feeds.state', JSON.stringify({
 			feeds: this.state.feeds,
-			lastRefresh: this.state.lastRefresh
+			lastRefresh: (this.state.lastRefresh) ? this.state.lastRefresh.getTime() : null
 		}));
 	}
 
