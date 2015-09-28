@@ -30,7 +30,7 @@
 		{
 			"importpath": "github.com/boltdb/bolt",
 			"repository": "https://github.com/boltdb/bolt",
-			"revision": "033d4ec028192f38aef67ae47bd7b89f343145b5",
+			"revision": "51f99c862475898df9773747d3accd05a7ca33c1",
 			"branch": "master"
 		},
 		{
@@ -99,14 +99,14 @@
 		{
 			"importpath": "github.com/stretchr/testify/assert",
 			"repository": "https://github.com/stretchr/testify",
-			"revision": "7c2b1e5640dcf2631213ca962d892bffa1e08860",
+			"revision": "bcd32dcc8b1e09b14f55703dcf891fdd82561143",
 			"branch": "master",
 			"path": "/assert"
 		},
 		{
 			"importpath": "gopkg.in/yaml.v2",
 			"repository": "https://gopkg.in/yaml.v2",
-			"revision": "7ad95dd0798a40da1ccdff6dff35fd177b5edf40",
+			"revision": "53feefa2559fb8dfa8d81baad31be332c97d6c77",
 			"branch": "v2"
 		}
 	]
