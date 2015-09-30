@@ -14,7 +14,7 @@ class Feeds extends React.Component {
 	constructor(props, context) {
 		super(props, context);
 		this.state = {
-			notification: null,
+			message: null,
 			feeds: null,
 			lastRefresh: null
 		};
@@ -55,14 +55,14 @@ class Feeds extends React.Component {
 
 	refresh() {
 		this.setState({
-			notification: {type: 'info', message: 'loading feeds...'},
+			message: {type: 'info', text: 'loading feeds...'},
 			feeds: null,
 			lastRefresh: null
 		});
 		this.getNextFeeds()
 			.then(feeds => {
 				this.setState({
-					notification: null,
+					message: null,
 					feeds: feeds,
 					lastRefresh: new Date()
 				});
@@ -70,7 +70,7 @@ class Feeds extends React.Component {
 			})
 			.catch(e => {
 				this.setState({
-					notification: {type: 'warning', message: `Cannot load feeds: ${e}`},
+					message: {type: 'warning', text: `Cannot load feeds: ${e}`},
 					feeds: null,
 					lastRefresh: null
 				});
@@ -92,12 +92,12 @@ class Feeds extends React.Component {
 
 	render() {
 
-		if (this.state.notification) {
-			const n = this.state.notification;
+		if (this.state.message) {
+			const n = this.state.message;
 			if (n.type === 'warning') {
-				return ( <Message btnClick={this.refresh} btnLabel={"Refresh"} message={n.message} type={n.type} /> );
+				return ( <Message btnClick={this.refresh} btnLabel={"Refresh"} message={n.text} type={n.type} /> );
 			} else {
-				return ( <Message message={n.message} type={n.type} /> );
+				return ( <Message message={n.text} type={n.type} /> );
 			}
 		}
 
