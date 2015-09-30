@@ -1,6 +1,7 @@
 import React, { PropTypes } from 'react';
-import {Alert, Button, Table} from 'react-bootstrap';
+import {Table} from 'react-bootstrap';
 import FeedEntry from './components/FeedEntry';
+import Message from './components/Message';
 
 class Feeds extends React.Component {
 
@@ -92,22 +93,12 @@ class Feeds extends React.Component {
 	render() {
 
 		if (this.state.notification) {
-			let refreshButton = '';
-			if (this.state.notification.type === 'warning') {
-				refreshButton = (
-					<p>
-						<Button bsStyle="default" onClick={this.refresh}>
-							Refresh
-						</Button>
-					</p>
-				);
+			const n = this.state.notification;
+			if (n.type === 'warning') {
+				return ( <Message btnClick={this.refresh} btnLabel={"Refresh"} message={n.message} type={n.type} /> );
+			} else {
+				return ( <Message message={n.message} type={n.type} /> );
 			}
-			return (
-				<Alert bsStyle={this.state.notification.type}>
-					<h4>{this.state.notification.message}</h4>
-					{refreshButton}
-				</Alert>
-			);
 		}
 
 		const rows = [];
