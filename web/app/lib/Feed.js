@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react';
 import {Table} from 'react-bootstrap';
 import FeedInfo from './components/FeedInfo';
 import FeedLogEntry from './components/FeedLogEntry';
+import Message from './components/Message';
 import moment from 'moment';
 
 class Feed extends React.Component {
@@ -23,11 +24,18 @@ class Feed extends React.Component {
 	constructor(props, context) {
 		super(props, context);
 		this.state = {
+			message: null,
 			feed: null
 		};
+		this.refresh = this.refresh.bind(this);
 	}
 
 	componentDidMount() {
+		this.refresh();
+	}
+
+	refresh() {
+		// no message at start -- too much flicker
 		if (this.props.params.id) {
 			const feedURL = `${this.context.config.rootURL}/feeds/${this.props.params.id}`;
 			const feedLogURL = `${feedURL}/log`;
@@ -53,14 +61,29 @@ class Feed extends React.Component {
 			})
 			.then(feed => {
 				this.setState({
-					feed: feed
+					feed: feed,
+					message: null
 				});
 			})
-			.catch(e => console.error(e)); // XXX: display error in UI
+			.catch(e => {
+				this.setState({
+					feed: null,
+					message: {type: 'warning', text: `Cannot load feed: ${e}`}
+				});
+			});
 		} // id
 	}
 
 	render() {
+
+		if (this.state.message) {
+			const n = this.state.message;
+			if (n.type === 'warning') {
+				return ( <Message btnClick={this.refresh} btnLabel={"Refresh"} message={n.text} type={n.type} /> );
+			} else {
+				return ( <Message message={n.text} type={n.type} /> );
+			}
+		}
 
 		if (!this.state.feed) {
 			return (
