@@ -41,7 +41,7 @@ class Feeds extends React.Component {
 	}
 
 	componentWillUnmount() {
-		//this.saveState();
+		this.saveState();
 	}
 
 	getNextFeeds() {
