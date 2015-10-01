@@ -1,8 +1,10 @@
 /*
 
- TODO
+	TODO
 
- - uglify
+ - include css in index not css include
+ - test
+ - uglify not on watch
  - flatten directory structure
 
 */
@@ -35,7 +37,16 @@ module.exports = {
 			template: path.resolve(__dirname, 'app/index.html'),
 			inject: 'body'
 		}),
-		new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor-[hash].js')
+		new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor-[hash].js'),
+		new webpack.optimize.UglifyJsPlugin({
+			compress: {
+				warnings: false
+			},
+			mangle: {
+				except: ['$super', '$', 'exports', 'require']
+			},
+			sourceMap: false
+		})
 	],
 	resolve: {
 		extensions: ['', '.js', '.json', '.jsx']
