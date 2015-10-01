@@ -1,11 +1,10 @@
-/*
-
-	TODO
-
- - uglify not on watch
- - flatten directory structure
-
-*/
+const debugMode = function() {
+	/* eslint no-var: 0 */
+	for (var i = 0; i < process.argv.length; i++) {
+		if (process.argv[i] == '--debug') return true;
+	}
+	return false;
+}();
 
 const CleanPlugin = require('clean-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -13,7 +12,7 @@ const HtmlPlugin = require('html-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
 
-module.exports = {
+const config = {
 	entry: {
 		app: path.resolve(__dirname, 'app/lib/index.js'),
 		vendor: ['moment', 'react', 'react-bootstrap', 'react-router', 'whatwg-fetch']
@@ -50,3 +49,9 @@ module.exports = {
 		extensions: ['', '.js', '.json', '.jsx']
 	}
 };
+
+if (debugMode) {
+	config.plugins.pop(); // remove uglify to speed up process while developing
+}
+
+module.exports = config;
