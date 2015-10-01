@@ -1,9 +1,9 @@
 import React, { PropTypes } from 'react';
 import {Table} from 'react-bootstrap';
-import FeedInfo from './components/FeedInfo';
-import FeedLogEntry from './components/FeedLogEntry';
-import Message from './components/Message';
 import moment from 'moment';
+import FeedInfo from '../components/FeedInfo';
+import FeedLogEntry from '../components/FeedLogEntry';
+import Message from '../components/Message';
 
 class Feed extends React.Component {
 

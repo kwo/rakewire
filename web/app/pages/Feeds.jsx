@@ -1,7 +1,7 @@
 import React, { PropTypes } from 'react';
 import {Table} from 'react-bootstrap';
-import FeedEntry from './components/FeedEntry';
-import Message from './components/Message';
+import FeedEntry from '../components/FeedEntry';
+import Message from '../components/Message';
 
 class Feeds extends React.Component {
 

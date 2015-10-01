@@ -1,6 +1,6 @@
 import React, {PropTypes} from 'react';
 import { RouteHandler } from 'react-router';
-import AppHeader from './components/AppHeader';
+import AppHeader from '../components/AppHeader';
 
 const Config = {
 	rootURL: '/api'
