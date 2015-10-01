@@ -14,9 +14,9 @@ class Feeds extends React.Component {
 	constructor(props, context) {
 		super(props, context);
 		this.state = {
-			message: null,
 			feeds: null,
-			lastRefresh: null
+			lastRefresh: null,
+			message: null
 		};
 		this.getNextFeeds = this.getNextFeeds.bind(this);
 		this.refresh = this.refresh.bind(this);
@@ -55,24 +55,24 @@ class Feeds extends React.Component {
 
 	refresh() {
 		this.setState({
-			message: {type: 'info', text: 'loading feeds...'},
 			feeds: null,
-			lastRefresh: null
+			lastRefresh: null,
+			message: {type: 'info', text: 'loading feeds...'}
 		});
 		this.getNextFeeds()
 			.then(feeds => {
 				this.setState({
-					message: null,
 					feeds: feeds,
-					lastRefresh: new Date()
+					lastRefresh: new Date(),
+					message: null
 				});
 				this.saveState();
 			})
 			.catch(e => {
 				this.setState({
-					message: {type: 'warning', text: `Cannot load feeds: ${e}`},
 					feeds: null,
-					lastRefresh: null
+					lastRefresh: null,
+					message: {type: 'warning', text: `Cannot load feeds: ${e}`}
 				});
 			});
 	}
