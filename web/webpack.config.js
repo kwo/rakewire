@@ -1,11 +1,19 @@
-const uuid = require('node-uuid');
-const buildversion = uuid.v1().substr(0, 8);
+/*
+
+ TODO
+ - add hash: app-[hash].js
+ - modify index.html with asset/hash names
+ - split into js and css
+ - uglify
+ - clean old assets
+
+*/
 
 module.exports = {
 	entry: './app/lib/main.jsx',
 	output: {
-		path: './build',
-		filename: `app-${buildversion}.js`
+		path: './public',
+		filename: 'app.js'
 	},
 	module: {
 		loaders: [

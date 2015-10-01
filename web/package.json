@@ -31,7 +31,6 @@
     "gulp-ignore": "^1.0.0",
     "gulp-plumber": "^1.0.0",
     "gulp-sym": "0.0.14",
-    "node-uuid": "^1.0.0",
     "style-loader": "^0.12.4",
     "tape": "^4.0.0",
     "webpack": "^1.12.2"

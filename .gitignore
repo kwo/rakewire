@@ -2,8 +2,6 @@
 /pkg
 /test/*.db
 /vendor/pkg
-/web/build
 /web/node_modules
-/web/public
 .DS_Store
 depgraph.svg
