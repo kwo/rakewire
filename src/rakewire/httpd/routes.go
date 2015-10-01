@@ -20,7 +20,7 @@ func (z singleFileSystem) Open(name string) (http.File, error) {
 func (z *Service) mainRouter() (*mux.Router, error) {
 
 	// get box for static web site
-	box, err := rice.FindBox("../../../web/public")
+	box, err := rice.FindBox("public")
 	if err != nil {
 		return nil, err
 	}

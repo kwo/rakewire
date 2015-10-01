@@ -9,11 +9,21 @@ case $CMD in
 		;;
 
 	"build")
+
 		cd web
 		webpack
 		cd ..
+
 		go build ./src/rakewire/rakewire.go
+
+		rm -f src/rakewire/httpd/public
+		mv web/public src/rakewire/httpd
 		rice append --exec rakewire -i ./src/rakewire/httpd
+		mv src/rakewire/httpd/public web
+		cd src/rakewire/httpd
+		ln -s ../../../web/public
+		cd ../../..
+
 	  ;;
 
 	"depgraph")
