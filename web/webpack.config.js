@@ -31,7 +31,7 @@ module.exports = {
 	plugins: [
 		new Clean(['public']),
 		new HtmlWebpackPlugin({
-			template: 'app/index.html',
+			template: path.resolve(__dirname, 'app/index.html'),
 			inject: 'body'
 		}),
 		new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor-[hash].js')
