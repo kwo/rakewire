@@ -6,6 +6,9 @@
   "private": true,
   "author": "Karl Ostendorf <karl@ostendorf.com> (https://ostendorf.com/)",
   "license": "Copyright 2015 Karl Ostendorf",
+  "scripts": {
+    "start": "webpack"
+  },
   "dependencies": {
     "moment": "^2.10.6",
     "react": "^0.13.3",
@@ -20,17 +23,9 @@
     "babel-loader": "^5.3.2",
     "babel-runtime": "^5.8.25",
     "css-loader": "^0.19.0",
-    "del": "^2.0.0",
     "eslint": "^1.0.0",
     "eslint-plugin-react": "^3.0.0",
     "faucet": "0.0.1",
-    "gulp": "^3.0.0",
-    "gulp-babel": "^5.0.0",
-    "gulp-eslint": "^1.0.0",
-    "gulp-html-replace": "^1.0.0",
-    "gulp-ignore": "^1.0.0",
-    "gulp-plumber": "^1.0.0",
-    "gulp-sym": "0.0.14",
     "style-loader": "^0.12.4",
     "tape": "^4.0.0",
     "webpack": "^1.12.2"
