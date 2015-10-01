@@ -1,5 +1,5 @@
-import 'site.css!';
-import 'fetch';
+import '../site.css';
+import 'whatwg-fetch';
 
 import React from 'react';
 import Router, {DefaultRoute, Redirect, Route} from 'react-router';
