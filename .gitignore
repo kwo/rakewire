@@ -2,7 +2,6 @@
 /pkg
 /test/*.db
 /vendor/pkg
-/web/app/jspm_packages
 /web/build
 /web/node_modules
 /web/public
