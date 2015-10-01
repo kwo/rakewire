@@ -2,7 +2,6 @@
   "name": "rakewire",
   "version": "1.0.0",
   "description": "Rakewire UI",
-  "main": "gulpfile.js",
   "private": true,
   "author": "Karl Ostendorf <karl@ostendorf.com> (https://ostendorf.com/)",
   "license": "Copyright 2015 Karl Ostendorf",
@@ -24,6 +23,7 @@
     "css-loader": "^0.19.0",
     "eslint": "^1.0.0",
     "eslint-plugin-react": "^3.0.0",
+    "file-loader": "^0.8.4",
     "style-loader": "^0.12.4",
     "webpack": "^1.0.0"
   }

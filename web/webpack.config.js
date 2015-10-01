@@ -1,16 +1,17 @@
 /*
 
  TODO
+
+ - clean old assets
  - add hash: app-[hash].js
  - modify index.html with asset/hash names
  - split into js and css
  - uglify
- - clean old assets
 
 */
 
 module.exports = {
-	entry: './app/lib/main.jsx',
+	entry: './app/lib/index.js',
 	output: {
 		path: './public',
 		filename: 'app.js'
