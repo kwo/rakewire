@@ -8,9 +8,9 @@
 
 */
 
+const CleanPlugin = require('clean-webpack-plugin');
+const HtmlPlugin = require('html-webpack-plugin');
 const path = require('path');
-const Clean = require('clean-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
 
 module.exports = {
@@ -29,8 +29,8 @@ module.exports = {
 		]
 	},
 	plugins: [
-		new Clean(['public']),
-		new HtmlWebpackPlugin({
+		new CleanPlugin(['public']),
+		new HtmlPlugin({
 			template: path.resolve(__dirname, 'app/index.html'),
 			inject: 'body'
 		}),
