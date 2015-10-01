@@ -9,9 +9,9 @@ case $CMD in
 		;;
 
 	"build")
-		#cd web
-		#gulp build
-		#gulp buildmode
+		cd web
+		webpack
+		cd ..
 		go build ./src/rakewire/rakewire.go
 		rice append --exec rakewire -i ./src/rakewire/httpd
 	  ;;
@@ -34,6 +34,11 @@ case $CMD in
 
 	"update")
 		gb vendor update --all
+	  ;;
+
+	"web")
+		cd web
+		webpack --debug --watch --color
 	  ;;
 
   *)
