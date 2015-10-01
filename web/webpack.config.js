@@ -2,20 +2,19 @@
 
  TODO
 
- - add hash: app-[hash].js
- - modify index.html with asset/hash names
  - split into js and css
  - uglify
 
 */
 
 const Clean = require('clean-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	entry: './app/lib/index.js',
 	output: {
 		path: './public',
-		filename: 'app.js'
+		filename: 'app-[hash].js'
 	},
 	module: {
 		loaders: [
@@ -24,7 +23,11 @@ module.exports = {
 		]
 	},
 	plugins: [
-		new Clean(['public'])
+		new Clean(['public']),
+		new HtmlWebpackPlugin({
+			template: 'app/index.html',
+			inject: 'body'
+		})
 	],
 	resolve: {
 		extensions: ['', '.js', '.json', '.jsx']

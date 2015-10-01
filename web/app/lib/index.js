@@ -1,6 +1,5 @@
 // root directory files
 import 'file?name=[name].[ext]!../robots.txt';
-import 'file?name=[name].[ext]!../index.html';
 
 // css
 import '../site.css';
