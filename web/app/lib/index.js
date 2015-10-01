@@ -2,6 +2,7 @@
 import 'file?name=[name].[ext]!../robots.txt';
 
 // css
+import '../paper.css';
 import '../site.css';
 
 // fonts

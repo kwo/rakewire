@@ -2,8 +2,6 @@
 
 	TODO
 
- - include css in index not css include
- - test
  - uglify not on watch
  - flatten directory structure
 
