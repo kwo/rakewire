@@ -25,19 +25,7 @@ class Feeds extends React.Component {
 	}
 
 	componentDidMount() {
-
-		const asyncParse = function(json) {
-			if (!json) return Promise.reject('Skipping, no json provided.');
-			return (new Response(json)).json();
-		};
-
-		asyncParse(this.loadState())
-			.then(state => this.setState(state))
-			.catch(e => {
-				console.log('Cannot load feeds.state from localstorage, refreshing.', e);
-				this.refresh();
-			});
-
+		this.loadState();
 	}
 
 	componentWillUnmount() {
@@ -78,16 +66,34 @@ class Feeds extends React.Component {
 	}
 
 	loadState() {
-		const state = sessionStorage.getItem('feeds.state');
-		if (state.lastRefresh) state.lastRefresh = new Date(state.lastRefresh);
-		return state;
+
+		const asyncParse = function(json) {
+			if (!json) return Promise.reject('Skipping, no json provided.');
+			return (new Response(json)).json();
+		};
+
+		asyncParse(sessionStorage.getItem('feeds.state'))
+			.then(state => {
+				if (state) {
+					if (state.lastRefresh) state.lastRefresh = new Date(state.lastRefresh);
+					this.setState(state);
+				} else {
+					this.refresh();
+				}
+			})
+			.catch(e => {
+				console.log('Cannot load feeds.state from localstorage, refreshing.', e);
+				this.refresh();
+			});
+
 	}
 
 	saveState() {
-		sessionStorage.setItem('feeds.state', JSON.stringify({
-			feeds: this.state.feeds,
-			lastRefresh: (this.state.lastRefresh) ? this.state.lastRefresh.getTime() : null
-		}));
+		const state = JSON.stringify({
+			lastRefresh: this.state.lastRefresh,
+			feeds: this.state.feeds
+		});
+		sessionStorage.setItem('feeds.state', state);
 	}
 
 	render() {
