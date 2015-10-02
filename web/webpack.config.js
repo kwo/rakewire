@@ -16,7 +16,8 @@ const config = {
 	module: {
 		loaders: [
 			{ test: /\.css$/,  loader: ExtractTextPlugin.extract('style-loader', 'css-loader') },
-			{ test: /\.jsx?$/, loader: 'babel?optional[]=runtime&stage=0', exclude: /node_modules/ }
+			{ test: /\.jsx?$/, loader: 'babel?optional[]=runtime&stage=0', exclude: /node_modules/ },
+			{ test: /\.jsx?$/, loader: 'eslint-loader', exclude: /node_modules/ }
 		]
 	},
 	plugins: [
