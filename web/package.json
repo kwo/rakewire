@@ -6,7 +6,8 @@
   "author": "Karl Ostendorf <karl@ostendorf.com> (https://ostendorf.com/)",
   "license": "Copyright 2015 Karl Ostendorf",
   "scripts": {
-    "start": "webpack"
+    "build": "webpack",
+    "start": "webpack --debug --watch"
   },
   "dependencies": {
     "moment": "^2.10.6",
