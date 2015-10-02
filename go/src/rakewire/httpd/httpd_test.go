@@ -78,9 +78,9 @@ func TestStaticPaths(t *testing.T) {
 	rsp, err = c.Do(req)
 	assertText(t, rsp, err)
 
-	req = newRequest(mGet, "/lib/main.js")
+	req = newRequest(mGet, "/fonts/MaterialIcons-Regular.woff2")
 	rsp, err = c.Do(req)
-	assert200OK(t, rsp, err, "application/javascript")
+	assert200OK(t, rsp, err, "application/octet-stream")
 
 }
 

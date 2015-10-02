@@ -8,13 +8,17 @@ This source code is divided into two projects: the backend, written in go, and t
 
 ### Prepare Environment
 
-The project root directory ($PROJECT_ROOT) acts as the GOPATH and contains the bin, pkg and src directories.
+The directory $PROJECT_ROOT/go acts as the GOPATH and contains the bin, pkg and src directories.
 The project dependencies are located at vendor/src according to the gb convention.
 
 Therefore, set the following environment varibles:
 
-	export GOPATH=$PROJECT_ROOT:$PROJECT_ROOT/vendor
-	export GOBIN=$PROJECT_ROOT/bin
+	export GOPATH=$PROJECT_ROOT/go:$PROJECT_ROOT/go/vendor
+	export GOBIN=$PROJECT_ROOT/go/bin
+
+Additionally add GOBIN and web/npm_modules/.bin to the PATH
+
+	export PATH=$GOBIN:$PROJECT_ROOT/web/npm_modules/.bin:$PATH
 
 ### Build
 
@@ -44,26 +48,18 @@ Therefore, set the following environment varibles:
 
 Install the node modules and jspm packages
 
+	cd $PROJECT_ROOT/web
 	npm install
-
-### JSPM
-
-Sometimes dependencies will upgrade react to a still-in-beta version. Therefore is must be set back as follows
-
-	jspm resolve --only npm:react@0.13.3
-	jspm clean
-
-### Run
-
-Simple accessing the UI at the test URL (localhost:4444) will cause JSPM to compile the application with Babel and JSX.
-
-	cd $PROJECT_ROOT
-	./build.sh run
 
 ### Build
 
 To compile a UI fit for production.
 
-	gulp build
+	webpack
 
-Use `gulp buildmode` to access the production-mode version. Use `gulp devmode` to switch back.
+### Run
+
+Run webpack in watch mode to keep files up-to-date.
+
+	cd $PROJECT_ROOT
+	./build.sh web

@@ -1,9 +1,8 @@
-/bin
-/pkg
-/test/*.db
-/vendor/pkg
-/web/public
+/go/bin
+/go/depgraph.svg
+/go/pkg
+/go/test/*.db
+/go/vendor/pkg
 /web/node_modules
+/web/public
 .DS_Store
-depgraph.svg
-rakewire
