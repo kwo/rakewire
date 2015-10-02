@@ -18,7 +18,9 @@ import (
 )
 
 const (
-	feedURL = "http://localhost:5555/feed.xml"
+	feedURL          = "http://localhost:5555/feed.xml"
+	hLastModified    = "Last-Modified"
+	hIfModifiedSince = "If-Modified-Since"
 )
 
 var (
@@ -195,6 +197,44 @@ func TestStaticRedirects(t *testing.T) {
 
 }
 
+func TestNotModified(t *testing.T) {
+
+	require.NotNil(t, ws)
+
+	c := newHTTPClient()
+
+	req := newRequest(mGet, "/")
+	rsp, err := c.Do(req)
+	assertHTML(t, rsp, err)
+	lastModified := rsp.Header.Get(hLastModified)
+
+	req = newRequest(mGet, "/")
+	req.Header.Add(hIfModifiedSince, lastModified)
+	rsp, err = c.Do(req)
+	assert304NotModified(t, rsp, err)
+
+	req = newRequest(mGet, "/robots.txt")
+	rsp, err = c.Do(req)
+	assertText(t, rsp, err)
+	lastModified = rsp.Header.Get(hLastModified)
+
+	req = newRequest(mGet, "/robots.txt")
+	req.Header.Add(hIfModifiedSince, lastModified)
+	rsp, err = c.Do(req)
+	assert304NotModified(t, rsp, err)
+
+	req = newRequest(mGet, "/fonts/MaterialIcons-Regular.woff2")
+	rsp, err = c.Do(req)
+	assert200OK(t, rsp, err, "application/octet-stream")
+	lastModified = rsp.Header.Get(hLastModified)
+
+	req = newRequest(mGet, "/fonts/MaterialIcons-Regular.woff2")
+	req.Header.Add(hIfModifiedSince, lastModified)
+	rsp, err = c.Do(req)
+	assert304NotModified(t, rsp, err)
+
+}
+
 func assertHTML(t *testing.T, rsp *http.Response, err error) {
 	assert200OK(t, rsp, err, mimeHTML)
 }
@@ -204,7 +244,11 @@ func assertText(t *testing.T, rsp *http.Response, err error) {
 }
 
 func assertJSONAPI(t *testing.T, rsp *http.Response, err error) {
-	assert200OKAPI(t, rsp, err, mimeJSON)
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, http.StatusOK, rsp.StatusCode)
+	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
+	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
 }
 
 func assert200OK(t *testing.T, rsp *http.Response, err error, mimeType string) {
@@ -215,6 +259,7 @@ func assert200OK(t *testing.T, rsp *http.Response, err error, mimeType string) {
 	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
 	assert.Equal(t, hAcceptEncoding, rsp.Header.Get(hVary))
 	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
+	assert.NotEqual(t, "", rsp.Header.Get(hLastModified))
 }
 
 func assert200OKAPI(t *testing.T, rsp *http.Response, err error, mimeType string) {
@@ -222,8 +267,14 @@ func assert200OKAPI(t *testing.T, rsp *http.Response, err error, mimeType string
 	assert.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, mimeType, rsp.Header.Get(hContentType))
-	//assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, hAcceptEncoding, rsp.Header.Get(hVary))
+	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
+	assert.NotEqual(t, "", rsp.Header.Get(hLastModified))
+}
+
+func assert304NotModified(t *testing.T, rsp *http.Response, err error) {
+	assert.Nil(t, err)
+	assert.NotNil(t, rsp)
+	assert.Equal(t, http.StatusNotModified, rsp.StatusCode)
 	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
 }
 
@@ -243,7 +294,6 @@ func assert404NotFoundAPI(t *testing.T, rsp *http.Response, err error) {
 	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
 	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, hAcceptEncoding, rsp.Header.Get(hVary))
 	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
 }
 
@@ -259,7 +309,6 @@ func getZBodyAsString(r io.Reader) (string, error) {
 }
 
 func newRequest(method string, path string) *http.Request {
-	//fmt.Printf("ws: %t %t\n", ws == nil, ws.listener == nil)
 	req, _ := http.NewRequest(method, fmt.Sprintf("http://%s%s", ws.listener.Addr(), path), nil)
 	req.Header.Add(hAcceptEncoding, "gzip")
 	return req
