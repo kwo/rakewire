@@ -14,6 +14,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/Sirupsen/logrus",
+			"repository": "https://github.com/Sirupsen/logrus",
+			"revision": "fe72f59ae7a90258fd2be14419e4d066dc0840e2",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/akavel/rsrc/binutil",
 			"repository": "https://github.com/akavel/rsrc",
 			"revision": "59b2acb86e3659d46e181b8ee3eb1638995deb96",
@@ -34,6 +40,24 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/bugsnag/bugsnag-go",
+			"repository": "https://github.com/bugsnag/bugsnag-go",
+			"revision": "72ff9e15e8c5ae52e8db1dd5dd1f77a9f2f1a895",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/bugsnag/osext",
+			"repository": "https://github.com/bugsnag/osext",
+			"revision": "0dd3f918b21bec95ace9dc86c7e70266cfc5c702",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/bugsnag/panicwrap",
+			"repository": "https://github.com/bugsnag/panicwrap",
+			"revision": "e5f9854865b9778a45169fc249e99e338d4d6f27",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/daaku/go.zipexe",
 			"repository": "https://github.com/daaku/go.zipexe",
 			"revision": "a5fe2436ffcb3236e175e5149162b41cd28bd27d",
@@ -45,6 +69,12 @@
 			"revision": "2df174808ee097f90d259e432cc04442cf60be21",
 			"branch": "master",
 			"path": "/spew"
+		},
+		{
+			"importpath": "github.com/getsentry/raven-go",
+			"repository": "https://github.com/getsentry/raven-go",
+			"revision": "bacb05934c249a98065d6a484adba61996905c1e",
+			"branch": "master"
 		},
 		{
 			"importpath": "github.com/gorilla/context",
@@ -102,6 +132,12 @@
 			"revision": "bcd32dcc8b1e09b14f55703dcf891fdd82561143",
 			"branch": "master",
 			"path": "/assert"
+		},
+		{
+			"importpath": "github.com/tobi/airbrake-go",
+			"repository": "https://github.com/tobi/airbrake-go",
+			"revision": "a3cdd910a3ffef88a20fbecc10363a520ad61a0a",
+			"branch": "master"
 		},
 		{
 			"importpath": "gopkg.in/yaml.v2",
