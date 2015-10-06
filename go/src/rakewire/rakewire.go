@@ -26,6 +26,8 @@ var (
 
 func main() {
 
+	logging.Init("info")
+
 	logger.Printf("Rakewire %s starting with %d CPUs", model.VERSION, runtime.NumCPU())
 
 	cfg := config.GetConfig()
@@ -69,12 +71,11 @@ func monitorShutdown(chErrors chan error) {
 
 	select {
 	case err := <-chErrors:
-		logger.Printf("Received error: %s", err.Error())
+		logger.Warn("Received error: %s", err.Error())
 	case <-chSignals:
 	}
 
-	logging.Linefeed()
-	logger.Println("Stopping... ")
+	logger.Info("\nStopping... ")
 
 	// shutdown httpd
 	ws.Stop()
@@ -93,6 +94,6 @@ func monitorShutdown(chErrors chan error) {
 	database.Close()
 	database = nil
 
-	logger.Println("Done")
+	logger.Info("Done")
 
 }

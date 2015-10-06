@@ -71,7 +71,7 @@ const (
 )
 
 var (
-	logger = logging.Null("feedparser")
+	logger = logging.New("feedparser")
 )
 
 // NewParser returns a new parser
@@ -109,7 +109,7 @@ Loop:
 
 		case xml.StartElement:
 			e := z.stack.Push(t)
-			logger.Printf("Start %s :: %s\n", e.name.Local, z.stack.String())
+			logger.Debug("Start %s :: %s\n", e.name.Local, z.stack.String())
 
 			switch {
 			case z.feed == nil:
@@ -142,7 +142,7 @@ Loop:
 				exitError = err
 				break Loop
 			}
-			logger.Printf("End   %s :: %s\n", e.name.Local, z.stack.String())
+			logger.Debug("End   %s :: %s\n", e.name.Local, z.stack.String())
 
 			switch {
 
@@ -169,7 +169,7 @@ Loop:
 
 	} // loop
 
-	logger.Printf("exitError: %s", exitError)
+	logger.Debug("exitError: %s", exitError)
 
 	if exitError != nil {
 		ioutil.ReadAll(reader)
