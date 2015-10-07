@@ -71,11 +71,11 @@ func monitorShutdown(chErrors chan error) {
 
 	select {
 	case err := <-chErrors:
-		logger.Warn("Received error: %s", err.Error())
+		logger.Printf("Received error: %s", err.Error())
 	case <-chSignals:
 	}
 
-	logger.Info("\nStopping... ")
+	logger.Println("\nStopping... ")
 
 	// shutdown httpd
 	ws.Stop()
@@ -94,6 +94,6 @@ func monitorShutdown(chErrors chan error) {
 	database.Close()
 	database = nil
 
-	logger.Info("Done")
+	logger.Println("Done")
 
 }
