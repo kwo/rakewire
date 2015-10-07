@@ -109,7 +109,7 @@ Loop:
 
 		case xml.StartElement:
 			e := z.stack.Push(t)
-			logger.Printf("Start %s :: %s\n", e.name.Local, z.stack.String())
+			logger.Debugf("Start %s :: %s\n", e.name.Local, z.stack.String())
 
 			switch {
 			case z.feed == nil:
@@ -142,7 +142,7 @@ Loop:
 				exitError = err
 				break Loop
 			}
-			logger.Printf("End   %s :: %s\n", e.name.Local, z.stack.String())
+			logger.Debugf("End   %s :: %s\n", e.name.Local, z.stack.String())
 
 			switch {
 
@@ -169,7 +169,7 @@ Loop:
 
 	} // loop
 
-	logger.Printf("exitError: %s", exitError)
+	logger.Debugf("exitError: %s", exitError)
 
 	if exitError != nil {
 		ioutil.ReadAll(reader)

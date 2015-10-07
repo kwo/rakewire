@@ -1,16 +1,23 @@
 package logging
 
 import (
-	"fmt"
-	"log"
+	log "github.com/Sirupsen/logrus"
 	"os"
 )
 
 // Init the logging system
 func Init(levelStr string) {
+	log.SetOutput(os.Stdout)
+	level, err := log.ParseLevel(levelStr)
+	if err != nil {
+		level = log.InfoLevel
+	}
+	log.SetLevel(level)
 }
 
 // New create a new internal logger
-func New(category string) *log.Logger {
-	return log.New(os.Stdout, fmt.Sprintf("%-9.8s", category), log.Ltime)
+func New(category string) *log.Entry {
+	return log.WithFields(log.Fields{
+		category: category,
+	})
 }
