@@ -8,6 +8,7 @@ import (
 // Init the logging system
 func Init(levelStr string) {
 	log.SetOutput(os.Stdout)
+	log.SetFormatter(NewInternalFormatter())
 	level, err := log.ParseLevel(levelStr)
 	if err != nil {
 		level = log.InfoLevel
@@ -17,7 +18,5 @@ func Init(levelStr string) {
 
 // New create a new internal logger
 func New(category string) *log.Entry {
-	return log.WithFields(log.Fields{
-		category: category,
-	})
+	return log.WithField("category", category)
 }
