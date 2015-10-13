@@ -26,9 +26,11 @@ var (
 
 func main() {
 
-	logging.Init("info")
+	logging.Init(&logging.Configuration{
+		Level: "info",
+	})
 
-	logger.Printf("Rakewire %s starting with %d CPUs", model.VERSION, runtime.NumCPU())
+	logger.Infof("Rakewire %s starting with %d CPUs", model.VERSION, runtime.NumCPU())
 
 	cfg := config.GetConfig()
 	if cfg == nil {
@@ -75,7 +77,7 @@ func monitorShutdown(chErrors chan error) {
 	case <-chSignals:
 	}
 
-	logger.Println("\nStopping... ")
+	logger.Info("Stopping... ")
 
 	// shutdown httpd
 	ws.Stop()
