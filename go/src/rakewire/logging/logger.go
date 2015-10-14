@@ -1,12 +1,14 @@
 package logging
 
 import (
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"os"
 )
 
 // Configuration for logging
 type Configuration struct {
+	File            string
 	Level           string
 	Pattern         string
 	TimestampFormat string
@@ -16,7 +18,27 @@ type Configuration struct {
 // Init the logging system
 func Init(cfg *Configuration) {
 
-	log.SetOutput(os.Stdout)
+	var noColor bool
+	var logFile *os.File
+	switch cfg.File {
+	case "stderr":
+		log.SetOutput(os.Stderr)
+		logFile = os.Stderr
+	case "", "stdout":
+		log.SetOutput(os.Stdout)
+		logFile = os.Stdout
+	default:
+		f, err := os.OpenFile(cfg.File, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
+		if err == nil {
+			log.SetOutput(f)
+			logFile = f
+			noColor = true
+		} else {
+			fmt.Printf("Reverting to stdout, cannot open log file: %s", err.Error())
+			log.SetOutput(os.Stdout)
+			logFile = os.Stdout
+		}
+	}
 
 	formatter := NewInternalFormatter()
 
@@ -28,7 +50,7 @@ func Init(cfg *Configuration) {
 		formatter.TimestampFormat = cfg.TimestampFormat
 	}
 
-	if cfg.NoColor {
+	if cfg.NoColor || noColor {
 		formatter.UseColor = false
 	}
 
@@ -39,6 +61,8 @@ func Init(cfg *Configuration) {
 		level = log.InfoLevel
 	}
 	log.SetLevel(level)
+
+	log.Infof("Logging at %s level to %s", level.String(), logFile.Name())
 
 }
 
