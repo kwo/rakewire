@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"rakewire/config"
@@ -26,23 +27,22 @@ var (
 
 func main() {
 
-	logging.Init(&logging.Configuration{
-		Level: "info",
-	})
-
-	logger.Infof("Rakewire %s starting with %d CPUs", model.VERSION, runtime.NumCPU())
+	fmt.Printf("Rakewire %s starting with %d CPUs\n", model.VERSION, runtime.NumCPU())
 
 	cfg := config.GetConfig()
 	if cfg == nil {
-		logger.Printf("Abort! No config file found at %s\n", config.GetConfigFileLocation())
+		fmt.Printf("Abort! No config file found at %s\n", config.GetConfigFileLocation())
 		os.Exit(1)
 		return
 	}
 
+	// initialize logging
+	logging.Init(&cfg.Logging)
+
 	database = &bolt.Database{}
 	err := database.Open(&cfg.Database)
 	if err != nil {
-		logger.Printf("Abort! Cannot access database: %s\n", err.Error())
+		logger.Errorf("Abort! Cannot access database: %s\n", err.Error())
 		os.Exit(1)
 		return
 	}
@@ -73,8 +73,9 @@ func monitorShutdown(chErrors chan error) {
 
 	select {
 	case err := <-chErrors:
-		logger.Printf("Received error: %s", err.Error())
+		logger.Errorf("Received error: %s", err.Error())
 	case <-chSignals:
+		logger.Info("caught signal")
 	}
 
 	logger.Info("Stopping... ")
@@ -96,6 +97,6 @@ func monitorShutdown(chErrors chan error) {
 	database.Close()
 	database = nil
 
-	logger.Println("Done")
+	logger.Info("Done")
 
 }

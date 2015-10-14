@@ -9,6 +9,7 @@ import (
 	"rakewire/db"
 	"rakewire/fetch"
 	"rakewire/httpd"
+	"rakewire/logging"
 	"rakewire/pollfeed"
 	"rakewire/reaper"
 )
@@ -23,6 +24,7 @@ type Configuration struct {
 	Database db.Configuration
 	Fetcher  fetch.Configuration
 	Httpd    httpd.Configuration
+	Logging  logging.Configuration
 	Poll     pollfeed.Configuration
 	Reaper   reaper.Configuration
 }
