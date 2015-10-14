@@ -17,17 +17,17 @@ func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
 
 	feeds, err := z.Database.GetFeeds()
 	if err != nil {
-		logger.Printf("Error in db.GetFeeds: %s\n", err.Error())
+		logger.Warnf("Error in db.GetFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot retrieve feeds from database.", http.StatusInternalServerError)
 		return
 	}
 
-	logger.Printf("Getting feeds: %d", feeds.Size())
+	logger.Infof("Getting feeds: %d", feeds.Size())
 
 	w.Header().Set(hContentType, mimeJSON)
 	err = feeds.Serialize(w)
 	if err != nil {
-		logger.Printf("Error in db.GetFeeds: %s\n", err.Error())
+		logger.Warnf("Error in db.GetFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)
 		return
 	}
@@ -39,17 +39,17 @@ func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 	maxTime := time.Now().Truncate(time.Second).Add(36 * time.Hour)
 	feeds, err := z.Database.GetFetchFeeds(&maxTime)
 	if err != nil {
-		logger.Printf("Error in db.GetFetchFeeds: %s\n", err.Error())
+		logger.Warnf("Error in db.GetFetchFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot retrieve feeds from database.", http.StatusInternalServerError)
 		return
 	}
 
-	logger.Printf("Getting feeds: %d", feeds.Size())
+	logger.Infof("Getting feeds: %d", feeds.Size())
 
 	w.Header().Set(hContentType, mimeJSON)
 	err = feeds.Serialize(w)
 	if err != nil {
-		logger.Printf("Error in db.GetFeedsNext: %s\n", err.Error())
+		logger.Warnf("Error in db.GetFeedsNext: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)
 		return
 	}
@@ -63,7 +63,7 @@ func (z *Service) feedsGetFeedByID(w http.ResponseWriter, req *http.Request) {
 
 	feed, err := z.Database.GetFeedByID(feedID)
 	if err != nil {
-		logger.Printf("Error in db.GetFeedByID: %s\n", err.Error())
+		logger.Warnf("Error in db.GetFeedByID: %s\n", err.Error())
 		http.Error(w, "Cannot retrieve feed from database.", http.StatusInternalServerError)
 		return
 	} else if feed == nil {
@@ -73,7 +73,7 @@ func (z *Service) feedsGetFeedByID(w http.ResponseWriter, req *http.Request) {
 
 	data, err := feed.Encode()
 	if err != nil {
-		logger.Printf("Error in feed.Encode: %s\n", err.Error())
+		logger.Warnf("Error in feed.Encode: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feed from database.", http.StatusInternalServerError)
 		return
 	}
@@ -90,7 +90,7 @@ func (z *Service) feedsGetFeedByURL(w http.ResponseWriter, req *http.Request) {
 
 	feed, err := z.Database.GetFeedByURL(url)
 	if err != nil {
-		logger.Printf("Error in db.GetFeedByURL: %s\n", err.Error())
+		logger.Warnf("Error in db.GetFeedByURL: %s\n", err.Error())
 		http.Error(w, "Cannot retrieve feed from database.", http.StatusInternalServerError)
 		return
 	} else if feed == nil {
@@ -100,7 +100,7 @@ func (z *Service) feedsGetFeedByURL(w http.ResponseWriter, req *http.Request) {
 
 	data, err := feed.Encode()
 	if err != nil {
-		logger.Printf("Error in feed.Encode: %s\n", err.Error())
+		logger.Warnf("Error in feed.Encode: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feed from database.", http.StatusInternalServerError)
 		return
 	}
@@ -121,7 +121,7 @@ func (z *Service) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 	feeds := m.NewFeeds()
 	err := feeds.Deserialize(req.Body)
 	if err != nil {
-		logger.Printf("Error deserializing feeds: %s\n", err.Error())
+		logger.Warnf("Error deserializing feeds: %s\n", err.Error())
 		http.Error(w, "Cannot deserialize feeds.", http.StatusInternalServerError)
 		return
 	}
@@ -153,7 +153,7 @@ func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds *m.Feeds) {
 
 	err := z.Database.SaveFeeds(feeds)
 	if err != nil {
-		logger.Printf("Error in db.SaveFeeds: %s\n", err.Error())
+		logger.Warnf("Error in db.SaveFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot save feeds to database.", http.StatusInternalServerError)
 		return
 	}
@@ -164,7 +164,7 @@ func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds *m.Feeds) {
 
 	data, err := json.Marshal(jsonRsp)
 	if err != nil {
-		logger.Printf("Error serializing response: %s\n", err.Error())
+		logger.Warnf("Error serializing response: %s\n", err.Error())
 		http.Error(w, "Cannot serialize response.", http.StatusInternalServerError)
 		return
 	}
@@ -181,7 +181,7 @@ func (z *Service) feedsGetFeedLogByID(w http.ResponseWriter, req *http.Request) 
 
 	entries, err := z.Database.GetFeedLog(feedID, 7*24*time.Hour)
 	if err != nil {
-		logger.Printf("Error in db.GetFeedLog: %s\n", err.Error())
+		logger.Warnf("Error in db.GetFeedLog: %s\n", err.Error())
 		http.Error(w, "Cannot retrieve feed logs from database.", http.StatusInternalServerError)
 		return
 	} else if entries == nil {
@@ -192,7 +192,7 @@ func (z *Service) feedsGetFeedLogByID(w http.ResponseWriter, req *http.Request) 
 	w.Header().Set(hContentType, mimeJSON)
 	err = json.NewEncoder(w).Encode(entries)
 	if err != nil {
-		logger.Printf("Error encoding log entries: %s\n", err.Error())
+		logger.Warnf("Error encoding log entries: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feed logs from database.", http.StatusInternalServerError)
 		return
 	}

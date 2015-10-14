@@ -61,35 +61,35 @@ func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Se
 
 // Start service
 func (z *Service) Start() {
-	logger.Println("service starting...")
+	logger.Info("service starting...")
 	// initialize fetchers
 	for i := 0; i < z.workers; i++ {
 		z.latch.Add(1)
 		go z.run(i)
 	} // for
-	logger.Println("service started.")
+	logger.Info("service started.")
 }
 
 // Stop service
 func (z *Service) Stop() {
-	logger.Println("service stopping...")
+	logger.Info("service stopping...")
 	if z != nil { // TODO #RAKEWIRE-55: remove hack because on app close object is apparently already garbage collected
 		z.latch.Wait()
 		z.input = nil
 		z.output = nil
 	}
-	logger.Println("service stopped")
+	logger.Info("service stopped")
 }
 
 func (z *Service) run(id int) {
 
-	logger.Printf("fetcher %2d starting...\n", id)
+	logger.Infof("fetcher %2d starting...\n", id)
 
 	for req := range z.input {
 		z.processFeed(req, id)
 	}
 
-	logger.Printf("fetcher %2d exited.\n", id)
+	logger.Infof("fetcher %2d exited.\n", id)
 	z.latch.Done()
 
 }
@@ -183,7 +183,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.AdjustFetchTime(24 * time.Hour) // don't hammer site if error
 
 		case true:
-			logger.Printf("Uncaught Status Code: %d", rsp.StatusCode)
+			logger.Warnf("Uncaught Status Code: %d", rsp.StatusCode)
 
 		} // switch
 
@@ -191,7 +191,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
 
-	logger.Printf("fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s\n", id, feed.Attempt.Result, feed.Attempt.HTTP.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.Feed.Flavor)
+	logger.Infof("fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s\n", id, feed.Attempt.Result, feed.Attempt.HTTP.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.Feed.Flavor)
 	z.output <- feed
 
 }

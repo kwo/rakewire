@@ -45,14 +45,14 @@ var (
 func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 
 	if z.Database == nil {
-		logger.Println("Cannot start httpd, no database provided")
+		logger.Error("Cannot start httpd, no database provided")
 		chErrors <- errors.New("No database")
 		return
 	}
 
 	router, err := z.mainRouter()
 	if err != nil {
-		logger.Printf("Cannot load router: %s\n", err.Error())
+		logger.Errorf("Cannot load router: %s\n", err.Error())
 		chErrors <- err
 		return
 	}
@@ -60,7 +60,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Address, cfg.Port))
 	if err != nil {
-		logger.Printf("Cannot start listener: %s\n", err.Error())
+		logger.Errorf("Cannot start listener: %s\n", err.Error())
 		chErrors <- err
 		return
 	}
@@ -68,10 +68,10 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 	server := http.Server{
 		Handler: mainHandler,
 	}
-	logger.Printf("Started httpd on http://%s", z.listener.Addr())
+	logger.Infof("Started httpd on http://%s", z.listener.Addr())
 	err = server.Serve(z.listener)
 	if err != nil && z.Running() {
-		logger.Printf("Cannot start httpd: %s\n", err.Error())
+		logger.Errorf("Cannot start httpd: %s\n", err.Error())
 		chErrors <- err
 		return
 	}
@@ -83,10 +83,10 @@ func (z *Service) Stop() error {
 	if l := z.listener; l != nil {
 		z.listener = nil
 		if err := l.Close(); err != nil {
-			logger.Printf("Error stopping httpd: %s\n", err.Error())
+			logger.Errorf("Error stopping httpd: %s\n", err.Error())
 			return err
 		}
-		logger.Println("Stopped httpd")
+		logger.Info("Stopped httpd")
 	}
 	return nil
 }

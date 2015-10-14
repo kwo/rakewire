@@ -41,7 +41,7 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 	interval, err := time.ParseDuration(cfg.Interval)
 	if err != nil || interval < minPollInterval {
 		interval = minPollInterval
-		logger.Printf("Bad or missing interval configuration parameter (%s), setting to default of %s.", cfg.Interval, minPollInterval.String())
+		logger.Warnf("Bad or missing interval configuration parameter (%s), setting to default of %s.", cfg.Interval, minPollInterval.String())
 	}
 
 	return &Service{
@@ -55,24 +55,24 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 
 // Start Service
 func (z *Service) Start() {
-	logger.Println("service starting...")
+	logger.Info("service starting...")
 	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	logger.Println("service started.")
+	logger.Info("service started.")
 }
 
 // Stop service
 func (z *Service) Stop() {
-	logger.Println("service stopping...")
+	logger.Info("service stopping...")
 	z.kill()
 	z.runlatch.Wait()
-	logger.Println("service stopped.")
+	logger.Info("service stopped.")
 }
 
 func (z *Service) run() {
 
-	logger.Println("run starting...")
+	logger.Info("run starting...")
 
 	// run once initially
 	z.setPolling(true)
@@ -90,7 +90,7 @@ run:
 				z.polllatch.Add(1)
 				go z.poll(&tick)
 			} else {
-				logger.Println("Polling still in progress, skipping.")
+				logger.Info("Polling still in progress, skipping.")
 			}
 		case <-z.killsignal:
 			break run
@@ -104,23 +104,23 @@ run:
 
 	z.setRunning(false)
 	z.runlatch.Done()
-	logger.Println("run exited.")
+	logger.Info("run exited.")
 
 }
 
 func (z *Service) poll(t *time.Time) {
 
-	logger.Println("polling...")
+	logger.Info("polling...")
 
 	// get next feeds
 	feeds, err := z.database.GetFetchFeeds(t)
 	if err != nil {
-		logger.Printf("Cannot poll feeds: %s", err.Error())
+		logger.Warnf("Cannot poll feeds: %s", err.Error())
 		return
 	}
 
 	// convert feeds
-	logger.Printf("request feeds: %d", feeds.Size())
+	logger.Infof("request feeds: %d", feeds.Size())
 
 	// send to output
 	for i := 0; i < len(feeds.Values) && !z.isKilled(); i++ {

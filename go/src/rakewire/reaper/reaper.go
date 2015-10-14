@@ -38,24 +38,24 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 
 // Start Service
 func (z *Service) Start() {
-	logger.Println("service starting...")
+	logger.Info("service starting...")
 	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	logger.Println("service started.")
+	logger.Info("service started.")
 }
 
 // Stop service
 func (z *Service) Stop() {
-	logger.Println("service stopping...")
+	logger.Info("service stopping...")
 	z.killsignal <- true
 	z.runlatch.Wait()
-	logger.Println("service stopped.")
+	logger.Info("service stopped.")
 }
 
 func (z *Service) run() {
 
-	logger.Println("run starting...")
+	logger.Info("run starting...")
 
 run:
 	for {
@@ -71,20 +71,20 @@ run:
 
 	z.setRunning(false)
 	z.runlatch.Done()
-	logger.Println("run exited.")
+	logger.Info("run exited.")
 
 }
 
 func (z *Service) processResponse(rsp *m.Feed) {
 
-	//logger.Printf("saving feed: %s %s", rsp.ID, rsp.URL)
+	//logger.Debugf("saving feed: %s %s", rsp.ID, rsp.URL)
 
 	// convert feeds
 	feeds := m.NewFeeds()
 	feeds.Add(rsp)
 	err := z.database.SaveFeeds(feeds)
 	if err != nil {
-		logger.Printf("Cannot save feed %s: %s", rsp.URL, err.Error())
+		logger.Warnf("Cannot save feed %s: %s", rsp.URL, err.Error())
 	}
 
 }

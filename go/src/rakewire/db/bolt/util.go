@@ -36,7 +36,7 @@ func (z *Database) checkIndexForEntries(indexName string, value string, threshol
 	})
 
 	if len(result) > threshold {
-		logger.Printf("multiple keys for %s: %s\n", value, result)
+		logger.Warnf("multiple keys for %s: %s\n", value, result)
 		return bolt.ErrInvalid
 	}
 

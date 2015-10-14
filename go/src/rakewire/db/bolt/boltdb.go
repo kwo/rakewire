@@ -30,7 +30,7 @@ func (z *Database) Open(cfg *db.Configuration) error {
 
 	db, err := bolt.Open(cfg.Location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
-		logger.Printf("Cannot open database: %s", err.Error())
+		logger.Errorf("Cannot open database: %s", err.Error())
 		return err
 	}
 	z.db = db
@@ -59,11 +59,11 @@ func (z *Database) Open(cfg *db.Configuration) error {
 	})
 
 	if err != nil {
-		logger.Printf("Cannot initialize database: %s", err.Error())
+		logger.Errorf("Cannot initialize database: %s", err.Error())
 		return err
 	}
 
-	logger.Printf("Using database at %s\n", cfg.Location)
+	logger.Infof("Using database at %s\n", cfg.Location)
 
 	return nil
 
@@ -74,10 +74,10 @@ func (z *Database) Close() error {
 	if db := z.db; db != nil {
 		z.db = nil
 		if err := db.Close(); err != nil {
-			logger.Printf("Error closing database: %s\n", err.Error())
+			logger.Warnf("Error closing database: %s\n", err.Error())
 			return err
 		}
-		logger.Println("Closed database")
+		logger.Info("Closed database")
 	}
 	return nil
 }
@@ -90,21 +90,21 @@ func (z *Database) Repair() error {
 		b := tx.Bucket([]byte(bucketFeed))
 		indexes := tx.Bucket([]byte(bucketIndex))
 
-		logger.Printf("dropping index %s\n", bucketIndexFeedByURL)
+		logger.Debugf("dropping index %s\n", bucketIndexFeedByURL)
 		if err := indexes.DeleteBucket([]byte(bucketIndexFeedByURL)); err != nil {
 			return err
 		}
-		logger.Printf("dropping index %s\n", bucketIndexNextFetch)
+		logger.Debugf("dropping index %s\n", bucketIndexNextFetch)
 		if err := indexes.DeleteBucket([]byte(bucketIndexNextFetch)); err != nil {
 			return err
 		}
 
-		logger.Printf("creating index %s\n", bucketIndexFeedByURL)
+		logger.Debugf("creating index %s\n", bucketIndexFeedByURL)
 		idxFeedByURL, err := indexes.CreateBucket([]byte(bucketIndexFeedByURL))
 		if err != nil {
 			return err
 		}
-		logger.Printf("creating index %s\n", bucketIndexNextFetch)
+		logger.Debugf("creating index %s\n", bucketIndexNextFetch)
 		idxNextFetch, err := indexes.CreateBucket([]byte(bucketIndexNextFetch))
 		if err != nil {
 			return err
@@ -112,7 +112,7 @@ func (z *Database) Repair() error {
 
 		c := b.Cursor()
 
-		logger.Printf("populating indexes")
+		logger.Debugf("populating indexes")
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 
 			f := &m.Feed{}

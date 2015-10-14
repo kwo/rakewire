@@ -19,7 +19,7 @@ func TestFetch(t *testing.T) {
 	r.Close()
 	require.NotNil(t, feeds)
 
-	logger.Printf("feeds: %d\n", feeds.Size())
+	logger.Debugf("feeds: %d\n", feeds.Size())
 
 	cfg := &Configuration{
 		Workers: 20,
@@ -33,21 +33,21 @@ func TestFetch(t *testing.T) {
 	ff.Start()
 
 	go func() {
-		logger.Printf("adding feeds: %d\n", feeds.Size())
+		logger.Debugf("adding feeds: %d\n", feeds.Size())
 		for _, f := range feeds.Values {
-			//logger.Printf("adding feed: %s\n", f.URL)
+			logger.Debugf("adding feed: %s\n", f.URL)
 			requests <- f
 		}
 		close(requests)
-		logger.Println("adding feeds done")
+		logger.Debug("adding feeds done")
 	}()
 
 	go func() {
-		logger.Println("monitoring...")
+		logger.Debug("monitoring...")
 		for rsp := range responses {
-			logger.Printf("%3d %s\n", rsp.Attempt.HTTP.StatusCode, rsp.URL)
+			logger.Debugf("%3d %s\n", rsp.Attempt.HTTP.StatusCode, rsp.URL)
 		}
-		logger.Println("monitoring done")
+		logger.Info("monitoring done")
 	}()
 
 	ff.Stop()

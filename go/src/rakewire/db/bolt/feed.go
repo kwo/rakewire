@@ -23,7 +23,7 @@ func (z *Database) GetFeeds() (*m.Feeds, error) {
 				return err
 			}
 			if f.ID != string(k) {
-				logger.Printf("ID/key mismatch: %s/%s\n", k, f.ID)
+				logger.Warnf("ID/key mismatch: %s/%s\n", k, f.ID)
 			} else {
 				result.Add(&f)
 			}
@@ -55,10 +55,10 @@ func (z *Database) GetFetchFeeds(maxTime *time.Time) (*m.Feeds, error) {
 		idxNextFetch := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(bucketIndexNextFetch))
 		c := idxNextFetch.Cursor()
 
-		//logger.Printf("max: %s\n", string(max))
+		//logger.Debugf("max: %s\n", string(max))
 		for k, uuid := c.First(); k != nil && bytes.Compare(k, max) <= 0; k, uuid = c.Next() {
 
-			//logger.Printf("key: %s: %s", k, uuid)
+			//logger.Debugf("key: %s: %s", k, uuid)
 
 			v := b.Get(uuid)
 			f := &m.Feed{}
@@ -208,7 +208,7 @@ func (z *Database) saveFeed(fNew *m.Feed, fOld *m.Feed) error {
 	if err == nil {
 		z.checkIndexForEntries(bucketIndexNextFetch, fNew.ID, 1)
 	} else {
-		logger.Println("Cannot check for duplicates, error")
+		logger.Warnf("Cannot check for duplicates: %s", err.Error())
 	}
 
 	return err
