@@ -75,6 +75,7 @@ func monitorShutdown(chErrors chan error) {
 	case err := <-chErrors:
 		logger.Errorf("Received error: %s", err.Error())
 	case <-chSignals:
+		fmt.Println()
 		logger.Info("caught signal")
 	}
 
