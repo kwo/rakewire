@@ -48,6 +48,9 @@ func (z *InternalFormatter) Format(entry *log.Entry) ([]byte, error) {
 	level, levelColor := getLevelNameAndColor(entry.Level)
 	timestamp := entry.Time.Format(z.TimestampFormat)
 	category := entry.Data["category"]
+	if category == nil || category == "" {
+		category = "none"
+	}
 	message := strings.TrimSpace(strings.TrimSuffix(entry.Message, "\n"))
 
 	if z.UseColor {
