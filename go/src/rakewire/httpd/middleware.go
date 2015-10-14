@@ -27,10 +27,29 @@ func Adapt(h http.Handler, adapters ...Adapter) http.Handler {
 }
 
 // LogAdapter log requests and responses
-func LogAdapter() Adapter {
-	return func(h http.Handler) http.Handler {
-		return gorillaHandlers.CombinedLoggingHandler(os.Stdout, h)
+func LogAdapter(filename string) Adapter {
+
+	var logFile *os.File
+	var err error
+	switch filename {
+	case "", "stderr":
+		logFile = os.Stderr
+	case "stdout":
+		logFile = os.Stdout
+	default:
+		logFile, err = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
+		if err != nil {
+			logFile = os.Stderr
+			logger.Warnf("Reverting to stderr, cannot open log file: %s", err.Error())
+		}
 	}
+
+	logger.Infof("Logging http access logs to %s", logFile.Name())
+
+	return func(h http.Handler) http.Handler {
+		return gorillaHandlers.LoggingHandler(logFile, h)
+	}
+
 }
 
 // RedirectHandler permanently redirects to the given location

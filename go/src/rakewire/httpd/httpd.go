@@ -17,10 +17,11 @@ type Service struct {
 
 // Configuration configuration
 type Configuration struct {
-	Address string
-	Port    int
-	TLSCert string
-	TLSKey  string
+	AccessLog string
+	Address   string
+	Port      int
+	TLSCert   string
+	TLSKey    string
 }
 
 const (
@@ -56,7 +57,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 		chErrors <- err
 		return
 	}
-	mainHandler := Adapt(router, LogAdapter())
+	mainHandler := Adapt(router, LogAdapter(cfg.AccessLog))
 
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Address, cfg.Port))
 	if err != nil {
