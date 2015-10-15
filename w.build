@@ -1,2 +1,2 @@
-cd web
+cd $PROJECT_HOME/web
 webpack

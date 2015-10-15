@@ -1,2 +1,2 @@
-cd go
+cd $PROJECT_HOME/go
 godepgraph -s -horizontal rakewire | dot -Tsvg -o depgraph.svg && open depgraph.svg

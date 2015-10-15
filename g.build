@@ -1,2 +1,2 @@
-cd go
+cd $PROJECT_HOME/go
 go build ./src/rakewire/rakewire.go

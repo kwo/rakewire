@@ -1,5 +1,5 @@
-RH=/Users/karl/projects/rakewire
-export GOPATH=$RH/go:$RH/go/vendor
-export GOBIN=$RH/go/bin
-export PATH=$RH:$GOBIN:$RH/web/node_modules/.bin:$PATH
+export PROJECT_HOME=/Users/karl/projects/rakewire
+export GOPATH=$PROJECT_HOME/go:$PROJECT_HOME/go/vendor
+export GOBIN=$PROJECT_HOME/go/bin
+export PATH=$PROJECT_HOME:$GOBIN:$PROJECT_HOME/web/node_modules/.bin:$PATH
 echo "Rakewire configured"

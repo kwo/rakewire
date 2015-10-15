@@ -1,9 +1,20 @@
-cd go
-rm -f src/rakewire/httpd/public
-mv ../web/public src/rakewire/httpd
+
+# remove symlink
+rm -f $PROJECT_HOME/go/src/rakewire/httpd/public
+
+# move webapp to httpd package
+mv $PROJECT_HOME/web/public $PROJECT_HOME/go/src/rakewire/httpd
+
+# append to binary
+cd $PROJECT_HOME/go
 rice append --exec rakewire -i ./src/rakewire/httpd
-mv src/rakewire/httpd/public ../web
-cd src/rakewire/httpd
+
+# move webapp back
+mv $PROJECT_HOME/go/src/rakewire/httpd/public $PROJECT_HOME/web
+
+# reinstate symlink to webapp in httpd package
+cd $PROJECT_HOME/go/src/rakewire/httpd
 ln -s ../../../../web/public
-cd ../../../..
-mv go/rakewire go/bin
+
+# move binary to $GOBIN directory
+mv $PROJECT_HOME/go/rakewire $PROJECT_HOME/go/bin
