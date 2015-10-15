@@ -1,0 +1,2 @@
+cd go
+go run ./src/rakewire/rakewire.go

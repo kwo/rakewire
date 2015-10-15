@@ -1,0 +1,2 @@
+cd go
+gb vendor update --all
