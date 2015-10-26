@@ -1,5 +1,7 @@
 import React from 'react';
-import Router, {DefaultRoute, Redirect, Route} from 'react-router';
+import ReactDOM from 'react-dom';
+import Router, {IndexRoute, Redirect, Route} from 'react-router';
+import createBrowserHistory from 'history/lib/createBrowserHistory'
 
 import About from './About';
 import App from './App';
@@ -8,16 +10,15 @@ import Feed from './Feed';
 import Feeds from './Feeds';
 
 const routes = (
-	<Route handler={App} name="app" path="/" >
-		<Route handler={Home} name="home" path="/" />
-		<Route handler={About} name="about" path="/about" />
-		<Route handler={Feeds} name="feeds" path="/feeds" />
-		<Route handler={Feed} name="feed" path="/feeds/:id" />
-		<DefaultRoute handler={Home} />
-		<Redirect from="*" to="home" />
-	</Route>
+	<Router history={createBrowserHistory()}>
+		<Route component={App} path="/">
+			<IndexRoute component={Home} />
+			<Route component={About} path="about" />
+			<Route component={Feeds} path="feeds" />
+			<Route component={Feed}  path="feeds/:id" />
+			<Redirect from="*" to="/" />
+		</Route>
+	</Router>
 );
 
-Router.run(routes, Router.HistoryLocation, Handler => {
-	React.render(<Handler />, document.getElementById('app'));
-});
+ReactDOM.render(routes, document.getElementById('app'));

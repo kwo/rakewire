@@ -7,7 +7,7 @@ const webpack = require('webpack');
 const config = {
 	entry: {
 		app: path.resolve(__dirname, 'app/index.js'),
-		vendor: ['moment', 'react', 'react-bootstrap', 'react-router', 'whatwg-fetch']
+		vendor: ['history', 'moment', 'react', 'react-bootstrap', 'react-dom', 'react-router', 'whatwg-fetch']
 	},
 	output: {
 		path: path.resolve(__dirname, 'public'),

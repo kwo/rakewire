@@ -21,7 +21,7 @@ class NavLink extends React.Component {
 
 	render() {
 		return (
-			<li role="presentation"><Link to={this.props.to}>{this.props.children}</Link></li>
+			<li role="presentation"><Link activeClassName="active" to={this.props.to}>{this.props.children}</Link></li>
 		);
 	} // render
 
