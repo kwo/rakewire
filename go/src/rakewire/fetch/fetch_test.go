@@ -14,12 +14,11 @@ func TestFetch(t *testing.T) {
 	r, err := os.Open("../test/feedlist.txt")
 	require.Nil(t, err)
 	require.NotNil(t, r)
-	//feeds := []*Request{}
-	feeds := URLListToFeeds(r)
+	feeds := m.ParseListToFeeds(r)
 	r.Close()
 	require.NotNil(t, feeds)
 
-	logger.Debugf("feeds: %d\n", feeds.Size())
+	logger.Debugf("feeds: %d\n", len(feeds))
 
 	cfg := &Configuration{
 		Workers: 20,
@@ -33,8 +32,8 @@ func TestFetch(t *testing.T) {
 	ff.Start()
 
 	go func() {
-		logger.Debugf("adding feeds: %d\n", feeds.Size())
-		for _, f := range feeds.Values {
+		logger.Debugf("adding feeds: %d\n", len(feeds))
+		for _, f := range feeds {
 			logger.Debugf("adding feed: %s\n", f.URL)
 			requests <- f
 		}

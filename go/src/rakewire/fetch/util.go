@@ -1,33 +1,13 @@
 package fetch
 
 import (
-	"bufio"
 	"bytes"
 	"compress/gzip"
 	"io"
 	"net/http"
-	m "rakewire/model"
 	"strings"
 	"time"
 )
-
-// URLListToFeeds parse url list to feeds
-func URLListToFeeds(r io.Reader) *m.Feeds {
-
-	result := m.NewFeeds()
-	scanner := bufio.NewScanner(r)
-
-	for scanner.Scan() {
-		var url = strings.TrimSpace(scanner.Text())
-		if url != "" && url[:1] != "#" {
-			req := m.NewFeed(url)
-			result.Add(req)
-		}
-	}
-
-	return result
-
-}
 
 func parseDateHeader(value string) time.Time {
 	var result time.Time

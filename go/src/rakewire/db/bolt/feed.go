@@ -8,9 +8,9 @@ import (
 )
 
 // GetFeeds list feeds
-func (z *Database) GetFeeds() (*m.Feeds, error) {
+func (z *Database) GetFeeds() ([]*m.Feed, error) {
 
-	result := m.NewFeeds()
+	var result []*m.Feed
 
 	err := z.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketFeed))
@@ -25,7 +25,7 @@ func (z *Database) GetFeeds() (*m.Feeds, error) {
 			if f.ID != string(k) {
 				logger.Warnf("ID/key mismatch: %s/%s\n", k, f.ID)
 			} else {
-				result.Add(&f)
+				result = append(result, &f)
 			}
 
 		} // for
@@ -39,7 +39,7 @@ func (z *Database) GetFeeds() (*m.Feeds, error) {
 }
 
 // GetFetchFeeds get feeds to be fetched within the given max time parameter.
-func (z *Database) GetFetchFeeds(maxTime *time.Time) (*m.Feeds, error) {
+func (z *Database) GetFetchFeeds(maxTime *time.Time) ([]*m.Feed, error) {
 
 	var max []byte
 	if maxTime == nil {
@@ -48,7 +48,7 @@ func (z *Database) GetFetchFeeds(maxTime *time.Time) (*m.Feeds, error) {
 		max = []byte(formatMaxTime(*maxTime))
 	}
 
-	result := m.NewFeeds()
+	var result []*m.Feed
 
 	err := z.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketFeed))
@@ -65,7 +65,7 @@ func (z *Database) GetFetchFeeds(maxTime *time.Time) (*m.Feeds, error) {
 			if err := f.Decode(v); err != nil {
 				return err
 			}
-			result.Add(f)
+			result = append(result, f)
 
 		} // for
 

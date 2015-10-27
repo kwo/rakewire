@@ -120,11 +120,11 @@ func (z *Service) poll(t *time.Time) {
 	}
 
 	// convert feeds
-	logger.Infof("request feeds: %d", feeds.Size())
+	logger.Infof("request feeds: %d", len(feeds))
 
 	// send to output
-	for i := 0; i < len(feeds.Values) && !z.isKilled(); i++ {
-		z.Output <- feeds.Values[i]
+	for i := 0; i < len(feeds) && !z.isKilled(); i++ {
+		z.Output <- feeds[i]
 	}
 
 	z.setPolling(false)

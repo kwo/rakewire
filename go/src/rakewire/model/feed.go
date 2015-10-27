@@ -10,11 +10,6 @@ import (
 	"time"
 )
 
-// Feeds collection of Feed
-type Feeds struct {
-	Values []*Feed
-}
-
 // Feed feed descriptior
 type Feed struct {
 	// Current fetch attempt for feed
@@ -97,24 +92,6 @@ func (z *Feed) AdjustFetchTime(interval time.Duration) {
 	now := time.Now().UTC().Truncate(time.Second)
 	nextFetch := now.Add(interval)
 	z.NextFetch = nextFetch
-}
-
-// ========== Feeds ==========
-
-// NewFeeds instantiate a new Feeds collection
-func NewFeeds() *Feeds {
-	x := Feeds{}
-	return &x
-}
-
-// Add add a Feed to the collection
-func (z *Feeds) Add(fd *Feed) {
-	z.Values = append(z.Values, fd)
-}
-
-// Size numbers of feeds in collection
-func (z *Feeds) Size() int {
-	return len(z.Values)
 }
 
 // ParseListToFeeds parse url list to feeds

@@ -33,10 +33,10 @@ func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	logger.Infof("Getting feeds: %d", feeds.Size())
+	logger.Infof("Getting feeds: %d", len(feeds))
 
 	w.Header().Set(hContentType, mimeJSON)
-	err = serializeFeeds(feeds.Values, w)
+	err = serializeFeeds(feeds, w)
 	if err != nil {
 		logger.Warnf("Error in db.GetFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)
@@ -55,10 +55,10 @@ func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	logger.Infof("Getting feeds: %d", feeds.Size())
+	logger.Infof("Getting feeds: %d", len(feeds))
 
 	w.Header().Set(hContentType, mimeJSON)
-	err = serializeFeeds(feeds.Values, w)
+	err = serializeFeeds(feeds, w)
 	if err != nil {
 		logger.Warnf("Error in db.GetFeedsNext: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)

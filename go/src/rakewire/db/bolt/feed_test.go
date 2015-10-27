@@ -47,7 +47,7 @@ func TestFeeds(t *testing.T) {
 	assert.Nil(t, err)
 
 	assert.Equal(t, len(urls), len(feeds))
-	assert.Equal(t, len(feeds), feeds2.Size())
+	assert.Equal(t, len(feeds), len(feeds2))
 	// for k, v := range feedmap {
 	// 	fmt.Printf("Feed %s: %v\n", k, v.URL)
 	// }
@@ -78,8 +78,8 @@ func TestURLIndex(t *testing.T) {
 	feeds2, err := database.GetFeeds()
 	require.Nil(t, err)
 	require.NotNil(t, feeds2)
-	assert.Equal(t, 1, feeds2.Size())
-	feed2 := feeds2.Values[0]
+	assert.Equal(t, 1, len(feeds2))
+	feed2 := feeds2[0]
 	assert.NotNil(t, feed2)
 	assert.Equal(t, feed.ID, feed2.ID)
 	assert.Equal(t, URL1, feed2.URL)
@@ -92,7 +92,7 @@ func TestURLIndex(t *testing.T) {
 	assert.Equal(t, URL1, feed2.URL)
 
 	// update URL
-	feed2 = feeds2.Values[0]
+	feed2 = feeds2[0]
 	feed2.URL = URL2
 	err = database.SaveFeed(feed2)
 	require.Nil(t, err)
@@ -101,8 +101,8 @@ func TestURLIndex(t *testing.T) {
 	feeds2, err = database.GetFeeds()
 	require.Nil(t, err)
 	require.NotNil(t, feeds2)
-	assert.Equal(t, 1, feeds2.Size())
-	feed2 = feeds2.Values[0]
+	assert.Equal(t, 1, len(feeds2))
+	feed2 = feeds2[0]
 	assert.NotNil(t, feed2)
 	assert.Equal(t, feed.ID, feed2.ID)
 	assert.Equal(t, URL2, feed2.URL)
@@ -157,14 +157,14 @@ func TestIndexFetch(t *testing.T) {
 	// test feeds
 	feeds, err := database.GetFeeds()
 	assert.Nil(t, err)
-	assert.NotNil(t, feeds)
-	assert.Equal(t, 0, feeds.Size())
+	assert.Nil(t, feeds)
+	assert.Equal(t, 0, len(feeds))
 
 	maxTime := time.Now().Add(48 * time.Hour)
 	feeds, err = database.GetFetchFeeds(&maxTime)
 	assert.Nil(t, err)
-	assert.NotNil(t, feeds)
-	assert.Equal(t, 0, feeds.Size())
+	assert.Nil(t, feeds)
+	assert.Equal(t, 0, len(feeds))
 
 	// create new feed, add to database
 	feed := m.NewFeed("http://localhost/")
@@ -175,13 +175,13 @@ func TestIndexFetch(t *testing.T) {
 	feeds, err = database.GetFeeds()
 	assert.Nil(t, err)
 	assert.NotNil(t, feeds)
-	assert.Equal(t, 1, feeds.Size())
+	assert.Equal(t, 1, len(feeds))
 
 	maxTime = time.Now().Add(48 * time.Hour)
 	feeds, err = database.GetFetchFeeds(&maxTime)
 	assert.Nil(t, err)
 	assert.NotNil(t, feeds)
-	assert.Equal(t, 1, feeds.Size())
+	assert.Equal(t, 1, len(feeds))
 
 	// modify feed, resave to database
 	// create new feed, add to database
@@ -196,13 +196,13 @@ func TestIndexFetch(t *testing.T) {
 	feeds, err = database.GetFeeds()
 	assert.Nil(t, err)
 	assert.NotNil(t, feeds)
-	assert.Equal(t, 2, feeds.Size())
+	assert.Equal(t, 2, len(feeds))
 
 	maxTime = time.Now().Add(48 * time.Hour)
 	feeds, err = database.GetFetchFeeds(&maxTime)
 	assert.Nil(t, err)
 	assert.NotNil(t, feeds)
-	assert.Equal(t, 2, feeds.Size())
+	assert.Equal(t, 2, len(feeds))
 
 	// close database
 	err = database.Close()
@@ -242,14 +242,14 @@ func TestIndexDeletes(t *testing.T) {
 	feeds, err := database.GetFeeds()
 	assert.Nil(t, err)
 	assert.NotNil(t, feeds)
-	assert.Equal(t, 288, feeds.Size())
+	assert.Equal(t, 288, len(feeds))
 
-	for _, feed := range feeds.Values {
+	for _, feed := range feeds {
 		err = database.checkIndexForEntries(bucketIndexNextFetch, feed.ID, 1)
 		assert.Nil(t, err)
 	}
 
-	for _, f2 := range feeds.Values {
+	for _, f2 := range feeds {
 		err = database.SaveFeed(f2)
 		assert.Nil(t, err)
 	}
@@ -257,15 +257,15 @@ func TestIndexDeletes(t *testing.T) {
 	feeds, err = database.GetFeeds()
 	assert.Nil(t, err)
 	assert.NotNil(t, feeds)
-	assert.Equal(t, 288, feeds.Size())
+	assert.Equal(t, 288, len(feeds))
 
 	maxTime := time.Now().Add(48 * time.Hour)
 	feeds, err = database.GetFetchFeeds(&maxTime)
 	assert.Nil(t, err)
 	assert.NotNil(t, feeds)
-	assert.Equal(t, 288, feeds.Size())
+	assert.Equal(t, 288, len(feeds))
 
-	for _, feed := range feeds.Values {
+	for _, feed := range feeds {
 		err = database.checkIndexForEntries(bucketIndexNextFetch, feed.ID, 1)
 		assert.Nil(t, err)
 	}
