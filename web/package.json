@@ -5,10 +5,6 @@
   "private": true,
   "author": "Karl Ostendorf <karl@ostendorf.com> (https://ostendorf.com/)",
   "license": "Copyright 2015 Karl Ostendorf",
-  "scripts": {
-    "build": "webpack",
-    "start": "webpack --debug --watch"
-  },
   "dependencies": {
     "history": "^1.0.0",
     "moment": "^2.0.0",
