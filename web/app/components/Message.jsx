@@ -8,13 +8,13 @@ class Message extends React.Component {
 	static propTypes = {
 		btnClick: PropTypes.func,
 		btnLabel: PropTypes.string,
-		message: PropTypes.string,
+		message: PropTypes.string.isRequired,
 		type: PropTypes.string,
 	};
 
 	static defaultProps = {
 		btnLabel: 'OK',
-		message: 'Hi!',
+		message: 'Unconfigured message!',
 		type: 'info'
 	}
 
