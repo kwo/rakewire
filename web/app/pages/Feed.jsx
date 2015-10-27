@@ -107,7 +107,7 @@ class Feed extends React.Component {
 				</Table>
 
 				<Table>
-					(<FeedLogEntry logEntry={null} />
+					<FeedLogEntry logEntry={null} />
 					<tbody>
 						{logEntries}
 					</tbody>
