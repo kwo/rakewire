@@ -3,6 +3,7 @@ package httpd
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"io"
 	"net/http"
 	m "rakewire/model"
 	"time"
@@ -11,6 +12,16 @@ import (
 // SaveFeedsResponse response for SaveFeeds
 type SaveFeedsResponse struct {
 	Count int `json:"count"`
+}
+
+func serializeFeeds(feeds []*m.Feed, w io.Writer) error {
+	return json.NewEncoder(w).Encode(&feeds)
+}
+
+func deserializeFeeds(r io.Reader) ([]*m.Feed, error) {
+	var feeds []*m.Feed
+	err := json.NewDecoder(r).Decode(&feeds)
+	return feeds, err
 }
 
 func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
@@ -25,7 +36,7 @@ func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
 	logger.Infof("Getting feeds: %d", feeds.Size())
 
 	w.Header().Set(hContentType, mimeJSON)
-	err = feeds.Serialize(w)
+	err = serializeFeeds(feeds.Values, w)
 	if err != nil {
 		logger.Warnf("Error in db.GetFeeds: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)
@@ -47,7 +58,7 @@ func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 	logger.Infof("Getting feeds: %d", feeds.Size())
 
 	w.Header().Set(hContentType, mimeJSON)
-	err = feeds.Serialize(w)
+	err = serializeFeeds(feeds.Values, w)
 	if err != nil {
 		logger.Warnf("Error in db.GetFeedsNext: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feeds from database.", http.StatusInternalServerError)
@@ -118,20 +129,19 @@ func (z *Service) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	feeds := m.NewFeeds()
-	err := feeds.Deserialize(req.Body)
+	feeds, err := deserializeFeeds(req.Body)
 	if err != nil {
 		logger.Warnf("Error deserializing feeds: %s\n", err.Error())
 		http.Error(w, "Cannot deserialize feeds.", http.StatusInternalServerError)
 		return
 	}
 
-	if feeds.Size() == 0 {
+	if len(feeds) == 0 {
 		sendError(w, http.StatusNoContent)
 		return
 	}
 
-	z.feedsSaveNative(w, feeds.Values)
+	z.feedsSaveNative(w, feeds)
 
 }
 

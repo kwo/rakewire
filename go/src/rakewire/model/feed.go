@@ -117,20 +117,6 @@ func (z *Feeds) Size() int {
 	return len(z.Values)
 }
 
-// Serialize serialize Feed object to bytes
-func (z *Feeds) Serialize(w io.Writer) error {
-	return json.NewEncoder(w).Encode(&z.Values)
-}
-
-// Deserialize serialize Feed object to bytes
-func (z *Feeds) Deserialize(r io.Reader) error {
-	err := json.NewDecoder(r).Decode(&z.Values)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // ParseListToFeeds parse url list to feeds
 func ParseListToFeeds(r io.Reader) *Feeds {
 	feeds := NewFeeds()

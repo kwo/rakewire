@@ -1,7 +1,6 @@
 package model
 
 import (
-	"bytes"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -53,19 +52,5 @@ func TestFeeds(t *testing.T) {
 	assert.NotNil(t, fi.LastUpdated)
 	assert.Equal(t, "http://localhost:8888/", fi.URL)
 	assert.EqualValues(t, dt, fi.LastUpdated)
-
-	fds := NewFeeds()
-	var buf bytes.Buffer
-
-	fds.Add(fi)
-	assert.Equal(t, 1, fds.Size())
-	err := fds.Serialize(&buf)
-	data := buf.Bytes()
-	require.Nil(t, err)
-	require.NotNil(t, data)
-	//assert.Equal(t, 177, len(data))
-
-	// fmt.Println(string(data))
-	// fmt.Printf("size: %d\n", len(data))
 
 }

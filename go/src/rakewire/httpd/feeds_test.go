@@ -21,11 +21,12 @@ func TestFeedsPut(t *testing.T) {
 	req.Header.Add(hContentType, mimeJSON)
 
 	buf := bytes.Buffer{}
-	feeds := m.NewFeeds()
+	var feeds []*m.Feed
 	feed := m.NewFeed(feedURL)
 	feedID = feed.ID
-	feeds.Add(feed)
-	feeds.Serialize(&buf)
+	feeds = append(feeds, feed)
+	err := serializeFeeds(feeds, &buf)
+	require.Nil(t, err)
 	req.Body = ioutil.NopCloser(&buf)
 
 	rsp, err := c.Do(req)
@@ -105,11 +106,10 @@ func TestFeedsGet(t *testing.T) {
 	n, err := buf.ReadFrom(rsp.Body)
 	assert.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
-	feeds := m.NewFeeds()
-	err = feeds.Deserialize(&buf)
+	feeds, err := deserializeFeeds(&buf)
 	assert.Nil(t, err)
-	assert.Equal(t, 1, feeds.Size())
-	feed := feeds.Values[0]
+	assert.Equal(t, 1, len(feeds))
+	feed := feeds[0]
 	assert.Equal(t, feedURL, feed.URL)
 
 }
@@ -133,11 +133,10 @@ func TestFeedsGetNext(t *testing.T) {
 	n, err := buf.ReadFrom(rsp.Body)
 	assert.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
-	feeds := m.NewFeeds()
-	err = feeds.Deserialize(&buf)
+	feeds, err := deserializeFeeds(&buf)
 	assert.Nil(t, err)
-	assert.Equal(t, 1, feeds.Size())
-	feed := feeds.Values[0]
+	assert.Equal(t, 1, len(feeds))
+	feed := feeds[0]
 	assert.Equal(t, feedURL, feed.URL)
 
 }
