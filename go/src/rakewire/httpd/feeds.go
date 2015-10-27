@@ -155,7 +155,7 @@ func (z *Service) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 	}
 
 	feeds := m.ParseListToFeeds(req.Body)
-	z.feedsSaveNative(w, feeds.Values)
+	z.feedsSaveNative(w, feeds)
 
 }
 

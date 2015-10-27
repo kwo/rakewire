@@ -118,13 +118,13 @@ func (z *Feeds) Size() int {
 }
 
 // ParseListToFeeds parse url list to feeds
-func ParseListToFeeds(r io.Reader) *Feeds {
-	feeds := NewFeeds()
+func ParseListToFeeds(r io.Reader) []*Feed {
+	var feeds []*Feed
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		var url = strings.TrimSpace(scanner.Text())
 		if url != "" && url[:1] != "#" {
-			feeds.Add(NewFeed(url))
+			feeds = append(feeds, NewFeed(url))
 		}
 	}
 	return feeds
