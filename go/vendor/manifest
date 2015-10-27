@@ -16,7 +16,7 @@
 		{
 			"importpath": "github.com/Sirupsen/logrus",
 			"repository": "https://github.com/Sirupsen/logrus",
-			"revision": "23521f1364a267387df2b99234134003e0a4486d",
+			"revision": "fe6f2b03125e4fcafb21406381010e363a072c80",
 			"branch": "master"
 		},
 		{
@@ -36,7 +36,7 @@
 		{
 			"importpath": "github.com/boltdb/bolt",
 			"repository": "https://github.com/boltdb/bolt",
-			"revision": "51f99c862475898df9773747d3accd05a7ca33c1",
+			"revision": "ee716d1410cb44d1a6b7e59a96a2b2bec23366a9",
 			"branch": "master"
 		},
 		{
@@ -61,7 +61,7 @@
 		{
 			"importpath": "github.com/gorilla/handlers",
 			"repository": "https://github.com/gorilla/handlers",
-			"revision": "40694b40f4a928c062f56849989d3e9cd0570e5f",
+			"revision": "9a8d6fa6e6479b56ec164996e54fa5d7eb3ef544",
 			"branch": "master"
 		},
 		{
@@ -73,7 +73,7 @@
 		{
 			"importpath": "github.com/jessevdk/go-flags",
 			"repository": "https://github.com/jessevdk/go-flags",
-			"revision": "1acbbaff2f347c412a0c7884873bd72cc9c1f5b4",
+			"revision": "4047bd797dd935ae2b557a79cc43f223066c9659",
 			"branch": "master"
 		},
 		{
@@ -105,7 +105,7 @@
 		{
 			"importpath": "github.com/stretchr/testify/assert",
 			"repository": "https://github.com/stretchr/testify",
-			"revision": "2b15294402a895a4224659d181866f545991021e",
+			"revision": "f3960ab1f9664ecc4e27c78af27cc9063d745a43",
 			"branch": "master",
 			"path": "/assert"
 		},
