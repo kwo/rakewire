@@ -1,3 +1,0 @@
---require test/init.js
---require chai
---reporter spec

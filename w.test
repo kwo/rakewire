@@ -1,2 +1,2 @@
 cd $PROJECT_HOME/web
-mocha "test/**/*.spec.js"
+node -r ./test/init.js `find test -name "*.spec.js"` | faucet
