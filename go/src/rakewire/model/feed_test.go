@@ -68,17 +68,4 @@ func TestFeeds(t *testing.T) {
 	// fmt.Println(string(data))
 	// fmt.Printf("size: %d\n", len(data))
 
-	fds = NewFeeds()
-	assert.Equal(t, 0, fds.Size())
-	err = fds.Deserialize(bytes.NewReader(data))
-	require.Nil(t, err)
-	assert.Equal(t, 1, fds.Size())
-	fi2 := fds.Get(fi.ID)
-	assert.NotNil(t, fi2)
-	assert.Equal(t, fi.ID, fi2.ID)
-	assert.Equal(t, fi.URL, fi2.URL)
-	assert.NotNil(t, fi2.NextFetch)
-	assert.NotNil(t, fi2.LastUpdated)
-	assert.EqualValues(t, dt, fi2.LastUpdated)
-
 }

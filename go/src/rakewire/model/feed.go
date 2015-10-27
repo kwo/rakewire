@@ -13,7 +13,6 @@ import (
 // Feeds collection of Feed
 type Feeds struct {
 	Values []*Feed
-	Index  map[string]*Feed
 }
 
 // Feed feed descriptior
@@ -105,19 +104,12 @@ func (z *Feed) AdjustFetchTime(interval time.Duration) {
 // NewFeeds instantiate a new Feeds collection
 func NewFeeds() *Feeds {
 	x := Feeds{}
-	x.reindex()
 	return &x
 }
 
 // Add add a Feed to the collection
 func (z *Feeds) Add(fd *Feed) {
 	z.Values = append(z.Values, fd)
-	z.Index[fd.ID] = fd
-}
-
-// Get a Feed by id
-func (z *Feeds) Get(id string) *Feed {
-	return z.Index[id]
 }
 
 // Size numbers of feeds in collection
@@ -136,15 +128,7 @@ func (z *Feeds) Deserialize(r io.Reader) error {
 	if err != nil {
 		return err
 	}
-	z.reindex()
 	return nil
-}
-
-func (z *Feeds) reindex() {
-	z.Index = make(map[string]*Feed)
-	for _, d := range z.Values {
-		z.Index[d.ID] = d
-	}
 }
 
 // ParseListToFeeds parse url list to feeds
