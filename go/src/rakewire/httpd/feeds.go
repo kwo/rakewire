@@ -131,7 +131,7 @@ func (z *Service) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	z.feedsSaveNative(w, feeds)
+	z.feedsSaveNative(w, feeds.Values)
 
 }
 
@@ -145,21 +145,23 @@ func (z *Service) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 	}
 
 	feeds := m.ParseListToFeeds(req.Body)
-	z.feedsSaveNative(w, feeds)
+	z.feedsSaveNative(w, feeds.Values)
 
 }
 
-func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds *m.Feeds) {
+func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds []*m.Feed) {
 
-	err := z.Database.SaveFeeds(feeds)
-	if err != nil {
-		logger.Warnf("Error in db.SaveFeeds: %s\n", err.Error())
-		http.Error(w, "Cannot save feeds to database.", http.StatusInternalServerError)
-		return
+	for _, feed := range feeds {
+		err := z.Database.SaveFeed(feed)
+		if err != nil {
+			logger.Warnf("Error in db.SaveFeed: %s\n", err.Error())
+			http.Error(w, "Cannot save feed to database.", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	jsonRsp := SaveFeedsResponse{
-		Count: len(feeds.Values),
+		Count: len(feeds),
 	}
 
 	data, err := json.Marshal(jsonRsp)

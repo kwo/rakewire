@@ -19,9 +19,9 @@ func TestFeeds(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, urls)
 
-	feeds := m.NewFeeds()
+	var feeds []*m.Feed
 	for _, url := range urls {
-		feeds.Add(m.NewFeed(url))
+		feeds = append(feeds, m.NewFeed(url))
 	}
 
 	database := Database{}
@@ -30,8 +30,10 @@ func TestFeeds(t *testing.T) {
 	})
 	require.Nil(t, err)
 
-	err = database.SaveFeeds(feeds)
-	assert.Nil(t, err)
+	for _, feed := range feeds {
+		err = database.SaveFeed(feed)
+		assert.Nil(t, err)
+	}
 
 	feeds2, err := database.GetFeeds()
 	assert.Nil(t, err)
@@ -44,8 +46,8 @@ func TestFeeds(t *testing.T) {
 	err = os.Remove(databaseFile)
 	assert.Nil(t, err)
 
-	assert.Equal(t, len(urls), feeds.Size())
-	assert.Equal(t, feeds.Size(), feeds2.Size())
+	assert.Equal(t, len(urls), len(feeds))
+	assert.Equal(t, len(feeds), feeds2.Size())
 	// for k, v := range feedmap {
 	// 	fmt.Printf("Feed %s: %v\n", k, v.URL)
 	// }
@@ -65,21 +67,18 @@ func TestURLIndex(t *testing.T) {
 	require.Nil(t, err)
 
 	// create feeds, feed
-	feeds := m.NewFeeds()
 	feed := m.NewFeed(URL1)
-	feeds.Add(feed)
-	assert.Equal(t, 1, feeds.Size())
 	assert.Equal(t, URL1, feed.URL)
 
 	// save feeds
-	err = database.SaveFeeds(feeds)
+	err = database.SaveFeed(feed)
 	require.Nil(t, err)
 
 	// get feeds2, feed2
 	feeds2, err := database.GetFeeds()
 	require.Nil(t, err)
 	require.NotNil(t, feeds2)
-	assert.Equal(t, feeds.Size(), feeds2.Size())
+	assert.Equal(t, 1, feeds2.Size())
 	feed2 := feeds2.Values[0]
 	assert.NotNil(t, feed2)
 	assert.Equal(t, feed.ID, feed2.ID)
@@ -95,14 +94,14 @@ func TestURLIndex(t *testing.T) {
 	// update URL
 	feed2 = feeds2.Values[0]
 	feed2.URL = URL2
-	err = database.SaveFeeds(feeds2)
+	err = database.SaveFeed(feed2)
 	require.Nil(t, err)
 
 	// get feeds2, feed2
 	feeds2, err = database.GetFeeds()
 	require.Nil(t, err)
 	require.NotNil(t, feeds2)
-	assert.Equal(t, feeds.Size(), feeds2.Size())
+	assert.Equal(t, 1, feeds2.Size())
 	feed2 = feeds2.Values[0]
 	assert.NotNil(t, feed2)
 	assert.Equal(t, feed.ID, feed2.ID)
@@ -168,10 +167,8 @@ func TestIndexFetch(t *testing.T) {
 	assert.Equal(t, 0, feeds.Size())
 
 	// create new feed, add to database
-	feeds = m.NewFeeds()
 	feed := m.NewFeed("http://localhost/")
-	feeds.Add(feed)
-	err = database.SaveFeeds(feeds)
+	err = database.SaveFeed(feed)
 	assert.Nil(t, err)
 
 	// retest
@@ -188,13 +185,11 @@ func TestIndexFetch(t *testing.T) {
 
 	// modify feed, resave to database
 	// create new feed, add to database
-	feeds2 := m.NewFeeds()
 	feed2 := m.NewFeed("https://localhost/")
 	feed2.ID = feed.ID
-	feeds2.Add(feed2)
+	err = database.SaveFeed(feed2)
 	f3 := m.NewFeed("http://kangaroo.com/")
-	feeds2.Add(f3)
-	err = database.SaveFeeds(feeds2)
+	err = database.SaveFeed(f3)
 	assert.Nil(t, err)
 
 	// retest
@@ -234,16 +229,17 @@ func TestIndexDeletes(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, urls)
 
-	feeds := m.NewFeeds()
+	var feeds1 []*m.Feed
 	for _, url := range urls {
-		feed := m.NewFeed(url)
-		feeds.Add(feed)
+		feeds1 = append(feeds1, m.NewFeed(url))
 	}
 
-	err = database.SaveFeeds(feeds)
-	assert.Nil(t, err)
+	for _, feed1 := range feeds1 {
+		err = database.SaveFeed(feed1)
+		assert.Nil(t, err)
+	}
 
-	feeds, err = database.GetFeeds()
+	feeds, err := database.GetFeeds()
 	assert.Nil(t, err)
 	assert.NotNil(t, feeds)
 	assert.Equal(t, 288, feeds.Size())
@@ -253,8 +249,10 @@ func TestIndexDeletes(t *testing.T) {
 		assert.Nil(t, err)
 	}
 
-	err = database.SaveFeeds(feeds)
-	assert.Nil(t, err)
+	for _, f2 := range feeds.Values {
+		err = database.SaveFeed(f2)
+		assert.Nil(t, err)
+	}
 
 	feeds, err = database.GetFeeds()
 	assert.Nil(t, err)

@@ -80,9 +80,7 @@ func (z *Service) processResponse(rsp *m.Feed) {
 	//logger.Debugf("saving feed: %s %s", rsp.ID, rsp.URL)
 
 	// convert feeds
-	feeds := m.NewFeeds()
-	feeds.Add(rsp)
-	err := z.database.SaveFeeds(feeds)
+	err := z.database.SaveFeed(rsp)
 	if err != nil {
 		logger.Warnf("Cannot save feed %s: %s", rsp.URL, err.Error())
 	}

@@ -127,24 +127,20 @@ func (z *Database) GetFeedByURL(url string) (*m.Feed, error) {
 
 }
 
-// SaveFeeds save feeds
-func (z *Database) SaveFeeds(feeds *m.Feeds) error {
+// SaveFeed save feeds
+func (z *Database) SaveFeed(fNew *m.Feed) error {
 
-	for _, fNew := range feeds.Values {
+	// get old record
+	fOld, err := z.GetFeedByID(fNew.ID)
+	if err != nil {
+		return err
+	}
 
-		// get old record
-		fOld, err := z.GetFeedByID(fNew.ID)
-		if err != nil {
-			return err
-		}
-
-		// save new record
-		err = z.saveFeed(fNew, fOld)
-		if err != nil {
-			return err
-		}
-
-	} // loop
+	// save new record
+	err = z.saveFeed(fNew, fOld)
+	if err != nil {
+		return err
+	}
 
 	return nil
 
