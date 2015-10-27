@@ -1,0 +1,2 @@
+cd $PROJECT_HOME/web
+mocha "test/**/*.spec.js"
