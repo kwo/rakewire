@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import TestUtils from 'react-addons-test-utils';
 import test from 'tape';
 
-import Message from '../app/components/Message.jsx';
+import Message from '../../app/components/Message.jsx';
 
 test('message rendered with default message', t => {
 
