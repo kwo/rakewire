@@ -1,0 +1,2 @@
+cd $PROJECT_HOME/go/src
+unexport -dryrun rakewire
