@@ -5,6 +5,7 @@ import (
 	"rakewire/db"
 	"rakewire/logging"
 	m "rakewire/model"
+	"sync"
 	"time"
 )
 
@@ -18,6 +19,7 @@ const (
 
 // Database implementation of Database
 type Database struct {
+	sync.Mutex
 	db *bolt.DB
 }
 
@@ -36,6 +38,7 @@ func (z *Database) Open(cfg *db.Configuration) error {
 	z.db = db
 
 	// check that buckets exist
+	z.Lock()
 	err = z.db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(bucketFeed))
 		if err != nil {
@@ -57,6 +60,7 @@ func (z *Database) Open(cfg *db.Configuration) error {
 		}
 		return nil
 	})
+	z.Unlock()
 
 	if err != nil {
 		logger.Errorf("Cannot initialize database: %s", err.Error())
@@ -85,7 +89,8 @@ func (z *Database) Close() error {
 // Repair the database
 func (z *Database) Repair() error {
 
-	return z.db.Update(func(tx *bolt.Tx) error {
+	z.Lock()
+	err := z.db.Update(func(tx *bolt.Tx) error {
 
 		b := tx.Bucket([]byte(bucketFeed))
 		indexes := tx.Bucket([]byte(bucketIndex))
@@ -133,5 +138,8 @@ func (z *Database) Repair() error {
 		return nil
 
 	}) // update
+	z.Unlock()
+
+	return err
 
 }

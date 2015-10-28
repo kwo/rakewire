@@ -148,6 +148,7 @@ func (z *Database) SaveFeed(fNew *m.Feed) error {
 
 func (z *Database) saveFeed(fNew *m.Feed, fOld *m.Feed) error {
 
+	z.Lock()
 	err := z.db.Update(func(tx *bolt.Tx) error {
 
 		b := tx.Bucket([]byte(bucketFeed))
@@ -200,6 +201,7 @@ func (z *Database) saveFeed(fNew *m.Feed, fOld *m.Feed) error {
 		return nil
 
 	})
+	z.Unlock()
 
 	if err == nil {
 		z.checkIndexForEntries(bucketIndexNextFetch, fNew.ID, 1)
