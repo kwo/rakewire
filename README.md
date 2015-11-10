@@ -22,8 +22,9 @@ Additionally add GOBIN and web/npm_modules/.bin to the PATH
 
 ### Build
 
-	cd $PROJECT_ROOT
-	./build.sh build
+This will place the executable in $PROJECT_ROOT/go/bin
+
+	b.build
 
 ### Run
 
@@ -46,7 +47,7 @@ Additionally add GOBIN and web/npm_modules/.bin to the PATH
 
 ### Prepare Environment
 
-Install the node modules and jspm packages
+Install the node modules.
 
 	cd $PROJECT_ROOT/web
 	npm install
