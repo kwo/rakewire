@@ -47,6 +47,7 @@
 		"prefer-spread": 1,
 		"prefer-template": 1,
 		"quotes": [1, "single"],
+		"semi": [2, "always"],
 		"space-before-blocks": [1, "always" ],
 
 		"jsx-quotes": [ 1, "prefer-double" ],

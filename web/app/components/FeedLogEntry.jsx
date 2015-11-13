@@ -27,7 +27,7 @@ class FeedLogEntry extends React.Component {
 			num: {
 				textAlign: 'right'
 			}
-		}
+		};
 
 		const logEntry = this.props.logEntry;
 
@@ -80,7 +80,7 @@ class FeedLogEntry extends React.Component {
 				);
 			}
 			return '';
-		}
+		};
 
 		const formatValue = function(value, message, name) {
 			if (message) {
@@ -94,7 +94,7 @@ class FeedLogEntry extends React.Component {
 				);
 			}
 			return value;
-		}
+		};
 
 		const getReadableFileSizeString = function(fileSizeInBytes) {
 			if (!fileSizeInBytes) return '';
