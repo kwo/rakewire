@@ -30,11 +30,11 @@ func (z *Database) GetFeedLog(id string, since time.Duration) ([]*m.FeedLog, err
 		b := tx.Bucket([]byte(bucketFeedLog))
 		c := b.Cursor()
 
-		for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+		for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
 			entry := &m.FeedLog{}
-			if err := entry.Decode(v); err != nil {
-				return err
-			}
+			// if err := entry.Decode(v); err != nil {
+			// 	return err
+			// }
 			result = append([]*m.FeedLog{entry}, result...)
 		} // for
 
@@ -43,23 +43,5 @@ func (z *Database) GetFeedLog(id string, since time.Duration) ([]*m.FeedLog, err
 	})
 
 	return result, err
-
-}
-
-func (z *Database) addFeedLog(tx *bolt.Tx, id string, entry *m.FeedLog) error {
-
-	data, err := entry.Encode()
-	if err != nil {
-		return err
-	}
-
-	b := tx.Bucket([]byte(bucketFeedLog))
-
-	// save record
-	if err = b.Put([]byte(formatFeedLogKey(id, &entry.StartTime)), data); err != nil {
-		return err
-	}
-
-	return nil
 
 }

@@ -28,7 +28,7 @@ func TestSaveFeedLog(t *testing.T) {
 			entry := &m.FeedLog{}
 			entry.StartTime = dt
 			entry.Duration = time.Duration(i)
-			err := database.addFeedLog(tx, feedID, entry)
+			err := marshal(entry, feedID, tx)
 			assert.Nil(t, err)
 		}
 		return nil
