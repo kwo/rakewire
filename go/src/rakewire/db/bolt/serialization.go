@@ -3,6 +3,7 @@ package bolt
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"github.com/boltdb/bolt"
 	"reflect"
 	"strconv"
@@ -17,29 +18,128 @@ const (
 	timeFormat = "2006-01-02T15:04:05.000"
 )
 
-// Marshal saves the object with the given ID to the specified bucket.
-// TODO: use cursor instead of bucket
-func (z *Database) Marshal(v interface{}, ID string, b *bolt.Bucket) error {
+// TODO: use tags to indicate which fields are indexed (how would it work?)
 
-	// if err = b.Put([]byte(formatFeedLogKey(id, &entry.StartTime)), data); err != nil {
-	// 	return err
-	// }
+// marshal saves the object with the given ID to the specified bucket.
+func marshal(object interface{}, ID string, tx *bolt.Tx) error {
 
-	return nil
-}
-
-// Unmarshal retrieves the object with the given ID from the specified bucket.
-func (z *Database) Unmarshal(object interface{}, ID string, c *bolt.Cursor) error {
-
+	// get reflection info from object
 	var obj reflect.Value
-	if reflect.TypeOf(object).Name() != "" {
+	objectName := reflect.TypeOf(object).Name()
+	if objectName != "" {
 		obj = reflect.ValueOf(object)
 	} else {
 		obj = reflect.ValueOf(object).Elem()
+		objectName = obj.Type().Name()
 	}
+
+	if objectName == "" {
+		return errors.New("Cannot get name of object")
+	}
+
+	logger.Debugf("Bucket name: %s", objectName)
+	b := tx.Bucket([]byte(objectName))
+
+	// loop thru object fields
+	for i := 0; i < obj.NumField(); i++ {
+
+		field := obj.Field(i)
+		fieldType := obj.Type().Field(i)
+		key := []byte(fmt.Sprintf("%s%s%s", ID, chSep, fieldType.Name))
+
+		switch fieldType.Type.Kind() {
+
+		case reflect.String:
+			value := []byte(field.String())
+			if err := b.Put(key, value); err != nil {
+				return err
+			}
+			break
+
+		case reflect.Bool:
+			value := []byte(strconv.FormatBool(field.Bool()))
+			if err := b.Put(key, value); err != nil {
+				return err
+			}
+			break
+
+		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+			value := []byte(strconv.FormatInt(field.Int(), 10))
+			if err := b.Put(key, value); err != nil {
+				return err
+			}
+			break
+
+		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+			value := []byte(strconv.FormatUint(field.Uint(), 10))
+			if err := b.Put(key, value); err != nil {
+				return err
+			}
+			break
+
+		case reflect.Float32:
+			value := []byte(strconv.FormatFloat(field.Float(), 'f', -1, 32))
+			if err := b.Put(key, value); err != nil {
+				return err
+			}
+			break
+
+		case reflect.Float64:
+			value := []byte(strconv.FormatFloat(field.Float(), 'f', -1, 64))
+			if err := b.Put(key, value); err != nil {
+				return err
+			}
+			break
+
+		case reflect.Struct:
+			if fieldType.Type == reflect.TypeOf(time.Time{}) {
+				value := []byte(field.Interface().(time.Time).UTC().Format(timeFormat))
+				if err := b.Put(key, value); err != nil {
+					return err
+				}
+			} else {
+				return errors.New("Will not marshal struct for " + fieldType.Name)
+			}
+			break
+
+		default:
+			return errors.New("Unknown field type when marshaling value for " + fieldType.Name)
+
+		} // switch
+
+		// TODO: add each valid value-holding field to list
+
+	} // for loop
+
+	// TODO: loop with cursor thru record, remove database fields not in field list
+
+	return nil
+
+}
+
+// unmarshal retrieves the object with the given ID from the specified bucket.
+func unmarshal(object interface{}, ID string, tx *bolt.Tx) error {
+
+	// get reflection info from object
+	var obj reflect.Value
+	objectName := reflect.TypeOf(object).Name()
+	if objectName != "" {
+		obj = reflect.ValueOf(object)
+	} else {
+		obj = reflect.ValueOf(object).Elem()
+		objectName = obj.Type().Name()
+	}
+
+	if objectName == "" {
+		return errors.New("Cannot get name of object")
+	}
+
+	logger.Debugf("Bucket name: %s", objectName)
+	b := tx.Bucket([]byte(objectName))
 
 	// seek to the min key for the given ID
 	// loop through cursor until ID changes
+	c := b.Cursor()
 	min := []byte(ID + chMin)
 	max := []byte(ID + chMax)
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
@@ -165,12 +265,12 @@ func (z *Database) Unmarshal(object interface{}, ID string, c *bolt.Cursor) erro
 				}
 				field.Set(reflect.ValueOf(value.Truncate(time.Millisecond)))
 			} else {
-				return errors.New("Will not unmarshall struct for " + fieldName)
+				return errors.New("Will not unmarshal struct for " + fieldName)
 			}
 			break
 
 		default:
-			return errors.New("Unknown field type when unmarshalling value for " + fieldName)
+			return errors.New("Unknown field type when unmarshaling value for " + fieldName)
 
 		} // switch
 
