@@ -27,11 +27,10 @@ func TestFeedLog(t *testing.T) {
 	err = database.db.Update(func(tx *bolt.Tx) error {
 		for i := 1; i <= 100; i++ {
 			dt := now.Add(time.Hour * time.Duration(-i))
-			entry := &m.FeedLog{}
+			entry := m.NewFeedLog(feedID)
 			entry.StartTime = dt
 			entry.Duration = time.Duration(i)
-			// FIXME: needs id for feed log
-			err := marshal(entry, feedID, tx)
+			err := marshal(entry, tx)
 			assert.Nil(t, err)
 		}
 		return nil
