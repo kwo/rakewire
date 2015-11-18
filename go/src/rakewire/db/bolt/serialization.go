@@ -139,7 +139,7 @@ func marshal(object m.Identifiable, tx *bolt.Tx) error {
 }
 
 // unmarshal retrieves the object with the given ID from the specified bucket.
-func unmarshal(object interface{}, ID string, tx *bolt.Tx) error {
+func unmarshal(object m.Identifiable, tx *bolt.Tx) error {
 
 	// get reflection info from object
 	var obj reflect.Value
@@ -161,8 +161,8 @@ func unmarshal(object interface{}, ID string, tx *bolt.Tx) error {
 	// seek to the min key for the given ID
 	// loop through cursor until ID changes
 	c := b.Cursor()
-	min := []byte(ID + chMin)
-	max := []byte(ID + chMax)
+	min := []byte(object.GetID() + chMin)
+	max := []byte(object.GetID() + chMax)
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
 		// extract field name from key
