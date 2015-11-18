@@ -52,51 +52,71 @@ func marshal(object m.Identifiable, tx *bolt.Tx) error {
 
 		case reflect.String:
 			value := []byte(field.String())
-			if err := b.Put(key, value); err != nil {
-				return err
+			if len(value) > 0 {
+				if err := b.Put(key, value); err != nil {
+					return err
+				}
 			}
 			break
 
 		case reflect.Bool:
-			value := []byte(strconv.FormatBool(field.Bool()))
-			if err := b.Put(key, value); err != nil {
-				return err
+			v := field.Bool()
+			if v {
+				value := []byte(strconv.FormatBool(v))
+				if err := b.Put(key, value); err != nil {
+					return err
+				}
 			}
 			break
 
 		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-			value := []byte(strconv.FormatInt(field.Int(), 10))
-			if err := b.Put(key, value); err != nil {
-				return err
+			v := field.Int()
+			if v != 0 {
+				value := []byte(strconv.FormatInt(v, 10))
+				if err := b.Put(key, value); err != nil {
+					return err
+				}
 			}
 			break
 
 		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-			value := []byte(strconv.FormatUint(field.Uint(), 10))
-			if err := b.Put(key, value); err != nil {
-				return err
+			v := field.Uint()
+			if v != 0 {
+				value := []byte(strconv.FormatUint(v, 10))
+				if err := b.Put(key, value); err != nil {
+					return err
+				}
 			}
 			break
 
 		case reflect.Float32:
-			value := []byte(strconv.FormatFloat(field.Float(), 'f', -1, 32))
-			if err := b.Put(key, value); err != nil {
-				return err
+			v := field.Float()
+			if v != 0 {
+				value := []byte(strconv.FormatFloat(v, 'f', -1, 32))
+				if err := b.Put(key, value); err != nil {
+					return err
+				}
 			}
 			break
 
 		case reflect.Float64:
-			value := []byte(strconv.FormatFloat(field.Float(), 'f', -1, 64))
-			if err := b.Put(key, value); err != nil {
-				return err
+			v := field.Float()
+			if v != 0 {
+				value := []byte(strconv.FormatFloat(v, 'f', -1, 64))
+				if err := b.Put(key, value); err != nil {
+					return err
+				}
 			}
 			break
 
 		case reflect.Struct:
 			if fieldType.Type == reflect.TypeOf(time.Time{}) {
-				value := []byte(field.Interface().(time.Time).UTC().Format(timeFormat))
-				if err := b.Put(key, value); err != nil {
-					return err
+				v := field.Interface().(time.Time)
+				if !v.IsZero() {
+					value := []byte(v.UTC().Format(timeFormat))
+					if err := b.Put(key, value); err != nil {
+						return err
+					}
 				}
 			} else {
 				return errors.New("Will not marshal struct for " + fieldType.Name)
