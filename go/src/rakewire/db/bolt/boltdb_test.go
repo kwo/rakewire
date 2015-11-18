@@ -5,6 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"os"
 	"rakewire/db"
+	"rakewire/logging"
 	"strings"
 	"testing"
 )
@@ -13,6 +14,19 @@ const (
 	feedFile     = "../../../../test/feedlist.txt"
 	databaseFile = "../../../../test/bolt.db"
 )
+
+func TestMain(m *testing.M) {
+
+	// initialize logging
+	logging.Init(&logging.Configuration{
+		Level: "debug",
+	})
+
+	logger.Debug("Logging configured")
+
+	m.Run()
+
+}
 
 func TestInterface(t *testing.T) {
 
