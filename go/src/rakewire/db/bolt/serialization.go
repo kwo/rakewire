@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
+	m "rakewire/model"
 	"reflect"
 	"strconv"
 	"strings"
@@ -21,7 +22,7 @@ const (
 // TODO: use tags to indicate which fields are indexed (how would it work?)
 
 // marshal saves the object with the given ID to the specified bucket.
-func marshal(object interface{}, ID string, tx *bolt.Tx) error {
+func marshal(object m.Identifiable, tx *bolt.Tx) error {
 
 	// get reflection info from object
 	var obj reflect.Value
@@ -45,7 +46,7 @@ func marshal(object interface{}, ID string, tx *bolt.Tx) error {
 
 		field := obj.Field(i)
 		fieldType := obj.Type().Field(i)
-		key := []byte(fmt.Sprintf("%s%s%s", ID, chSep, fieldType.Name))
+		key := []byte(fmt.Sprintf("%s%s%s", object.GetID(), chSep, fieldType.Name))
 
 		switch fieldType.Type.Kind() {
 

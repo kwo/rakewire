@@ -56,3 +56,8 @@ type FeedLog struct {
 	Title     string    // Title as specified by the feed
 	Updated   time.Time // most recent entry contained in the feed, NOT the feed updated time
 }
+
+// GetID makes FeedLog Identifiable
+func (z *FeedLog) GetID() string {
+	return z.ID
+}
