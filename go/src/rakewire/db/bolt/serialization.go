@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
-	m "rakewire/model"
 	"reflect"
 	"strconv"
 	"strings"
@@ -17,9 +16,9 @@ const (
 	chMax      = "~"
 	chSep      = "/"
 	timeFormat = "2006-01-02T15:04:05.000"
+	primaryKey = "primary-key"
 )
 
-// TODO: eliminate Identifiable interface, replace primary-key pointer with tag (`db:"#primary-key"`)
 // TODO: also use tags to define indexes (`db:"#indexFeedByURL:1"`) for field 1 of named index
 // TODO: write functions to deliver the pk and indexes array
 // TODO: remember - the value of an index is always the primary-key
@@ -37,7 +36,7 @@ const (
 // and that is how to rename fields.
 
 // marshal saves the object with the given ID to the specified bucket.
-func marshal(object m.Identifiable, tx *bolt.Tx) error {
+func marshal(object interface{}, tx *bolt.Tx) error {
 
 	// get reflection info from object
 	var obj reflect.Value
@@ -53,6 +52,11 @@ func marshal(object m.Identifiable, tx *bolt.Tx) error {
 		return errors.New("Cannot get name of object")
 	}
 
+	pkey, err := getPrimaryKey(object)
+	if err != nil {
+		return err
+	}
+
 	logger.Debugf("Bucket name: %s", objectName)
 	b := tx.Bucket([]byte(objectName))
 
@@ -61,7 +65,7 @@ func marshal(object m.Identifiable, tx *bolt.Tx) error {
 
 		field := obj.Field(i)
 		fieldType := obj.Type().Field(i)
-		key := []byte(fmt.Sprintf("%s%s%s", object.GetID(), chSep, fieldType.Name))
+		key := []byte(fmt.Sprintf("%s%s%s", pkey, chSep, fieldType.Name))
 
 		switch fieldType.Type.Kind() {
 
@@ -154,7 +158,7 @@ func marshal(object m.Identifiable, tx *bolt.Tx) error {
 }
 
 // unmarshal retrieves the object with the given ID from the specified bucket.
-func unmarshal(object m.Identifiable, tx *bolt.Tx) error {
+func unmarshal(object interface{}, tx *bolt.Tx) error {
 
 	// get reflection info from object
 	var obj reflect.Value
@@ -170,14 +174,19 @@ func unmarshal(object m.Identifiable, tx *bolt.Tx) error {
 		return errors.New("Cannot get name of object")
 	}
 
+	pkey, err := getPrimaryKey(object)
+	if err != nil {
+		return err
+	}
+
 	logger.Debugf("Bucket name: %s", objectName)
 	b := tx.Bucket([]byte(objectName))
 
 	// seek to the min key for the given ID
 	// loop through cursor until ID changes
 	c := b.Cursor()
-	min := []byte(object.GetID() + chMin)
-	max := []byte(object.GetID() + chMax)
+	min := []byte(pkey + chMin)
+	max := []byte(pkey + chMax)
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
 		// extract field name from key
@@ -313,5 +322,35 @@ func unmarshal(object m.Identifiable, tx *bolt.Tx) error {
 	} // for loop
 
 	return nil
+
+}
+
+func getPrimaryKey(object interface{}) (string, error) {
+
+	// get reflection info from object
+	var obj reflect.Value
+	if reflect.TypeOf(object).Name() != "" {
+		obj = reflect.ValueOf(object)
+	} else {
+		obj = reflect.ValueOf(object).Elem()
+	}
+
+	// loop thru object fields
+	for i := 0; i < obj.NumField(); i++ {
+
+		field := obj.Field(i)
+		fieldType := obj.Type().Field(i)
+
+		tag := fieldType.Tag
+		dbFields := strings.Split(tag.Get("db"), ",")
+		for _, dbField := range dbFields {
+			if strings.TrimSpace(dbField) == primaryKey {
+				pk := field.String()
+				return pk, nil
+			}
+		}
+	}
+
+	return "", errors.New("Cannot find primary key in struct")
 
 }

@@ -33,7 +33,7 @@ func NewFeedLog(feedID string) *FeedLog {
 
 // FeedLog represents an attempted HTTP request to a feed
 type FeedLog struct {
-	ID     string
+	ID     string `db:"primary-key"`
 	FeedID string
 
 	Duration      time.Duration // duration of http request plus feed processing
@@ -55,9 +55,4 @@ type FeedLog struct {
 	Generator string    // Feed generator (for example, Wordpress)
 	Title     string    // Title as specified by the feed
 	Updated   time.Time // most recent entry contained in the feed, NOT the feed updated time
-}
-
-// GetID makes FeedLog Identifiable
-func (z *FeedLog) GetID() string {
-	return z.ID
 }
