@@ -19,6 +19,13 @@ const (
 	primaryKey = "primary-key"
 )
 
+type metadata struct {
+	name    string
+	key     string
+	indexes map[string][]string
+	value   reflect.Value
+}
+
 // TODO: also use tags to define indexes (`db:"#indexFeedByURL:1"`) for field 1 of named index
 // TODO: write functions to deliver the pk and indexes array
 // TODO: remember - the value of an index is always the primary-key
@@ -38,34 +45,20 @@ const (
 // marshal saves the object with the given ID to the specified bucket.
 func marshal(object interface{}, tx *bolt.Tx) error {
 
-	// get reflection info from object
-	var obj reflect.Value
-	objectName := reflect.TypeOf(object).Name()
-	if objectName != "" {
-		obj = reflect.ValueOf(object)
-	} else {
-		obj = reflect.ValueOf(object).Elem()
-		objectName = obj.Type().Name()
-	}
-
-	if objectName == "" {
-		return errors.New("Cannot get name of object")
-	}
-
-	pkey, err := getPrimaryKey(object)
+	meta, err := getMetadata(object)
 	if err != nil {
 		return err
 	}
 
-	logger.Debugf("Bucket name: %s", objectName)
-	b := tx.Bucket([]byte(objectName))
+	logger.Debugf("Bucket name: %s", meta.name)
+	b := tx.Bucket([]byte(meta.name))
 
 	// loop thru object fields
-	for i := 0; i < obj.NumField(); i++ {
+	for i := 0; i < meta.value.NumField(); i++ {
 
-		field := obj.Field(i)
-		fieldType := obj.Type().Field(i)
-		key := []byte(fmt.Sprintf("%s%s%s", pkey, chSep, fieldType.Name))
+		field := meta.value.Field(i)
+		fieldType := meta.value.Type().Field(i)
+		key := []byte(fmt.Sprintf("%s%s%s", meta.key, chSep, fieldType.Name))
 
 		switch fieldType.Type.Kind() {
 
@@ -160,33 +153,19 @@ func marshal(object interface{}, tx *bolt.Tx) error {
 // unmarshal retrieves the object with the given ID from the specified bucket.
 func unmarshal(object interface{}, tx *bolt.Tx) error {
 
-	// get reflection info from object
-	var obj reflect.Value
-	objectName := reflect.TypeOf(object).Name()
-	if objectName != "" {
-		obj = reflect.ValueOf(object)
-	} else {
-		obj = reflect.ValueOf(object).Elem()
-		objectName = obj.Type().Name()
-	}
-
-	if objectName == "" {
-		return errors.New("Cannot get name of object")
-	}
-
-	pkey, err := getPrimaryKey(object)
+	meta, err := getMetadata(object)
 	if err != nil {
 		return err
 	}
 
-	logger.Debugf("Bucket name: %s", objectName)
-	b := tx.Bucket([]byte(objectName))
+	logger.Debugf("Bucket name: %s", meta.name)
+	b := tx.Bucket([]byte(meta.name))
 
 	// seek to the min key for the given ID
 	// loop through cursor until ID changes
 	c := b.Cursor()
-	min := []byte(pkey + chMin)
-	max := []byte(pkey + chMax)
+	min := []byte(meta.key + chMin)
+	max := []byte(meta.key + chMax)
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
 		// extract field name from key
@@ -199,7 +178,7 @@ func unmarshal(object interface{}, tx *bolt.Tx) error {
 		fieldName := keyParts[1]
 
 		// lookup up field in value
-		field := obj.FieldByName(fieldName)
+		field := meta.value.FieldByName(fieldName)
 		if !field.IsValid() {
 			return errors.New("Invalid fieldname in database: " + fieldName)
 		}
@@ -325,32 +304,42 @@ func unmarshal(object interface{}, tx *bolt.Tx) error {
 
 }
 
-func getPrimaryKey(object interface{}) (string, error) {
+func getMetadata(object interface{}) (metadata, error) {
 
-	// get reflection info from object
-	var obj reflect.Value
-	if reflect.TypeOf(object).Name() != "" {
-		obj = reflect.ValueOf(object)
+	result := metadata{
+		indexes: make(map[string][]string),
+	}
+
+	result.name = reflect.TypeOf(object).Name()
+	if result.name != "" {
+		result.value = reflect.ValueOf(object)
 	} else {
-		obj = reflect.ValueOf(object).Elem()
+		result.value = reflect.ValueOf(object).Elem()
+		result.name = result.value.Type().Name()
+	}
+
+	if result.name == "" {
+		return result, errors.New("Cannot get name of object")
 	}
 
 	// loop thru object fields
-	for i := 0; i < obj.NumField(); i++ {
+	for i := 0; i < result.value.NumField(); i++ {
 
-		field := obj.Field(i)
-		fieldType := obj.Type().Field(i)
+		field := result.value.Field(i)
+		fieldType := result.value.Type().Field(i)
 
 		tag := fieldType.Tag
 		dbFields := strings.Split(tag.Get("db"), ",")
 		for _, dbField := range dbFields {
 			if strings.TrimSpace(dbField) == primaryKey {
-				pk := field.String()
-				return pk, nil
+				// TODO: allow others types
+				result.key = field.String()
+				break
 			}
 		}
+
 	}
 
-	return "", errors.New("Cannot find primary key in struct")
+	return result, nil
 
 }
