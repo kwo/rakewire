@@ -16,14 +16,14 @@ const (
 	chMax      = "~"
 	chSep      = "/"
 	timeFormat = "2006-01-02T15:04:05.000"
-	primaryKey = "primary-key"
+	empty      = ""
 )
 
 type metadata struct {
-	name    string
-	key     string
-	indexes map[string][]string
-	value   reflect.Value
+	name  string
+	key   string
+	index map[string][]string
+	value reflect.Value
 }
 
 // TODO: also use tags to define indexes (`db:"#indexFeedByURL:1"`) for field 1 of named index
@@ -57,88 +57,20 @@ func marshal(object interface{}, tx *bolt.Tx) error {
 	for i := 0; i < meta.value.NumField(); i++ {
 
 		field := meta.value.Field(i)
-		fieldType := meta.value.Type().Field(i)
-		key := []byte(fmt.Sprintf("%s%s%s", meta.key, chSep, fieldType.Name))
+		fieldName := meta.value.Type().Field(i).Name
+		key := []byte(fmt.Sprintf("%s%s%s", meta.key, chSep, fieldName))
 
-		switch fieldType.Type.Kind() {
+		valueStr, err := getStringValue(field, fieldName)
+		if err != nil {
+			return err
+		}
 
-		case reflect.String:
-			value := []byte(field.String())
-			if len(value) > 0 {
-				if err := b.Put(key, value); err != nil {
-					return err
-				}
+		value := []byte(valueStr)
+		if len(value) > 0 {
+			if err := b.Put(key, value); err != nil {
+				return err
 			}
-			break
-
-		case reflect.Bool:
-			v := field.Bool()
-			if v {
-				value := []byte(strconv.FormatBool(v))
-				if err := b.Put(key, value); err != nil {
-					return err
-				}
-			}
-			break
-
-		case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
-			v := field.Int()
-			if v != 0 {
-				value := []byte(strconv.FormatInt(v, 10))
-				if err := b.Put(key, value); err != nil {
-					return err
-				}
-			}
-			break
-
-		case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
-			v := field.Uint()
-			if v != 0 {
-				value := []byte(strconv.FormatUint(v, 10))
-				if err := b.Put(key, value); err != nil {
-					return err
-				}
-			}
-			break
-
-		case reflect.Float32:
-			v := field.Float()
-			if v != 0 {
-				value := []byte(strconv.FormatFloat(v, 'f', -1, 32))
-				if err := b.Put(key, value); err != nil {
-					return err
-				}
-			}
-			break
-
-		case reflect.Float64:
-			v := field.Float()
-			if v != 0 {
-				value := []byte(strconv.FormatFloat(v, 'f', -1, 64))
-				if err := b.Put(key, value); err != nil {
-					return err
-				}
-			}
-			break
-
-		case reflect.Struct:
-			if fieldType.Type == reflect.TypeOf(time.Time{}) {
-				v := field.Interface().(time.Time)
-				if !v.IsZero() {
-					value := []byte(v.UTC().Format(timeFormat))
-					if err := b.Put(key, value); err != nil {
-						return err
-					}
-				}
-			} else {
-				return errors.New("Will not marshal struct for " + fieldType.Name)
-			}
-			break
-
-		default:
-			return errors.New("Unknown field type when marshaling value for " + fieldType.Name)
-
-		} // switch
+		}
 
 		// TODO: add each valid value-holding field to list
 
@@ -304,10 +236,10 @@ func unmarshal(object interface{}, tx *bolt.Tx) error {
 
 }
 
-func getMetadata(object interface{}) (metadata, error) {
+func getMetadata(object interface{}) (*metadata, error) {
 
-	result := metadata{
-		indexes: make(map[string][]string),
+	result := &metadata{
+		index: make(map[string][]string),
 	}
 
 	result.name = reflect.TypeOf(object).Name()
@@ -319,27 +251,113 @@ func getMetadata(object interface{}) (metadata, error) {
 	}
 
 	if result.name == "" {
-		return result, errors.New("Cannot get name of object")
+		return nil, errors.New("Cannot get name of object")
 	}
 
 	// loop thru object fields
 	for i := 0; i < result.value.NumField(); i++ {
 
 		field := result.value.Field(i)
-		fieldType := result.value.Type().Field(i)
+		fieldName := result.value.Type().Field(i).Name
+		tag := result.value.Type().Field(i).Tag
+		tagFields := strings.Split(tag.Get("db"), ",")
 
-		tag := fieldType.Tag
-		dbFields := strings.Split(tag.Get("db"), ",")
-		for _, dbField := range dbFields {
-			if strings.TrimSpace(dbField) == primaryKey {
-				// TODO: allow others types
-				result.key = field.String()
-				break
+		for _, tagFieldX := range tagFields {
+			tagField := strings.TrimSpace(tagFieldX)
+			if tagField == "primary-key" {
+				if result.key == "" {
+					// TODO: allow others types
+					result.key = field.String()
+				} else {
+					return nil, errors.New("duplicate primary key defined for " + result.name)
+				}
+			} else if strings.HasPrefix(tagField, "index") {
+				// populate indexes
+				elements := strings.SplitN(tagField, ":", 2)
+				if len(elements) != 2 {
+					return nil, errors.New("Invalid index definition: " + tagField)
+				}
+				indexName := elements[0][5:] // remove prefix from 0
+				indexPosition, err := strconv.Atoi(elements[1])
+				if err != nil {
+					return nil, errors.New("Index position is not an integer: " + tagField)
+				}
+				indexElements := result.index[indexName]
+				for len(indexElements) < indexPosition {
+					indexElements = append(indexElements, "")
+				}
+				positionValue, err := getStringValue(field, fieldName)
+				if err != nil {
+					return nil, err
+				}
+				indexElements[indexPosition-1] = positionValue
 			}
-		}
+		} // loop tag fields
 
-	}
+	} // loop fields
 
 	return result, nil
+
+}
+
+func getStringValue(field reflect.Value, fieldName string) (string, error) {
+
+	switch field.Kind() {
+
+	case reflect.String:
+		return field.String(), nil
+
+	case reflect.Bool:
+		v := field.Bool()
+		if v {
+			return strconv.FormatBool(v), nil
+		}
+		break
+
+	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
+		v := field.Int()
+		if v != 0 {
+			return strconv.FormatInt(v, 10), nil
+		}
+		break
+
+	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
+		v := field.Uint()
+		if v != 0 {
+			return strconv.FormatUint(v, 10), nil
+		}
+		break
+
+	case reflect.Float32:
+		v := field.Float()
+		if v != 0 {
+			return strconv.FormatFloat(v, 'f', -1, 32), nil
+		}
+		break
+
+	case reflect.Float64:
+		v := field.Float()
+		if v != 0 {
+			return strconv.FormatFloat(v, 'f', -1, 64), nil
+		}
+		break
+
+	case reflect.Struct:
+		if field.Type() == reflect.TypeOf(time.Time{}) {
+			v := field.Interface().(time.Time)
+			if !v.IsZero() {
+				return v.UTC().Format(timeFormat), nil
+			}
+		} else {
+			return empty, errors.New("Will not marshal struct for " + fieldName)
+		}
+		break
+
+	default:
+		return empty, errors.New("Unknown field type when marshaling value for " + fieldName)
+
+	} // switch
+
+	return empty, nil
 
 }
