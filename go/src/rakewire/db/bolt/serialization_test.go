@@ -65,6 +65,11 @@ func TestSerialization(t *testing.T) {
 	assert.Equal(t, fl.Result, fl2.Result)
 	assert.Equal(t, fl.StartTime, fl2.StartTime)
 	assert.Equal(t, fl.Updated, fl2.Updated)
+	// zero values are not saved
+	assert.Equal(t, 0, fl2.StatusCode)
+	assert.Equal(t, false, fl2.UsesGzip)
+	assert.Equal(t, "", fl2.ETag)
+	assert.Equal(t, time.Time{}, fl2.Updated)
 
 	// cleanup
 	err = database.Close()

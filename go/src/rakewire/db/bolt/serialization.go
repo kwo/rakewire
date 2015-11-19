@@ -26,9 +26,6 @@ type metadata struct {
 	value reflect.Value
 }
 
-// TODO: also use tags to define indexes (`db:"#indexFeedByURL:1"`) for field 1 of named index
-// TODO: write functions to deliver the pk and indexes array
-// TODO: remember - the value of an index is always the primary-key
 // TODO: expand marshal to include the following steps:
 // 	- unmarshal (get previous),
 //  - marshal
@@ -38,6 +35,7 @@ type metadata struct {
 // TODO: methods to retrieve values by index must still be custom made
 // TODO: store indexes in Index/entity-name/index-name
 // TODO: create function to rebuild indexes
+
 // TODO: need a control table to keep track of schema version,
 // need functions to convert from one schema version to the next,
 // and that is how to rename fields.
