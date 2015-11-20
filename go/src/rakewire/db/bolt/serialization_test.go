@@ -104,109 +104,109 @@ func TestSerialization(t *testing.T) {
 
 }
 
-func TestMetadataPrimaryKey(t *testing.T) {
+func TestSummaryPrimaryKey(t *testing.T) {
 
-	type metatest struct {
+	type summarytest struct {
 		ID  string
 		Key int `db:"primary-key"`
 	}
 
-	mt := &metatest{
+	mt := &summarytest{
 		ID:  "1",
 		Key: 2,
 	}
 
-	meta, err := getMetadata(mt)
+	summary, err := getSummary(mt)
 	require.Nil(t, err)
-	require.NotNil(t, meta)
+	require.NotNil(t, summary)
 
-	assert.Equal(t, "metatest", meta.name)
-	assert.Equal(t, "2", meta.key)
-	assert.NotNil(t, meta.value)
-	assert.Equal(t, 0, len(meta.index))
+	assert.Equal(t, "summarytest", summary.name)
+	assert.Equal(t, "2", summary.key)
+	assert.NotNil(t, summary.value)
+	assert.Equal(t, 0, len(summary.index))
 
 }
 
-func TestMetadataPrimaryKeyDefault(t *testing.T) {
+func TestSummaryPrimaryKeyDefault(t *testing.T) {
 
-	type metatest struct {
+	type summarytest struct {
 		ID  string
 		Key int
 	}
 
-	mt := &metatest{
+	mt := &summarytest{
 		ID:  "1",
 		Key: 2,
 	}
 
-	meta, err := getMetadata(mt)
+	summary, err := getSummary(mt)
 	require.Nil(t, err)
-	require.NotNil(t, meta)
+	require.NotNil(t, summary)
 
-	assert.Equal(t, "metatest", meta.name)
-	assert.Equal(t, "1", meta.key)
-	assert.NotNil(t, meta.value)
-	assert.Equal(t, 0, len(meta.index))
+	assert.Equal(t, "summarytest", summary.name)
+	assert.Equal(t, "1", summary.key)
+	assert.NotNil(t, summary.value)
+	assert.Equal(t, 0, len(summary.index))
 
 }
 
-func TestMetadataPrimaryKeyEmpty(t *testing.T) {
+func TestSummaryPrimaryKeyEmpty(t *testing.T) {
 
-	type metatest struct {
+	type summarytest struct {
 		ID  string
 		Key int
 	}
 
-	mt := &metatest{}
+	mt := &summarytest{}
 
-	meta, err := getMetadata(mt)
+	summary, err := getSummary(mt)
 	require.NotNil(t, err)
-	require.Nil(t, meta)
+	require.Nil(t, summary)
 
-	assert.Equal(t, "Empty primary key for metatest.", err.Error())
+	assert.Equal(t, "Empty primary key for summarytest.", err.Error())
 
 }
 
-func TestMetadataPrimaryKeyEmptyInteger(t *testing.T) {
+func TestSummaryPrimaryKeyEmptyInteger(t *testing.T) {
 
-	type metatest struct {
+	type summarytest struct {
 		ID  string
 		Key int `db:"primary-key"`
 	}
 
-	mt := &metatest{}
+	mt := &summarytest{}
 
-	meta, err := getMetadata(mt)
+	summary, err := getSummary(mt)
 	require.NotNil(t, err)
-	require.Nil(t, meta)
+	require.Nil(t, summary)
 
-	assert.Equal(t, "Empty primary key for metatest.", err.Error())
+	assert.Equal(t, "Empty primary key for summarytest.", err.Error())
 
 }
 
-func TestMetadataPrimaryKeyDuplicate(t *testing.T) {
+func TestSummaryPrimaryKeyDuplicate(t *testing.T) {
 
-	type metatest struct {
+	type summarytest struct {
 		ID  string `db:"primary-key"`
 		Key int    `db:"primary-key"`
 	}
 
-	mt := &metatest{
+	mt := &summarytest{
 		ID:  "1",
 		Key: 2,
 	}
 
-	meta, err := getMetadata(mt)
+	summary, err := getSummary(mt)
 	require.NotNil(t, err)
-	require.Nil(t, meta)
+	require.Nil(t, summary)
 
-	assert.Equal(t, "Duplicate primary key defined for metatest.", err.Error())
+	assert.Equal(t, "Duplicate primary key defined for summarytest.", err.Error())
 
 }
 
-func TestMetadataIndexes(t *testing.T) {
+func TestSummaryIndexes(t *testing.T) {
 
-	type metatest struct {
+	type summarytest struct {
 		ID    string `db:"primary-key"`
 		Key   int
 		Name  string `db:"indexName:1"`
@@ -214,7 +214,7 @@ func TestMetadataIndexes(t *testing.T) {
 		URL   string `db:"indexURLTitle:1"`
 	}
 
-	mt := &metatest{
+	mt := &summarytest{
 		ID:    "1",
 		Key:   2,
 		Name:  "name",
@@ -222,28 +222,28 @@ func TestMetadataIndexes(t *testing.T) {
 		URL:   "url",
 	}
 
-	meta, err := getMetadata(mt)
+	summary, err := getSummary(mt)
 	require.Nil(t, err)
-	require.NotNil(t, meta)
+	require.NotNil(t, summary)
 
-	assert.Equal(t, "metatest", meta.name)
-	assert.Equal(t, "1", meta.key)
-	assert.NotNil(t, meta.value)
-	assert.Equal(t, 2, len(meta.index))
-	assert.Nil(t, meta.index["bogusname"])
-	assert.NotNil(t, meta.index["Name"])
-	assert.NotNil(t, meta.index["URLTitle"])
-	assert.Equal(t, 1, len(meta.index["Name"]))
-	assert.Equal(t, "name", meta.index["Name"][0])
-	assert.Equal(t, 2, len(meta.index["URLTitle"]))
-	assert.Equal(t, "url", meta.index["URLTitle"][0])
-	assert.Equal(t, "title", meta.index["URLTitle"][1])
+	assert.Equal(t, "summarytest", summary.name)
+	assert.Equal(t, "1", summary.key)
+	assert.NotNil(t, summary.value)
+	assert.Equal(t, 2, len(summary.index))
+	assert.Nil(t, summary.index["bogusname"])
+	assert.NotNil(t, summary.index["Name"])
+	assert.NotNil(t, summary.index["URLTitle"])
+	assert.Equal(t, 1, len(summary.index["Name"]))
+	assert.Equal(t, "name", summary.index["Name"][0])
+	assert.Equal(t, 2, len(summary.index["URLTitle"]))
+	assert.Equal(t, "url", summary.index["URLTitle"][0])
+	assert.Equal(t, "title", summary.index["URLTitle"][1])
 
 }
 
-func TestMetadataIndexesInvalidPosition(t *testing.T) {
+func TestSummaryIndexesInvalidPosition(t *testing.T) {
 
-	type metatest struct {
+	type summarytest struct {
 		ID    string `db:"primary-key"`
 		Key   int
 		Name  string `db:"indexName:a"`
@@ -251,7 +251,7 @@ func TestMetadataIndexesInvalidPosition(t *testing.T) {
 		URL   string `db:"indexURLTitle:1"`
 	}
 
-	mt := &metatest{
+	mt := &summarytest{
 		ID:    "1",
 		Key:   2,
 		Name:  "name",
@@ -259,17 +259,17 @@ func TestMetadataIndexesInvalidPosition(t *testing.T) {
 		URL:   "url",
 	}
 
-	meta, err := getMetadata(mt)
+	summary, err := getSummary(mt)
 	require.NotNil(t, err)
-	require.Nil(t, meta)
+	require.Nil(t, summary)
 
 	assert.Equal(t, "Index position is not an integer: indexName:a.", err.Error())
 
 }
 
-func TestMetadataIndexesInvalidDefinition(t *testing.T) {
+func TestSummaryIndexesInvalidDefinition(t *testing.T) {
 
-	type metatest struct {
+	type summarytest struct {
 		ID    string `db:"primary-key"`
 		Key   int
 		Name  string `db:"indexName:1"`
@@ -277,7 +277,7 @@ func TestMetadataIndexesInvalidDefinition(t *testing.T) {
 		URL   string `db:"indexURLTitle1"`
 	}
 
-	mt := &metatest{
+	mt := &summarytest{
 		ID:    "1",
 		Key:   2,
 		Name:  "name",
@@ -285,17 +285,17 @@ func TestMetadataIndexesInvalidDefinition(t *testing.T) {
 		URL:   "url",
 	}
 
-	meta, err := getMetadata(mt)
+	summary, err := getSummary(mt)
 	require.NotNil(t, err)
-	require.Nil(t, meta)
+	require.Nil(t, summary)
 
 	assert.Equal(t, "Invalid index definition: indexURLTitle1.", err.Error())
 
 }
 
-func TestMetadataIndexesZeroPosition(t *testing.T) {
+func TestSummaryIndexesZeroPosition(t *testing.T) {
 
-	type metatest struct {
+	type summarytest struct {
 		ID    string `db:"primary-key"`
 		Key   int
 		Name  string `db:"indexName:0"`
@@ -303,7 +303,7 @@ func TestMetadataIndexesZeroPosition(t *testing.T) {
 		URL   string `db:"indexURLTitle:1"`
 	}
 
-	mt := &metatest{
+	mt := &summarytest{
 		ID:    "1",
 		Key:   2,
 		Name:  "name",
@@ -311,9 +311,9 @@ func TestMetadataIndexesZeroPosition(t *testing.T) {
 		URL:   "url",
 	}
 
-	meta, err := getMetadata(mt)
+	summary, err := getSummary(mt)
 	require.NotNil(t, err)
-	require.Nil(t, meta)
+	require.Nil(t, summary)
 
 	assert.Equal(t, "Index positions are one-based: indexName:0.", err.Error())
 

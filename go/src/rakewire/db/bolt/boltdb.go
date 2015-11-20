@@ -61,16 +61,26 @@ func (z *Database) Open(cfg *db.Configuration) error {
 		if err != nil {
 			return err
 		}
-		b, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
+		bucketIndex, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
 		if err != nil {
 			return err
 		}
-		if _, err = b.CreateBucketIfNotExists([]byte(bucketIndexFeedByURL)); err != nil {
+		if _, err = bucketIndex.CreateBucketIfNotExists([]byte(bucketIndexFeedByURL)); err != nil {
 			return err
 		}
-		if _, err = b.CreateBucketIfNotExists([]byte(bucketIndexNextFetch)); err != nil {
+		if _, err = bucketIndex.CreateBucketIfNotExists([]byte(bucketIndexNextFetch)); err != nil {
 			return err
 		}
+
+		b, err := bucketIndex.CreateBucketIfNotExists([]byte(bucketFeedLog))
+		if err != nil {
+			return err
+		}
+		_, err = b.CreateBucketIfNotExists([]byte("FeedTime"))
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 	z.Unlock()

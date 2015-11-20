@@ -18,19 +18,22 @@ const (
 	timeFormat = "2006-01-02T15:04:05.000"
 )
 
-type metadata struct {
+type summary struct {
 	name  string
 	key   string
 	index map[string][]string
 	value reflect.Value
 }
 
+// TODO: extract serialization from database with map[string]string as interface
+// add summary struct to describe struct by naming field not holding data (just key and index)
+// rename summary to extract
+
 // TODO: expand marshal to include the following steps:
 // 	- unmarshal (get previous),
 //  - marshal
 //  - remove old indexes
 //  - add new index entries
-// TODO: store indexes in Index/entity-name/index-name
 // TODO: create function to rebuild indexes
 
 // TODO: need a control table to keep track of schema version,
@@ -40,23 +43,23 @@ type metadata struct {
 // marshal saves the object with the given ID to the specified bucket.
 func marshal(object interface{}, tx *bolt.Tx) error {
 
-	meta, err := getMetadata(object)
+	summary, err := getSummary(object)
 	if err != nil {
 		return err
 	}
 
 	keyList := make(map[string]bool)
 
-	logger.Debugf("Bucket name: %s", meta.name)
+	logger.Debugf("Bucket name: %s", summary.name)
 	bucketData := tx.Bucket([]byte(bucketData))
-	b := bucketData.Bucket([]byte(meta.name))
+	b := bucketData.Bucket([]byte(summary.name))
 
 	// loop thru object fields
-	for i := 0; i < meta.value.NumField(); i++ {
+	for i := 0; i < summary.value.NumField(); i++ {
 
-		field := meta.value.Field(i)
-		fieldName := meta.value.Type().Field(i).Name
-		keyStr := fmt.Sprintf("%s%s%s", meta.key, chSep, fieldName)
+		field := summary.value.Field(i)
+		fieldName := summary.value.Type().Field(i).Name
+		keyStr := fmt.Sprintf("%s%s%s", summary.key, chSep, fieldName)
 
 		valueStr, err := getValue(field, fieldName)
 		if err != nil {
@@ -76,8 +79,8 @@ func marshal(object interface{}, tx *bolt.Tx) error {
 
 	// loop with cursor thru record, remove database fields not in field list
 	c := b.Cursor()
-	min := []byte(meta.key + chMin)
-	max := []byte(meta.key + chMax)
+	min := []byte(summary.key + chMin)
+	max := []byte(summary.key + chMax)
 	// logger.Debugf("marshall cursor min/max: %s / %s", min, max)
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
 		if !keyList[string(k)] {
@@ -93,20 +96,20 @@ func marshal(object interface{}, tx *bolt.Tx) error {
 // unmarshal retrieves the object with the given ID from the specified bucket.
 func unmarshal(object interface{}, tx *bolt.Tx) error {
 
-	meta, err := getMetadata(object)
+	summary, err := getSummary(object)
 	if err != nil {
 		return err
 	}
 
-	logger.Debugf("Bucket name: %s", meta.name)
+	logger.Debugf("Bucket name: %s", summary.name)
 	bucketData := tx.Bucket([]byte(bucketData))
-	b := bucketData.Bucket([]byte(meta.name))
+	b := bucketData.Bucket([]byte(summary.name))
 
 	// seek to the min key for the given ID
 	// loop through cursor until ID changes
 	c := b.Cursor()
-	min := []byte(meta.key + chMin)
-	max := []byte(meta.key + chMax)
+	min := []byte(summary.key + chMin)
+	max := []byte(summary.key + chMax)
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
 		// extract field name from key
@@ -119,7 +122,7 @@ func unmarshal(object interface{}, tx *bolt.Tx) error {
 		fieldName := keyParts[1]
 
 		// lookup up field in value
-		field := meta.value.FieldByName(fieldName)
+		field := summary.value.FieldByName(fieldName)
 		if !field.IsValid() {
 			return fmt.Errorf("Invalid fieldname in database: %s.", fieldName)
 		}
@@ -134,9 +137,37 @@ func unmarshal(object interface{}, tx *bolt.Tx) error {
 
 }
 
-func getMetadata(object interface{}) (*metadata, error) {
+func index(summary *summary, oldsummary *summary, tx *bolt.Tx) error {
 
-	result := &metadata{
+	indexBucket := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(summary.name))
+
+	// delete old indexes
+	for indexName := range oldsummary.index {
+		b := indexBucket.Bucket([]byte(indexName))
+		indexElements := oldsummary.index[indexName]
+		keyStr := strings.Join(indexElements, chSep)
+		if err := b.Delete([]byte(keyStr)); err != nil {
+			return err
+		}
+	}
+
+	// add new indexes
+	for indexName := range summary.index {
+		b := indexBucket.Bucket([]byte(indexName))
+		indexElements := summary.index[indexName]
+		keyStr := strings.Join(indexElements, chSep)
+		if err := b.Put([]byte(keyStr), []byte(summary.key)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func getSummary(object interface{}) (*summary, error) {
+
+	result := &summary{
 		index: make(map[string][]string),
 	}
 
