@@ -140,6 +140,8 @@ func getMetadata(object interface{}) (*metadata, error) {
 		return nil, errors.New("Cannot get name of object")
 	}
 
+	pkeyFound := false
+
 	// loop thru object fields
 	for i := 0; i < result.value.NumField(); i++ {
 
@@ -151,13 +153,18 @@ func getMetadata(object interface{}) (*metadata, error) {
 
 		for _, tagFieldX := range tagFields {
 			tagField := strings.TrimSpace(tagFieldX)
+
 			if tagField == "primary-key" {
-				if result.key == "" {
-					// TODO: allow others types
-					result.key = field.String()
+				if result.key == empty {
+					value, err := getValue(field, fieldName)
+					if err != nil {
+						return nil, err
+					}
+					result.key = value
 				} else {
 					return nil, errors.New("duplicate primary key defined for " + result.name)
 				}
+
 			} else if strings.HasPrefix(tagField, "index") {
 				// populate indexes
 				elements := strings.SplitN(tagField, ":", 2)
@@ -179,9 +186,23 @@ func getMetadata(object interface{}) (*metadata, error) {
 				}
 				indexElements[indexPosition-1] = positionValue
 			}
+
 		} // loop tag fields
 
 	} // loop fields
+
+	// if primary key is not found, use the field named ID
+	if !pkeyFound {
+		fieldName := "ID"
+		idValue := result.value.FieldByName(fieldName)
+		if idValue.IsValid() {
+			value, err := getValue(idValue, fieldName)
+			if err != nil {
+				return nil, err
+			}
+			result.key = value
+		}
+	}
 
 	return result, nil
 
