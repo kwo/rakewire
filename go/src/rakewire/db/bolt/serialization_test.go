@@ -80,3 +80,218 @@ func TestSerialization(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
+func TestMetadataPrimaryKey(t *testing.T) {
+
+	type metatest struct {
+		ID  string
+		Key int `db:"primary-key"`
+	}
+
+	mt := &metatest{
+		ID:  "1",
+		Key: 2,
+	}
+
+	meta, err := getMetadata(mt)
+	require.Nil(t, err)
+	require.NotNil(t, meta)
+
+	assert.Equal(t, "metatest", meta.name)
+	assert.Equal(t, "2", meta.key)
+	assert.NotNil(t, meta.value)
+	assert.Equal(t, 0, len(meta.index))
+
+}
+
+func TestMetadataPrimaryKeyDefault(t *testing.T) {
+
+	type metatest struct {
+		ID  string
+		Key int
+	}
+
+	mt := &metatest{
+		ID:  "1",
+		Key: 2,
+	}
+
+	meta, err := getMetadata(mt)
+	require.Nil(t, err)
+	require.NotNil(t, meta)
+
+	assert.Equal(t, "metatest", meta.name)
+	assert.Equal(t, "1", meta.key)
+	assert.NotNil(t, meta.value)
+	assert.Equal(t, 0, len(meta.index))
+
+}
+
+func TestMetadataPrimaryKeyEmpty(t *testing.T) {
+
+	type metatest struct {
+		ID  string
+		Key int
+	}
+
+	mt := &metatest{}
+
+	meta, err := getMetadata(mt)
+	require.NotNil(t, err)
+	require.Nil(t, meta)
+
+	assert.Equal(t, "Empty primary key!", err.Error())
+
+}
+
+func TestMetadataPrimaryKeyEmptyInteger(t *testing.T) {
+
+	type metatest struct {
+		ID  string
+		Key int `db:"primary-key"`
+	}
+
+	mt := &metatest{}
+
+	meta, err := getMetadata(mt)
+	require.NotNil(t, err)
+	require.Nil(t, meta)
+
+	assert.Equal(t, "Empty primary key!", err.Error())
+
+}
+
+func TestMetadataPrimaryKeyDuplicate(t *testing.T) {
+
+	type metatest struct {
+		ID  string `db:"primary-key"`
+		Key int    `db:"primary-key"`
+	}
+
+	mt := &metatest{
+		ID:  "1",
+		Key: 2,
+	}
+
+	meta, err := getMetadata(mt)
+	require.NotNil(t, err)
+	require.Nil(t, meta)
+
+	assert.Equal(t, "Duplicate primary key defined for metatest", err.Error())
+
+}
+
+func TestMetadataIndexes(t *testing.T) {
+
+	type metatest struct {
+		ID    string `db:"primary-key"`
+		Key   int
+		Name  string `db:"indexName:1"`
+		Title string `db:"indexURLTitle:2"`
+		URL   string `db:"indexURLTitle:1"`
+	}
+
+	mt := &metatest{
+		ID:    "1",
+		Key:   2,
+		Name:  "name",
+		Title: "title",
+		URL:   "url",
+	}
+
+	meta, err := getMetadata(mt)
+	require.Nil(t, err)
+	require.NotNil(t, meta)
+
+	assert.Equal(t, "metatest", meta.name)
+	assert.Equal(t, "1", meta.key)
+	assert.NotNil(t, meta.value)
+	assert.Equal(t, 2, len(meta.index))
+	assert.Nil(t, meta.index["bogusname"])
+	assert.NotNil(t, meta.index["Name"])
+	assert.NotNil(t, meta.index["URLTitle"])
+	assert.Equal(t, 1, len(meta.index["Name"]))
+	assert.Equal(t, "name", meta.index["Name"][0])
+	assert.Equal(t, 2, len(meta.index["URLTitle"]))
+	assert.Equal(t, "url", meta.index["URLTitle"][0])
+	assert.Equal(t, "title", meta.index["URLTitle"][1])
+
+}
+
+func TestMetadataIndexesInvalidPosition(t *testing.T) {
+
+	type metatest struct {
+		ID    string `db:"primary-key"`
+		Key   int
+		Name  string `db:"indexName:a"`
+		Title string `db:"indexURLTitle:2"`
+		URL   string `db:"indexURLTitle:1"`
+	}
+
+	mt := &metatest{
+		ID:    "1",
+		Key:   2,
+		Name:  "name",
+		Title: "title",
+		URL:   "url",
+	}
+
+	meta, err := getMetadata(mt)
+	require.NotNil(t, err)
+	require.Nil(t, meta)
+
+	assert.Equal(t, "Index position is not an integer: indexName:a", err.Error())
+
+}
+
+func TestMetadataIndexesInvalidDefinition(t *testing.T) {
+
+	type metatest struct {
+		ID    string `db:"primary-key"`
+		Key   int
+		Name  string `db:"indexName:1"`
+		Title string `db:"indexURLTitle:2"`
+		URL   string `db:"indexURLTitle1"`
+	}
+
+	mt := &metatest{
+		ID:    "1",
+		Key:   2,
+		Name:  "name",
+		Title: "title",
+		URL:   "url",
+	}
+
+	meta, err := getMetadata(mt)
+	require.NotNil(t, err)
+	require.Nil(t, meta)
+
+	assert.Equal(t, "Invalid index definition: indexURLTitle1", err.Error())
+
+}
+
+func TestMetadataIndexesZeroPosition(t *testing.T) {
+
+	type metatest struct {
+		ID    string `db:"primary-key"`
+		Key   int
+		Name  string `db:"indexName:0"`
+		Title string `db:"indexURLTitle:2"`
+		URL   string `db:"indexURLTitle:1"`
+	}
+
+	mt := &metatest{
+		ID:    "1",
+		Key:   2,
+		Name:  "name",
+		Title: "title",
+		URL:   "url",
+	}
+
+	meta, err := getMetadata(mt)
+	require.NotNil(t, err)
+	require.Nil(t, meta)
+
+	assert.Equal(t, "Index positions are one-based: indexName:0", err.Error())
+
+}

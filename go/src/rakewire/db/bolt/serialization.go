@@ -161,8 +161,9 @@ func getMetadata(object interface{}) (*metadata, error) {
 						return nil, err
 					}
 					result.key = value
+					pkeyFound = true
 				} else {
-					return nil, errors.New("duplicate primary key defined for " + result.name)
+					return nil, errors.New("Duplicate primary key defined for " + result.name)
 				}
 
 			} else if strings.HasPrefix(tagField, "index") {
@@ -175,6 +176,8 @@ func getMetadata(object interface{}) (*metadata, error) {
 				indexPosition, err := strconv.Atoi(elements[1])
 				if err != nil {
 					return nil, errors.New("Index position is not an integer: " + tagField)
+				} else if indexPosition < 1 {
+					return nil, errors.New("Index positions are one-based: " + tagField)
 				}
 				indexElements := result.index[indexName]
 				for len(indexElements) < indexPosition {
@@ -185,6 +188,7 @@ func getMetadata(object interface{}) (*metadata, error) {
 					return nil, err
 				}
 				indexElements[indexPosition-1] = positionValue
+				result.index[indexName] = indexElements
 			}
 
 		} // loop tag fields
@@ -202,6 +206,11 @@ func getMetadata(object interface{}) (*metadata, error) {
 			}
 			result.key = value
 		}
+	}
+
+	// validate that primary key is not an empty string
+	if result.key == empty {
+		return nil, errors.New("Empty primary key!")
 	}
 
 	return result, nil
