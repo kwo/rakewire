@@ -28,7 +28,6 @@ type metadata struct {
 // TODO: expand marshal to include the following steps:
 // 	- unmarshal (get previous),
 //  - marshal
-//  - clean old keys
 //  - remove old indexes
 //  - add new index entries
 // TODO: store indexes in Index/entity-name/index-name
@@ -46,6 +45,8 @@ func marshal(object interface{}, tx *bolt.Tx) error {
 		return err
 	}
 
+	keyList := make(map[string]bool)
+
 	logger.Debugf("Bucket name: %s", meta.name)
 	bucketData := tx.Bucket([]byte(bucketData))
 	b := bucketData.Bucket([]byte(meta.name))
@@ -55,25 +56,35 @@ func marshal(object interface{}, tx *bolt.Tx) error {
 
 		field := meta.value.Field(i)
 		fieldName := meta.value.Type().Field(i).Name
-		key := []byte(fmt.Sprintf("%s%s%s", meta.key, chSep, fieldName))
+		keyStr := fmt.Sprintf("%s%s%s", meta.key, chSep, fieldName)
 
 		valueStr, err := getValue(field, fieldName)
 		if err != nil {
 			return err
 		}
 
+		key := []byte(keyStr)
 		value := []byte(valueStr)
 		if len(value) > 0 {
+			keyList[keyStr] = true
 			if err := b.Put(key, value); err != nil {
 				return err
 			}
 		}
 
-		// TODO: add each valid value-holding field to list
+	} // for loop object fields
 
-	} // for loop
-
-	// TODO: loop with cursor thru record, remove database fields not in field list
+	// loop with cursor thru record, remove database fields not in field list
+	c := b.Cursor()
+	min := []byte(meta.key + chMin)
+	max := []byte(meta.key + chMax)
+	// logger.Debugf("marshall cursor min/max: %s / %s", min, max)
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
+		if !keyList[string(k)] {
+			// logger.Debugf("Removing key: %s", k)
+			c.Delete()
+		}
+	}
 
 	return nil
 

@@ -1,6 +1,7 @@
 package bolt
 
 import (
+	"fmt"
 	"github.com/boltdb/bolt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -38,7 +39,7 @@ func TestSerialization(t *testing.T) {
 
 	// view out of curiosity
 	err = database.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(bucketFeedLog)) // works
+		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog)) // works
 		c := b.Cursor()
 		for k, v := c.First(); k != nil; k, v = c.Next() {
 			logger.Debugf("FeedLog: %s: %s", k, v)
@@ -70,6 +71,24 @@ func TestSerialization(t *testing.T) {
 	assert.Equal(t, false, fl2.UsesGzip)
 	assert.Equal(t, "", fl2.ETag)
 	assert.Equal(t, time.Time{}, fl2.Updated)
+
+	// modify and resave
+	fl2.IsUpdated = false
+	database.Lock()
+	err = database.db.Update(func(tx *bolt.Tx) error {
+		return marshal(fl2, tx)
+	})
+	database.Unlock()
+	assert.Nil(t, err)
+
+	// assert key is not present
+	err = database.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog)) // works
+		value := b.Get([]byte(fmt.Sprintf("%s%s%s", fl2.ID, chSep, "IsUpdated")))
+		assert.Nil(t, value)
+		return nil
+	})
+	assert.Nil(t, err)
 
 	// cleanup
 	err = database.Close()
