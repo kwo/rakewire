@@ -18,12 +18,60 @@ const (
 	timeFormat = "2006-01-02T15:04:05.000"
 )
 
-type summary struct {
-	name  string
-	key   string
+// metadata contains field names
+type metadata struct {
+	// name of the struct.
+	name string
+	// key holds the field used as the primary key.
+	key string
+	// index holds the fields used to construct the index key, mapped by index name.
 	index map[string][]string
-	value reflect.Value
 }
+
+// summary contains the actual data
+type summary struct {
+	// name of the struct.
+	name string
+	// key holds the value of the primary key.
+	key string
+	// index holds the composite index key values, mapped by index name.
+	index map[string][]string
+	// deprecated
+	value reflect.Value
+	// data contains the key/values.
+	data map[string]string
+}
+
+func mar(o interface{}) {
+
+	// encode (new) object
+	// encode(o) -> (name string, pkey string, data map[string]string, indexes map[string][]string, error)
+
+	// get existing data
+	// load(name, pkey) -> data map[string]string
+
+	// get metadata from object - output from encode?
+	// construct summary from metadata and data for old
+
+	// now I have enough info to delete old indexes
+	// save
+	// index
+
+}
+
+/*
+
+	- save(name string, pkey string, data map[string]string, tx) error
+	- load(name string, pkey string, tx) (map[string]string, error)
+	- index(name string, indexesNew map[string][]string, indexesOld map[string][]string, tx) error
+
+	- encode(object interface{}) (metadata, summary, error)
+	- decode(object interface{}, data map[string]string) error
+	- summarize(metadata, data) (summary, error)
+	- getValue(field reflect.Value, fieldName string) (string, error)
+	- setValue(field reflect.Value, fieldName string, val string) error
+
+*/
 
 // TODO: extract serialization from database with map[string]string as interface
 // add summary struct to describe struct by naming field not holding data (just key and index)
