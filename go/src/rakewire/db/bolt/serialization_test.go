@@ -140,7 +140,7 @@ func TestMetadataPrimaryKeyEmpty(t *testing.T) {
 	require.NotNil(t, err)
 	require.Nil(t, meta)
 
-	assert.Equal(t, "Empty primary key!", err.Error())
+	assert.Equal(t, "Empty primary key for metatest.", err.Error())
 
 }
 
@@ -157,7 +157,7 @@ func TestMetadataPrimaryKeyEmptyInteger(t *testing.T) {
 	require.NotNil(t, err)
 	require.Nil(t, meta)
 
-	assert.Equal(t, "Empty primary key!", err.Error())
+	assert.Equal(t, "Empty primary key for metatest.", err.Error())
 
 }
 
@@ -177,7 +177,7 @@ func TestMetadataPrimaryKeyDuplicate(t *testing.T) {
 	require.NotNil(t, err)
 	require.Nil(t, meta)
 
-	assert.Equal(t, "Duplicate primary key defined for metatest", err.Error())
+	assert.Equal(t, "Duplicate primary key defined for metatest.", err.Error())
 
 }
 
@@ -240,7 +240,7 @@ func TestMetadataIndexesInvalidPosition(t *testing.T) {
 	require.NotNil(t, err)
 	require.Nil(t, meta)
 
-	assert.Equal(t, "Index position is not an integer: indexName:a", err.Error())
+	assert.Equal(t, "Index position is not an integer: indexName:a.", err.Error())
 
 }
 
@@ -266,7 +266,7 @@ func TestMetadataIndexesInvalidDefinition(t *testing.T) {
 	require.NotNil(t, err)
 	require.Nil(t, meta)
 
-	assert.Equal(t, "Invalid index definition: indexURLTitle1", err.Error())
+	assert.Equal(t, "Invalid index definition: indexURLTitle1.", err.Error())
 
 }
 
@@ -292,6 +292,6 @@ func TestMetadataIndexesZeroPosition(t *testing.T) {
 	require.NotNil(t, err)
 	require.Nil(t, meta)
 
-	assert.Equal(t, "Index positions are one-based: indexName:0", err.Error())
+	assert.Equal(t, "Index positions are one-based: indexName:0.", err.Error())
 
 }

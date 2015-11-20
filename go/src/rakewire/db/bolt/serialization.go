@@ -2,7 +2,6 @@ package bolt
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"reflect"
@@ -102,14 +101,14 @@ func unmarshal(object interface{}, tx *bolt.Tx) error {
 		key := string(k)
 		keyParts := strings.SplitN(key, chSep, 2)
 		if len(keyParts) != 2 {
-			return errors.New("Malformatted key: " + key)
+			return fmt.Errorf("Malformatted key: %s.", key)
 		}
 		fieldName := keyParts[1]
 
 		// lookup up field in value
 		field := meta.value.FieldByName(fieldName)
 		if !field.IsValid() {
-			return errors.New("Invalid fieldname in database: " + fieldName)
+			return fmt.Errorf("Invalid fieldname in database: %s.", fieldName)
 		}
 
 		if err = setValue(field, fieldName, string(v)); err != nil {
@@ -137,7 +136,7 @@ func getMetadata(object interface{}) (*metadata, error) {
 	}
 
 	if result.name == "" {
-		return nil, errors.New("Cannot get name of object")
+		return nil, fmt.Errorf("Cannot get name of object: %v.", object)
 	}
 
 	pkeyFound := false
@@ -163,25 +162,25 @@ func getMetadata(object interface{}) (*metadata, error) {
 					result.key = value
 					pkeyFound = true
 				} else {
-					return nil, errors.New("Duplicate primary key defined for " + result.name)
+					return nil, fmt.Errorf("Duplicate primary key defined for %s.", result.name)
 				}
 
 			} else if strings.HasPrefix(tagField, "index") {
 				// populate indexes
 				elements := strings.SplitN(tagField, ":", 2)
 				if len(elements) != 2 {
-					return nil, errors.New("Invalid index definition: " + tagField)
+					return nil, fmt.Errorf("Invalid index definition: %s.", tagField)
 				}
 				indexName := elements[0][5:] // remove prefix from 0
 				indexPosition, err := strconv.Atoi(elements[1])
 				if err != nil {
-					return nil, errors.New("Index position is not an integer: " + tagField)
+					return nil, fmt.Errorf("Index position is not an integer: %s.", tagField)
 				} else if indexPosition < 1 {
-					return nil, errors.New("Index positions are one-based: " + tagField)
+					return nil, fmt.Errorf("Index positions are one-based: %s.", tagField)
 				}
 				indexElements := result.index[indexName]
 				for len(indexElements) < indexPosition {
-					indexElements = append(indexElements, "")
+					indexElements = append(indexElements, empty)
 				}
 				positionValue, err := getValue(field, fieldName)
 				if err != nil {
@@ -210,7 +209,7 @@ func getMetadata(object interface{}) (*metadata, error) {
 
 	// validate that primary key is not an empty string
 	if result.key == empty {
-		return nil, errors.New("Empty primary key!")
+		return nil, fmt.Errorf("Empty primary key for %s.", result.name)
 	}
 
 	return result, nil
@@ -261,11 +260,11 @@ func getValue(field reflect.Value, fieldName string) (string, error) {
 				return v.UTC().Format(timeFormat), nil
 			}
 		} else {
-			return empty, errors.New("Will not get value of struct for " + fieldName)
+			return empty, fmt.Errorf("Will not get value of struct for %s.", fieldName)
 		}
 
 	default:
-		return empty, errors.New("Unknown field type when getting value for " + fieldName)
+		return empty, fmt.Errorf("Unknown field type when getting value for %s.", fieldName)
 
 	} // switch
 
@@ -365,11 +364,11 @@ func setValue(field reflect.Value, fieldName string, val string) error {
 			}
 			field.Set(reflect.ValueOf(value.Truncate(time.Millisecond)))
 		} else {
-			return errors.New("Will not set value for struct: " + fieldName)
+			return fmt.Errorf("Will not set value for struct: %s.", fieldName)
 		}
 
 	default:
-		return errors.New("Unknown field type when setting value for " + fieldName)
+		return fmt.Errorf("Unknown field type when setting value for %s.", fieldName)
 
 	} // switch
 
