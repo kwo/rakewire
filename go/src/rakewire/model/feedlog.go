@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/pborman/uuid"
 	"time"
 )
 
@@ -20,16 +19,6 @@ const (
 	UpdateCheck304  = "NM" // HTTP Status Code 304
 	UpdateCheckFeed = "LU" // No 304  but feed LastUpdated is the same
 )
-
-// NewFeedLog instantiate a new FeedLog object with a new UUID
-func NewFeedLog(feedID string) *FeedLog {
-	id := uuid.NewUUID().String()
-	x := FeedLog{
-		ID:     id,
-		FeedID: feedID,
-	}
-	return &x
-}
 
 // FeedLog represents an attempted HTTP request to a feed
 type FeedLog struct {

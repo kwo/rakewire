@@ -2,6 +2,7 @@ package bolt
 
 import (
 	"github.com/boltdb/bolt"
+	"github.com/pborman/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -27,9 +28,12 @@ func TestFeedLog(t *testing.T) {
 	err = database.db.Update(func(tx *bolt.Tx) error {
 		for i := 1; i <= 100; i++ {
 			dt := now.Add(time.Hour * time.Duration(-i))
-			entry := m.NewFeedLog(feedID)
-			entry.StartTime = dt
-			entry.Duration = time.Duration(i)
+			entry := &m.FeedLog{
+				ID:        uuid.NewUUID().String(),
+				FeedID:    feedID,
+				StartTime: dt,
+				Duration:  time.Duration(i),
+			}
 			err := marshal(entry, tx)
 			assert.Nil(t, err)
 		}

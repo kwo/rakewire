@@ -3,6 +3,7 @@ package bolt
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
+	"github.com/pborman/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -22,12 +23,15 @@ func TestSerialization(t *testing.T) {
 	require.Nil(t, err)
 
 	// start testing
-	fl := m.NewFeedLog("0000-FEED-ID")
-	fl.ContentLength = 50
-	fl.Duration = 6 * time.Millisecond
-	fl.IsUpdated = true
-	fl.Result = "OK"
-	fl.StartTime = time.Now().UTC().Truncate(time.Millisecond)
+	fl := &m.FeedLog{
+		ID:            uuid.NewUUID().String(),
+		FeedID:        "0000-FEED-ID",
+		ContentLength: 50,
+		Duration:      6 * time.Millisecond,
+		IsUpdated:     true,
+		Result:        "OK",
+		StartTime:     time.Now().UTC().Truncate(time.Millisecond),
+	}
 
 	// marshal
 	database.Lock()
