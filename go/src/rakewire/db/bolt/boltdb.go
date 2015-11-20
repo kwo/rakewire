@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	bucketData           = "Data"
 	bucketFeed           = "Feed"
 	bucketFeedLog        = "FeedLog"
 	bucketIndex          = "Index"
@@ -40,7 +41,19 @@ func (z *Database) Open(cfg *db.Configuration) error {
 	// check that buckets exist
 	z.Lock()
 	err = z.db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(bucketFeed))
+		d, err := tx.CreateBucketIfNotExists([]byte(bucketData))
+		if err != nil {
+			return err
+		}
+		_, err = d.CreateBucketIfNotExists([]byte(bucketFeed))
+		if err != nil {
+			return err
+		}
+		_, err = d.CreateBucketIfNotExists([]byte(bucketFeedLog))
+		if err != nil {
+			return err
+		}
+		_, err = tx.CreateBucketIfNotExists([]byte(bucketFeed))
 		if err != nil {
 			return err
 		}

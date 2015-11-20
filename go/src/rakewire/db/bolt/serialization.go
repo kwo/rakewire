@@ -14,8 +14,8 @@ const (
 	chMin      = " "
 	chMax      = "~"
 	chSep      = "/"
-	timeFormat = "2006-01-02T15:04:05.000"
 	empty      = ""
+	timeFormat = "2006-01-02T15:04:05.000"
 )
 
 type metadata struct {
@@ -47,7 +47,8 @@ func marshal(object interface{}, tx *bolt.Tx) error {
 	}
 
 	logger.Debugf("Bucket name: %s", meta.name)
-	b := tx.Bucket([]byte(meta.name))
+	bucketData := tx.Bucket([]byte(bucketData))
+	b := bucketData.Bucket([]byte(meta.name))
 
 	// loop thru object fields
 	for i := 0; i < meta.value.NumField(); i++ {
@@ -87,7 +88,8 @@ func unmarshal(object interface{}, tx *bolt.Tx) error {
 	}
 
 	logger.Debugf("Bucket name: %s", meta.name)
-	b := tx.Bucket([]byte(meta.name))
+	bucketData := tx.Bucket([]byte(bucketData))
+	b := bucketData.Bucket([]byte(meta.name))
 
 	// seek to the min key for the given ID
 	// loop through cursor until ID changes
