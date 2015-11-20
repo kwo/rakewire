@@ -32,7 +32,6 @@ type metadata struct {
 //  - clean old keys
 //  - remove old indexes
 //  - add new index entries
-// TODO: methods to retrieve values by index must still be custom made
 // TODO: store indexes in Index/entity-name/index-name
 // TODO: create function to rebuild indexes
 
@@ -58,7 +57,7 @@ func marshal(object interface{}, tx *bolt.Tx) error {
 		fieldName := meta.value.Type().Field(i).Name
 		key := []byte(fmt.Sprintf("%s%s%s", meta.key, chSep, fieldName))
 
-		valueStr, err := getStringValue(field, fieldName)
+		valueStr, err := getValue(field, fieldName)
 		if err != nil {
 			return err
 		}
@@ -113,120 +112,9 @@ func unmarshal(object interface{}, tx *bolt.Tx) error {
 			return errors.New("Invalid fieldname in database: " + fieldName)
 		}
 
-		// get type of field
-		// parse byte value and apply to object
-		val := string(v)
-		switch field.Kind() {
-
-		case reflect.String:
-			field.SetString(val)
-			break
-
-		case reflect.Bool:
-			value, err := strconv.ParseBool(val)
-			if err != nil {
-				return err
-			}
-			field.SetBool(value)
-			break
-
-		case reflect.Int8:
-			value, err := strconv.ParseInt(val, 10, 8)
-			if err != nil {
-				return err
-			}
-			field.SetInt(value)
-			break
-
-		case reflect.Int16:
-			value, err := strconv.ParseInt(val, 10, 16)
-			if err != nil {
-				return err
-			}
-			field.SetInt(value)
-			break
-
-		case reflect.Int32:
-			value, err := strconv.ParseInt(val, 10, 32)
-			if err != nil {
-				return err
-			}
-			field.SetInt(value)
-			break
-
-		case reflect.Int, reflect.Int64:
-			value, err := strconv.ParseInt(val, 10, 64)
-			if err != nil {
-				return err
-			}
-			field.SetInt(value)
-			break
-
-		case reflect.Uint8:
-			value, err := strconv.ParseUint(val, 10, 8)
-			if err != nil {
-				return err
-			}
-			field.SetUint(value)
-			break
-
-		case reflect.Uint16:
-			value, err := strconv.ParseUint(val, 10, 16)
-			if err != nil {
-				return err
-			}
-			field.SetUint(value)
-			break
-
-		case reflect.Uint32:
-			value, err := strconv.ParseUint(val, 10, 32)
-			if err != nil {
-				return err
-			}
-			field.SetUint(value)
-			break
-
-		case reflect.Uint, reflect.Uint64:
-			value, err := strconv.ParseUint(val, 10, 64)
-			if err != nil {
-				return err
-			}
-			field.SetUint(value)
-			break
-
-		case reflect.Float32:
-			value, err := strconv.ParseFloat(val, 32)
-			if err != nil {
-				return err
-			}
-			field.SetFloat(value)
-			break
-
-		case reflect.Float64:
-			value, err := strconv.ParseFloat(val, 64)
-			if err != nil {
-				return err
-			}
-			field.SetFloat(value)
-			break
-
-		case reflect.Ptr, reflect.Struct:
-
-			if field.Type() == reflect.TypeOf(time.Time{}) {
-				value, err := time.ParseInLocation(timeFormat, val, time.UTC)
-				if err != nil {
-					return err
-				}
-				field.Set(reflect.ValueOf(value.Truncate(time.Millisecond)))
-			} else {
-				return errors.New("Will not unmarshal struct for " + fieldName)
-			}
-			break
-
-		default:
-			return errors.New("Unknown field type when unmarshaling value for " + fieldName)
-
-		} // switch
+		if err = setValue(field, fieldName, string(v)); err != nil {
+			return err
+		}
 
 	} // for loop
 
@@ -256,8 +144,9 @@ func getMetadata(object interface{}) (*metadata, error) {
 	for i := 0; i < result.value.NumField(); i++ {
 
 		field := result.value.Field(i)
-		fieldName := result.value.Type().Field(i).Name
-		tag := result.value.Type().Field(i).Tag
+		typeField := result.value.Type().Field(i)
+		fieldName := typeField.Name
+		tag := typeField.Tag
 		tagFields := strings.Split(tag.Get("db"), ",")
 
 		for _, tagFieldX := range tagFields {
@@ -284,7 +173,7 @@ func getMetadata(object interface{}) (*metadata, error) {
 				for len(indexElements) < indexPosition {
 					indexElements = append(indexElements, "")
 				}
-				positionValue, err := getStringValue(field, fieldName)
+				positionValue, err := getValue(field, fieldName)
 				if err != nil {
 					return nil, err
 				}
@@ -298,7 +187,7 @@ func getMetadata(object interface{}) (*metadata, error) {
 
 }
 
-func getStringValue(field reflect.Value, fieldName string) (string, error) {
+func getValue(field reflect.Value, fieldName string) (string, error) {
 
 	switch field.Kind() {
 
@@ -310,35 +199,30 @@ func getStringValue(field reflect.Value, fieldName string) (string, error) {
 		if v {
 			return strconv.FormatBool(v), nil
 		}
-		break
 
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		v := field.Int()
 		if v != 0 {
 			return strconv.FormatInt(v, 10), nil
 		}
-		break
 
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 		v := field.Uint()
 		if v != 0 {
 			return strconv.FormatUint(v, 10), nil
 		}
-		break
 
 	case reflect.Float32:
 		v := field.Float()
 		if v != 0 {
 			return strconv.FormatFloat(v, 'f', -1, 32), nil
 		}
-		break
 
 	case reflect.Float64:
 		v := field.Float()
 		if v != 0 {
 			return strconv.FormatFloat(v, 'f', -1, 64), nil
 		}
-		break
 
 	case reflect.Struct:
 		if field.Type() == reflect.TypeOf(time.Time{}) {
@@ -347,15 +231,118 @@ func getStringValue(field reflect.Value, fieldName string) (string, error) {
 				return v.UTC().Format(timeFormat), nil
 			}
 		} else {
-			return empty, errors.New("Will not marshal struct for " + fieldName)
+			return empty, errors.New("Will not get value of struct for " + fieldName)
 		}
-		break
 
 	default:
-		return empty, errors.New("Unknown field type when marshaling value for " + fieldName)
+		return empty, errors.New("Unknown field type when getting value for " + fieldName)
 
 	} // switch
 
 	return empty, nil
+
+}
+
+func setValue(field reflect.Value, fieldName string, val string) error {
+
+	switch field.Kind() {
+
+	case reflect.String:
+		field.SetString(val)
+
+	case reflect.Bool:
+		value, err := strconv.ParseBool(val)
+		if err != nil {
+			return err
+		}
+		field.SetBool(value)
+
+	case reflect.Int8:
+		value, err := strconv.ParseInt(val, 10, 8)
+		if err != nil {
+			return err
+		}
+		field.SetInt(value)
+
+	case reflect.Int16:
+		value, err := strconv.ParseInt(val, 10, 16)
+		if err != nil {
+			return err
+		}
+		field.SetInt(value)
+
+	case reflect.Int32:
+		value, err := strconv.ParseInt(val, 10, 32)
+		if err != nil {
+			return err
+		}
+		field.SetInt(value)
+
+	case reflect.Int, reflect.Int64:
+		value, err := strconv.ParseInt(val, 10, 64)
+		if err != nil {
+			return err
+		}
+		field.SetInt(value)
+
+	case reflect.Uint8:
+		value, err := strconv.ParseUint(val, 10, 8)
+		if err != nil {
+			return err
+		}
+		field.SetUint(value)
+
+	case reflect.Uint16:
+		value, err := strconv.ParseUint(val, 10, 16)
+		if err != nil {
+			return err
+		}
+		field.SetUint(value)
+
+	case reflect.Uint32:
+		value, err := strconv.ParseUint(val, 10, 32)
+		if err != nil {
+			return err
+		}
+		field.SetUint(value)
+
+	case reflect.Uint, reflect.Uint64:
+		value, err := strconv.ParseUint(val, 10, 64)
+		if err != nil {
+			return err
+		}
+		field.SetUint(value)
+
+	case reflect.Float32:
+		value, err := strconv.ParseFloat(val, 32)
+		if err != nil {
+			return err
+		}
+		field.SetFloat(value)
+
+	case reflect.Float64:
+		value, err := strconv.ParseFloat(val, 64)
+		if err != nil {
+			return err
+		}
+		field.SetFloat(value)
+
+	case reflect.Ptr, reflect.Struct:
+		if field.Type() == reflect.TypeOf(time.Time{}) {
+			value, err := time.ParseInLocation(timeFormat, val, time.UTC)
+			if err != nil {
+				return err
+			}
+			field.Set(reflect.ValueOf(value.Truncate(time.Millisecond)))
+		} else {
+			return errors.New("Will not set value for struct: " + fieldName)
+		}
+
+	default:
+		return errors.New("Unknown field type when setting value for " + fieldName)
+
+	} // switch
+
+	return nil
 
 }
