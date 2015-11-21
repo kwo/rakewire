@@ -5,7 +5,13 @@ import (
 	"rakewire/logging"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
+)
+
+const (
+	// TagName ist the name of the struct tag used by this package
+	TagName = "db"
 )
 
 const (
@@ -42,42 +48,128 @@ type Data struct {
 	Values map[string]string
 }
 
-func mar(o interface{}) {
-
-	// encode (new) object
-	// encode(o) -> (name string, pkey string, data map[string]string, indexes map[string][]string, error)
-
-	// get existing data
-	// load(name, pkey) -> data map[string]string
-
-	// get metadata from object - output from encode?
-	// construct summary from metadata and data for old
-
-	// now I have enough info to delete old indexes
-	// save
-	// index
-
-}
-
-/*
-
-	- Encode(object interface{}) (metadata, summary, error)
-	- Decode(object interface{}, data map[string]string) error
-	- Summarize(metadata, data) (summary, error)
-	- getValue(field reflect.Value, fieldName string) (string, error)
-	- setValue(field reflect.Value, fieldName string, val string) error
-
-*/
-
-// Encode a struct into key/value pairs.
+// Encode a pointer to a struct into key/value pairs.
 func Encode(object interface{}) (*Metadata, *Data, error) {
-	return nil, nil, nil
+
+	wrapper := reflect.ValueOf(object)
+	if wrapper.Kind() != reflect.Ptr {
+		return nil, nil, fmt.Errorf("Cannot decode non-pointer object")
+	}
+	wrapper = wrapper.Elem()
+
+	meta := &Metadata{
+		Name:    wrapper.Type().Name(),
+		Indexes: make(map[string][]string),
+	}
+	data := &Data{
+		Name:    meta.Name,
+		Indexes: make(map[string][]string),
+		Values:  make(map[string]string),
+	}
+
+	pkeyFound := false
+
+	// loop thru wrapper fields
+	for i := 0; i < wrapper.NumField(); i++ {
+
+		field := wrapper.Field(i)
+		typeField := wrapper.Type().Field(i)
+		fieldName := typeField.Name
+
+		fieldValue, err := getValue(field, fieldName)
+		if err != nil {
+			return nil, nil, err
+		}
+		data.Values[fieldName] = fieldValue
+
+		tag := typeField.Tag
+		tagFields := strings.Split(tag.Get(TagName), ",")
+
+		for _, tagFieldX := range tagFields {
+			tagField := strings.TrimSpace(tagFieldX)
+
+			if tagField == "primary-key" {
+				if meta.Key == empty {
+					value, err := getValue(field, fieldName)
+					if err != nil {
+						return nil, nil, err
+					}
+					meta.Key = fieldName
+					data.Key = value
+					pkeyFound = true
+				} else {
+					return nil, nil, fmt.Errorf("Duplicate primary key defined for %s.", meta.Name)
+				}
+
+			} else if strings.HasPrefix(tagField, "index") {
+				// populate indexes
+				elements := strings.SplitN(tagField, ":", 2)
+				if len(elements) != 2 {
+					return nil, nil, fmt.Errorf("Invalid index definition: %s.", tagField)
+				}
+				indexName := elements[0][5:] // remove prefix from 0
+				indexPosition, err := strconv.Atoi(elements[1])
+				if err != nil {
+					return nil, nil, fmt.Errorf("Index position is not an integer: %s.", tagField)
+				} else if indexPosition < 1 {
+					return nil, nil, fmt.Errorf("Index positions are one-based: %s.", tagField)
+				}
+
+				metaIndex := meta.Indexes[indexName]
+				for len(metaIndex) < indexPosition {
+					metaIndex = append(metaIndex, empty)
+				}
+				metaIndex[indexPosition-1] = fieldName
+				meta.Indexes[indexName] = metaIndex
+
+				dataIndex := data.Indexes[indexName]
+				for len(dataIndex) < indexPosition {
+					dataIndex = append(dataIndex, empty)
+				}
+				positionValue, err := getValue(field, fieldName)
+				if err != nil {
+					return nil, nil, err
+				}
+				dataIndex[indexPosition-1] = positionValue
+				data.Indexes[indexName] = dataIndex
+
+			}
+
+		} // loop tag fields
+
+	} // loop fields
+
+	// if primary key is not found, use the field named ID
+	if !pkeyFound {
+		fieldName := "ID"
+		idValue := wrapper.FieldByName(fieldName)
+		if idValue.IsValid() {
+			value, err := getValue(idValue, fieldName)
+			if err != nil {
+				return nil, nil, err
+			}
+			meta.Key = fieldName
+			data.Key = value
+		}
+	}
+
+	// validate that primary key is not an empty string
+	if meta.Key == empty {
+		return nil, nil, fmt.Errorf("Empty primary key for %s.", meta.Name)
+	}
+
+	return meta, data, nil
+
 }
 
-// Decode a struct from key/value pairs.
+// Decode a pointer to a struct from key/value pairs.
 func Decode(object interface{}, values map[string]string) error {
 
-	wrapper := reflect.ValueOf(object).Elem()
+	wrapper := reflect.ValueOf(object)
+	if wrapper.Kind() != reflect.Ptr {
+		return fmt.Errorf("Cannot decode non-pointer object")
+	}
+	wrapper = wrapper.Elem()
 
 	// loop thru object fields
 	for fieldName, v := range values {
@@ -165,7 +257,7 @@ func getValue(field reflect.Value, fieldName string) (string, error) {
 		if field.Type() == reflect.TypeOf(time.Time{}) {
 			v := field.Interface().(time.Time)
 			if !v.IsZero() {
-				return v.UTC().Format(timeFormat), nil
+				return v.Format(timeFormat), nil
 			}
 		} else {
 			return empty, fmt.Errorf("Will not get value of struct for %s.", fieldName)

@@ -32,6 +32,50 @@ func TestDates(t *testing.T) {
 
 }
 
+func TestEncode(t *testing.T) {
+
+	type object struct {
+		ID         string
+		Key        int       `db:"indexStartTime:2"`
+		StartTime  time.Time `db:"indexStartTime:1"`
+		StartTime2 time.Time
+	}
+
+	dt := time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC)
+
+	o := &object{
+		ID:         "555",
+		Key:        1,
+		StartTime:  dt,
+		StartTime2: dt.Local(),
+	}
+
+	meta, data, err := Encode(o)
+	require.Nil(t, err)
+	require.NotNil(t, meta)
+	require.NotNil(t, data)
+
+	assert.Equal(t, "object", meta.Name)
+	assert.Equal(t, "ID", meta.Key)
+	assert.Equal(t, 1, len(meta.Indexes))
+	assert.Equal(t, 2, len(meta.Indexes["StartTime"]))
+	assert.Equal(t, "StartTime", meta.Indexes["StartTime"][0])
+	assert.Equal(t, "Key", meta.Indexes["StartTime"][1])
+
+	assert.Equal(t, "object", data.Name)
+	assert.Equal(t, "555", data.Key)
+	assert.Equal(t, 1, len(data.Indexes))
+	assert.Equal(t, 2, len(data.Indexes["StartTime"]))
+	assert.Equal(t, "2015-11-20T20:42:55Z", data.Indexes["StartTime"][0])
+	assert.Equal(t, "1", data.Indexes["StartTime"][1])
+
+	assert.Equal(t, "555", data.Values["ID"])
+	assert.Equal(t, "1", data.Values["Key"])
+	assert.Equal(t, "2015-11-20T20:42:55Z", data.Values["StartTime"])
+	assert.Equal(t, "2015-11-20T21:42:55+01:00", data.Values["StartTime2"])
+
+}
+
 func TestDecode(t *testing.T) {
 
 	type object struct {
@@ -60,6 +104,20 @@ func TestDecode(t *testing.T) {
 	assert.Equal(t, 0, o.Key)
 	assert.Equal(t, dt, o.StartTime)
 	assert.Equal(t, dt, o.StartTime2.UTC())
+
+}
+
+func TestDecodeNonPointer(t *testing.T) {
+
+	type object struct {
+	}
+
+	o := object{}
+	values := map[string]string{}
+
+	err := Decode(o, values)
+	require.NotNil(t, err)
+	assert.Equal(t, "Cannot decode non-pointer object", err.Error())
 
 }
 
