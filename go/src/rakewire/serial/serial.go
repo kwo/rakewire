@@ -13,7 +13,7 @@ const (
 	chMax      = "~"
 	chSep      = "/"
 	empty      = ""
-	timeFormat = "2006-01-02T15:04:05.000"
+	timeFormat = time.RFC3339
 )
 
 var (
@@ -26,20 +26,20 @@ type Metadata struct {
 	Name string
 	// Key holds the field used as the primary key.
 	Key string
-	// Index holds the fields used to construct the index key, mapped by index name.
-	Index map[string][]string
+	// Indexes holds the fields used to construct the index keys, mapped by index name.
+	Indexes map[string][]string
 }
 
-// Summary contains the actual data.
-type Summary struct {
+// Data contains the actual data.
+type Data struct {
 	// Name of the struct.
 	Name string
 	// Key holds the value of the primary key.
 	Key string
-	// Index holds the composite index key values, mapped by index name.
-	Index map[string][]string
+	// Indexes holds the composite index key values, mapped by index name.
+	Indexes map[string][]string
 	// Data contains the key/values.
-	Data map[string]string
+	Values map[string]string
 }
 
 func mar(o interface{}) {
@@ -70,20 +70,20 @@ func mar(o interface{}) {
 */
 
 // Encode a struct into key/value pairs.
-func Encode(object interface{}) (*Metadata, *Summary, error) {
+func Encode(object interface{}) (*Metadata, *Data, error) {
 	return nil, nil, nil
 }
 
 // Decode a struct from key/value pairs.
-func Decode(object interface{}, data map[string]string) error {
+func Decode(object interface{}, values map[string]string) error {
 
-	value := reflect.ValueOf(object).Elem()
+	wrapper := reflect.ValueOf(object).Elem()
 
 	// loop thru object fields
-	for fieldName, v := range data {
+	for fieldName, v := range values {
 
 		// lookup up field in value
-		field := value.FieldByName(fieldName)
+		field := wrapper.FieldByName(fieldName)
 		if !field.IsValid() {
 			return fmt.Errorf("Invalid fieldname: %s.", fieldName)
 		}
@@ -98,29 +98,29 @@ func Decode(object interface{}, data map[string]string) error {
 
 }
 
-// Summarize constructs a Summary object from Metadata and data (key/value pairs).
-func Summarize(metadata *Metadata, data map[string]string) *Summary {
+// DataFrom constructs a Data object from Metadata and values (key/value pairs).
+func DataFrom(metadata *Metadata, values map[string]string) *Data {
 
-	summary := &Summary{
-		Name:  metadata.Name,
-		Index: make(map[string][]string),
-		Data:  data,
+	data := &Data{
+		Name:    metadata.Name,
+		Indexes: make(map[string][]string),
+		Values:  values,
 	}
 
 	// set primary key
-	summary.Key = data[metadata.Key]
+	data.Key = values[metadata.Key]
 
 	// set indexes
-	for indexName := range metadata.Index {
+	for index := range metadata.Indexes {
 		var elements []string
-		fieldNames := metadata.Index[indexName]
+		fieldNames := metadata.Indexes[index]
 		for _, fieldName := range fieldNames {
-			elements = append(elements, data[fieldName])
+			elements = append(elements, values[fieldName])
 		}
-		summary.Index[indexName] = elements
+		data.Indexes[index] = elements
 	}
 
-	return summary
+	return data
 
 }
 
@@ -266,7 +266,7 @@ func setValue(field reflect.Value, fieldName string, val string) error {
 
 	case reflect.Ptr, reflect.Struct:
 		if field.Type() == reflect.TypeOf(time.Time{}) {
-			value, err := time.ParseInLocation(timeFormat, val, time.UTC)
+			value, err := time.Parse(timeFormat, val)
 			if err != nil {
 				return err
 			}
