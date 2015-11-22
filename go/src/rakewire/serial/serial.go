@@ -267,7 +267,8 @@ func getValue(field reflect.Value, fieldName string) (string, error) {
 		if field.Type() == reflect.TypeOf(time.Time{}) {
 			v := field.Interface().(time.Time)
 			if !v.IsZero() {
-				return v.Format(timeFormat), nil
+				// dates must be in UTC so that indexes sort properly
+				return v.UTC().Format(timeFormat), nil
 			}
 		} else {
 			return empty, fmt.Errorf("Will not get value of struct for %s.", fieldName)
@@ -372,7 +373,7 @@ func setValue(field reflect.Value, fieldName string, val string) error {
 			if err != nil {
 				return err
 			}
-			field.Set(reflect.ValueOf(value.Truncate(time.Millisecond)))
+			field.Set(reflect.ValueOf(value.Truncate(time.Second)))
 		} else {
 			return fmt.Errorf("Will not set value for struct: %s.", fieldName)
 		}

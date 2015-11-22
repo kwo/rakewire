@@ -72,7 +72,7 @@ func TestEncode(t *testing.T) {
 	assert.Equal(t, "555", data.Values["ID"])
 	assert.Equal(t, "1", data.Values["Key"])
 	assert.Equal(t, "2015-11-20T20:42:55Z", data.Values["StartTime"])
-	assert.Equal(t, "2015-11-20T21:42:55+01:00", data.Values["StartTime2"])
+	assert.Equal(t, "2015-11-20T20:42:55Z", data.Values["StartTime2"])
 
 }
 
