@@ -159,7 +159,7 @@ func (z *Database) saveFeed(fNew *m.Feed, fOld *m.Feed) error {
 		// log record
 		if fNew.Attempt != nil {
 			fNew.Last = fNew.Attempt
-			if err := Marshal(fNew.Last, tx); err != nil {
+			if err := Put(fNew.Last, tx); err != nil {
 				return err
 			}
 			if fNew.Last.StatusCode == 200 {

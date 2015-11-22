@@ -34,7 +34,7 @@ func TestFeedLog(t *testing.T) {
 				StartTime: dt,
 				Duration:  time.Duration(i),
 			}
-			err := Marshal(entry, tx)
+			err := Put(entry, tx)
 			assert.Nil(t, err)
 		}
 		return nil

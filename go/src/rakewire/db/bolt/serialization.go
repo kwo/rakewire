@@ -22,8 +22,8 @@ const (
 // need functions to convert from one schema version to the next,
 // and that is how to rename fields.
 
-// Marshal saves the object with the given ID to the specified bucket.
-func Marshal(object interface{}, tx *bolt.Tx) error {
+// Put saves the object with the given ID to the specified bucket.
+func Put(object interface{}, tx *bolt.Tx) error {
 
 	meta, data, err := serial.Encode(object)
 	if err != nil {
@@ -48,8 +48,8 @@ func Marshal(object interface{}, tx *bolt.Tx) error {
 
 }
 
-// Unmarshal retrieves the object with the given ID from the specified bucket.
-func Unmarshal(object interface{}, tx *bolt.Tx) error {
+// Get retrieves the object with the given ID from the specified bucket.
+func Get(object interface{}, tx *bolt.Tx) error {
 
 	_, data, err := serial.Encode(object)
 	if err != nil {
