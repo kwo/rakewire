@@ -15,12 +15,42 @@ const (
 	empty = ""
 )
 
+// Criteria are used in retrieving objects using an index.
+type Criteria struct {
+	Name  string
+	Index string
+	Min   []string
+	Max   []string
+}
+
+// TODO: need delete function similar to query
 // TODO: add function to register data types on start to create buckets
 // TODO: create function to rebuild indexes
 
 // TODO: need a control table to keep track of schema version,
 // need functions to convert from one schema version to the next,
 // and that is how to rename fields.
+
+// Get retrieves the object with the given ID from the specified bucket.
+func Get(object interface{}, tx *bolt.Tx) error {
+
+	_, data, err := serial.Encode(object)
+	if err != nil {
+		return err
+	}
+
+	values, err := load(data.Name, data.Key, tx)
+	if err != nil {
+		return err
+	}
+
+	if err = serial.Decode(object, values); err != nil {
+		return err
+	}
+
+	return nil
+
+}
 
 // Put saves the object with the given ID to the specified bucket.
 func Put(object interface{}, tx *bolt.Tx) error {
@@ -48,61 +78,38 @@ func Put(object interface{}, tx *bolt.Tx) error {
 
 }
 
-// Get retrieves the object with the given ID from the specified bucket.
-func Get(object interface{}, tx *bolt.Tx) error {
+// Query retrieves objects using the given criteria.
+func Query(criteria *Criteria, add func() interface{}, tx *bolt.Tx) error {
 
-	_, data, err := serial.Encode(object)
-	if err != nil {
-		return err
+	if criteria.Index != empty {
+		return rangeIndex(criteria, add, tx)
 	}
 
-	values, err := load(data.Name, data.Key, tx)
-	if err != nil {
-		return err
-	}
-
-	if err = serial.Decode(object, values); err != nil {
-		return err
-	}
-
-	return nil
+	return rangeBucket(criteria, add, tx)
 
 }
 
-func save(name string, pkey string, values map[string]string, tx *bolt.Tx) error {
+func index(name string, pkey string, indexesNew map[string][]string, indexesOld map[string][]string, tx *bolt.Tx) error {
 
-	keyList := make(map[string]bool)
+	indexBucket := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name))
 
-	logger.Debugf("Saving %s ...", name)
-	bucketData := tx.Bucket([]byte(bucketData))
-	b := bucketData.Bucket([]byte(name))
-
-	// loop thru values
-	for fieldName := range values {
-
-		keyStr := fmt.Sprintf("%s%s%s", pkey, chSep, fieldName)
-		valueStr := values[fieldName]
-
-		key := []byte(keyStr)
-		value := []byte(valueStr)
-		if len(value) > 0 {
-			keyList[keyStr] = true
-			if err := b.Put(key, value); err != nil {
-				return err
-			}
+	// delete old indexes
+	for indexName := range indexesOld {
+		b := indexBucket.Bucket([]byte(indexName))
+		indexElements := indexesOld[indexName]
+		keyStr := strings.Join(indexElements, chSep)
+		if err := b.Delete([]byte(keyStr)); err != nil {
+			return err
 		}
+	}
 
-	} // for loop object fields
-
-	// loop with cursor thru record, remove database fields not in field list
-	c := b.Cursor()
-	min := []byte(pkey + chMin)
-	max := []byte(pkey + chMax)
-	// logger.Debugf("marshall cursor min/max: %s / %s", min, max)
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
-		if !keyList[string(k)] {
-			// logger.Debugf("Removing key: %s", k)
-			c.Delete()
+	// add new indexes
+	for indexName := range indexesNew {
+		b := indexBucket.Bucket([]byte(indexName))
+		indexElements := indexesNew[indexName]
+		keyStr := strings.Join(indexElements, chSep)
+		if err := b.Put([]byte(keyStr), []byte(pkey)); err != nil {
+			return err
 		}
 	}
 
@@ -142,27 +149,108 @@ func load(name string, pkey string, tx *bolt.Tx) (map[string]string, error) {
 
 }
 
-func index(name string, pkey string, indexesNew map[string][]string, indexesOld map[string][]string, tx *bolt.Tx) error {
+func rangeBucket(criteria *Criteria, add func() interface{}, tx *bolt.Tx) error {
 
-	indexBucket := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name))
+	bucketData := tx.Bucket([]byte(bucketData))
+	b := bucketData.Bucket([]byte(criteria.Name))
 
-	// delete old indexes
-	for indexName := range indexesOld {
-		b := indexBucket.Bucket([]byte(indexName))
-		indexElements := indexesOld[indexName]
-		keyStr := strings.Join(indexElements, chSep)
-		if err := b.Delete([]byte(keyStr)); err != nil {
+	c := b.Cursor()
+	min := []byte(strings.Join(criteria.Min, chSep) + chSep + chMin)
+	max := []byte(strings.Join(criteria.Max, chSep) + chSep + chMax)
+
+	var pkey string
+	values := make(map[string]string)
+
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+
+		// extract field name from key
+		// key format: ID/fieldname
+		key := string(k)
+		keyParts := strings.SplitN(key, chSep, 2)
+		if len(keyParts) != 2 {
+			return fmt.Errorf("Malformatted key: %s.", key)
+		}
+		fieldName := keyParts[1]
+
+		values[fieldName] = string(v)
+
+		akey := keyParts[0]
+		if akey != pkey {
+			pkey = akey
+			err := serial.Decode(add(), values)
+			if err != nil {
+				return err
+			}
+			values = make(map[string]string)
+		} // new key
+
+	} // cursor
+
+	return nil
+
+}
+
+func rangeIndex(criteria *Criteria, add func() interface{}, tx *bolt.Tx) error {
+
+	b := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(criteria.Name)).Bucket([]byte(criteria.Index))
+
+	c := b.Cursor()
+	min := []byte(strings.Join(criteria.Min, chSep) + chSep + chMin)
+	max := []byte(strings.Join(criteria.Max, chSep) + chSep + chMax)
+
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+
+		pkey := string(v)
+
+		values, err := load(criteria.Name, pkey, tx)
+		if err != nil {
 			return err
 		}
-	}
-
-	// add new indexes
-	for indexName := range indexesNew {
-		b := indexBucket.Bucket([]byte(indexName))
-		indexElements := indexesNew[indexName]
-		keyStr := strings.Join(indexElements, chSep)
-		if err := b.Put([]byte(keyStr), []byte(pkey)); err != nil {
+		err = serial.Decode(add(), values)
+		if err != nil {
 			return err
+		}
+
+	} // cursor
+
+	return nil
+
+}
+
+func save(name string, pkey string, values map[string]string, tx *bolt.Tx) error {
+
+	keyList := make(map[string]bool)
+
+	logger.Debugf("Saving %s ...", name)
+	bucketData := tx.Bucket([]byte(bucketData))
+	b := bucketData.Bucket([]byte(name))
+
+	// loop thru values
+	for fieldName := range values {
+
+		keyStr := fmt.Sprintf("%s%s%s", pkey, chSep, fieldName)
+		valueStr := values[fieldName]
+
+		key := []byte(keyStr)
+		value := []byte(valueStr)
+		if len(value) > 0 {
+			keyList[keyStr] = true
+			if err := b.Put(key, value); err != nil {
+				return err
+			}
+		}
+
+	} // for loop object fields
+
+	// loop with cursor thru record, remove database fields not in field list
+	c := b.Cursor()
+	min := []byte(pkey + chMin)
+	max := []byte(pkey + chMax)
+	// logger.Debugf("marshall cursor min/max: %s / %s", min, max)
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
+		if !keyList[string(k)] {
+			// logger.Debugf("Removing key: %s", k)
+			c.Delete()
 		}
 	}
 

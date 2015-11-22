@@ -103,3 +103,41 @@ func TestSerialization(t *testing.T) {
 	assert.Nil(t, err)
 
 }
+
+func TestQuery(t *testing.T) {
+
+	// init db
+	database := Database{}
+	err := database.Open(&db.Configuration{
+		Location: databaseFile,
+	})
+	require.Nil(t, err)
+
+	var result []*m.FeedLog
+	add := func() interface{} {
+		fl := &m.FeedLog{}
+		result = append(result, fl)
+		return fl
+	}
+
+	err = database.db.View(func(tx *bolt.Tx) error {
+		criteria := &Criteria{
+			Name:  "FeedLog",
+			Index: "",
+			Min:   []string{},
+			Max:   []string{},
+		}
+		return Query(criteria, add, tx)
+	})
+	require.Nil(t, err)
+	//assert.Equal(t, 5, len(result))
+
+	// cleanup
+	err = database.Close()
+	assert.Nil(t, err)
+	assert.Nil(t, database.db)
+
+	err = os.Remove(databaseFile)
+	assert.Nil(t, err)
+
+}
