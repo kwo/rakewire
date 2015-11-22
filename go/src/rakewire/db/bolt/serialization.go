@@ -15,14 +15,15 @@ const (
 	empty = ""
 )
 
+// TODO: add function to register data types on start to create buckets
 // TODO: create function to rebuild indexes
 
 // TODO: need a control table to keep track of schema version,
 // need functions to convert from one schema version to the next,
 // and that is how to rename fields.
 
-// marshal saves the object with the given ID to the specified bucket.
-func marshal(object interface{}, tx *bolt.Tx) error {
+// Marshal saves the object with the given ID to the specified bucket.
+func Marshal(object interface{}, tx *bolt.Tx) error {
 
 	meta, data, err := serial.Encode(object)
 	if err != nil {
@@ -47,8 +48,8 @@ func marshal(object interface{}, tx *bolt.Tx) error {
 
 }
 
-// unmarshal retrieves the object with the given ID from the specified bucket.
-func unmarshal(object interface{}, tx *bolt.Tx) error {
+// Unmarshal retrieves the object with the given ID from the specified bucket.
+func Unmarshal(object interface{}, tx *bolt.Tx) error {
 
 	_, data, err := serial.Encode(object)
 	if err != nil {
