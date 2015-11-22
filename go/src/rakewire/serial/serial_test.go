@@ -76,6 +76,39 @@ func TestEncode(t *testing.T) {
 
 }
 
+func TestEncodeNoKey(t *testing.T) {
+
+	type object struct {
+		Key        int       `db:"indexStartTime:2"`
+		StartTime  time.Time `db:"indexStartTime:1"`
+		StartTime2 time.Time
+	}
+
+	o := &object{}
+
+	_, _, err := Encode(o)
+	require.NotNil(t, err)
+	assert.Equal(t, "Empty primary key for object.", err.Error())
+
+}
+
+func TestEncodeNonContiguousIndexes(t *testing.T) {
+
+	type object struct {
+		ID         string
+		Key        int       `db:"indexStartTime:3"`
+		StartTime  time.Time `db:"indexStartTime:1"`
+		StartTime2 time.Time
+	}
+
+	o := &object{}
+
+	_, _, err := Encode(o)
+	require.NotNil(t, err)
+	assert.Equal(t, "Non-contiguous index names for entity object, index StartTime.", err.Error())
+
+}
+
 func TestDecode(t *testing.T) {
 
 	type object struct {

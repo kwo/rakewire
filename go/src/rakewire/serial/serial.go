@@ -158,6 +158,16 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 		return nil, nil, fmt.Errorf("Empty primary key for %s.", meta.Name)
 	}
 
+	// validate contiguous indexes
+	for name := range meta.Indexes {
+		index := meta.Indexes[name]
+		for _, field := range index {
+			if field == empty {
+				return nil, nil, fmt.Errorf("Non-contiguous index names for entity %s, index %s.", meta.Name, name)
+			}
+		}
+	}
+
 	return meta, data, nil
 
 }
