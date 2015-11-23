@@ -184,3 +184,17 @@ func TestDataFrom(t *testing.T) {
 	assert.Equal(t, "", data.Indexes["StartTime"][1])
 
 }
+
+func TestEncodeFields(t *testing.T) {
+
+	value, err := EncodeFields(1, 4.5, time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC), "hello")
+	require.Nil(t, err)
+	require.NotNil(t, value)
+	assert.Equal(t, 4, len(value))
+
+	assert.Equal(t, "1", value[0])
+	assert.Equal(t, "4.5", value[1])
+	assert.Equal(t, "2015-11-20T20:42:55Z", value[2])
+	assert.Equal(t, "hello", value[3])
+
+}

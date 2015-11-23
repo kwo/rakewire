@@ -121,13 +121,7 @@ func TestQuery(t *testing.T) {
 	}
 
 	err = database.db.View(func(tx *bolt.Tx) error {
-		criteria := &Criteria{
-			Name:  "FeedLog",
-			Index: "",
-			Min:   []string{},
-			Max:   []string{},
-		}
-		return Query(criteria, add, tx)
+		return Query("FeedLog", empty, []interface{}{" "}, []interface{}{" "}, add, tx)
 	})
 	require.Nil(t, err)
 	//assert.Equal(t, 5, len(result))

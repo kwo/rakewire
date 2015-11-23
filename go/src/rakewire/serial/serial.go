@@ -12,19 +12,19 @@ import (
 const (
 	// TagName ist the name of the struct tag used by this package
 	TagName = "db"
+	// TimeFormat used to convert dates to strings
+	TimeFormat = time.RFC3339
 )
 
 const (
-	chMin      = " "
-	chMax      = "~"
-	chSep      = "/"
-	empty      = ""
-	timeFormat = time.RFC3339
+	empty = ""
 )
 
 var (
 	logger = logging.New("serial")
 )
+
+// TODO: only do metedata validation upon registration to serialization
 
 // Metadata contains field names.
 type Metadata struct {
@@ -172,6 +172,23 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 
 }
 
+// EncodeFields returns encoded values in a string slice
+func EncodeFields(fields ...interface{}) ([]string, error) {
+
+	var result []string
+	for index, field := range fields {
+		wrapper := reflect.ValueOf(field)
+		value, err := getValue(wrapper, fmt.Sprintf("field%d", index))
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, value)
+	}
+
+	return result, nil
+
+}
+
 // Decode a pointer to a struct from key/value pairs.
 func Decode(object interface{}, values map[string]string) error {
 
@@ -268,14 +285,14 @@ func getValue(field reflect.Value, fieldName string) (string, error) {
 			v := field.Interface().(time.Time)
 			if !v.IsZero() {
 				// dates must be in UTC so that indexes sort properly
-				return v.UTC().Format(timeFormat), nil
+				return v.UTC().Format(TimeFormat), nil
 			}
 		} else {
 			return empty, fmt.Errorf("Will not get value of struct for %s.", fieldName)
 		}
 
 	default:
-		return empty, fmt.Errorf("Unknown field type when getting value for %s.", fieldName)
+		return empty, fmt.Errorf("Unknown field type when getting value for %s: %s.", fieldName, field.Kind())
 
 	} // switch
 
@@ -369,7 +386,7 @@ func setValue(field reflect.Value, fieldName string, val string) error {
 
 	case reflect.Ptr, reflect.Struct:
 		if field.Type() == reflect.TypeOf(time.Time{}) {
-			value, err := time.Parse(timeFormat, val)
+			value, err := time.Parse(TimeFormat, val)
 			if err != nil {
 				return err
 			}

@@ -15,14 +15,6 @@ const (
 	empty = ""
 )
 
-// Criteria are used in retrieving objects using an index.
-type Criteria struct {
-	Name  string
-	Index string
-	Min   []string
-	Max   []string
-}
-
 // TODO: need delete function similar to query
 // TODO: add function to register data types on start to create buckets
 // TODO: create function to rebuild indexes
@@ -79,13 +71,25 @@ func Put(object interface{}, tx *bolt.Tx) error {
 }
 
 // Query retrieves objects using the given criteria.
-func Query(criteria *Criteria, add func() interface{}, tx *bolt.Tx) error {
+func Query(name string, index string, min []interface{}, max []interface{}, add func() interface{}, tx *bolt.Tx) error {
 
-	if criteria.Index != empty {
-		return rangeIndex(criteria, add, tx)
+	minS, err := serial.EncodeFields(min...)
+	if err != nil {
+		return err
+	}
+	maxS, err := serial.EncodeFields(max...)
+	if err != nil {
+		return err
 	}
 
-	return rangeBucket(criteria, add, tx)
+	minB := []byte(strings.Join(minS, chSep) + chSep + chMin)
+	maxB := []byte(strings.Join(maxS, chSep) + chSep + chMax)
+
+	if index != empty {
+		return rangeIndex(name, index, minB, maxB, add, tx)
+	}
+
+	return rangeBucket(name, minB, maxB, add, tx)
 
 }
 
@@ -149,14 +153,10 @@ func load(name string, pkey string, tx *bolt.Tx) (map[string]string, error) {
 
 }
 
-func rangeBucket(criteria *Criteria, add func() interface{}, tx *bolt.Tx) error {
+func rangeBucket(name string, min []byte, max []byte, add func() interface{}, tx *bolt.Tx) error {
 
-	bucketData := tx.Bucket([]byte(bucketData))
-	b := bucketData.Bucket([]byte(criteria.Name))
-
+	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
 	c := b.Cursor()
-	min := []byte(strings.Join(criteria.Min, chSep) + chSep + chMin)
-	max := []byte(strings.Join(criteria.Max, chSep) + chSep + chMax)
 
 	var pkey string
 	values := make(map[string]string)
@@ -190,19 +190,16 @@ func rangeBucket(criteria *Criteria, add func() interface{}, tx *bolt.Tx) error 
 
 }
 
-func rangeIndex(criteria *Criteria, add func() interface{}, tx *bolt.Tx) error {
+func rangeIndex(name string, index string, min []byte, max []byte, add func() interface{}, tx *bolt.Tx) error {
 
-	b := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(criteria.Name)).Bucket([]byte(criteria.Index))
-
+	b := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
 	c := b.Cursor()
-	min := []byte(strings.Join(criteria.Min, chSep) + chSep + chMin)
-	max := []byte(strings.Join(criteria.Max, chSep) + chSep + chMax)
 
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
 		pkey := string(v)
 
-		values, err := load(criteria.Name, pkey, tx)
+		values, err := load(name, pkey, tx)
 		if err != nil {
 			return err
 		}
