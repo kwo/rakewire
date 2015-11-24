@@ -36,9 +36,10 @@ func TestEncode(t *testing.T) {
 
 	type object struct {
 		ID         string
-		Key        int       `db:"indexStartTime:2"`
-		StartTime  time.Time `db:"indexStartTime:1"`
+		Key        int       `db:"StartTime:2"`
+		StartTime  time.Time `db:"StartTime:1"`
 		StartTime2 time.Time
+		Log        int64 `db:"-"`
 	}
 
 	dt := time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC)
@@ -48,6 +49,7 @@ func TestEncode(t *testing.T) {
 		Key:        1,
 		StartTime:  dt,
 		StartTime2: dt.Local(),
+		Log:        44,
 	}
 
 	meta, data, err := Encode(o)
@@ -69,6 +71,7 @@ func TestEncode(t *testing.T) {
 	assert.Equal(t, "2015-11-20T20:42:55Z", data.Indexes["StartTime"][0])
 	assert.Equal(t, "1", data.Indexes["StartTime"][1])
 
+	assert.Equal(t, 4, len(data.Values))
 	assert.Equal(t, "555", data.Values["ID"])
 	assert.Equal(t, "1", data.Values["Key"])
 	assert.Equal(t, "2015-11-20T20:42:55Z", data.Values["StartTime"])
@@ -79,8 +82,8 @@ func TestEncode(t *testing.T) {
 func TestEncodeNoKey(t *testing.T) {
 
 	type object struct {
-		Key        int       `db:"indexStartTime:2"`
-		StartTime  time.Time `db:"indexStartTime:1"`
+		Key        int       `db:"StartTime:2"`
+		StartTime  time.Time `db:"StartTime:1"`
 		StartTime2 time.Time
 	}
 
@@ -96,8 +99,8 @@ func TestEncodeNonContiguousIndexes(t *testing.T) {
 
 	type object struct {
 		ID         string
-		Key        int       `db:"indexStartTime:3"`
-		StartTime  time.Time `db:"indexStartTime:1"`
+		Key        int       `db:"StartTime:3"`
+		StartTime  time.Time `db:"StartTime:1"`
 		StartTime2 time.Time
 	}
 
@@ -158,8 +161,8 @@ func TestDataFrom(t *testing.T) {
 
 	type object struct {
 		ID        string
-		Key       int       `db:"indexStartTime:2"`
-		StartTime time.Time `db:"indexStartTime:1"`
+		Key       int       `db:"StartTime:2"`
+		StartTime time.Time `db:"StartTime:1"`
 	}
 
 	values := map[string]string{

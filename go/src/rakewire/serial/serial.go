@@ -76,19 +76,16 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 		typeField := wrapper.Type().Field(i)
 		fieldName := typeField.Name
 
-		fieldValue, err := getValue(field, fieldName)
-		if err != nil {
-			return nil, nil, err
-		}
-		data.Values[fieldName] = fieldValue
-
 		tag := typeField.Tag
 		tagFields := strings.Split(tag.Get(TagName), ",")
+		ignoreField := false
 
 		for _, tagFieldX := range tagFields {
 			tagField := strings.TrimSpace(tagFieldX)
 
-			if tagField == "primary-key" {
+			if tagField == "-" {
+				ignoreField = true
+			} else if tagField == "primary-key" {
 				if meta.Key == empty {
 					value, err := getValue(field, fieldName)
 					if err != nil {
@@ -101,13 +98,13 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 					return nil, nil, fmt.Errorf("Duplicate primary key defined for %s.", meta.Name)
 				}
 
-			} else if strings.HasPrefix(tagField, "index") {
+			} else if tagField != empty {
 				// populate indexes
 				elements := strings.SplitN(tagField, ":", 2)
 				if len(elements) != 2 {
 					return nil, nil, fmt.Errorf("Invalid index definition: %s.", tagField)
 				}
-				indexName := elements[0][5:] // remove prefix from 0
+				indexName := elements[0]
 				indexPosition, err := strconv.Atoi(elements[1])
 				if err != nil {
 					return nil, nil, fmt.Errorf("Index position is not an integer: %s.", tagField)
@@ -136,6 +133,14 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 			}
 
 		} // loop tag fields
+
+		if !ignoreField {
+			fieldValue, err := getValue(field, fieldName)
+			if err != nil {
+				return nil, nil, err
+			}
+			data.Values[fieldName] = fieldValue
+		}
 
 	} // loop fields
 
