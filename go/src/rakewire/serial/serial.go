@@ -14,10 +14,7 @@ const (
 	TagName = "db"
 	// TimeFormat used to convert dates to strings
 	TimeFormat = time.RFC3339
-)
-
-const (
-	empty = ""
+	empty      = ""
 )
 
 var (
