@@ -13,7 +13,7 @@ const (
 	// TagName ist the name of the struct tag used by this package
 	TagName = "db"
 	// TimeFormat used to convert dates to strings
-	TimeFormat = time.RFC3339
+	TimeFormat = time.RFC3339Nano
 	empty      = ""
 )
 
@@ -392,7 +392,7 @@ func setValue(field reflect.Value, fieldName string, val string) error {
 			if err != nil {
 				return err
 			}
-			field.Set(reflect.ValueOf(value.Truncate(time.Second)))
+			field.Set(reflect.ValueOf(value))
 		} else {
 			return fmt.Errorf("Will not set value for struct: %s.", fieldName)
 		}

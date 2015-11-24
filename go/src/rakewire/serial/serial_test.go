@@ -22,7 +22,7 @@ func TestMain(m *testing.M) {
 
 func TestDates(t *testing.T) {
 
-	dt := time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC)
+	dt := time.Date(2015, time.November, 20, 20, 42, 55, 33, time.UTC)
 	tz, err := time.LoadLocation("Europe/Berlin")
 	require.Nil(t, err)
 	require.NotNil(t, tz)
@@ -42,7 +42,7 @@ func TestEncode(t *testing.T) {
 		Log        int64 `db:"-"`
 	}
 
-	dt := time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC)
+	dt := time.Date(2015, time.November, 20, 20, 42, 55, 33, time.UTC)
 
 	o := &object{
 		ID:         "555",
@@ -68,14 +68,14 @@ func TestEncode(t *testing.T) {
 	assert.Equal(t, "555", data.Key)
 	assert.Equal(t, 1, len(data.Indexes))
 	assert.Equal(t, 2, len(data.Indexes["StartTime"]))
-	assert.Equal(t, "2015-11-20T20:42:55Z", data.Indexes["StartTime"][0])
+	assert.Equal(t, "2015-11-20T20:42:55.000000033Z", data.Indexes["StartTime"][0])
 	assert.Equal(t, "1", data.Indexes["StartTime"][1])
 
 	assert.Equal(t, 4, len(data.Values))
 	assert.Equal(t, "555", data.Values["ID"])
 	assert.Equal(t, "1", data.Values["Key"])
-	assert.Equal(t, "2015-11-20T20:42:55Z", data.Values["StartTime"])
-	assert.Equal(t, "2015-11-20T20:42:55Z", data.Values["StartTime2"])
+	assert.Equal(t, "2015-11-20T20:42:55.000000033Z", data.Values["StartTime"])
+	assert.Equal(t, "2015-11-20T20:42:55.000000033Z", data.Values["StartTime2"])
 
 }
 
@@ -124,14 +124,14 @@ func TestDecode(t *testing.T) {
 	o := &object{}
 	values := map[string]string{
 		"ID":         "hello",
-		"StartTime":  "2015-11-20T20:42:55Z",
-		"StartTime2": "2015-11-20T21:42:55+01:00",
+		"StartTime":  "2015-11-20T20:42:55.000000033Z",
+		"StartTime2": "2015-11-20T21:42:55.000000033+01:00",
 	}
 
 	err := Decode(o, values)
 	require.Nil(t, err)
 
-	dt := time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC)
+	dt := time.Date(2015, time.November, 20, 20, 42, 55, 33, time.UTC)
 	tz, err := time.LoadLocation("Europe/Berlin")
 	require.Nil(t, err)
 	require.NotNil(t, tz)
