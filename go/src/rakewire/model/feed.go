@@ -2,7 +2,6 @@ package model
 
 import (
 	"bufio"
-	"encoding/json"
 	"github.com/pborman/uuid"
 	"io"
 	"rakewire/feedparser"
@@ -10,56 +9,65 @@ import (
 	"time"
 )
 
-// Feed feed descriptior
+// Feed feed descriptor
 type Feed struct {
 	// Current fetch attempt for feed
-	Attempt *FeedLog `json:"-"`
+	Attempt *FeedLog `db:"-"`
 	// Feed object parsed from Body
-	Feed *feedparser.Feed `json:"-"`
+	Feed *feedparser.Feed `db:"-"`
 	// UUID
-	ID string `json:"id"`
+	ID string `db:"primary-key"`
 	// Time the feed was last updated
-	LastUpdated time.Time `json:"lastUpdated,omitempty"`
+	LastUpdated time.Time
 	// Last fetch
-	Last *FeedLog `json:"last"`
+	Last string
 	// Last successful fetch with status code 200
-	Last200 *FeedLog `json:"last200"`
+	Last200 string
 	// Past fetch attempts for feed
-	Log []*FeedLog `json:"-"`
+	Log []*FeedLog `db:"-"`
 	// Time of next scheduled fetch
-	NextFetch time.Time `json:"nextFetch"`
+	NextFetch time.Time `db:"NextFetch:1"`
 	// User notes of the feed
-	Notes string `json:"notes,omitifempty"`
+	Notes string
 	// User defined title of the feed
-	Title string `json:"title"`
+	Title string
 	// URL updated if feed is permenently redirected
-	URL string `json:"url"`
+	URL string `db:"URL:1"`
+}
+
+// AddLog adds a feedlog to the Feed
+func (z *Feed) AddLog(feedlog *FeedLog) {
+	z.Log = append(z.Log, feedlog)
+}
+
+// GetLast returns the last feed fetch appempt.
+func (z *Feed) GetLast() *FeedLog {
+	return z.findLogByID(z.Last)
+}
+
+// GetLast200 returns the last successful feed fetch.
+func (z *Feed) GetLast200() *FeedLog {
+	return z.findLogByID(z.Last200)
+}
+
+func (z *Feed) findLogByID(id string) *FeedLog {
+	for _, fl := range z.Log {
+		if fl.ID == id {
+			return fl
+		}
+	}
+	return nil
 }
 
 // ========== Feed ==========
 
 // NewFeed instantiate a new Feed object with a new UUID
 func NewFeed(url string) *Feed {
-	nextFetch := time.Now().UTC().Truncate(time.Second)
-	id := uuid.NewUUID().String()
-	x := Feed{
-		ID:        id,
+	return &Feed{
+		ID:        uuid.NewUUID().String(),
 		URL:       url,
-		Last:      &FeedLog{},
-		Last200:   &FeedLog{},
-		NextFetch: nextFetch,
+		NextFetch: time.Now().UTC().Truncate(time.Second),
 	}
-	return &x
-}
-
-// Decode Feed object from bytes
-func (z *Feed) Decode(data []byte) error {
-	return json.Unmarshal(data, z)
-}
-
-// Encode Feed object to bytes
-func (z *Feed) Encode() ([]byte, error) {
-	return json.MarshalIndent(z, "", " ")
 }
 
 // UpdateFetchTime increases the fetch interval

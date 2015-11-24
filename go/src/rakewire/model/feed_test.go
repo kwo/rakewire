@@ -3,6 +3,7 @@ package model
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"rakewire/serial"
 	"testing"
 	"time"
 )
@@ -20,16 +21,17 @@ func TestFeed(t *testing.T) {
 	assert.Equal(t, "http://localhost:8888/", fi.URL)
 	assert.EqualValues(t, dt, fi.LastUpdated)
 
-	data, err := fi.Encode()
+	meta, data, err := serial.Encode(fi)
 	require.Nil(t, err)
+	require.NotNil(t, meta)
 	require.NotNil(t, data)
 	//assert.Equal(t, 190, len(data))
 
 	// fmt.Println(string(data))
 	// fmt.Printf("size: %d\n", len(data))
 
-	fi2 := Feed{}
-	err = fi2.Decode(data)
+	fi2 := &Feed{}
+	err = serial.Decode(fi2, data.Values)
 	require.Nil(t, err)
 	assert.NotNil(t, fi2)
 	assert.Equal(t, fi.ID, fi2.ID)
