@@ -113,7 +113,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	startTime := time.Now().UTC().Truncate(time.Millisecond)
 	now := startTime.Truncate(time.Second)
-	feed.Attempt = m.NewFeedLog()
+	feed.Attempt = m.NewFeedLog(feed.ID)
 
 	feed.Attempt.URL = feed.URL
 	feed.Attempt.StartTime = now
