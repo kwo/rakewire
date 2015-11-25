@@ -48,6 +48,8 @@ type Data struct {
 // Encode a pointer to a struct into key/value pairs.
 func Encode(object interface{}) (*Metadata, *Data, error) {
 
+	// TODO: move metadata extraction to another method, remove error from return, return only data
+
 	wrapper := reflect.ValueOf(object)
 	if wrapper.Kind() != reflect.Ptr {
 		return nil, nil, fmt.Errorf("Cannot decode non-pointer object")
