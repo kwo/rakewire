@@ -8,6 +8,17 @@ import (
 	"time"
 )
 
+func TestNewFeed(t *testing.T) {
+
+	f := NewFeed("http://localhost/")
+	require.NotNil(t, f)
+	assert.Equal(t, "http://localhost/", f.URL)
+	assert.NotNil(t, f.NextFetch)
+	assert.NotNil(t, f.ID)
+	assert.Equal(t, 36, len(f.ID))
+
+}
+
 func TestFeed(t *testing.T) {
 
 	dt := time.Date(2015, time.July, 8, 9, 24, 0, 0, time.UTC)
