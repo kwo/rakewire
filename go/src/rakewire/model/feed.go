@@ -1,11 +1,8 @@
 package model
 
 import (
-	"bufio"
 	"github.com/pborman/uuid"
-	"io"
 	"rakewire/feedparser"
-	"strings"
 	"time"
 )
 
@@ -35,9 +32,10 @@ type Feed struct {
 	URL string `db:"URL:1"`
 }
 
-// AddLog adds a feedlog to the Feed
-func (z *Feed) AddLog(feedlog *FeedLog) {
+// AddLog adds a feedlog to the Feed returning its ID
+func (z *Feed) AddLog(feedlog *FeedLog) string {
 	z.Log = append(z.Log, feedlog)
+	return feedlog.ID
 }
 
 // GetLast returns the last feed fetch appempt.
@@ -73,16 +71,13 @@ func NewFeed(url string) *Feed {
 // UpdateFetchTime increases the fetch interval
 func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
-	if !lastUpdated.IsZero() {
-		z.LastUpdated = lastUpdated
+	if lastUpdated.IsZero() {
+		return
 	}
 
-	now := time.Now()
-	if z.LastUpdated.IsZero() {
-		z.LastUpdated = now
-	}
+	z.LastUpdated = lastUpdated
 
-	d := now.Sub(z.LastUpdated) // how long since the last update?
+	d := time.Now().Sub(z.LastUpdated) // how long since the last update?
 
 	switch {
 	case d < 30*time.Minute:
@@ -97,20 +92,5 @@ func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
 // AdjustFetchTime sets the FetchTime to interval units in the future.
 func (z *Feed) AdjustFetchTime(interval time.Duration) {
-	now := time.Now()
-	nextFetch := now.Add(interval)
-	z.NextFetch = nextFetch
-}
-
-// ParseListToFeeds parse url list to feeds
-func ParseListToFeeds(r io.Reader) []*Feed {
-	var feeds []*Feed
-	scanner := bufio.NewScanner(r)
-	for scanner.Scan() {
-		var url = strings.TrimSpace(scanner.Text())
-		if url != "" && url[:1] != "#" {
-			feeds = append(feeds, NewFeed(url))
-		}
-	}
-	return feeds
+	z.NextFetch = time.Now().Add(interval)
 }

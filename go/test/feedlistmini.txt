@@ -1,3 +1,5 @@
+# Feed List Mini
+
 http://www.addrup.de/feed.xml
 http://feeds.feedburner.com/alkavadlo
 http://feeds2.feedburner.com/splitbrain
