@@ -50,9 +50,8 @@ func (z *Database) GetFetchFeeds(maxTime time.Time) ([]*m.Feed, error) {
 // GetFeedByID return feed given UUID
 func (z *Database) GetFeedByID(id string) (*m.Feed, error) {
 
-	result := &m.Feed{
-		ID: id,
-	}
+	result := m.NewFeed("")
+	result.ID = id
 
 	err := z.db.View(func(tx *bolt.Tx) error {
 		return Get(result, tx)
@@ -103,6 +102,7 @@ func (z *Database) SaveFeed(feed *m.Feed) error {
 	z.Lock()
 	err := z.db.Update(func(tx *bolt.Tx) error {
 
+		// save feed log if available
 		if feed.Attempt != nil {
 			feed.Last = feed.Attempt.ID
 			if feed.Attempt.StatusCode == 200 {
@@ -113,6 +113,7 @@ func (z *Database) SaveFeed(feed *m.Feed) error {
 			}
 		}
 
+		// save feed itself
 		if err := Put(feed, tx); err != nil {
 			return err
 		}
