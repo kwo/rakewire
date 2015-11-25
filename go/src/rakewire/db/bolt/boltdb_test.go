@@ -35,14 +35,24 @@ func TestInterface(t *testing.T) {
 
 }
 
-func getTempFile(t *testing.T) string {
+func openDatabase(t *testing.T) *Database {
+
 	f, err := ioutil.TempFile(empty, "bolt-")
 	require.Nil(t, err)
+	filename := f.Name()
 	f.Close()
-	return f.Name()
+
+	database := &Database{}
+	err = database.Open(&db.Configuration{
+		Location: filename,
+	})
+	require.Nil(t, err)
+
+	return database
+
 }
 
-func cleanUp(t *testing.T, database *Database) {
+func closeDatabase(t *testing.T, database *Database) {
 
 	// close database
 	err := database.Close()

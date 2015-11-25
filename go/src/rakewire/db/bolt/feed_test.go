@@ -3,7 +3,6 @@ package bolt
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"rakewire/db"
 	m "rakewire/model"
 	"testing"
 	"time"
@@ -12,6 +11,9 @@ import (
 func TestFeeds(t *testing.T) {
 
 	//t.SkipNow()
+	database := openDatabase(t)
+	defer closeDatabase(t, database)
+	require.NotNil(t, database)
 
 	feeds, err := m.ParseFeedsFromFile(feedFile)
 	require.Nil(t, err)
@@ -21,13 +23,6 @@ func TestFeeds(t *testing.T) {
 		// logger.Debugf("URL (%d): %s", n, feed.URL)
 		feed.Attempt = m.NewFeedLog(feed.ID)
 	}
-
-	database := &Database{}
-	err = database.Open(&db.Configuration{
-		Location: getTempFile(t),
-	})
-	require.Nil(t, err)
-	defer cleanUp(t, database)
 
 	for _, feed := range feeds {
 		err = database.SaveFeed(feed)
@@ -52,13 +47,9 @@ func TestURLIndex(t *testing.T) {
 	const URL1 = "http://localhost/"
 	const URL2 = "http://localhost:8888/"
 
-	// open database
-	database := &Database{}
-	err := database.Open(&db.Configuration{
-		Location: getTempFile(t),
-	})
-	require.Nil(t, err)
-	defer cleanUp(t, database)
+	database := openDatabase(t)
+	defer closeDatabase(t, database)
+	require.NotNil(t, database)
 
 	// create feed
 	feed := m.NewFeed(URL1)
@@ -67,7 +58,7 @@ func TestURLIndex(t *testing.T) {
 	assert.Equal(t, feed.ID, feed.Attempt.FeedID)
 
 	// save feeds
-	err = database.SaveFeed(feed)
+	err := database.SaveFeed(feed)
 	require.Nil(t, err)
 
 	var feed2 *m.Feed
@@ -124,13 +115,9 @@ func TestIndexFetch(t *testing.T) {
 
 	//t.SkipNow()
 
-	// open database
-	database := &Database{}
-	err := database.Open(&db.Configuration{
-		Location: getTempFile(t),
-	})
-	require.Nil(t, err)
-	defer cleanUp(t, database)
+	database := openDatabase(t)
+	defer closeDatabase(t, database)
+	require.NotNil(t, database)
 
 	// test feeds
 	feeds, err := database.GetFeeds()

@@ -5,7 +5,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"rakewire/db"
 	m "rakewire/model"
 	"testing"
 	"time"
@@ -13,13 +12,9 @@ import (
 
 func TestSerialization(t *testing.T) {
 
-	// init db
-	database := &Database{}
-	err := database.Open(&db.Configuration{
-		Location: getTempFile(t),
-	})
-	require.Nil(t, err)
-	defer cleanUp(t, database)
+	database := openDatabase(t)
+	defer closeDatabase(t, database)
+	require.NotNil(t, database)
 
 	// start testing
 	fl := m.NewFeedLog("0000-FEED-ID")
@@ -31,7 +26,7 @@ func TestSerialization(t *testing.T) {
 
 	// marshal
 	database.Lock()
-	err = database.db.Update(func(tx *bolt.Tx) error {
+	err := database.db.Update(func(tx *bolt.Tx) error {
 		return Put(fl, tx)
 	})
 	database.Unlock()
@@ -94,13 +89,9 @@ func TestSerialization(t *testing.T) {
 
 func TestQuery(t *testing.T) {
 
-	// init db
-	database := &Database{}
-	err := database.Open(&db.Configuration{
-		Location: getTempFile(t),
-	})
-	require.Nil(t, err)
-	defer cleanUp(t, database)
+	database := openDatabase(t)
+	defer closeDatabase(t, database)
+	require.NotNil(t, database)
 
 	result := []*m.FeedLog{}
 	add := func() interface{} {
@@ -109,7 +100,7 @@ func TestQuery(t *testing.T) {
 		return fl
 	}
 
-	err = database.db.View(func(tx *bolt.Tx) error {
+	err := database.db.View(func(tx *bolt.Tx) error {
 		return Query("FeedLog", empty, []interface{}{" "}, []interface{}{" "}, add, tx)
 	})
 	require.Nil(t, err)
