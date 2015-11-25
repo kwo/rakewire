@@ -4,7 +4,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
 	"rakewire/db"
 	m "rakewire/model"
 	"testing"
@@ -13,13 +12,14 @@ import (
 
 func TestFeedLog(t *testing.T) {
 
-	t.SkipNow()
+	// t.SkipNow()
 
-	database := Database{}
+	database := &Database{}
 	err := database.Open(&db.Configuration{
 		Location: databaseFile,
 	})
 	require.Nil(t, err)
+	defer cleanUp(t, database)
 
 	now := time.Now().Truncate(time.Second)
 	feedID := "12345"
@@ -31,7 +31,9 @@ func TestFeedLog(t *testing.T) {
 			entry.StartTime = dt
 			entry.Duration = time.Duration(i)
 			err := Put(entry, tx)
-			assert.Nil(t, err)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -45,12 +47,5 @@ func TestFeedLog(t *testing.T) {
 	// test reverse chronological order
 	assert.Equal(t, time.Duration(1), entries[0].Duration)
 	assert.Equal(t, time.Duration(10), entries[9].Duration)
-
-	err = database.Close()
-	assert.Nil(t, err)
-	assert.Nil(t, database.db)
-
-	err = os.Remove(databaseFile)
-	assert.Nil(t, err)
 
 }
