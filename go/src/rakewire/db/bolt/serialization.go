@@ -73,17 +73,25 @@ func Put(object interface{}, tx *bolt.Tx) error {
 // Query retrieves objects using the given criteria.
 func Query(name string, index string, min []interface{}, max []interface{}, add func() interface{}, tx *bolt.Tx) error {
 
-	minS, err := serial.EncodeFields(min...)
-	if err != nil {
-		return err
-	}
-	maxS, err := serial.EncodeFields(max...)
-	if err != nil {
-		return err
+	marker := func(v []interface{}) ([]byte, error) {
+		if v == nil {
+			return nil, nil
+		}
+		s, err := serial.EncodeFields(v...)
+		if err != nil {
+			return nil, err
+		}
+		return []byte(strings.Join(s, chSep)), nil
 	}
 
-	minB := []byte(strings.Join(minS, chSep) + chSep + chMin)
-	maxB := []byte(strings.Join(maxS, chSep) + chSep + chMax)
+	minB, err := marker(min)
+	if err != nil {
+		return err
+	}
+	maxB, err := marker(max)
+	if err != nil {
+		return err
+	}
 
 	if index != empty {
 		return rangeIndex(name, index, minB, maxB, add, tx)
@@ -123,7 +131,7 @@ func index(name string, pkey string, indexesNew map[string][]string, indexesOld 
 
 func load(name string, pkey string, tx *bolt.Tx) (map[string]string, error) {
 
-	logger.Debugf("Loading %s ...", name)
+	//logger.Debugf("Loading %s ...", name)
 	bucketData := tx.Bucket([]byte(bucketData))
 	b := bucketData.Bucket([]byte(name))
 
@@ -155,13 +163,22 @@ func load(name string, pkey string, tx *bolt.Tx) (map[string]string, error) {
 
 func rangeBucket(name string, min []byte, max []byte, add func() interface{}, tx *bolt.Tx) error {
 
+	logger.Debugf("rangeBucket (%s) [%s]:[%s]", name, min, max)
+
 	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
 	c := b.Cursor()
 
-	var pkey string
+	initCursor := func(v []byte) ([]byte, []byte) {
+		if v == nil || len(v) == 0 {
+			return c.First()
+		}
+		return c.Seek(v)
+	}
+
+	pkey := empty
 	values := make(map[string]string)
 
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+	for k, v := initCursor(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
 		// extract field name from key
 		// key format: ID/fieldname
@@ -174,6 +191,11 @@ func rangeBucket(name string, min []byte, max []byte, add func() interface{}, tx
 
 		values[fieldName] = string(v)
 
+		// logger.Debugf("rangeBucket (%s) k/v: %s : %s", name, key, values[fieldName])
+
+		if pkey == empty {
+			pkey = keyParts[0]
+		}
 		akey := keyParts[0]
 		if akey != pkey {
 			pkey = akey
@@ -181,10 +203,18 @@ func rangeBucket(name string, min []byte, max []byte, add func() interface{}, tx
 			if err != nil {
 				return err
 			}
-			values = make(map[string]string)
+			for mapk := range values {
+				delete(values, mapk)
+			}
 		} // new key
 
 	} // cursor
+
+	// do last one
+	err := serial.Decode(add(), values)
+	if err != nil {
+		return err
+	}
 
 	return nil
 
@@ -195,7 +225,14 @@ func rangeIndex(name string, index string, min []byte, max []byte, add func() in
 	b := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
 	c := b.Cursor()
 
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+	initCursor := func(v []byte) ([]byte, []byte) {
+		if v == nil || len(v) == 0 {
+			return c.First()
+		}
+		return c.Seek(v)
+	}
+
+	for k, v := initCursor(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
 		pkey := string(v)
 
@@ -218,7 +255,7 @@ func save(name string, pkey string, values map[string]string, tx *bolt.Tx) error
 
 	keyList := make(map[string]bool)
 
-	logger.Debugf("Saving %s ...", name)
+	//logger.Debugf("Saving %s ...", name)
 	bucketData := tx.Bucket([]byte(bucketData))
 	b := bucketData.Bucket([]byte(name))
 

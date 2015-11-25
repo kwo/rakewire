@@ -113,6 +113,8 @@ func (z *Database) Close() error {
 // Repair the database
 func (z *Database) Repair() error {
 
+	// TODO: reimplement repair database
+
 	return nil
 
 }

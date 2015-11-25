@@ -5,7 +5,6 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
 	"rakewire/db"
 	m "rakewire/model"
 	"testing"
@@ -15,11 +14,12 @@ import (
 func TestSerialization(t *testing.T) {
 
 	// init db
-	database := Database{}
+	database := &Database{}
 	err := database.Open(&db.Configuration{
-		Location: databaseFile,
+		Location: getTempFile(t),
 	})
 	require.Nil(t, err)
+	defer cleanUp(t, database)
 
 	// start testing
 	fl := m.NewFeedLog("0000-FEED-ID")
@@ -37,16 +37,16 @@ func TestSerialization(t *testing.T) {
 	database.Unlock()
 	assert.Nil(t, err)
 
-	// view out of curiosity
-	err = database.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog)) // works
-		c := b.Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			logger.Debugf("FeedLog: %s: %s", k, v)
-		} // for
-		return nil
-	})
-	assert.Nil(t, err)
+	// // view out of curiosity
+	// err = database.db.View(func(tx *bolt.Tx) error {
+	// 	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog)) // works
+	// 	c := b.Cursor()
+	// 	for k, v := c.First(); k != nil; k, v = c.Next() {
+	// 		logger.Debugf("FeedLog: %s: %s", k, v)
+	// 	} // for
+	// 	return nil
+	// })
+	// assert.Nil(t, err)
 
 	// unmarshal
 	fl2 := &m.FeedLog{
@@ -64,7 +64,7 @@ func TestSerialization(t *testing.T) {
 	assert.Equal(t, fl.Duration, fl2.Duration)
 	assert.Equal(t, fl.IsUpdated, fl2.IsUpdated)
 	assert.Equal(t, fl.Result, fl2.Result)
-	assert.Equal(t, fl.StartTime.UTC().Truncate(time.Second), fl2.StartTime)
+	assert.Equal(t, fl.StartTime.UTC(), fl2.StartTime)
 	assert.Equal(t, fl.Updated, fl2.Updated)
 	// zero values are not saved
 	assert.Equal(t, 0, fl2.StatusCode)
@@ -90,28 +90,21 @@ func TestSerialization(t *testing.T) {
 	})
 	assert.Nil(t, err)
 
-	// cleanup
-	err = database.Close()
-	assert.Nil(t, err)
-	assert.Nil(t, database.db)
-
-	err = os.Remove(databaseFile)
-	assert.Nil(t, err)
-
 }
 
 func TestQuery(t *testing.T) {
 
 	// init db
-	database := Database{}
+	database := &Database{}
 	err := database.Open(&db.Configuration{
-		Location: databaseFile,
+		Location: getTempFile(t),
 	})
 	require.Nil(t, err)
+	defer cleanUp(t, database)
 
-	var result []*m.FeedLog
+	result := []*m.FeedLog{}
 	add := func() interface{} {
-		fl := &m.FeedLog{}
+		fl := m.NewFeedLog("0000-FEED-ID")
 		result = append(result, fl)
 		return fl
 	}
@@ -121,13 +114,5 @@ func TestQuery(t *testing.T) {
 	})
 	require.Nil(t, err)
 	//assert.Equal(t, 5, len(result))
-
-	// cleanup
-	err = database.Close()
-	assert.Nil(t, err)
-	assert.Nil(t, database.db)
-
-	err = os.Remove(databaseFile)
-	assert.Nil(t, err)
 
 }

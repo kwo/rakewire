@@ -16,7 +16,7 @@ func TestFeedLog(t *testing.T) {
 
 	database := &Database{}
 	err := database.Open(&db.Configuration{
-		Location: databaseFile,
+		Location: getTempFile(t),
 	})
 	require.Nil(t, err)
 	defer cleanUp(t, database)

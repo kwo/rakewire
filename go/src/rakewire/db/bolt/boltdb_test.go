@@ -2,6 +2,8 @@ package bolt
 
 import (
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"io/ioutil"
 	"os"
 	"rakewire/db"
 	"rakewire/logging"
@@ -9,8 +11,8 @@ import (
 )
 
 const (
-	feedFile     = "../../../../test/feedlist.txt"
-	databaseFile = "../../../../test/bolt.db"
+	feedFile              = "../../../../test/feedlist.txt"
+	databaseTempDirectory = "../../../../test"
 )
 
 func TestMain(m *testing.M) {
@@ -31,6 +33,13 @@ func TestInterface(t *testing.T) {
 	var d db.Database = &Database{}
 	assert.NotNil(t, d)
 
+}
+
+func getTempFile(t *testing.T) string {
+	f, err := ioutil.TempFile(empty, "bolt-")
+	require.Nil(t, err)
+	f.Close()
+	return f.Name()
 }
 
 func cleanUp(t *testing.T, database *Database) {
