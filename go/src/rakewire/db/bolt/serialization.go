@@ -31,12 +31,8 @@ func Get(object interface{}, tx *bolt.Tx) error {
 		return err
 	}
 
-	values, err := load(data.Name, data.Key, tx)
-	if err != nil {
-		return err
-	}
-
-	if err = serial.Decode(object, values); err != nil {
+	values := load(data.Name, data.Key, tx)
+	if err := serial.Decode(object, values); err != nil {
 		return err
 	}
 
@@ -52,10 +48,7 @@ func Put(object interface{}, tx *bolt.Tx) error {
 		return err
 	}
 
-	valuesOld, err := load(data.Name, data.Key, tx)
-	if err != nil {
-		return err
-	}
+	valuesOld := load(data.Name, data.Key, tx)
 	dataOld := serial.DataFrom(meta, valuesOld)
 
 	if err = save(data.Name, data.Key, data.Values, tx); err != nil {
@@ -129,7 +122,7 @@ func index(name string, pkey string, indexesNew map[string][]string, indexesOld 
 
 }
 
-func load(name string, pkey string, tx *bolt.Tx) (map[string]string, error) {
+func load(name string, pkey string, tx *bolt.Tx) map[string]string {
 
 	//logger.Debugf("Loading %s ...", name)
 	bucketData := tx.Bucket([]byte(bucketData))
@@ -144,11 +137,10 @@ func load(name string, pkey string, tx *bolt.Tx) (map[string]string, error) {
 	max := []byte(pkey + chMax)
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		// assume proper key format of ID/fieldname
-		fieldName := strings.SplitN(string(k), chSep, 2)[1]
-		result[fieldName] = string(v)
+		result[strings.SplitN(string(k), chSep, 2)[1]] = string(v)
 	} // for loop
 
-	return result, nil
+	return result
 
 }
 
@@ -173,12 +165,8 @@ func rangeBucket(name string, min []byte, max []byte, add func() interface{}, tx
 
 		if pkey != lastKey {
 			lastKey = pkey
-			values, err := load(name, pkey, tx)
-			if err != nil {
-				return err
-			}
-			err = serial.Decode(add(), values)
-			if err != nil {
+			values := load(name, pkey, tx)
+			if err := serial.Decode(add(), values); err != nil {
 				return err
 			}
 		}
@@ -205,12 +193,8 @@ func rangeIndex(name string, index string, min []byte, max []byte, add func() in
 
 		pkey := string(v)
 
-		values, err := load(name, pkey, tx)
-		if err != nil {
-			return err
-		}
-		err = serial.Decode(add(), values)
-		if err != nil {
+		values := load(name, pkey, tx)
+		if err := serial.Decode(add(), values); err != nil {
 			return err
 		}
 
