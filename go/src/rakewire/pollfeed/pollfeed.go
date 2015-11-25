@@ -77,7 +77,7 @@ func (z *Service) run() {
 	// run once initially
 	z.setPolling(true)
 	z.polllatch.Add(1)
-	go z.poll(nil)
+	go z.poll(time.Time{})
 
 	ticker := time.NewTicker(z.pollInterval)
 
@@ -88,7 +88,7 @@ run:
 			if !z.isPolling() {
 				z.setPolling(true)
 				z.polllatch.Add(1)
-				go z.poll(&tick)
+				go z.poll(tick)
 			} else {
 				logger.Info("Polling still in progress, skipping.")
 			}
@@ -108,7 +108,7 @@ run:
 
 }
 
-func (z *Service) poll(t *time.Time) {
+func (z *Service) poll(t time.Time) {
 
 	logger.Info("polling...")
 

@@ -12,6 +12,7 @@ import (
 	"os"
 	"rakewire/db"
 	"rakewire/db/bolt"
+	"rakewire/logging"
 	"strconv"
 	"testing"
 	"time"
@@ -29,6 +30,13 @@ var (
 )
 
 func TestMain(m *testing.M) {
+
+	// initialize logging
+	logging.Init(&logging.Configuration{
+		Level: "debug",
+	})
+
+	logger.Debug("Logging configured")
 
 	testDatabaseFile := "../../../test/httpd.db"
 

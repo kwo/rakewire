@@ -6,6 +6,8 @@ import (
 	"os"
 	"rakewire/db"
 	"rakewire/db/bolt"
+	"rakewire/logging"
+
 	"testing"
 	"time"
 )
@@ -13,6 +15,19 @@ import (
 const (
 	databaseFile = "../../../test/pollfeed.db"
 )
+
+func TestMain(m *testing.M) {
+
+	// initialize logging
+	logging.Init(&logging.Configuration{
+		Level: "debug",
+	})
+
+	logger.Debug("Logging configured")
+
+	m.Run()
+
+}
 
 func TestTickerKillSignal(t *testing.T) {
 

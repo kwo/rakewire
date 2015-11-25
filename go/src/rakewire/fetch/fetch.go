@@ -98,12 +98,13 @@ func (z *Service) newRequest(feed *m.Feed) *http.Request {
 	req, _ := http.NewRequest(mGET, feed.URL, nil)
 	req.Header.Set(hUserAgent, httpUserAgent)
 	req.Header.Set(hAcceptEncoding, "gzip")
-	if feed.Last200 != nil && feed.Last200.Result == m.FetchResultOK {
-		if !feed.Last200.LastModified.IsZero() {
-			req.Header.Set(hIfModifiedSince, feed.Last200.LastModified.UTC().Format(http.TimeFormat))
+	last200 := feed.GetLast200()
+	if last200 != nil && last200.Result == m.FetchResultOK {
+		if !last200.LastModified.IsZero() {
+			req.Header.Set(hIfModifiedSince, last200.LastModified.UTC().Format(http.TimeFormat))
 		}
-		if feed.Last200.ETag != "" {
-			req.Header.Set(hIfNoneMatch, feed.Last200.ETag)
+		if last200.ETag != "" {
+			req.Header.Set(hIfNoneMatch, last200.ETag)
 		}
 	}
 	return req

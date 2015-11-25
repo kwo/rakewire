@@ -160,8 +160,7 @@ func TestFeedGetByURL(t *testing.T) {
 	n, err := buf.ReadFrom(rsp.Body)
 	assert.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
-	feed := m.Feed{}
-	err = feed.Decode(buf.Bytes())
+	feed, err := deserializeFeed(buf.Bytes())
 	assert.Nil(t, err)
 	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
 
@@ -204,8 +203,7 @@ func TestFeedGetByID(t *testing.T) {
 	n, err := buf.ReadFrom(rsp.Body)
 	assert.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
-	feed := m.Feed{}
-	err = feed.Decode(buf.Bytes())
+	feed, err := deserializeFeed(buf.Bytes())
 	assert.Nil(t, err)
 	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
 
