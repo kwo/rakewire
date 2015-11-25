@@ -4,7 +4,6 @@ import (
 	"github.com/boltdb/bolt"
 	"rakewire/db"
 	"rakewire/logging"
-	m "rakewire/model"
 	"sync"
 	"time"
 )
@@ -21,7 +20,8 @@ const (
 // Database implementation of Database
 type Database struct {
 	sync.Mutex
-	db *bolt.DB
+	db           *bolt.DB
+	databaseFile string
 }
 
 var (
@@ -37,27 +37,13 @@ func (z *Database) Open(cfg *db.Configuration) error {
 		return err
 	}
 	z.db = db
+	z.databaseFile = cfg.Location
 
 	// check that buckets exist
 	z.Lock()
 	err = z.db.Update(func(tx *bolt.Tx) error {
-		d, err := tx.CreateBucketIfNotExists([]byte(bucketData))
-		if err != nil {
-			return err
-		}
-		_, err = d.CreateBucketIfNotExists([]byte(bucketFeed))
-		if err != nil {
-			return err
-		}
-		_, err = d.CreateBucketIfNotExists([]byte(bucketFeedLog))
-		if err != nil {
-			return err
-		}
-		_, err = tx.CreateBucketIfNotExists([]byte(bucketFeed))
-		if err != nil {
-			return err
-		}
-		_, err = tx.CreateBucketIfNotExists([]byte(bucketFeedLog))
+
+		bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
 		if err != nil {
 			return err
 		}
@@ -65,23 +51,38 @@ func (z *Database) Open(cfg *db.Configuration) error {
 		if err != nil {
 			return err
 		}
-		if _, err = bucketIndex.CreateBucketIfNotExists([]byte(bucketIndexFeedByURL)); err != nil {
-			return err
-		}
-		if _, err = bucketIndex.CreateBucketIfNotExists([]byte(bucketIndexNextFetch)); err != nil {
-			return err
-		}
 
-		b, err := bucketIndex.CreateBucketIfNotExists([]byte(bucketFeedLog))
+		_, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeed))
 		if err != nil {
 			return err
 		}
-		_, err = b.CreateBucketIfNotExists([]byte("FeedTime"))
+		_, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeedLog))
+		if err != nil {
+			return err
+		}
+
+		bucketIndexFeed, err := bucketIndex.CreateBucketIfNotExists([]byte("Feed"))
+		if err != nil {
+			return err
+		}
+		if _, err = bucketIndexFeed.CreateBucketIfNotExists([]byte("URL")); err != nil {
+			return err
+		}
+		if _, err = bucketIndexFeed.CreateBucketIfNotExists([]byte("NextFetch")); err != nil {
+			return err
+		}
+
+		bucketIndexFeedLog, err := bucketIndex.CreateBucketIfNotExists([]byte("FeedLog"))
+		if err != nil {
+			return err
+		}
+		_, err = bucketIndexFeedLog.CreateBucketIfNotExists([]byte("FeedTime"))
 		if err != nil {
 			return err
 		}
 
 		return nil
+
 	})
 	z.Unlock()
 
@@ -112,57 +113,6 @@ func (z *Database) Close() error {
 // Repair the database
 func (z *Database) Repair() error {
 
-	z.Lock()
-	err := z.db.Update(func(tx *bolt.Tx) error {
-
-		b := tx.Bucket([]byte(bucketFeed))
-		indexes := tx.Bucket([]byte(bucketIndex))
-
-		logger.Debugf("dropping index %s\n", bucketIndexFeedByURL)
-		if err := indexes.DeleteBucket([]byte(bucketIndexFeedByURL)); err != nil {
-			return err
-		}
-		logger.Debugf("dropping index %s\n", bucketIndexNextFetch)
-		if err := indexes.DeleteBucket([]byte(bucketIndexNextFetch)); err != nil {
-			return err
-		}
-
-		logger.Debugf("creating index %s\n", bucketIndexFeedByURL)
-		idxFeedByURL, err := indexes.CreateBucket([]byte(bucketIndexFeedByURL))
-		if err != nil {
-			return err
-		}
-		logger.Debugf("creating index %s\n", bucketIndexNextFetch)
-		idxNextFetch, err := indexes.CreateBucket([]byte(bucketIndexNextFetch))
-		if err != nil {
-			return err
-		}
-
-		c := b.Cursor()
-
-		logger.Debugf("populating indexes")
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-
-			f := &m.Feed{}
-			if err := f.Decode(v); err != nil {
-				return err
-			}
-
-			if err := idxFeedByURL.Put([]byte(f.URL), []byte(f.ID)); err != nil {
-				return err
-			}
-
-			if err := idxNextFetch.Put([]byte(fetchKey(f)), []byte(f.ID)); err != nil {
-				return err
-			}
-
-		} // for
-
-		return nil
-
-	}) // update
-	z.Unlock()
-
-	return err
+	return nil
 
 }
