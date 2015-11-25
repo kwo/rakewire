@@ -84,12 +84,8 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 				ignoreField = true
 			} else if tagField == "primary-key" {
 				if meta.Key == empty {
-					value, err := getValue(field, fieldName)
-					if err != nil {
-						return nil, nil, err
-					}
 					meta.Key = fieldName
-					data.Key = value
+					data.Key = getValue(field)
 					pkeyFound = true
 				} else {
 					return nil, nil, fmt.Errorf("Duplicate primary key defined for %s.", meta.Name)
@@ -120,11 +116,7 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 				for len(dataIndex) < indexPosition {
 					dataIndex = append(dataIndex, empty)
 				}
-				positionValue, err := getValue(field, fieldName)
-				if err != nil {
-					return nil, nil, err
-				}
-				dataIndex[indexPosition-1] = positionValue
+				dataIndex[indexPosition-1] = getValue(field)
 				data.Indexes[indexName] = dataIndex
 
 			}
@@ -132,11 +124,7 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 		} // loop tag fields
 
 		if !ignoreField {
-			fieldValue, err := getValue(field, fieldName)
-			if err != nil {
-				return nil, nil, err
-			}
-			data.Values[fieldName] = fieldValue
+			data.Values[fieldName] = getValue(field)
 		}
 
 	} // loop fields
@@ -146,12 +134,8 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 		fieldName := "ID"
 		idValue := wrapper.FieldByName(fieldName)
 		if idValue.IsValid() {
-			value, err := getValue(idValue, fieldName)
-			if err != nil {
-				return nil, nil, err
-			}
 			meta.Key = fieldName
-			data.Key = value
+			data.Key = getValue(idValue)
 		}
 	}
 
@@ -178,13 +162,8 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 func EncodeFields(fields ...interface{}) ([]string, error) {
 
 	var result []string
-	for index, field := range fields {
-		wrapper := reflect.ValueOf(field)
-		value, err := getValue(wrapper, fmt.Sprintf("field%d", index))
-		if err != nil {
-			return nil, err
-		}
-		result = append(result, value)
+	for _, field := range fields {
+		result = append(result, getValue(reflect.ValueOf(field)))
 	}
 
 	return result, nil
@@ -245,41 +224,41 @@ func DataFrom(metadata *Metadata, values map[string]string) *Data {
 
 }
 
-func getValue(field reflect.Value, fieldName string) (string, error) {
+func getValue(field reflect.Value) string {
 
 	switch field.Kind() {
 
 	case reflect.String:
-		return field.String(), nil
+		return field.String()
 
 	case reflect.Bool:
 		v := field.Bool()
 		if v {
-			return strconv.FormatBool(v), nil
+			return strconv.FormatBool(v)
 		}
 
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		v := field.Int()
 		if v != 0 {
-			return strconv.FormatInt(v, 10), nil
+			return strconv.FormatInt(v, 10)
 		}
 
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 		v := field.Uint()
 		if v != 0 {
-			return strconv.FormatUint(v, 10), nil
+			return strconv.FormatUint(v, 10)
 		}
 
 	case reflect.Float32:
 		v := field.Float()
 		if v != 0 {
-			return strconv.FormatFloat(v, 'f', -1, 32), nil
+			return strconv.FormatFloat(v, 'f', -1, 32)
 		}
 
 	case reflect.Float64:
 		v := field.Float()
 		if v != 0 {
-			return strconv.FormatFloat(v, 'f', -1, 64), nil
+			return strconv.FormatFloat(v, 'f', -1, 64)
 		}
 
 	case reflect.Struct:
@@ -287,18 +266,18 @@ func getValue(field reflect.Value, fieldName string) (string, error) {
 			v := field.Interface().(time.Time)
 			if !v.IsZero() {
 				// dates must be in UTC so that indexes sort properly
-				return v.UTC().Format(TimeFormat), nil
+				return v.UTC().Format(TimeFormat)
 			}
 		} else {
-			return empty, fmt.Errorf("Will not get value of struct for %s.", fieldName)
+			logger.Warnf("Will not evaluate struct: %s.", field.Type())
 		}
 
 	default:
-		return empty, fmt.Errorf("Unknown field type when getting value for %s: %s.", fieldName, field.Kind())
+		logger.Warnf("Unknown field type when getting value: %s.", field.Kind())
 
 	} // switch
 
-	return empty, nil
+	return empty
 
 }
 
