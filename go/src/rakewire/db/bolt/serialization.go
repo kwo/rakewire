@@ -143,18 +143,9 @@ func load(name string, pkey string, tx *bolt.Tx) (map[string]string, error) {
 	min := []byte(pkey + chMin)
 	max := []byte(pkey + chMax)
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-
-		// extract field name from key
-		// key format: ID/fieldname
-		key := string(k)
-		keyParts := strings.SplitN(key, chSep, 2)
-		if len(keyParts) != 2 {
-			return nil, fmt.Errorf("Malformatted key: %s.", key)
-		}
-		fieldName := keyParts[1]
-
+		// assume proper key format of ID/fieldname
+		fieldName := strings.SplitN(string(k), chSep, 2)[1]
 		result[fieldName] = string(v)
-
 	} // for loop
 
 	return result, nil
@@ -162,8 +153,6 @@ func load(name string, pkey string, tx *bolt.Tx) (map[string]string, error) {
 }
 
 func rangeBucket(name string, min []byte, max []byte, add func() interface{}, tx *bolt.Tx) error {
-
-	logger.Debugf("rangeBucket (%s) [%s]:[%s]", name, min, max)
 
 	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
 	c := b.Cursor()
@@ -175,48 +164,26 @@ func rangeBucket(name string, min []byte, max []byte, add func() interface{}, tx
 		return c.Seek(v)
 	}
 
-	pkey := empty
-	values := make(map[string]string)
+	lastKey := empty
 
-	for k, v := initCursor(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+	for k, _ := initCursor(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
 
-		// extract field name from key
-		// key format: ID/fieldname
-		key := string(k)
-		keyParts := strings.SplitN(key, chSep, 2)
-		if len(keyParts) != 2 {
-			return fmt.Errorf("Malformatted key: %s.", key)
-		}
-		fieldName := keyParts[1]
+		// assume proper key format of ID/fieldname
+		pkey := strings.SplitN(string(k), chSep, 2)[0]
 
-		values[fieldName] = string(v)
-
-		// logger.Debugf("rangeBucket (%s) k/v: %s : %s", name, key, values[fieldName])
-
-		if pkey == empty {
-			pkey = keyParts[0]
-		}
-		akey := keyParts[0]
-		if akey != pkey {
-			pkey = akey
-			err := serial.Decode(add(), values)
+		if pkey != lastKey {
+			lastKey = pkey
+			values, err := load(name, pkey, tx)
 			if err != nil {
 				return err
 			}
-			for mapk := range values {
-				delete(values, mapk)
+			err = serial.Decode(add(), values)
+			if err != nil {
+				return err
 			}
-		} // new key
+		}
 
 	} // cursor
-
-	// do last one
-	if len(values) != 0 {
-		err := serial.Decode(add(), values)
-		if err != nil {
-			return err
-		}
-	}
 
 	return nil
 
