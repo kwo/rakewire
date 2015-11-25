@@ -47,7 +47,7 @@ func TestFeeds(t *testing.T) {
 
 func TestURLIndex(t *testing.T) {
 
-	t.SkipNow()
+	//t.SkipNow()
 
 	const URL1 = "http://localhost/"
 	const URL2 = "http://localhost:8888/"
@@ -122,7 +122,7 @@ func TestURLIndex(t *testing.T) {
 
 func TestIndexFetch(t *testing.T) {
 
-	t.SkipNow()
+	//t.SkipNow()
 
 	// open database
 	database := &Database{}
@@ -139,9 +139,9 @@ func TestIndexFetch(t *testing.T) {
 	assert.Equal(t, 0, len(feeds))
 
 	maxTime := time.Now().Add(48 * time.Hour)
-	feeds, err = database.GetFetchFeeds(&maxTime)
+	feeds, err = database.GetFetchFeeds(maxTime)
 	assert.Nil(t, err)
-	assert.Nil(t, feeds)
+	assert.NotNil(t, feeds)
 	assert.Equal(t, 0, len(feeds))
 
 	// create new feed, add to database
@@ -156,7 +156,7 @@ func TestIndexFetch(t *testing.T) {
 	assert.Equal(t, 1, len(feeds))
 
 	maxTime = time.Now().Add(48 * time.Hour)
-	feeds, err = database.GetFetchFeeds(&maxTime)
+	feeds, err = database.GetFetchFeeds(maxTime)
 	assert.Nil(t, err)
 	assert.NotNil(t, feeds)
 	assert.Equal(t, 1, len(feeds))
@@ -177,7 +177,7 @@ func TestIndexFetch(t *testing.T) {
 	assert.Equal(t, 2, len(feeds))
 
 	maxTime = time.Now().Add(48 * time.Hour)
-	feeds, err = database.GetFetchFeeds(&maxTime)
+	feeds, err = database.GetFetchFeeds(maxTime)
 	assert.Nil(t, err)
 	assert.NotNil(t, feeds)
 	assert.Equal(t, 2, len(feeds))

@@ -211,9 +211,11 @@ func rangeBucket(name string, min []byte, max []byte, add func() interface{}, tx
 	} // cursor
 
 	// do last one
-	err := serial.Decode(add(), values)
-	if err != nil {
-		return err
+	if len(values) != 0 {
+		err := serial.Decode(add(), values)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -26,11 +26,10 @@ func (z *Database) GetFeeds() ([]*m.Feed, error) {
 }
 
 // GetFetchFeeds get feeds to be fetched within the given max time parameter.
-func (z *Database) GetFetchFeeds(maxTime *time.Time) ([]*m.Feed, error) {
+func (z *Database) GetFetchFeeds(maxTime time.Time) ([]*m.Feed, error) {
 
-	if maxTime == nil {
-		t := time.Now()
-		maxTime = &t
+	if maxTime.IsZero() {
+		maxTime = time.Now()
 	}
 
 	result := []*m.Feed{}
@@ -99,20 +98,19 @@ func (z *Database) SaveFeed(feed *m.Feed) error {
 
 	if feed == nil {
 		return fmt.Errorf("Nil feed")
-	} else if feed.Attempt == nil {
-		return fmt.Errorf("Nil feed.attempt for feed %s", feed.URL)
 	}
 
 	z.Lock()
 	err := z.db.Update(func(tx *bolt.Tx) error {
 
-		feed.Last = feed.Attempt.ID
-		if feed.Attempt.StatusCode == 200 {
-			feed.Last200 = feed.Attempt.ID
-		}
-
-		if err := Put(feed.Attempt, tx); err != nil {
-			return err
+		if feed.Attempt != nil {
+			feed.Last = feed.Attempt.ID
+			if feed.Attempt.StatusCode == 200 {
+				feed.Last200 = feed.Attempt.ID
+			}
+			if err := Put(feed.Attempt, tx); err != nil {
+				return err
+			}
 		}
 
 		if err := Put(feed, tx); err != nil {
