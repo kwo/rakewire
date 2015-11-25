@@ -11,6 +11,18 @@ type SaveFeedsResponse struct {
 	Count int `json:"count"`
 }
 
+func serializeSaveFeedsResponse(count int) ([]byte, error) {
+	return json.Marshal(SaveFeedsResponse{
+		Count: count,
+	})
+}
+
+func deserializeSaveFeedsResponse(r io.Reader) (*SaveFeedsResponse, error) {
+	var result *SaveFeedsResponse
+	err := json.NewDecoder(r).Decode(result)
+	return result, err
+}
+
 func serializeFeed(feed *m.Feed) ([]byte, error) {
 	return nil, nil
 }
@@ -27,4 +39,8 @@ func deserializeFeeds(r io.Reader) ([]*m.Feed, error) {
 	var feeds []*m.Feed
 	err := json.NewDecoder(r).Decode(&feeds)
 	return feeds, err
+}
+
+func serializeLogs(logs []*m.FeedLog, w io.Writer) error {
+	return json.NewEncoder(w).Encode(&logs)
 }

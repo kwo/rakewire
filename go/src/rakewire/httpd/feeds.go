@@ -1,7 +1,6 @@
 package httpd
 
 import (
-	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
 	m "rakewire/model"
@@ -154,11 +153,7 @@ func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds []*m.Feed) {
 		}
 	}
 
-	jsonRsp := SaveFeedsResponse{
-		Count: len(feeds),
-	}
-
-	data, err := json.Marshal(jsonRsp)
+	data, err := serializeSaveFeedsResponse(len(feeds))
 	if err != nil {
 		logger.Warnf("Error serializing response: %s\n", err.Error())
 		http.Error(w, "Cannot serialize response.", http.StatusInternalServerError)
@@ -186,7 +181,7 @@ func (z *Service) feedsGetFeedLogByID(w http.ResponseWriter, req *http.Request) 
 	}
 
 	w.Header().Set(hContentType, mimeJSON)
-	err = json.NewEncoder(w).Encode(entries)
+	err = serializeLogs(entries, w)
 	if err != nil {
 		logger.Warnf("Error encoding log entries: %s\n", err.Error())
 		http.Error(w, "Cannot serialize feed logs from database.", http.StatusInternalServerError)

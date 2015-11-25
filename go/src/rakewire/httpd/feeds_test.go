@@ -2,7 +2,6 @@ package httpd
 
 import (
 	"bytes"
-	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
@@ -34,10 +33,9 @@ func TestFeedsPut(t *testing.T) {
 	assert.NotNil(t, rsp)
 	assertJSONAPI(t, rsp, err)
 
-	jsonRsp := SaveFeedsResponse{}
-	err = json.NewDecoder(rsp.Body).Decode(&jsonRsp)
-	assert.Nil(t, err)
-	assert.NotNil(t, jsonRsp)
+	jsonRsp, err := deserializeSaveFeedsResponse(rsp.Body)
+	require.Nil(t, err)
+	require.NotNil(t, jsonRsp)
 	assert.Equal(t, 1, jsonRsp.Count)
 
 }
@@ -161,7 +159,8 @@ func TestFeedGetByURL(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
 	feed, err := deserializeFeed(buf.Bytes())
-	assert.Nil(t, err)
+	require.Nil(t, err)
+	require.NotNil(t, feed)
 	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
 
 }
@@ -204,7 +203,8 @@ func TestFeedGetByID(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
 	feed, err := deserializeFeed(buf.Bytes())
-	assert.Nil(t, err)
+	require.Nil(t, err)
+	require.NotNil(t, feed)
 	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
 
 }
