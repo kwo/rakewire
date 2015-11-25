@@ -66,7 +66,7 @@ func NewFeed(url string) *Feed {
 	return &Feed{
 		ID:        uuid.NewUUID().String(),
 		URL:       url,
-		NextFetch: time.Now().UTC().Truncate(time.Second),
+		NextFetch: time.Now(),
 	}
 }
 
@@ -77,7 +77,7 @@ func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 		z.LastUpdated = lastUpdated
 	}
 
-	now := time.Now().UTC().Truncate(time.Second)
+	now := time.Now()
 	if z.LastUpdated.IsZero() {
 		z.LastUpdated = now
 	}
@@ -97,7 +97,7 @@ func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
 // AdjustFetchTime sets the FetchTime to interval units in the future.
 func (z *Feed) AdjustFetchTime(interval time.Duration) {
-	now := time.Now().UTC().Truncate(time.Second)
+	now := time.Now()
 	nextFetch := now.Add(interval)
 	z.NextFetch = nextFetch
 }
