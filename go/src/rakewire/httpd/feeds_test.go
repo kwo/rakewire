@@ -26,11 +26,12 @@ func TestFeedsPut(t *testing.T) {
 	feeds = append(feeds, feed)
 	err := serializeFeeds(feeds, &buf)
 	require.Nil(t, err)
+	assert.Equal(t, 1, len(feeds))
 	req.Body = ioutil.NopCloser(&buf)
 
 	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
+	require.Nil(t, err)
+	require.NotNil(t, rsp)
 	assertJSONAPI(t, rsp, err)
 
 	count, err := deserializeSaveFeedsResponse(rsp.Body)
@@ -48,8 +49,8 @@ func TestFeedsPutNoContent(t *testing.T) {
 	req := newRequest(mPut, "/api/feeds")
 	req.Header.Add(hContentType, mimeJSON)
 	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
+	require.Nil(t, err)
+	require.NotNil(t, rsp)
 	assert.Equal(t, http.StatusNoContent, rsp.StatusCode)
 	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
@@ -57,7 +58,7 @@ func TestFeedsPutNoContent(t *testing.T) {
 	// expectedText := "204 No Content\n"
 	// assert.Equal(t, len(expectedText), int(rsp.ContentLength))
 	// bodyText, err := getBodyAsString(rsp.Body)
-	// assert.Nil(t, err)
+	// require.Nil(t, err)
 	// assert.Equal(t, expectedText, bodyText)
 
 }
@@ -70,8 +71,8 @@ func TestFeedsMethodNotAllowed(t *testing.T) {
 
 	req := newRequest(mPost, "/api/feeds")
 	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
+	require.Nil(t, err)
+	require.NotNil(t, rsp)
 	assert.Equal(t, http.StatusMethodNotAllowed, rsp.StatusCode)
 	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
@@ -79,7 +80,7 @@ func TestFeedsMethodNotAllowed(t *testing.T) {
 	expectedText := "Method Not Allowed\n"
 	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
 	bodyText, err := getBodyAsString(rsp.Body)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.Equal(t, expectedText, bodyText)
 
 }
@@ -92,8 +93,8 @@ func TestFeedsGet(t *testing.T) {
 
 	req := newRequest(mGet, "/api/feeds")
 	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
+	require.Nil(t, err)
+	require.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
@@ -101,11 +102,11 @@ func TestFeedsGet(t *testing.T) {
 
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(rsp.Body)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
 	feeds, err := deserializeFeeds(&buf)
-	assert.Nil(t, err)
-	assert.Equal(t, 1, len(feeds))
+	require.Nil(t, err)
+	require.Equal(t, 1, len(feeds))
 	feed := feeds[0]
 	assert.Equal(t, feedURL, feed.URL)
 
@@ -119,8 +120,8 @@ func TestFeedsGetNext(t *testing.T) {
 
 	req := newRequest(mGet, "/api/feeds/next")
 	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
+	require.Nil(t, err)
+	require.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
@@ -128,11 +129,11 @@ func TestFeedsGetNext(t *testing.T) {
 
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(rsp.Body)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
 	feeds, err := deserializeFeeds(&buf)
-	assert.Nil(t, err)
-	assert.Equal(t, 1, len(feeds))
+	require.Nil(t, err)
+	require.Equal(t, 1, len(feeds))
 	feed := feeds[0]
 	assert.Equal(t, feedURL, feed.URL)
 
@@ -146,8 +147,8 @@ func TestFeedGetByURL(t *testing.T) {
 
 	req := newRequest(mGet, "/api/feeds?url=http%3A%2F%2Flocalhost%3A5555%2Ffeed.xml")
 	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
+	require.Nil(t, err)
+	require.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
@@ -155,7 +156,7 @@ func TestFeedGetByURL(t *testing.T) {
 
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(rsp.Body)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
 	feed, err := deserializeFeed(buf.Bytes())
 	require.Nil(t, err)
@@ -177,7 +178,7 @@ func TestFeedGetByURL404(t *testing.T) {
 	expectedText := "Not Found\n"
 	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
 	bodyText, err := getBodyAsString(rsp.Body)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.Equal(t, expectedText, bodyText)
 
 }
@@ -190,8 +191,8 @@ func TestFeedGetByID(t *testing.T) {
 
 	req := newRequest(mGet, "/api/feeds/"+feedID)
 	rsp, err := c.Do(req)
-	assert.Nil(t, err)
-	assert.NotNil(t, rsp)
+	require.Nil(t, err)
+	require.NotNil(t, rsp)
 	assert.Equal(t, http.StatusOK, rsp.StatusCode)
 	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
 	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
@@ -199,7 +200,7 @@ func TestFeedGetByID(t *testing.T) {
 
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(rsp.Body)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
 	feed, err := deserializeFeed(buf.Bytes())
 	require.Nil(t, err)

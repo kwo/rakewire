@@ -35,10 +35,10 @@ func TestReaper(t *testing.T) {
 
 	// close database
 	err = database.Close()
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	// remove file
 	err = os.Remove(databaseFile)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 }

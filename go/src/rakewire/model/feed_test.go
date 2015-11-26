@@ -14,8 +14,8 @@ func TestNewFeed(t *testing.T) {
 	f := NewFeed("http://localhost/")
 	require.NotNil(t, f)
 	assert.Equal(t, "http://localhost/", f.URL)
-	assert.NotNil(t, f.NextFetch)
-	assert.NotNil(t, f.ID)
+	require.NotNil(t, f.NextFetch)
+	require.NotNil(t, f.ID)
 	assert.Equal(t, 0, len(f.Log))
 	assert.Equal(t, 36, len(f.ID))
 
@@ -58,7 +58,7 @@ func TestFeedFunctions(t *testing.T) {
 
 	f := NewFeed("http://localhost")
 
-	assert.Nil(t, f.GetLast())
+	require.Nil(t, f.GetLast())
 
 	f.AddLog(NewFeedLog(f.ID))
 	f.AddLog(NewFeedLog(f.ID))

@@ -32,11 +32,11 @@ func TestFeedLog(t *testing.T) {
 		}
 		return nil
 	})
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	entries, err := database.GetFeedLog(feedID, 10*time.Hour)
-	assert.Nil(t, err)
-	assert.NotNil(t, entries)
+	require.Nil(t, err)
+	require.NotNil(t, entries)
 	assert.Equal(t, 10, len(entries))
 
 	// test reverse chronological order

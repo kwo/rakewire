@@ -37,15 +37,15 @@ func deserializeFeed(data []byte) (*m.Feed, error) {
 }
 
 func serializeFeeds(feeds []*m.Feed, w io.Writer) error {
-	return json.NewEncoder(w).Encode(&feeds)
+	return json.NewEncoder(w).Encode(feeds)
 }
 
 func deserializeFeeds(r io.Reader) ([]*m.Feed, error) {
 	var feeds []*m.Feed
-	err := json.NewDecoder(r).Decode(&feeds)
+	err := json.NewDecoder(r).Decode(feeds)
 	return feeds, err
 }
 
 func serializeLogs(logs []*m.FeedLog, w io.Writer) error {
-	return json.NewEncoder(w).Encode(&logs)
+	return json.NewEncoder(w).Encode(logs)
 }

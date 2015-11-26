@@ -26,12 +26,12 @@ func TestFeeds(t *testing.T) {
 
 	for _, feed := range feeds {
 		err = database.SaveFeed(feed)
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	}
 
 	feeds2, err := database.GetFeeds()
-	assert.Nil(t, err)
-	assert.NotNil(t, feeds2)
+	require.Nil(t, err)
+	require.NotNil(t, feeds2)
 
 	assert.Equal(t, len(feeds), len(feeds2))
 	// for n, feed := range feeds2 {
@@ -70,7 +70,7 @@ func TestURLIndex(t *testing.T) {
 	require.NotNil(t, feeds2)
 	require.Equal(t, 1, len(feeds2))
 	feed2 = feeds2[0]
-	assert.NotNil(t, feed2)
+	require.NotNil(t, feed2)
 	assert.Equal(t, feed.ID, feed2.ID)
 	assert.Equal(t, URL1, feed2.URL)
 
@@ -93,7 +93,7 @@ func TestURLIndex(t *testing.T) {
 	require.NotNil(t, feeds2)
 	assert.Equal(t, 1, len(feeds2))
 	feed2 = feeds2[0]
-	assert.NotNil(t, feed2)
+	require.NotNil(t, feed2)
 	assert.Equal(t, feed.ID, feed2.ID)
 	assert.Equal(t, URL2, feed2.URL)
 
@@ -121,31 +121,31 @@ func TestIndexFetch(t *testing.T) {
 
 	// test feeds
 	feeds, err := database.GetFeeds()
-	assert.Nil(t, err)
-	assert.NotNil(t, feeds)
+	require.Nil(t, err)
+	require.NotNil(t, feeds)
 	assert.Equal(t, 0, len(feeds))
 
 	maxTime := time.Now().Add(48 * time.Hour)
 	feeds, err = database.GetFetchFeeds(maxTime)
-	assert.Nil(t, err)
-	assert.NotNil(t, feeds)
+	require.Nil(t, err)
+	require.NotNil(t, feeds)
 	assert.Equal(t, 0, len(feeds))
 
 	// create new feed, add to database
 	feed := m.NewFeed("http://localhost/")
 	err = database.SaveFeed(feed)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	// retest
 	feeds, err = database.GetFeeds()
-	assert.Nil(t, err)
-	assert.NotNil(t, feeds)
+	require.Nil(t, err)
+	require.NotNil(t, feeds)
 	assert.Equal(t, 1, len(feeds))
 
 	maxTime = time.Now().Add(48 * time.Hour)
 	feeds, err = database.GetFetchFeeds(maxTime)
-	assert.Nil(t, err)
-	assert.NotNil(t, feeds)
+	require.Nil(t, err)
+	require.NotNil(t, feeds)
 	assert.Equal(t, 1, len(feeds))
 
 	// modify feed, resave to database
@@ -155,18 +155,18 @@ func TestIndexFetch(t *testing.T) {
 	err = database.SaveFeed(feed2)
 	f3 := m.NewFeed("http://kangaroo.com/")
 	err = database.SaveFeed(f3)
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	// retest
 	feeds, err = database.GetFeeds()
-	assert.Nil(t, err)
-	assert.NotNil(t, feeds)
+	require.Nil(t, err)
+	require.NotNil(t, feeds)
 	assert.Equal(t, 2, len(feeds))
 
 	maxTime = time.Now().Add(48 * time.Hour)
 	feeds, err = database.GetFetchFeeds(maxTime)
-	assert.Nil(t, err)
-	assert.NotNil(t, feeds)
+	require.Nil(t, err)
+	require.NotNil(t, feeds)
 	assert.Equal(t, 2, len(feeds))
 
 }

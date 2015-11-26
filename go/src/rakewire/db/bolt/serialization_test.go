@@ -30,7 +30,7 @@ func TestSerialization(t *testing.T) {
 		return Put(fl, tx)
 	})
 	database.Unlock()
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	// // view out of curiosity
 	// err = database.db.View(func(tx *bolt.Tx) error {
@@ -41,7 +41,7 @@ func TestSerialization(t *testing.T) {
 	// 	} // for
 	// 	return nil
 	// })
-	// assert.Nil(t, err)
+	// require.Nil(t, err)
 
 	// unmarshal
 	fl2 := &m.FeedLog{
@@ -50,7 +50,7 @@ func TestSerialization(t *testing.T) {
 	err = database.db.View(func(tx *bolt.Tx) error {
 		return Get(fl2, tx)
 	})
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	// compare
 	assert.Equal(t, fl.ID, fl2.ID)
@@ -74,16 +74,16 @@ func TestSerialization(t *testing.T) {
 		return Put(fl2, tx)
 	})
 	database.Unlock()
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 	// assert key is not present
 	err = database.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog)) // works
 		value := b.Get([]byte(fmt.Sprintf("%s%s%s", fl2.ID, chSep, "IsUpdated")))
-		assert.Nil(t, value)
+		require.Nil(t, value)
 		return nil
 	})
-	assert.Nil(t, err)
+	require.Nil(t, err)
 
 }
 

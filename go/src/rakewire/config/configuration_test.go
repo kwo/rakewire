@@ -17,7 +17,7 @@ func TestConfiguration(t *testing.T) {
 	err := c.LoadFromFile(testConfigFile)
 	require.Nil(t, err)
 
-	assert.NotNil(t, c.Httpd)
+	require.NotNil(t, c.Httpd)
 
 	assert.Equal(t, "", c.Httpd.Address)
 	assert.Equal(t, 4444, c.Httpd.Port)
@@ -25,7 +25,7 @@ func TestConfiguration(t *testing.T) {
 
 	assert.Equal(t, "/Users/karl/.rakewire/data.db", c.Database.Location)
 
-	assert.NotNil(t, c.Fetcher)
+	require.NotNil(t, c.Fetcher)
 	assert.Equal(t, 10, c.Fetcher.Workers)
 
 }
