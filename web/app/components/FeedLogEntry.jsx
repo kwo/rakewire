@@ -115,17 +115,17 @@ class FeedLogEntry extends React.Component {
 					<td>{formatBool(logEntry.updated, 'updated')}</td>
 					<td>{logEntry.updateCheck}</td>
 
-					<td style={style.num}>{logEntry.http.statusCode}</td>
-					<td style={style.num}>{getReadableFileSizeString(logEntry.http.contentLength)}</td>
-					<td>{formatBool(logEntry.http.gzip, 'gzip')}</td>
-					<td>{logEntry.http.contentType}</td>
-					<td>{formatBool(logEntry.http.etag, 'etag')}</td>
-					<td>{formatBool(logEntry.http.lastModified, 'lastModified')}</td>
+					<td style={style.num}>{logEntry.statusCode}</td>
+					<td style={style.num}>{getReadableFileSizeString(logEntry.contentLength)}</td>
+					<td>{formatBool(logEntry.gzip, 'gzip')}</td>
+					<td>{logEntry.contentType}</td>
+					<td>{formatBool(logEntry.etag, 'etag')}</td>
+					<td>{formatBool(logEntry.lastModified, 'lastModified')}</td>
 
-					<td>{logEntry.feed.flavor}</td>
-					<td>{logEntry.feed.generator}</td>
-					<td>{logEntry.feed.title}</td>
-					<td>{formatDateTime(logEntry.feed.updated)}</td>
+					<td>{logEntry.flavor}</td>
+					<td>{logEntry.generator}</td>
+					<td>{logEntry.title}</td>
+					<td>{formatDateTime(logEntry.lastUpdated)}</td>
 
 				</tr>
 		);

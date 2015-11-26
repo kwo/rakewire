@@ -32,7 +32,7 @@ class FeedInfo extends React.Component {
 			return moment(dt).format('YYYY-MM-DD HH:mm');
 		};
 
-		const title = feed.title || feed.last200.feed.title || feed.url;
+		const title = feed.title || feed.url;
 
 		return (
 			<thead>

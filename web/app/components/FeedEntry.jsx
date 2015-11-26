@@ -66,7 +66,7 @@ class FeedEntry extends React.Component {
 		const status = feed.last.result;
 		const isUpdated = feed.last.updated ? 'Yes' : '';
 		const updateCheck = feed.last.updateCheck;
-		const title = feed.title || feed.last200.feed.title || feed.url;
+		const title = feed.title || feed.url;
 		const feedLinkURL = `/feeds/${feed.id}`;
 
 		return (
@@ -74,7 +74,7 @@ class FeedEntry extends React.Component {
 				<td>{formatTime(feed.nextFetch)}</td>
 				<td>{formatTime(feed.last.startTime)}</td>
 				<td>{status}</td>
-				<td>{feed.last.http.statusCode}</td>
+				<td>{feed.last.statusCode}</td>
 				<td>{isUpdated}</td>
 				<td>{updateCheck}</td>
 				<td>{formatDate(feed.lastUpdated)}</td>

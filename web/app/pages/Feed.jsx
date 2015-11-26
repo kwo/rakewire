@@ -55,7 +55,7 @@ class Feed extends React.Component {
 				feed.log = results[1];
 				feed.log.forEach(log => {
 					log.startTime = moment(log.startTime);
-					log.feed.updated = moment(log.feed.updated);
+					log.lastUpdated = moment(log.lastUpdated);
 				});
 				return feed;
 			})
