@@ -291,77 +291,77 @@ func setValue(field reflect.Value, fieldName string, val string) error {
 		field.SetString(val)
 
 	case reflect.Bool:
-		value, err := strconv.ParseBool(val)
+		value, err := strconv.ParseBool(defaultIfEmpty(val, "false"))
 		if err != nil {
 			return err
 		}
 		field.SetBool(value)
 
 	case reflect.Int8:
-		value, err := strconv.ParseInt(val, 10, 8)
+		value, err := strconv.ParseInt(defaultIfEmpty(val, "0"), 10, 8)
 		if err != nil {
 			return err
 		}
 		field.SetInt(value)
 
 	case reflect.Int16:
-		value, err := strconv.ParseInt(val, 10, 16)
+		value, err := strconv.ParseInt(defaultIfEmpty(val, "0"), 10, 16)
 		if err != nil {
 			return err
 		}
 		field.SetInt(value)
 
 	case reflect.Int32:
-		value, err := strconv.ParseInt(val, 10, 32)
+		value, err := strconv.ParseInt(defaultIfEmpty(val, "0"), 10, 32)
 		if err != nil {
 			return err
 		}
 		field.SetInt(value)
 
 	case reflect.Int, reflect.Int64:
-		value, err := strconv.ParseInt(val, 10, 64)
+		value, err := strconv.ParseInt(defaultIfEmpty(val, "0"), 10, 64)
 		if err != nil {
 			return err
 		}
 		field.SetInt(value)
 
 	case reflect.Uint8:
-		value, err := strconv.ParseUint(val, 10, 8)
+		value, err := strconv.ParseUint(defaultIfEmpty(val, "0"), 10, 8)
 		if err != nil {
 			return err
 		}
 		field.SetUint(value)
 
 	case reflect.Uint16:
-		value, err := strconv.ParseUint(val, 10, 16)
+		value, err := strconv.ParseUint(defaultIfEmpty(val, "0"), 10, 16)
 		if err != nil {
 			return err
 		}
 		field.SetUint(value)
 
 	case reflect.Uint32:
-		value, err := strconv.ParseUint(val, 10, 32)
+		value, err := strconv.ParseUint(defaultIfEmpty(val, "0"), 10, 32)
 		if err != nil {
 			return err
 		}
 		field.SetUint(value)
 
 	case reflect.Uint, reflect.Uint64:
-		value, err := strconv.ParseUint(val, 10, 64)
+		value, err := strconv.ParseUint(defaultIfEmpty(val, "0"), 10, 64)
 		if err != nil {
 			return err
 		}
 		field.SetUint(value)
 
 	case reflect.Float32:
-		value, err := strconv.ParseFloat(val, 32)
+		value, err := strconv.ParseFloat(defaultIfEmpty(val, "0"), 32)
 		if err != nil {
 			return err
 		}
 		field.SetFloat(value)
 
 	case reflect.Float64:
-		value, err := strconv.ParseFloat(val, 64)
+		value, err := strconv.ParseFloat(defaultIfEmpty(val, "0"), 64)
 		if err != nil {
 			return err
 		}
@@ -369,11 +369,15 @@ func setValue(field reflect.Value, fieldName string, val string) error {
 
 	case reflect.Ptr, reflect.Struct:
 		if field.Type() == reflect.TypeOf(time.Time{}) {
-			value, err := time.Parse(TimeFormat, val)
-			if err != nil {
-				return err
+			if val != empty {
+				value, err := time.Parse(TimeFormat, val)
+				if err != nil {
+					return err
+				}
+				field.Set(reflect.ValueOf(value))
+			} else {
+				field.Set(reflect.ValueOf(time.Time{}))
 			}
-			field.Set(reflect.ValueOf(value))
 		} else {
 			return fmt.Errorf("Will not set value for struct: %s.", fieldName)
 		}
@@ -385,4 +389,11 @@ func setValue(field reflect.Value, fieldName string, val string) error {
 
 	return nil
 
+}
+
+func defaultIfEmpty(value string, defaultValue string) string {
+	if value == empty {
+		return defaultValue
+	}
+	return value
 }
