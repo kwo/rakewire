@@ -54,6 +54,26 @@ func TestFeedJSON(t *testing.T) {
 
 }
 
+func TestFeedsJSON(t *testing.T) {
+
+	f := getNewFeed()
+	validateFeed(t, f)
+
+	var feeds []*Feed
+	feeds = append(feeds, f)
+
+	data, err := json.Marshal(&feeds)
+	require.Nil(t, err)
+	require.NotNil(t, data)
+
+	var feeds2 []*Feed
+	err = json.Unmarshal(data, &feeds2)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(feeds2))
+	validateFeed(t, feeds2[0])
+
+}
+
 func TestFeedFunctions(t *testing.T) {
 
 	f := NewFeed("http://localhost")

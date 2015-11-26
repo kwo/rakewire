@@ -26,7 +26,7 @@ func TestFeedsPut(t *testing.T) {
 	feeds = append(feeds, feed)
 	err := serializeFeeds(feeds, &buf)
 	require.Nil(t, err)
-	assert.Equal(t, 1, len(feeds))
+	require.Equal(t, 1, len(feeds))
 	req.Body = ioutil.NopCloser(&buf)
 
 	rsp, err := c.Do(req)
@@ -156,6 +156,7 @@ func TestFeedGetByURL(t *testing.T) {
 
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(rsp.Body)
+	logger.Debugf("feedByURL: %s\n", string(buf.Bytes()))
 	require.Nil(t, err)
 	assert.Equal(t, rsp.ContentLength, n)
 	feed, err := deserializeFeed(buf.Bytes())
