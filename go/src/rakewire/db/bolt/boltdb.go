@@ -33,7 +33,7 @@ func (z *Database) Open(cfg *db.Configuration) error {
 
 	db, err := bolt.Open(cfg.Location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
-		logger.Errorf("Cannot open database: %s", err.Error())
+		logger.Errorf("Cannot open database at %s. %s", cfg.Location, err.Error())
 		return err
 	}
 	z.db = db
