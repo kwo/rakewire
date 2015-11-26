@@ -60,12 +60,12 @@ func TestSerialization(t *testing.T) {
 	assert.Equal(t, fl.IsUpdated, fl2.IsUpdated)
 	assert.Equal(t, fl.Result, fl2.Result)
 	assert.Equal(t, fl.StartTime.UTC(), fl2.StartTime)
-	assert.Equal(t, fl.Updated, fl2.Updated)
+	assert.Equal(t, fl.LastUpdated, fl2.LastUpdated)
 	// zero values are not saved
 	assert.Equal(t, 0, fl2.StatusCode)
 	assert.Equal(t, false, fl2.UsesGzip)
 	assert.Equal(t, "", fl2.ETag)
-	assert.Equal(t, time.Time{}, fl2.Updated)
+	assert.Equal(t, time.Time{}, fl2.LastUpdated)
 
 	// modify and resave
 	fl2.IsUpdated = false

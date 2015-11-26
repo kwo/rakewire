@@ -9,27 +9,27 @@ import (
 // Feed feed descriptor
 type Feed struct {
 	// Current fetch attempt for feed
-	Attempt *FeedLog `serial:"-"`
+	Attempt *FeedLog `serial:"-" json:"-"`
 	// Feed object parsed from Body
-	Feed *feedparser.Feed `serial:"-"`
+	Feed *feedparser.Feed `serial:"-" json:"-"`
 	// UUID
-	ID string `serial:"primary-key"`
+	ID string `serial:"primary-key" json:"id"`
 	// Time the feed was last updated
-	LastUpdated time.Time
+	LastUpdated time.Time `json:"lastUpdated"`
 	// Last fetch
-	Last string
+	Last string `json:"last,omitempty"`
 	// Last successful fetch with status code 200
-	Last200 string
+	Last200 string `json:"last200,omitempty"`
 	// Past fetch attempts for feed
-	Log []*FeedLog `serial:"-"`
+	Log []*FeedLog `serial:"-" json:"-"`
 	// Time of next scheduled fetch
-	NextFetch time.Time `serial:"NextFetch:1"`
+	NextFetch time.Time `serial:"NextFetch:1" json:"nextFetch"`
 	// User notes of the feed
-	Notes string
+	Notes string `json:"notes,omitempty"`
 	// User defined title of the feed
-	Title string
+	Title string `json:"title"`
 	// URL updated if feed is permenently redirected
-	URL string `serial:"URL:1"`
+	URL string `serial:"URL:1" json:"url"`
 }
 
 // AddLog adds a feedlog to the Feed returning its ID

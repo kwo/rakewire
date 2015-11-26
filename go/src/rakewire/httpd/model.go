@@ -27,11 +27,13 @@ func deserializeSaveFeedsResponse(r io.Reader) (int, error) {
 }
 
 func serializeFeed(feed *m.Feed) ([]byte, error) {
-	return nil, nil
+	return json.Marshal(feed)
 }
 
 func deserializeFeed(data []byte) (*m.Feed, error) {
-	return nil, nil
+	var result *m.Feed
+	err := json.Unmarshal(data, result)
+	return result, err
 }
 
 func serializeFeeds(feeds []*m.Feed, w io.Writer) error {
