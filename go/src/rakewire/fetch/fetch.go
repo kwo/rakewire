@@ -158,6 +158,9 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 				feed.Attempt.Generator = xmlFeed.Generator
 				feed.Attempt.Title = xmlFeed.Title
 				feed.Attempt.LastUpdated = xmlFeed.Updated
+				if feed.Title == "" {
+					feed.Title = xmlFeed.Title
+				}
 				if xmlFeed.Updated.IsZero() {
 					feed.Attempt.Result = m.FetchResultFeedTimeError
 					feed.Attempt.IsUpdated = false
