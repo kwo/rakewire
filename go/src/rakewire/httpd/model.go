@@ -17,10 +17,13 @@ func serializeSaveFeedsResponse(count int) ([]byte, error) {
 	})
 }
 
-func deserializeSaveFeedsResponse(r io.Reader) (*SaveFeedsResponse, error) {
+func deserializeSaveFeedsResponse(r io.Reader) (int, error) {
 	var result *SaveFeedsResponse
 	err := json.NewDecoder(r).Decode(result)
-	return result, err
+	if result == nil {
+		return 0, nil
+	}
+	return result.Count, err
 }
 
 func serializeFeed(feed *m.Feed) ([]byte, error) {

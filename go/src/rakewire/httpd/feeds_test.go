@@ -33,10 +33,9 @@ func TestFeedsPut(t *testing.T) {
 	assert.NotNil(t, rsp)
 	assertJSONAPI(t, rsp, err)
 
-	jsonRsp, err := deserializeSaveFeedsResponse(rsp.Body)
+	count, err := deserializeSaveFeedsResponse(rsp.Body)
 	require.Nil(t, err)
-	require.NotNil(t, jsonRsp)
-	assert.Equal(t, 1, jsonRsp.Count)
+	assert.Equal(t, 1, count)
 
 }
 
