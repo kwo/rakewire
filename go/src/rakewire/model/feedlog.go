@@ -31,15 +31,15 @@ func NewFeedLog(feedID string) *FeedLog {
 
 // FeedLog represents an attempted HTTP request to a feed
 type FeedLog struct {
-	ID     string `db:"primary-key"`
-	FeedID string `db:"FeedTime:1"`
+	ID     string `serial:"primary-key"`
+	FeedID string `serial:"FeedTime:1"`
 
 	Duration      time.Duration // duration of http request plus feed processing
 	IsUpdated     bool          // flag indicating updated content, see UpdateCheck
 	Result        string        // result code of fetch attempt, see FetchResults
 	ResultMessage string        // optional error message for result
 	UpdateCheck   string        // 304, Checksum or Feed inspection
-	StartTime     time.Time     `db:"FeedTime:2"` // The time the fetch process started
+	StartTime     time.Time     `serial:"FeedTime:2"` // The time the fetch process started
 	URL           string        // URL of the feed
 
 	ContentLength int       // Length of the HTTP Response

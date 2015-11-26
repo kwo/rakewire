@@ -11,7 +11,7 @@ import (
 
 const (
 	// TagName ist the name of the struct tag used by this package
-	TagName = "db"
+	TagName = "serial"
 	// TimeFormat used to convert dates to strings
 	TimeFormat = time.RFC3339Nano
 	empty      = ""
