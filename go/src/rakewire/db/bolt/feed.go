@@ -57,6 +57,10 @@ func (z *Database) GetFeedByID(id string) (*m.Feed, error) {
 		return Get(result, tx)
 	})
 
+	if result.ID != id {
+		return nil, nil
+	}
+
 	return result, err
 
 }

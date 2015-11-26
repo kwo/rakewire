@@ -26,12 +26,16 @@ const (
 // Get retrieves the object with the given ID from the specified bucket.
 func Get(object interface{}, tx *bolt.Tx) error {
 
-	_, data, err := serial.Encode(object)
+	meta, data, err := serial.Encode(object)
 	if err != nil {
 		return err
 	}
 
 	values := load(data.Name, data.Key, tx)
+	if len(values) == 0 {
+		// if the record is not found, unset the id on the object
+		values[meta.Key] = empty
+	}
 	if err := serial.Decode(object, values); err != nil {
 		return err
 	}
