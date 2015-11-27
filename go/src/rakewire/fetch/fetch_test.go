@@ -1,7 +1,6 @@
 package fetch
 
 import (
-	"github.com/stretchr/testify/require"
 	m "rakewire/model"
 	"testing"
 )
@@ -11,8 +10,8 @@ func TestFetch(t *testing.T) {
 	t.SkipNow()
 
 	feeds, err := m.ParseFeedsFromFile("../test/feedlist.txt")
-	require.Nil(t, err)
-	require.NotNil(t, feeds)
+	assertNoError(t, err)
+	assertNotNil(t, feeds)
 
 	logger.Debugf("feeds: %d\n", len(feeds))
 
@@ -47,4 +46,16 @@ func TestFetch(t *testing.T) {
 
 	ff.Stop()
 
+}
+
+func assertNoError(t *testing.T, e error) {
+	if e != nil {
+		t.Fatalf("Error: %s", e.Error())
+	}
+}
+
+func assertNotNil(t *testing.T, v interface{}) {
+	if v == nil {
+		t.Fatal("Expected not nil value")
+	}
 }

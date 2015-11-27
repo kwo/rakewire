@@ -1,13 +1,10 @@
 package pollfeed
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"os"
 	"rakewire/db"
 	"rakewire/db/bolt"
 	"rakewire/logging"
-
 	"testing"
 	"time"
 )
@@ -39,7 +36,7 @@ func TestTickerKillSignal(t *testing.T) {
 		for {
 			select {
 			case <-ticker.C:
-				assert.Fail(t, "ticker should never fire")
+				t.Fatal(t, "ticker should never fire")
 			case <-killsignal:
 				ticker.Stop()
 				break run
@@ -48,7 +45,7 @@ func TestTickerKillSignal(t *testing.T) {
 		beenThere = true
 	}()
 	killsignal <- true
-	assert.True(t, beenThere)
+	assertEqual(t, true, beenThere)
 
 }
 
@@ -67,7 +64,7 @@ func TestTickerPositive(t *testing.T) {
 		}
 	}()
 	time.Sleep(2 * time.Millisecond)
-	assert.True(t, beenThere)
+	assertEqual(t, true, beenThere)
 
 }
 
@@ -80,7 +77,7 @@ func TestPoll(t *testing.T) {
 	err := database.Open(&db.Configuration{
 		Location: databaseFile,
 	})
-	require.Nil(t, err)
+	assertNoError(t, err)
 
 	// create service
 	cfg := &Configuration{
@@ -90,17 +87,29 @@ func TestPoll(t *testing.T) {
 	pf.pollInterval = 50 * time.Millisecond
 
 	pf.Start()
-	require.Equal(t, true, pf.IsRunning())
+	assertEqual(t, true, pf.IsRunning())
 	time.Sleep(100 * time.Millisecond)
 	pf.Stop()
-	assert.Equal(t, false, pf.IsRunning())
+	assertEqual(t, false, pf.IsRunning())
 
 	// close database
 	err = database.Close()
-	require.Nil(t, err)
+	assertNoError(t, err)
 
 	// remove file
 	err = os.Remove(databaseFile)
-	require.Nil(t, err)
+	assertNoError(t, err)
 
+}
+
+func assertNoError(t *testing.T, e error) {
+	if e != nil {
+		t.Fatalf("Error: %s", e.Error())
+	}
+}
+
+func assertEqual(t *testing.T, a interface{}, b interface{}) {
+	if a != b {
+		t.Errorf("Not equal: expected %v, actual %v", a, b)
+	}
 }

@@ -1,8 +1,6 @@
 package reaper
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"os"
 	"rakewire/db"
 	"rakewire/db/bolt"
@@ -22,23 +20,35 @@ func TestReaper(t *testing.T) {
 	err := database.Open(&db.Configuration{
 		Location: databaseFile,
 	})
-	require.Nil(t, err)
+	assertNoError(t, err)
 
 	// create service
 	cfg := &Configuration{}
 	pf := NewService(cfg, database)
 
 	pf.Start()
-	require.Equal(t, true, pf.IsRunning())
+	assertEqual(t, true, pf.IsRunning())
 	pf.Stop()
-	assert.Equal(t, false, pf.IsRunning())
+	assertEqual(t, false, pf.IsRunning())
 
 	// close database
 	err = database.Close()
-	require.Nil(t, err)
+	assertNoError(t, err)
 
 	// remove file
 	err = os.Remove(databaseFile)
-	require.Nil(t, err)
+	assertNoError(t, err)
 
+}
+
+func assertNoError(t *testing.T, e error) {
+	if e != nil {
+		t.Fatalf("Error: %s", e.Error())
+	}
+}
+
+func assertEqual(t *testing.T, a interface{}, b interface{}) {
+	if a != b {
+		t.Errorf("Not equal: expected %v, actual %v", a, b)
+	}
 }

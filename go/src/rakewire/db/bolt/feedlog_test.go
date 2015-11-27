@@ -2,8 +2,6 @@ package bolt
 
 import (
 	"github.com/boltdb/bolt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	m "rakewire/model"
 	"testing"
 	"time"
@@ -15,7 +13,7 @@ func TestFeedLog(t *testing.T) {
 
 	database := openDatabase(t)
 	defer closeDatabase(t, database)
-	require.NotNil(t, database)
+	assertNotNil(t, database)
 
 	now := time.Now().Truncate(time.Second)
 	feedID := "12345"
@@ -32,15 +30,15 @@ func TestFeedLog(t *testing.T) {
 		}
 		return nil
 	})
-	require.Nil(t, err)
+	assertNoError(t, err)
 
 	entries, err := database.GetFeedLog(feedID, 10*time.Hour)
-	require.Nil(t, err)
-	require.NotNil(t, entries)
-	assert.Equal(t, 10, len(entries))
+	assertNoError(t, err)
+	assertNotNil(t, entries)
+	assertEqual(t, 10, len(entries))
 
 	// test reverse chronological order
-	assert.Equal(t, time.Duration(1), entries[0].Duration)
-	assert.Equal(t, time.Duration(10), entries[9].Duration)
+	assertEqual(t, time.Duration(1), entries[0].Duration)
+	assertEqual(t, time.Duration(10), entries[9].Duration)
 
 }

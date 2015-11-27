@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -76,7 +74,7 @@ func TestMain(m *testing.M) {
 
 func TestStaticPaths(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
@@ -96,7 +94,7 @@ func TestStaticPaths(t *testing.T) {
 
 func TestHTML5Paths(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
@@ -104,47 +102,55 @@ func TestHTML5Paths(t *testing.T) {
 	rsp, err := c.Do(req)
 	assertHTML(t, rsp, err)
 	abody, err := ioutil.ReadAll(rsp.Body)
-	require.Nil(t, err)
-	require.NotNil(t, abody)
-	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
+	assertNoError(t, err)
+	assertNotNil(t, abody)
+	assertEqual(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
 
 	req = newRequest(mGet, "/route")
 	rsp, err = c.Do(req)
 	assertHTML(t, rsp, err)
 	body, err := ioutil.ReadAll(rsp.Body)
-	require.Nil(t, err)
-	require.NotNil(t, body)
-	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
-	assert.Equal(t, abody, body)
+	assertNoError(t, err)
+	assertNotNil(t, body)
+	assertEqual(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
+	if !bytes.Equal(abody, body) {
+		t.Error("Two responses not equal.")
+	}
 
 	// also multi-level paths
 	req = newRequest(mGet, "/route/route")
 	rsp, err = c.Do(req)
 	assertHTML(t, rsp, err)
 	body, err = ioutil.ReadAll(rsp.Body)
-	require.Nil(t, err)
-	require.NotNil(t, body)
-	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
-	assert.Equal(t, abody, body)
+	assertNoError(t, err)
+	assertNotNil(t, body)
+	assertEqual(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
+	if !bytes.Equal(abody, body) {
+		t.Error("Two responses not equal.")
+	}
 
 	// include paths with uuids
 	req = newRequest(mGet, "/feed/bf24f476-5899-11e5-af27-5cf938992b62/log")
 	rsp, err = c.Do(req)
 	assertHTML(t, rsp, err)
 	body, err = ioutil.ReadAll(rsp.Body)
-	require.Nil(t, err)
-	require.NotNil(t, body)
-	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
-	assert.Equal(t, abody, body)
+	assertNoError(t, err)
+	assertNotNil(t, body)
+	assertEqual(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
+	if !bytes.Equal(abody, body) {
+		t.Error("Two responses not equal.")
+	}
 
 	req = newRequest(mGet, "/home")
 	rsp, err = c.Do(req)
 	assertHTML(t, rsp, err)
 	body, err = ioutil.ReadAll(rsp.Body)
-	require.Nil(t, err)
-	require.NotNil(t, body)
-	assert.Equal(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
-	assert.Equal(t, abody, body)
+	assertNoError(t, err)
+	assertNotNil(t, body)
+	assertEqual(t, strconv.Itoa(len(abody)), rsp.Header.Get(hContentLength))
+	if !bytes.Equal(abody, body) {
+		t.Error("Two responses not equal.")
+	}
 
 	// only all lowercase
 	req = newRequest(mGet, "/Route")
@@ -165,7 +171,7 @@ func TestHTML5Paths(t *testing.T) {
 
 func TestStatic404(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
@@ -174,40 +180,40 @@ func TestStatic404(t *testing.T) {
 	assert404NotFound(t, rsp, err)
 
 	expectedText := "404 page not found\n"
-	assert.Equal(t, 43 /* len(expectedText) */, int(rsp.ContentLength)) // gzip expands from 19 to 43
+	assertEqual(t, 43 /* len(expectedText) */, int(rsp.ContentLength)) // gzip expands from 19 to 43
 	bodyText, err := getZBodyAsString(rsp.Body)
-	require.Nil(t, err)
-	assert.Equal(t, expectedText, bodyText)
+	assertNoError(t, err)
+	assertEqual(t, expectedText, bodyText)
 
 }
 
 func TestStaticRedirects(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
 	req := newRequest(mGet, "//")
 	rsp, err := c.Do(req)
-	require.NotNil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusMovedPermanently, rsp.StatusCode)
-	assert.Equal(t, "/", rsp.Header.Get("Location"))
-	assert.Equal(t, 0, int(rsp.ContentLength))
+	assertNotNil(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusMovedPermanently, rsp.StatusCode)
+	assertEqual(t, "/", rsp.Header.Get("Location"))
+	assertEqual(t, 0, int(rsp.ContentLength))
 
 	// static redirect cannot be to /./
 	req = newRequest(mGet, "/index.html")
 	rsp, err = c.Do(req)
-	require.NotNil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, 301, rsp.StatusCode)
-	assert.Equal(t, "/", rsp.Header.Get("Location"))
+	assertNotNil(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, 301, rsp.StatusCode)
+	assertEqual(t, "/", rsp.Header.Get("Location"))
 
 }
 
 func TestNotModified(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
@@ -252,57 +258,57 @@ func assertText(t *testing.T, rsp *http.Response, err error) {
 }
 
 func assertJSONAPI(t *testing.T, rsp *http.Response, err error) {
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
-	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusOK, rsp.StatusCode)
+	assertEqual(t, mimeJSON, rsp.Header.Get(hContentType))
+	assertEqual(t, vNoCache, rsp.Header.Get(hCacheControl))
 }
 
 func assert200OK(t *testing.T, rsp *http.Response, err error, mimeType string) {
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeType, rsp.Header.Get(hContentType))
-	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
-	assert.Equal(t, hAcceptEncoding, rsp.Header.Get(hVary))
-	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
-	assert.NotEqual(t, "", rsp.Header.Get(hLastModified))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusOK, rsp.StatusCode)
+	assertEqual(t, mimeType, rsp.Header.Get(hContentType))
+	assertEqual(t, "gzip", rsp.Header.Get(hContentEncoding))
+	assertEqual(t, hAcceptEncoding, rsp.Header.Get(hVary))
+	assertEqual(t, vNoCache, rsp.Header.Get(hCacheControl))
+	assertNotEqual(t, "", rsp.Header.Get(hLastModified))
 }
 
 func assert200OKAPI(t *testing.T, rsp *http.Response, err error, mimeType string) {
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeType, rsp.Header.Get(hContentType))
-	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
-	assert.NotEqual(t, "", rsp.Header.Get(hLastModified))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusOK, rsp.StatusCode)
+	assertEqual(t, mimeType, rsp.Header.Get(hContentType))
+	assertEqual(t, vNoCache, rsp.Header.Get(hCacheControl))
+	assertNotEqual(t, "", rsp.Header.Get(hLastModified))
 }
 
 func assert304NotModified(t *testing.T, rsp *http.Response, err error) {
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusNotModified, rsp.StatusCode)
-	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusNotModified, rsp.StatusCode)
+	assertEqual(t, vNoCache, rsp.Header.Get(hCacheControl))
 }
 
 func assert404NotFound(t *testing.T, rsp *http.Response, err error) {
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
-	assert.Equal(t, "gzip", rsp.Header.Get(hContentEncoding))
-	assert.Equal(t, hAcceptEncoding, rsp.Header.Get(hVary))
-	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusNotFound, rsp.StatusCode)
+	assertEqual(t, mimeText, rsp.Header.Get(hContentType))
+	assertEqual(t, "gzip", rsp.Header.Get(hContentEncoding))
+	assertEqual(t, hAcceptEncoding, rsp.Header.Get(hVary))
+	assertEqual(t, vNoCache, rsp.Header.Get(hCacheControl))
 }
 
 func assert404NotFoundAPI(t *testing.T, rsp *http.Response, err error) {
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusNotFound, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	assert.Equal(t, vNoCache, rsp.Header.Get(hCacheControl))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusNotFound, rsp.StatusCode)
+	assertEqual(t, mimeText, rsp.Header.Get(hContentType))
+	assertEqual(t, "", rsp.Header.Get(hContentEncoding))
+	assertEqual(t, vNoCache, rsp.Header.Get(hCacheControl))
 }
 
 func getBodyAsString(r io.Reader) (string, error) {
@@ -345,4 +351,28 @@ func unzipReader(data io.Reader) ([]byte, error) {
 
 	return uncompressedData.Bytes(), nil
 
+}
+
+func assertNoError(t *testing.T, e error) {
+	if e != nil {
+		t.Fatalf("Error: %s", e.Error())
+	}
+}
+
+func assertNotNil(t *testing.T, v interface{}) {
+	if v == nil {
+		t.Fatal("Expected not nil value")
+	}
+}
+
+func assertEqual(t *testing.T, a interface{}, b interface{}) {
+	if a != b {
+		t.Errorf("Not equal: expected %v, actual %v", a, b)
+	}
+}
+
+func assertNotEqual(t *testing.T, a interface{}, b interface{}) {
+	if a == b {
+		t.Errorf("Equal: expected %v, actual %v", a, b)
+	}
 }

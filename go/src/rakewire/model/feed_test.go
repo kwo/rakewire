@@ -101,7 +101,7 @@ func TestAdjustFetchTime(t *testing.T) {
 	f := NewFeed("http://localhost")
 	assertNotNil(t, f)
 	assertNotNil(t, f.NextFetch)
-	assertEqual(t, f.NextFetch.IsZero(), false) // nextfetch is initialized to now
+	assertEqual(t, false, f.NextFetch.IsZero()) // nextfetch is initialized to now
 
 	now := time.Now()
 	f.NextFetch = now
@@ -119,7 +119,7 @@ func TestUpdateFetchTime(t *testing.T) {
 	f := NewFeed("http://localhost")
 	assertNotNil(t, f)
 	assertNotNil(t, f.NextFetch)
-	assertEqual(t, f.NextFetch.IsZero(), false) // nextfetch is initialized to now
+	assertEqual(t, false, f.NextFetch.IsZero()) // nextfetch is initialized to now
 
 	now := time.Now()
 

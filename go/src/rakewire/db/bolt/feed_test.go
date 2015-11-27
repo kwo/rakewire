@@ -1,8 +1,6 @@
 package bolt
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	m "rakewire/model"
 	"testing"
 	"time"
@@ -13,11 +11,11 @@ func TestFeeds(t *testing.T) {
 	//t.SkipNow()
 	database := openDatabase(t)
 	defer closeDatabase(t, database)
-	require.NotNil(t, database)
+	assertNotNil(t, database)
 
 	feeds, err := m.ParseFeedsFromFile(feedFile)
-	require.Nil(t, err)
-	require.NotNil(t, feeds)
+	assertNoError(t, err)
+	assertNotNil(t, feeds)
 
 	for _, feed := range feeds {
 		// logger.Debugf("URL (%d): %s", n, feed.URL)
@@ -26,14 +24,14 @@ func TestFeeds(t *testing.T) {
 
 	for _, feed := range feeds {
 		err = database.SaveFeed(feed)
-		require.Nil(t, err)
+		assertNoError(t, err)
 	}
 
 	feeds2, err := database.GetFeeds()
-	require.Nil(t, err)
-	require.NotNil(t, feeds2)
+	assertNoError(t, err)
+	assertNotNil(t, feeds2)
 
-	assert.Equal(t, len(feeds), len(feeds2))
+	assertEqual(t, len(feeds), len(feeds2))
 	// for n, feed := range feeds2 {
 	// logger.Debugf("Feed (%d): %s", n, feed.URL)
 	// }
@@ -49,65 +47,65 @@ func TestURLIndex(t *testing.T) {
 
 	database := openDatabase(t)
 	defer closeDatabase(t, database)
-	require.NotNil(t, database)
+	assertNotNil(t, database)
 
 	// create feed
 	feed := m.NewFeed(URL1)
 	feed.Attempt = m.NewFeedLog(feed.ID)
-	assert.Equal(t, URL1, feed.URL)
-	assert.Equal(t, feed.ID, feed.Attempt.FeedID)
+	assertEqual(t, URL1, feed.URL)
+	assertEqual(t, feed.ID, feed.Attempt.FeedID)
 
 	// save feeds
 	err := database.SaveFeed(feed)
-	require.Nil(t, err)
+	assertNoError(t, err)
 
 	var feed2 *m.Feed
 	var feeds2 []*m.Feed
 
 	// get feed2
 	feeds2, err = database.GetFeeds()
-	require.Nil(t, err)
-	require.NotNil(t, feeds2)
-	require.Equal(t, 1, len(feeds2))
+	assertNoError(t, err)
+	assertNotNil(t, feeds2)
+	assertEqual(t, 1, len(feeds2))
 	feed2 = feeds2[0]
-	require.NotNil(t, feed2)
-	assert.Equal(t, feed.ID, feed2.ID)
-	assert.Equal(t, URL1, feed2.URL)
+	assertNotNil(t, feed2)
+	assertEqual(t, feed.ID, feed2.ID)
+	assertEqual(t, URL1, feed2.URL)
 
 	// get by URL
 	feed2, err = database.GetFeedByURL(URL1)
-	require.Nil(t, err)
-	require.NotNil(t, feed2)
-	assert.Equal(t, feed.ID, feed2.ID)
-	assert.Equal(t, URL1, feed2.URL)
+	assertNoError(t, err)
+	assertNotNil(t, feed2)
+	assertEqual(t, feed.ID, feed2.ID)
+	assertEqual(t, URL1, feed2.URL)
 
 	// update URL
 	feed2 = feeds2[0]
 	feed2.URL = URL2
 	err = database.SaveFeed(feed2)
-	require.Nil(t, err)
+	assertNoError(t, err)
 
 	// get feeds2, feed2
 	feeds2, err = database.GetFeeds()
-	require.Nil(t, err)
-	require.NotNil(t, feeds2)
-	assert.Equal(t, 1, len(feeds2))
+	assertNoError(t, err)
+	assertNotNil(t, feeds2)
+	assertEqual(t, 1, len(feeds2))
 	feed2 = feeds2[0]
-	require.NotNil(t, feed2)
-	assert.Equal(t, feed.ID, feed2.ID)
-	assert.Equal(t, URL2, feed2.URL)
+	assertNotNil(t, feed2)
+	assertEqual(t, feed.ID, feed2.ID)
+	assertEqual(t, URL2, feed2.URL)
 
 	// get by old URL
 	feed2, err = database.GetFeedByURL(URL1)
-	require.Nil(t, err)
-	require.Nil(t, feed2)
+	assertNoError(t, err)
+	assertNil(t, feed2)
 
 	// get by new URL
 	feed2, err = database.GetFeedByURL(URL2)
-	require.Nil(t, err)
-	require.NotNil(t, feed2)
-	assert.Equal(t, feed.ID, feed2.ID)
-	assert.Equal(t, URL2, feed2.URL)
+	assertNoError(t, err)
+	assertNotNil(t, feed2)
+	assertEqual(t, feed.ID, feed2.ID)
+	assertEqual(t, URL2, feed2.URL)
 
 }
 
@@ -117,36 +115,36 @@ func TestIndexFetch(t *testing.T) {
 
 	database := openDatabase(t)
 	defer closeDatabase(t, database)
-	require.NotNil(t, database)
+	assertNotNil(t, database)
 
 	// test feeds
 	feeds, err := database.GetFeeds()
-	require.Nil(t, err)
-	require.NotNil(t, feeds)
-	assert.Equal(t, 0, len(feeds))
+	assertNoError(t, err)
+	assertNotNil(t, feeds)
+	assertEqual(t, 0, len(feeds))
 
 	maxTime := time.Now().Add(48 * time.Hour)
 	feeds, err = database.GetFetchFeeds(maxTime)
-	require.Nil(t, err)
-	require.NotNil(t, feeds)
-	assert.Equal(t, 0, len(feeds))
+	assertNoError(t, err)
+	assertNotNil(t, feeds)
+	assertEqual(t, 0, len(feeds))
 
 	// create new feed, add to database
 	feed := m.NewFeed("http://localhost/")
 	err = database.SaveFeed(feed)
-	require.Nil(t, err)
+	assertNoError(t, err)
 
 	// retest
 	feeds, err = database.GetFeeds()
-	require.Nil(t, err)
-	require.NotNil(t, feeds)
-	assert.Equal(t, 1, len(feeds))
+	assertNoError(t, err)
+	assertNotNil(t, feeds)
+	assertEqual(t, 1, len(feeds))
 
 	maxTime = time.Now().Add(48 * time.Hour)
 	feeds, err = database.GetFetchFeeds(maxTime)
-	require.Nil(t, err)
-	require.NotNil(t, feeds)
-	assert.Equal(t, 1, len(feeds))
+	assertNoError(t, err)
+	assertNotNil(t, feeds)
+	assertEqual(t, 1, len(feeds))
 
 	// modify feed, resave to database
 	// create new feed, add to database
@@ -155,18 +153,18 @@ func TestIndexFetch(t *testing.T) {
 	err = database.SaveFeed(feed2)
 	f3 := m.NewFeed("http://kangaroo.com/")
 	err = database.SaveFeed(f3)
-	require.Nil(t, err)
+	assertNoError(t, err)
 
 	// retest
 	feeds, err = database.GetFeeds()
-	require.Nil(t, err)
-	require.NotNil(t, feeds)
-	assert.Equal(t, 2, len(feeds))
+	assertNoError(t, err)
+	assertNotNil(t, feeds)
+	assertEqual(t, 2, len(feeds))
 
 	maxTime = time.Now().Add(48 * time.Hour)
 	feeds, err = database.GetFetchFeeds(maxTime)
-	require.Nil(t, err)
-	require.NotNil(t, feeds)
-	assert.Equal(t, 2, len(feeds))
+	assertNoError(t, err)
+	assertNotNil(t, feeds)
+	assertEqual(t, 2, len(feeds))
 
 }

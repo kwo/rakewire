@@ -2,8 +2,6 @@ package httpd
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	m "rakewire/model"
@@ -12,7 +10,7 @@ import (
 
 func TestFeedsPut(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
@@ -25,150 +23,150 @@ func TestFeedsPut(t *testing.T) {
 	feedID = feed.ID
 	feeds = append(feeds, feed)
 	err := serializeFeeds(feeds, &buf)
-	require.Nil(t, err)
-	require.Equal(t, 1, len(feeds))
+	assertNoError(t, err)
+	assertEqual(t, 1, len(feeds))
 	req.Body = ioutil.NopCloser(&buf)
 
 	rsp, err := c.Do(req)
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
 	assertJSONAPI(t, rsp, err)
 
 	count, err := deserializeSaveFeedsResponse(rsp.Body)
-	require.Nil(t, err)
-	assert.Equal(t, 1, count)
+	assertNoError(t, err)
+	assertEqual(t, 1, count)
 
 }
 
 func TestFeedsPutNoContent(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
 	req := newRequest(mPut, "/api/feeds")
 	req.Header.Add(hContentType, mimeJSON)
 	rsp, err := c.Do(req)
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusNoContent, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusNoContent, rsp.StatusCode)
+	assertEqual(t, mimeText, rsp.Header.Get(hContentType))
+	assertEqual(t, "", rsp.Header.Get(hContentEncoding))
 
 	// expectedText := "204 No Content\n"
-	// assert.Equal(t, len(expectedText), int(rsp.ContentLength))
+	// assertEqual(t, len(expectedText), int(rsp.ContentLength))
 	// bodyText, err := getBodyAsString(rsp.Body)
-	// require.Nil(t, err)
-	// assert.Equal(t, expectedText, bodyText)
+	// assertNoError(t, err)
+	// assertEqual(t, expectedText, bodyText)
 
 }
 
 func TestFeedsMethodNotAllowed(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
 	req := newRequest(mPost, "/api/feeds")
 	rsp, err := c.Do(req)
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusMethodNotAllowed, rsp.StatusCode)
-	assert.Equal(t, mimeText, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusMethodNotAllowed, rsp.StatusCode)
+	assertEqual(t, mimeText, rsp.Header.Get(hContentType))
+	assertEqual(t, "", rsp.Header.Get(hContentEncoding))
 
 	expectedText := "Method Not Allowed\n"
-	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
+	assertEqual(t, len(expectedText), int(rsp.ContentLength))
 	bodyText, err := getBodyAsString(rsp.Body)
-	require.Nil(t, err)
-	assert.Equal(t, expectedText, bodyText)
+	assertNoError(t, err)
+	assertEqual(t, expectedText, bodyText)
 
 }
 
 func TestFeedsGet(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
 	req := newRequest(mGet, "/api/feeds")
 	rsp, err := c.Do(req)
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, 98, int(rsp.ContentLength))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusOK, rsp.StatusCode)
+	assertEqual(t, mimeJSON, rsp.Header.Get(hContentType))
+	assertEqual(t, "", rsp.Header.Get(hContentEncoding))
+	//assertEqual(t, 98, int(rsp.ContentLength))
 
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(rsp.Body)
-	require.Nil(t, err)
-	assert.Equal(t, rsp.ContentLength, n)
+	assertNoError(t, err)
+	assertEqual(t, rsp.ContentLength, n)
 	feeds, err := deserializeFeeds(&buf)
-	require.Nil(t, err)
-	require.Equal(t, 1, len(feeds))
+	assertNoError(t, err)
+	assertEqual(t, 1, len(feeds))
 	feed := feeds[0]
-	assert.Equal(t, feedURL, feed.URL)
+	assertEqual(t, feedURL, feed.URL)
 
 }
 
 func TestFeedsGetNext(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
 	req := newRequest(mGet, "/api/feeds/next")
 	rsp, err := c.Do(req)
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, 98, int(rsp.ContentLength))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusOK, rsp.StatusCode)
+	assertEqual(t, mimeJSON, rsp.Header.Get(hContentType))
+	assertEqual(t, "", rsp.Header.Get(hContentEncoding))
+	//assertEqual(t, 98, int(rsp.ContentLength))
 
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(rsp.Body)
-	require.Nil(t, err)
-	assert.Equal(t, rsp.ContentLength, n)
+	assertNoError(t, err)
+	assertEqual(t, rsp.ContentLength, n)
 	feeds, err := deserializeFeeds(&buf)
-	require.Nil(t, err)
-	require.Equal(t, 1, len(feeds))
+	assertNoError(t, err)
+	assertEqual(t, 1, len(feeds))
 	feed := feeds[0]
-	assert.Equal(t, feedURL, feed.URL)
+	assertEqual(t, feedURL, feed.URL)
 
 }
 
 func TestFeedGetByURL(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
 	req := newRequest(mGet, "/api/feeds?url=http%3A%2F%2Flocalhost%3A5555%2Ffeed.xml")
 	rsp, err := c.Do(req)
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, 106, int(rsp.ContentLength))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusOK, rsp.StatusCode)
+	assertEqual(t, mimeJSON, rsp.Header.Get(hContentType))
+	assertEqual(t, "", rsp.Header.Get(hContentEncoding))
+	//assertEqual(t, 106, int(rsp.ContentLength))
 
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(rsp.Body)
 	logger.Debugf("feedByURL: %s\n", string(buf.Bytes()))
-	require.Nil(t, err)
-	assert.Equal(t, rsp.ContentLength, n)
+	assertNoError(t, err)
+	assertEqual(t, rsp.ContentLength, n)
 	feed, err := deserializeFeed(buf.Bytes())
-	require.Nil(t, err)
-	require.NotNil(t, feed)
-	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
+	assertNoError(t, err)
+	assertNotNil(t, feed)
+	assertEqual(t, "http://localhost:5555/feed.xml", feed.URL)
 
 }
 
 func TestFeedGetByURL404(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
@@ -177,42 +175,42 @@ func TestFeedGetByURL404(t *testing.T) {
 	assert404NotFoundAPI(t, rsp, err)
 
 	expectedText := "Not Found\n"
-	assert.Equal(t, len(expectedText), int(rsp.ContentLength))
+	assertEqual(t, len(expectedText), int(rsp.ContentLength))
 	bodyText, err := getBodyAsString(rsp.Body)
-	require.Nil(t, err)
-	assert.Equal(t, expectedText, bodyText)
+	assertNoError(t, err)
+	assertEqual(t, expectedText, bodyText)
 
 }
 
 func TestFeedGetByID(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 
 	req := newRequest(mGet, "/api/feeds/"+feedID)
 	rsp, err := c.Do(req)
-	require.Nil(t, err)
-	require.NotNil(t, rsp)
-	assert.Equal(t, http.StatusOK, rsp.StatusCode)
-	assert.Equal(t, mimeJSON, rsp.Header.Get(hContentType))
-	assert.Equal(t, "", rsp.Header.Get(hContentEncoding))
-	//assert.Equal(t, 106, int(rsp.ContentLength))
+	assertNoError(t, err)
+	assertNotNil(t, rsp)
+	assertEqual(t, http.StatusOK, rsp.StatusCode)
+	assertEqual(t, mimeJSON, rsp.Header.Get(hContentType))
+	assertEqual(t, "", rsp.Header.Get(hContentEncoding))
+	//assertEqual(t, 106, int(rsp.ContentLength))
 
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(rsp.Body)
-	require.Nil(t, err)
-	assert.Equal(t, rsp.ContentLength, n)
+	assertNoError(t, err)
+	assertEqual(t, rsp.ContentLength, n)
 	feed, err := deserializeFeed(buf.Bytes())
-	require.Nil(t, err)
-	require.NotNil(t, feed)
-	assert.Equal(t, "http://localhost:5555/feed.xml", feed.URL)
+	assertNoError(t, err)
+	assertNotNil(t, feed)
+	assertEqual(t, "http://localhost:5555/feed.xml", feed.URL)
 
 }
 
 func TestFeedGetByID404(t *testing.T) {
 
-	require.NotNil(t, ws)
+	assertNotNil(t, ws)
 
 	c := newHTTPClient()
 

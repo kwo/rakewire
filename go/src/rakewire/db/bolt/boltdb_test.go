@@ -1,7 +1,6 @@
 package bolt
 
 import (
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"os"
 	"rakewire/db"
@@ -30,14 +29,14 @@ func TestMain(m *testing.M) {
 func TestInterface(t *testing.T) {
 
 	var d db.Database = &Database{}
-	require.NotNil(t, d)
+	assertNotNil(t, d)
 
 }
 
 func openDatabase(t *testing.T) *Database {
 
 	f, err := ioutil.TempFile(empty, "bolt-")
-	require.Nil(t, err)
+	assertNoError(t, err)
 	filename := f.Name()
 	f.Close()
 
@@ -45,7 +44,7 @@ func openDatabase(t *testing.T) *Database {
 	err = database.Open(&db.Configuration{
 		Location: filename,
 	})
-	require.Nil(t, err)
+	assertNoError(t, err)
 
 	return database
 
@@ -55,11 +54,35 @@ func closeDatabase(t *testing.T, database *Database) {
 
 	// close database
 	err := database.Close()
-	require.Nil(t, err)
-	require.Nil(t, database.db)
+	assertNoError(t, err)
+	assertNil(t, database.db)
 
 	// remove file
 	err = os.Remove(database.databaseFile)
-	require.Nil(t, err)
+	assertNoError(t, err)
 
+}
+
+func assertNoError(t *testing.T, e error) {
+	if e != nil {
+		t.Fatalf("Error: %s", e.Error())
+	}
+}
+
+func assertNil(t *testing.T, v interface{}) {
+	if v != nil {
+		t.Fatal("Expected nil value")
+	}
+}
+
+func assertNotNil(t *testing.T, v interface{}) {
+	if v == nil {
+		t.Fatal("Expected not nil value")
+	}
+}
+
+func assertEqual(t *testing.T, a interface{}, b interface{}) {
+	if a != b {
+		t.Errorf("Not equal: expected %v, actual %v", a, b)
+	}
 }

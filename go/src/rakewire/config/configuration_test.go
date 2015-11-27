@@ -2,8 +2,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"testing"
 )
 
@@ -15,17 +13,35 @@ func TestConfiguration(t *testing.T) {
 
 	c := Configuration{}
 	err := c.LoadFromFile(testConfigFile)
-	require.Nil(t, err)
+	assertNoError(t, err)
 
-	require.NotNil(t, c.Httpd)
+	assertNotNil(t, c.Httpd)
 
-	assert.Equal(t, "", c.Httpd.Address)
-	assert.Equal(t, 4444, c.Httpd.Port)
-	assert.Equal(t, ":4444", fmt.Sprintf("%s:%d", c.Httpd.Address, c.Httpd.Port))
+	assertEqual(t, "", c.Httpd.Address)
+	assertEqual(t, 4444, c.Httpd.Port)
+	assertEqual(t, ":4444", fmt.Sprintf("%s:%d", c.Httpd.Address, c.Httpd.Port))
 
-	assert.Equal(t, "/Users/karl/.rakewire/data.db", c.Database.Location)
+	assertEqual(t, "/Users/karl/.rakewire/data.db", c.Database.Location)
 
-	require.NotNil(t, c.Fetcher)
-	assert.Equal(t, 10, c.Fetcher.Workers)
+	assertNotNil(t, c.Fetcher)
+	assertEqual(t, 10, c.Fetcher.Workers)
 
+}
+
+func assertNoError(t *testing.T, e error) {
+	if e != nil {
+		t.Fatalf("Error: %s", e.Error())
+	}
+}
+
+func assertNotNil(t *testing.T, v interface{}) {
+	if v == nil {
+		t.Fatal("Expected not nil value")
+	}
+}
+
+func assertEqual(t *testing.T, a interface{}, b interface{}) {
+	if a != b {
+		t.Errorf("Not equal: expected %v, actual %v", a, b)
+	}
 }
