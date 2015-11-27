@@ -1,4 +1,4 @@
-package serial
+package kv
 
 import (
 	"fmt"
@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-// TODO: rename package kv, go-encoding/kv
 // TODO: instantiate instance, register struct, keep metadata in cache
 
 const (

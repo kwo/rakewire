@@ -1,4 +1,4 @@
-package serial
+package kv
 
 import (
 	"testing"

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/boltdb/bolt"
-	"rakewire/serial"
+	"github.com/kwo/kv"
 	"strings"
 )
 
@@ -26,7 +26,7 @@ const (
 // Get retrieves the object with the given ID from the specified bucket.
 func Get(object interface{}, tx *bolt.Tx) error {
 
-	meta, data, err := serial.Encode(object)
+	meta, data, err := kv.Encode(object)
 	if err != nil {
 		return err
 	}
@@ -36,7 +36,7 @@ func Get(object interface{}, tx *bolt.Tx) error {
 		// if the record is not found, unset the id on the object
 		values[meta.Key] = empty
 	}
-	if err := serial.Decode(object, values); err != nil {
+	if err := kv.Decode(object, values); err != nil {
 		return err
 	}
 
@@ -47,13 +47,13 @@ func Get(object interface{}, tx *bolt.Tx) error {
 // Put saves the object with the given ID to the specified bucket.
 func Put(object interface{}, tx *bolt.Tx) error {
 
-	meta, data, err := serial.Encode(object)
+	meta, data, err := kv.Encode(object)
 	if err != nil {
 		return err
 	}
 
 	valuesOld := load(data.Name, data.Key, tx)
-	dataOld := serial.DataFrom(meta, valuesOld)
+	dataOld := kv.DataFrom(meta, valuesOld)
 
 	if err = save(data.Name, data.Key, data.Values, tx); err != nil {
 		return err
@@ -74,7 +74,7 @@ func Query(name string, index string, min []interface{}, max []interface{}, add 
 		if v == nil {
 			return nil, nil
 		}
-		s, err := serial.EncodeFields(v...)
+		s, err := kv.EncodeFields(v...)
 		if err != nil {
 			return nil, err
 		}
@@ -170,7 +170,7 @@ func rangeBucket(name string, min []byte, max []byte, add func() interface{}, tx
 		if pkey != lastKey {
 			lastKey = pkey
 			values := load(name, pkey, tx)
-			if err := serial.Decode(add(), values); err != nil {
+			if err := kv.Decode(add(), values); err != nil {
 				return err
 			}
 		}
@@ -198,7 +198,7 @@ func rangeIndex(name string, index string, min []byte, max []byte, add func() in
 		pkey := string(v)
 
 		values := load(name, pkey, tx)
-		if err := serial.Decode(add(), values); err != nil {
+		if err := kv.Decode(add(), values); err != nil {
 			return err
 		}
 
