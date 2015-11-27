@@ -74,11 +74,7 @@ func Query(name string, index string, min []interface{}, max []interface{}, add 
 		if v == nil {
 			return nil, nil
 		}
-		s, err := kv.EncodeFields(v...)
-		if err != nil {
-			return nil, err
-		}
-		return []byte(strings.Join(s, chSep)), nil
+		return []byte(strings.Join(kv.EncodeFields(v...), chSep)), nil
 	}
 
 	minB, err := marker(min)

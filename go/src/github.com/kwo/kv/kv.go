@@ -159,14 +159,14 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 }
 
 // EncodeFields returns encoded values in a string slice
-func EncodeFields(fields ...interface{}) ([]string, error) {
+func EncodeFields(fields ...interface{}) []string {
 
 	var result []string
 	for _, field := range fields {
 		result = append(result, getValue(reflect.ValueOf(field)))
 	}
 
-	return result, nil
+	return result
 
 }
 

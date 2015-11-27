@@ -191,8 +191,7 @@ func TestEncodeFields(t *testing.T) {
 
 	t.Parallel()
 
-	value, err := EncodeFields(1, 4.5, time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC), "hello")
-	assertNoError(t, err)
+	value := EncodeFields(1, 4.5, time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC), "hello")
 	assertNotNil(t, value)
 
 	assertEqual(t, 4, len(value))
