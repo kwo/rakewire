@@ -9,52 +9,33 @@ import (
 // Feed feed descriptor
 type Feed struct {
 	// Current fetch attempt for feed
-	Attempt *FeedLog `serial:"-" json:"-"`
+	Attempt *FeedLog `kv:"-" json:"-"`
+	// ETag HTTP header on the last 200
+	ETag string `json:"etag"`
 	// Feed object parsed from Body
-	Feed *feedparser.Feed `serial:"-" json:"-"`
+	Feed *feedparser.Feed `kv:"-" json:"-"`
 	// UUID
-	ID string `serial:"primary-key" json:"id"`
+	ID string `kv:"key" json:"id"`
+	// LastModified HTTP header on the last 200
+	LastModified time.Time `json:"lastModified"`
 	// Time the feed was last updated
 	LastUpdated time.Time `json:"lastUpdated"`
-	// Last fetch
-	Last string `json:"last,omitempty"`
-	// Last successful fetch with status code 200
-	Last200 string `json:"last200,omitempty"`
 	// Past fetch attempts for feed
-	Log []*FeedLog `serial:"-" json:"-"`
+	Log []*FeedLog `kv:"-" json:"-"`
 	// Time of next scheduled fetch
-	NextFetch time.Time `serial:"NextFetch:1" json:"nextFetch"`
+	NextFetch time.Time `kv:"NextFetch:1" json:"nextFetch"`
 	// User notes of the feed
 	Notes string `json:"notes,omitempty"`
 	// User defined title of the feed
 	Title string `json:"title"`
 	// URL updated if feed is permenently redirected
-	URL string `serial:"URL:1" json:"url"`
+	URL string `kv:"URL:1" json:"url"`
 }
 
 // AddLog adds a feedlog to the Feed returning its ID
 func (z *Feed) AddLog(feedlog *FeedLog) string {
 	z.Log = append(z.Log, feedlog)
 	return feedlog.ID
-}
-
-// GetLast returns the last feed fetch appempt.
-func (z *Feed) GetLast() *FeedLog {
-	return z.findLogByID(z.Last)
-}
-
-// GetLast200 returns the last successful feed fetch.
-func (z *Feed) GetLast200() *FeedLog {
-	return z.findLogByID(z.Last200)
-}
-
-func (z *Feed) findLogByID(id string) *FeedLog {
-	for _, fl := range z.Log {
-		if fl.ID == id {
-			return fl
-		}
-	}
-	return nil
 }
 
 // ========== Feed ==========

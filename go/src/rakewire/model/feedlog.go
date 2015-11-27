@@ -31,14 +31,14 @@ func NewFeedLog(feedID string) *FeedLog {
 
 // FeedLog represents an attempted HTTP request to a feed
 type FeedLog struct {
-	ID            string        `json:"id" serial:"primary-key"`
-	FeedID        string        `json:"feedId" serial:"FeedTime:1"`
+	ID            string        `json:"id" kv:"key"`
+	FeedID        string        `json:"feedId" kv:"FeedTime:1"`
 	Duration      time.Duration `json:"duration"`
 	IsUpdated     bool          `json:"updated"`
 	Result        string        `json:"result"`
 	ResultMessage string        `json:"resultMessage"`
 	UpdateCheck   string        `json:"updateCheck"`
-	StartTime     time.Time     `json:"startTime" serial:"FeedTime:2"`
+	StartTime     time.Time     `json:"startTime" kv:"FeedTime:2"`
 	URL           string        `json:"url"`
 	ContentLength int           `json:"contentLength"`
 	ContentType   string        `json:"contentType"`

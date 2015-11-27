@@ -98,17 +98,16 @@ func (z *Service) newRequest(feed *m.Feed) *http.Request {
 	req, _ := http.NewRequest(mGET, feed.URL, nil)
 	req.Header.Set(hUserAgent, httpUserAgent)
 	req.Header.Set(hAcceptEncoding, "gzip")
-	last200 := feed.GetLast200()
-	if last200 != nil && last200.Result == m.FetchResultOK {
-		if !last200.LastModified.IsZero() {
-			req.Header.Set(hIfModifiedSince, last200.LastModified.UTC().Format(http.TimeFormat))
-		}
-		if last200.ETag != "" {
-			req.Header.Set(hIfNoneMatch, last200.ETag)
-		}
+	if !feed.LastModified.IsZero() {
+		req.Header.Set(hIfModifiedSince, feed.LastModified.UTC().Format(http.TimeFormat))
+	}
+	if feed.ETag != "" {
+		req.Header.Set(hIfNoneMatch, feed.ETag)
 	}
 	return req
 }
+
+// TODO: separate case blocks into separate functions
 
 func (z *Service) processFeed(feed *m.Feed, id int) {
 
@@ -141,6 +140,8 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 			feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
+			feed.ETag = feed.Attempt.ETag
+			feed.LastModified = feed.Attempt.LastModified
 
 			reader, _ := readBody(rsp)
 			body := &ReadCounter{ReadCloser: reader}

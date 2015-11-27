@@ -108,10 +108,6 @@ func (z *Database) SaveFeed(feed *m.Feed) error {
 
 		// save feed log if available
 		if feed.Attempt != nil {
-			feed.Last = feed.Attempt.ID
-			if feed.Attempt.StatusCode == 200 {
-				feed.Last200 = feed.Attempt.ID
-			}
 			if err := Put(feed.Attempt, tx); err != nil {
 				return err
 			}
