@@ -116,6 +116,8 @@ func (z *Service) poll(t time.Time) {
 	feeds, err := z.database.GetFetchFeeds(t)
 	if err != nil {
 		logger.Warnf("Cannot poll feeds: %s", err.Error())
+		z.setPolling(false)
+		z.polllatch.Done()
 		return
 	}
 
