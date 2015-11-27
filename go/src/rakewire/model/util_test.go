@@ -1,26 +1,26 @@
 package model
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestParseFeedsFromFile(t *testing.T) {
 
-	feeds, err := ParseFeedsFromFile("../../../test/feedlistmini.txt")
-	require.Nil(t, err)
-	require.NotNil(t, feeds)
-	assert.Equal(t, 10, len(feeds))
-	assert.Equal(t, "http://www.addrup.de/feed.xml", feeds[0].URL)
+	t.Parallel()
 
-	logger.Debugf("feeds: %d\n", len(feeds))
+	feeds, err := ParseFeedsFromFile("../../../test/feedlistmini.txt")
+	assertNoError(t, err)
+	assertNotNil(t, feeds)
+	assertEqual(t, 10, len(feeds))
+	assertEqual(t, "http://www.addrup.de/feed.xml", feeds[0].URL)
 
 }
 
 func TestParseFeedsFromFileError(t *testing.T) {
 
+	t.Parallel()
+
 	_, err := ParseFeedsFromFile("../../../test/feedlistmini2.txt")
-	require.NotNil(t, err)
+	assertNotNil(t, err)
 
 }

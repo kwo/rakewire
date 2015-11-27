@@ -2,23 +2,22 @@ package serial
 
 import (
 	"fmt"
-	"rakewire/logging"
+	"log"
 	"reflect"
 	"strconv"
 	"strings"
 	"time"
 )
 
+// TODO: rename package kv, go-encoding/kv
+// TODO: instantiate instance, register struct, keep metadata in cache
+
 const (
 	// TagName ist the name of the struct tag used by this package
-	TagName = "serial"
+	TagName = "kv"
 	// TimeFormat used to convert dates to strings
 	TimeFormat = time.RFC3339Nano
 	empty      = ""
-)
-
-var (
-	logger = logging.New("serial")
 )
 
 // TODO: only do metedata validation upon registration to serialization
@@ -84,7 +83,7 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 
 			if tagField == "-" {
 				ignoreField = true
-			} else if tagField == "primary-key" {
+			} else if tagField == "key" {
 				if meta.Key == empty {
 					meta.Key = fieldName
 					data.Key = getValue(field)
@@ -271,11 +270,11 @@ func getValue(field reflect.Value) string {
 				return v.UTC().Format(TimeFormat)
 			}
 		} else {
-			logger.Warnf("Will not evaluate struct: %s.", field.Type())
+			log.Printf("Will not evaluate struct: %s.", field.Type())
 		}
 
 	default:
-		logger.Warnf("Unknown field type when getting value: %s.", field.Kind())
+		log.Printf("Unknown field type when getting value: %s.", field.Kind())
 
 	} // switch
 

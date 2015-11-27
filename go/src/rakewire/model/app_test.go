@@ -1,19 +1,29 @@
 package model
 
 import (
-	"rakewire/logging"
 	"testing"
 )
 
-func TestMain(m *testing.M) {
+func assertNoError(t *testing.T, e error) {
+	if e != nil {
+		t.Fatalf("Error: %s", e.Error())
+	}
+}
 
-	// initialize logging
-	logging.Init(&logging.Configuration{
-		Level: "debug",
-	})
+func assertNil(t *testing.T, v interface{}) {
+	if v != nil {
+		t.Fatal("Expected nil value")
+	}
+}
 
-	logger.Debug("Logging configured")
+func assertNotNil(t *testing.T, v interface{}) {
+	if v == nil {
+		t.Fatal("Expected not nil value")
+	}
+}
 
-	m.Run()
-
+func assertEqual(t *testing.T, a interface{}, b interface{}) {
+	if a != b {
+		t.Errorf("Not equal: expected %v, actual %v", a, b)
+	}
 }

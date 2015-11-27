@@ -2,8 +2,6 @@ package model
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"rakewire/serial"
 	"testing"
 	"time"
@@ -11,43 +9,49 @@ import (
 
 func TestNewFeedLog(t *testing.T) {
 
+	t.Parallel()
+
 	fl := NewFeedLog("123")
-	require.NotNil(t, fl)
-	assert.Equal(t, "123", fl.FeedID)
-	require.NotNil(t, fl.ID)
-	assert.Equal(t, 36, len(fl.ID))
+	assertNotNil(t, fl)
+	assertEqual(t, "123", fl.FeedID)
+	assertNotNil(t, fl.ID)
+	assertEqual(t, 36, len(fl.ID))
 
 }
 
 func TestFeedLogSerial(t *testing.T) {
 
+	t.Parallel()
+
 	fl := getNewFeedLog()
 	validateFeedLog(t, fl)
 
 	meta, data, err := serial.Encode(fl)
-	require.Nil(t, err)
-	require.NotNil(t, meta)
-	require.NotNil(t, data)
+	assertNoError(t, err)
+	assertNotNil(t, meta)
+	assertNotNil(t, data)
 
 	fl2 := &FeedLog{}
 	err = serial.Decode(fl2, data.Values)
-	require.Nil(t, err)
+	assertNoError(t, err)
 	validateFeedLog(t, fl2)
 
 }
 
 func TestFeedLogJSON(t *testing.T) {
 
+	t.Parallel()
+
 	fl := getNewFeedLog()
 	validateFeedLog(t, fl)
 
 	data, err := json.Marshal(fl)
-	require.Nil(t, err)
-	require.NotNil(t, data)
+	assertNoError(t, err)
+	assertNotNil(t, data)
 
 	fl2 := &FeedLog{}
 	err = json.Unmarshal(data, fl2)
-	require.Nil(t, err)
+	assertNoError(t, err)
 	validateFeedLog(t, fl)
 
 }
@@ -83,25 +87,25 @@ func validateFeedLog(t *testing.T, fl *FeedLog) {
 
 	dt := time.Date(2015, time.November, 26, 13, 55, 0, 0, time.Local)
 
-	require.NotNil(t, fl)
-	assert.Equal(t, 0, fl.ContentLength)
-	assert.Equal(t, "text/plain", fl.ContentType)
-	assert.Equal(t, 6*time.Second, fl.Duration)
-	assert.Equal(t, "etag", fl.ETag)
-	assert.Equal(t, "123", fl.FeedID)
-	assert.Equal(t, "flavor", fl.Flavor)
-	assert.Equal(t, "", fl.Generator)
-	assert.Equal(t, 36, len(fl.ID))
-	assert.Equal(t, true, fl.IsUpdated)
-	assert.Equal(t, time.Time{}.UnixNano(), fl.LastModified.UnixNano())
-	assert.Equal(t, dt.UnixNano(), fl.LastUpdated.UnixNano())
-	assert.Equal(t, FetchResultOK, fl.Result)
-	assert.Equal(t, "message", fl.ResultMessage)
-	assert.Equal(t, dt.UnixNano(), fl.StartTime.UnixNano())
-	assert.Equal(t, 200, fl.StatusCode)
-	assert.Equal(t, "title", fl.Title)
-	assert.Equal(t, "url", fl.URL)
-	assert.Equal(t, UpdateCheckFeed, fl.UpdateCheck)
-	assert.Equal(t, false, fl.UsesGzip)
+	assertNotNil(t, fl)
+	assertEqual(t, 0, fl.ContentLength)
+	assertEqual(t, "text/plain", fl.ContentType)
+	assertEqual(t, 6*time.Second, fl.Duration)
+	assertEqual(t, "etag", fl.ETag)
+	assertEqual(t, "123", fl.FeedID)
+	assertEqual(t, "flavor", fl.Flavor)
+	assertEqual(t, "", fl.Generator)
+	assertEqual(t, 36, len(fl.ID))
+	assertEqual(t, true, fl.IsUpdated)
+	assertEqual(t, time.Time{}.UnixNano(), fl.LastModified.UnixNano())
+	assertEqual(t, dt.UnixNano(), fl.LastUpdated.UnixNano())
+	assertEqual(t, FetchResultOK, fl.Result)
+	assertEqual(t, "message", fl.ResultMessage)
+	assertEqual(t, dt.UnixNano(), fl.StartTime.UnixNano())
+	assertEqual(t, 200, fl.StatusCode)
+	assertEqual(t, "title", fl.Title)
+	assertEqual(t, "url", fl.URL)
+	assertEqual(t, UpdateCheckFeed, fl.UpdateCheck)
+	assertEqual(t, false, fl.UsesGzip)
 
 }
