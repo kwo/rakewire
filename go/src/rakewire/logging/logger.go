@@ -6,6 +6,9 @@ import (
 	"os"
 )
 
+// TODO: eliminate dependencies on this package
+// TODO: replace logrus with logutils
+
 // Configuration for logging
 type Configuration struct {
 	File            string
