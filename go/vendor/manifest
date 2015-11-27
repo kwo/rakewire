@@ -103,13 +103,6 @@
 			"path": "/data"
 		},
 		{
-			"importpath": "github.com/stretchr/testify/assert",
-			"repository": "https://github.com/stretchr/testify",
-			"revision": "f3960ab1f9664ecc4e27c78af27cc9063d745a43",
-			"branch": "master",
-			"path": "/assert"
-		},
-		{
 			"importpath": "gopkg.in/yaml.v2",
 			"repository": "https://gopkg.in/yaml.v2",
 			"revision": "53feefa2559fb8dfa8d81baad31be332c97d6c77",
