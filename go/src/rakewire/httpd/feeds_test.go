@@ -154,7 +154,7 @@ func TestFeedGetByURL(t *testing.T) {
 
 	buf := bytes.Buffer{}
 	n, err := buf.ReadFrom(rsp.Body)
-	logger.Debugf("feedByURL: %s\n", string(buf.Bytes()))
+	t.Logf("feedByURL: %s\n", string(buf.Bytes()))
 	assertNoError(t, err)
 	assertEqual(t, rsp.ContentLength, n)
 	feed, err := deserializeFeed(buf.Bytes())

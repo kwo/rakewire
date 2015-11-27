@@ -13,7 +13,7 @@ func TestFetch(t *testing.T) {
 	assertNoError(t, err)
 	assertNotNil(t, feeds)
 
-	logger.Debugf("feeds: %d\n", len(feeds))
+	t.Logf("feeds: %d\n", len(feeds))
 
 	cfg := &Configuration{
 		Workers: 20,
@@ -27,21 +27,21 @@ func TestFetch(t *testing.T) {
 	ff.Start()
 
 	go func() {
-		logger.Debugf("adding feeds: %d\n", len(feeds))
+		t.Logf("adding feeds: %d\n", len(feeds))
 		for _, f := range feeds {
-			logger.Debugf("adding feed: %s\n", f.URL)
+			t.Logf("adding feed: %s\n", f.URL)
 			requests <- f
 		}
 		close(requests)
-		logger.Debug("adding feeds done")
+		t.Log("adding feeds done")
 	}()
 
 	go func() {
-		logger.Debug("monitoring...")
+		t.Log("monitoring...")
 		for rsp := range responses {
-			logger.Debugf("%3d %s\n", rsp.Attempt.StatusCode, rsp.URL)
+			t.Logf("%3d %s\n", rsp.Attempt.StatusCode, rsp.URL)
 		}
-		logger.Info("monitoring done")
+		t.Log("monitoring done")
 	}()
 
 	ff.Stop()

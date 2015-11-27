@@ -35,7 +35,7 @@ func TestSerialization(t *testing.T) {
 	// 	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog)) // works
 	// 	c := b.Cursor()
 	// 	for k, v := c.First(); k != nil; k, v = c.Next() {
-	// 		logger.Debugf("FeedLog: %s: %s", k, v)
+	// 		t.Logf("FeedLog: %s: %s", k, v)
 	// 	} // for
 	// 	return nil
 	// })

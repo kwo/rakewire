@@ -18,7 +18,7 @@ func TestFeeds(t *testing.T) {
 	assertNotNil(t, feeds)
 
 	for _, feed := range feeds {
-		// logger.Debugf("URL (%d): %s", n, feed.URL)
+		// t.Logf("URL (%d): %s", n, feed.URL)
 		feed.Attempt = m.NewFeedLog(feed.ID)
 	}
 
@@ -33,7 +33,7 @@ func TestFeeds(t *testing.T) {
 
 	assertEqual(t, len(feeds), len(feeds2))
 	// for n, feed := range feeds2 {
-	// logger.Debugf("Feed (%d): %s", n, feed.URL)
+	// t.Logf("Feed (%d): %s", n, feed.URL)
 	// }
 
 }
