@@ -2,7 +2,7 @@ package model
 
 import (
 	"encoding/json"
-	"rakewire/serial"
+	"github.com/kwo/kv"
 	"testing"
 	"time"
 )
@@ -19,20 +19,20 @@ func TestNewFeedLog(t *testing.T) {
 
 }
 
-func TestFeedLogSerial(t *testing.T) {
+func TestFeedLogkv(t *testing.T) {
 
 	t.Parallel()
 
 	fl := getNewFeedLog()
 	validateFeedLog(t, fl)
 
-	meta, data, err := serial.Encode(fl)
+	meta, data, err := kv.Encode(fl)
 	assertNoError(t, err)
 	assertNotNil(t, meta)
 	assertNotNil(t, data)
 
 	fl2 := &FeedLog{}
-	err = serial.Decode(fl2, data.Values)
+	err = kv.Decode(fl2, data.Values)
 	assertNoError(t, err)
 	validateFeedLog(t, fl2)
 

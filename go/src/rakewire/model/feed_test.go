@@ -2,7 +2,7 @@ package model
 
 import (
 	"encoding/json"
-	"rakewire/serial"
+	"github.com/kwo/kv"
 	"testing"
 	"time"
 )
@@ -28,13 +28,13 @@ func TestFeedSerial(t *testing.T) {
 	f := getNewFeed()
 	validateFeed(t, f)
 
-	meta, data, err := serial.Encode(f)
+	meta, data, err := kv.Encode(f)
 	assertNoError(t, err)
 	assertNotNil(t, meta)
 	assertNotNil(t, data)
 
 	f2 := &Feed{}
-	err = serial.Decode(f2, data.Values)
+	err = kv.Decode(f2, data.Values)
 	assertNoError(t, err)
 	validateFeed(t, f2)
 
