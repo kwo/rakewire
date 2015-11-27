@@ -2,9 +2,9 @@ package fetch
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"rakewire/feedparser"
-	"rakewire/logging"
 	m "rakewire/model"
 	"sync"
 	"time"
@@ -25,8 +25,12 @@ const (
 	mGET             = "GET"
 )
 
-var (
-	logger = logging.New("fetch")
+const (
+	logName  = "fetch"
+	logDebug = "DEBUG"
+	logInfo  = "INFO "
+	logWarn  = "WARN "
+	logError = "ERROR"
 )
 
 // Configuration configuration
@@ -61,35 +65,35 @@ func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Se
 
 // Start service
 func (z *Service) Start() {
-	logger.Info("service starting...")
+	log.Printf("%s %s service starting...", logInfo, logName)
 	// initialize fetchers
 	for i := 0; i < z.workers; i++ {
 		z.latch.Add(1)
 		go z.run(i)
 	} // for
-	logger.Info("service started.")
+	log.Printf("%s %s service started.", logInfo, logName)
 }
 
 // Stop service
 func (z *Service) Stop() {
-	logger.Info("service stopping...")
+	log.Printf("%s %s service stopping...", logInfo, logName)
 	if z != nil { // TODO #RAKEWIRE-55: remove hack because on app close object is apparently already garbage collected
 		z.latch.Wait()
 		z.input = nil
 		z.output = nil
 	}
-	logger.Info("service stopped")
+	log.Printf("%s %s service stopped", logInfo, logName)
 }
 
 func (z *Service) run(id int) {
 
-	logger.Infof("fetcher %2d starting...\n", id)
+	log.Printf("%s %s fetcher %2d starting...\n", logInfo, logName, id)
 
 	for req := range z.input {
 		z.processFeed(req, id)
 	}
 
-	logger.Infof("fetcher %2d exited.\n", id)
+	log.Printf("%s %s fetcher %2d exited.\n", logInfo, logName, id)
 	z.latch.Done()
 
 }
@@ -188,7 +192,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.AdjustFetchTime(24 * time.Hour) // don't hammer site if error
 
 		case true:
-			logger.Warnf("Uncaught Status Code: %d", rsp.StatusCode)
+			log.Printf("%s %s Uncaught Status Code: %d", logWarn, logName, rsp.StatusCode)
 
 		} // switch
 
@@ -196,7 +200,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
 
-	logger.Infof("fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s\n", id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.Flavor)
+	log.Printf("%s %s fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s\n", logInfo, logName, id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.Flavor)
 	z.output <- feed
 
 }

@@ -98,7 +98,9 @@ func TestURLIndex(t *testing.T) {
 	// get by old URL
 	feed2, err = database.GetFeedByURL(URL1)
 	assertNoError(t, err)
-	assertNil(t, feed2)
+	if feed2 != nil {
+		t.Error("feed2 should be nil")
+	}
 
 	// get by new URL
 	feed2, err = database.GetFeedByURL(URL2)

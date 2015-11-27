@@ -40,7 +40,6 @@ This will place the executable in $PROJECT_ROOT/go/bin
  - [github.com/pborman/uuid](https://github.com/pborman/uuid)
  - [github.com/rogpeppe/go-charset/charset](https://github.com/rogpeppe/go-charset/charset)
  - [github.com/rogpeppe/go-charset/data](https://github.com/rogpeppe/go-charset/data)
- - [github.com/stretchr/testify/assert](https://github.com/stretchr/testify)
  - [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)
 
 ## Web

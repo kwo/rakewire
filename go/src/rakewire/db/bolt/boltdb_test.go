@@ -41,7 +41,9 @@ func closeDatabase(t *testing.T, database *Database) {
 	// close database
 	err := database.Close()
 	assertNoError(t, err)
-	assertNil(t, database.db)
+	if database.db != nil {
+		t.Error("database.db is not nil")
+	}
 
 	// remove file
 	err = os.Remove(database.databaseFile)
@@ -52,12 +54,6 @@ func closeDatabase(t *testing.T, database *Database) {
 func assertNoError(t *testing.T, e error) {
 	if e != nil {
 		t.Fatalf("Error: %s", e.Error())
-	}
-}
-
-func assertNil(t *testing.T, v interface{}) {
-	if v != nil {
-		t.Fatal("Expected nil value")
 	}
 }
 

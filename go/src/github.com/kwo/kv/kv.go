@@ -19,6 +19,11 @@ const (
 	empty      = ""
 )
 
+const (
+	logName = "kv   "
+	logWarn = "WARN "
+)
+
 // TODO: only do metedata validation upon registration to serialization
 
 // Metadata contains field names.
@@ -269,11 +274,11 @@ func getValue(field reflect.Value) string {
 				return v.UTC().Format(TimeFormat)
 			}
 		} else {
-			log.Printf("Will not evaluate struct: %s.", field.Type())
+			log.Printf("%s %s Will not evaluate struct: %s.", logWarn, logName, field.Type())
 		}
 
 	default:
-		log.Printf("Unknown field type when getting value: %s.", field.Kind())
+		log.Printf("%s %s Unknown field type when getting value: %s.", logWarn, logName, field.Kind())
 
 	} // switch
 

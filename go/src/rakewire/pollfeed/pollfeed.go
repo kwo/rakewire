@@ -1,8 +1,8 @@
 package pollfeed
 
 import (
+	"log"
 	"rakewire/db"
-	"rakewire/logging"
 	m "rakewire/model"
 	"sync"
 	"sync/atomic"
@@ -13,8 +13,12 @@ const (
 	minPollInterval = time.Minute * 1
 )
 
-var (
-	logger = logging.New("poll")
+const (
+	logName  = "poll "
+	logDebug = "DEBUG"
+	logInfo  = "INFO "
+	logWarn  = "WARN "
+	logError = "ERROR"
 )
 
 // Configuration for pump service
@@ -41,7 +45,7 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 	interval, err := time.ParseDuration(cfg.Interval)
 	if err != nil || interval < minPollInterval {
 		interval = minPollInterval
-		logger.Warnf("Bad or missing interval configuration parameter (%s), setting to default of %s.", cfg.Interval, minPollInterval.String())
+		log.Printf("%s %s Bad or missing interval configuration parameter (%s), setting to default of %s.", logWarn, logName, cfg.Interval, minPollInterval.String())
 	}
 
 	return &Service{
@@ -55,24 +59,24 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 
 // Start Service
 func (z *Service) Start() {
-	logger.Info("service starting...")
+	log.Printf("%s %s service starting...", logInfo, logName)
 	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	logger.Info("service started.")
+	log.Printf("%s %s service started.", logInfo, logName)
 }
 
 // Stop service
 func (z *Service) Stop() {
-	logger.Info("service stopping...")
+	log.Printf("%s %s service stopping...", logInfo, logName)
 	z.kill()
 	z.runlatch.Wait()
-	logger.Info("service stopped.")
+	log.Printf("%s %s service stopped.", logInfo, logName)
 }
 
 func (z *Service) run() {
 
-	logger.Info("run starting...")
+	log.Printf("%s %s run starting...", logInfo, logName)
 
 	// run once initially
 	z.setPolling(true)
@@ -90,7 +94,7 @@ run:
 				z.polllatch.Add(1)
 				go z.poll(tick)
 			} else {
-				logger.Info("Polling still in progress, skipping.")
+				log.Printf("%s %s Polling still in progress, skipping.", logInfo, logName)
 			}
 		case <-z.killsignal:
 			break run
@@ -104,25 +108,25 @@ run:
 
 	z.setRunning(false)
 	z.runlatch.Done()
-	logger.Info("run exited.")
+	log.Printf("%s %s run exited.", logInfo, logName)
 
 }
 
 func (z *Service) poll(t time.Time) {
 
-	logger.Info("polling...")
+	log.Printf("%s %s polling...", logInfo, logName)
 
 	// get next feeds
 	feeds, err := z.database.GetFetchFeeds(t)
 	if err != nil {
-		logger.Warnf("Cannot poll feeds: %s", err.Error())
+		log.Printf("%s %s Cannot poll feeds: %s", logWarn, logName, err.Error())
 		z.setPolling(false)
 		z.polllatch.Done()
 		return
 	}
 
 	// convert feeds
-	logger.Infof("request feeds: %d", len(feeds))
+	log.Printf("%s %s request feeds: %d", logInfo, logName, len(feeds))
 
 	// send to output
 	for i := 0; i < len(feeds) && !z.isKilled(); i++ {

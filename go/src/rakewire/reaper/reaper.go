@@ -1,15 +1,19 @@
 package reaper
 
 import (
+	"log"
 	"rakewire/db"
-	"rakewire/logging"
 	m "rakewire/model"
 	"sync"
 	"sync/atomic"
 )
 
-var (
-	logger = logging.New("reap")
+const (
+	logName  = "reap "
+	logDebug = "DEBUG"
+	logInfo  = "INFO "
+	logWarn  = "WARN "
+	logError = "ERROR"
 )
 
 // Configuration for reaper service
@@ -38,24 +42,24 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 
 // Start Service
 func (z *Service) Start() {
-	logger.Info("service starting...")
+	log.Printf("%s %s service starting...", logInfo, logName)
 	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	logger.Info("service started.")
+	log.Printf("%s %s service started.", logInfo, logName)
 }
 
 // Stop service
 func (z *Service) Stop() {
-	logger.Info("service stopping...")
+	log.Printf("%s %s service stopping...", logInfo, logName)
 	z.killsignal <- true
 	z.runlatch.Wait()
-	logger.Info("service stopped.")
+	log.Printf("%s %s service stopped.", logInfo, logName)
 }
 
 func (z *Service) run() {
 
-	logger.Info("run starting...")
+	log.Printf("%s %s run starting...", logInfo, logName)
 
 run:
 	for {
@@ -71,7 +75,7 @@ run:
 
 	z.setRunning(false)
 	z.runlatch.Done()
-	logger.Info("run exited.")
+	log.Printf("%s %s run exited.", logInfo, logName)
 
 }
 
@@ -82,7 +86,7 @@ func (z *Service) processResponse(rsp *m.Feed) {
 	// convert feeds
 	err := z.database.SaveFeed(rsp)
 	if err != nil {
-		logger.Warnf("Cannot save feed %s: %s", rsp.URL, err.Error())
+		log.Printf("%s %s Cannot save feed %s: %s", logWarn, logName, rsp.URL, err.Error())
 	}
 
 }

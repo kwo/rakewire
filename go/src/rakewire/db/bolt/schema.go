@@ -3,6 +3,7 @@ package bolt
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
+	"log"
 	"strconv"
 	"strings"
 )
@@ -23,7 +24,7 @@ func checkSchema(z *Database) error {
 		for {
 
 			schemaVersion := getSchemaVersion(tx)
-			logger.Debugf("Schema Version: %d", schemaVersion)
+			log.Printf("%s %s Schema Version: %d", logDebug, logName, schemaVersion)
 			if schemaVersion == SchemaVersion {
 				break
 			}

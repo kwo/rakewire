@@ -3,10 +3,18 @@ package httpd
 import (
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"rakewire/db"
-	"rakewire/logging"
+)
+
+const (
+	logName  = "httpd"
+	logDebug = "DEBUG"
+	logInfo  = "INFO "
+	logWarn  = "WARN "
+	logError = "ERROR"
 )
 
 // Service server
@@ -38,22 +46,18 @@ const (
 	mimeText         = "text/plain; charset=utf-8"
 )
 
-var (
-	logger = logging.New("httpd")
-)
-
 // Start web service
 func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 
 	if z.Database == nil {
-		logger.Error("Cannot start httpd, no database provided")
+		log.Printf("%s %s Cannot start httpd, no database provided", logError, logName)
 		chErrors <- errors.New("No database")
 		return
 	}
 
 	router, err := z.mainRouter()
 	if err != nil {
-		logger.Errorf("Cannot load router: %s\n", err.Error())
+		log.Printf("%s %s Cannot load router: %s\n", logError, logName, err.Error())
 		chErrors <- err
 		return
 	}
@@ -61,7 +65,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Address, cfg.Port))
 	if err != nil {
-		logger.Errorf("Cannot start listener: %s\n", err.Error())
+		log.Printf("%s %s Cannot start listener: %s\n", logError, logName, err.Error())
 		chErrors <- err
 		return
 	}
@@ -69,10 +73,10 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 	server := http.Server{
 		Handler: mainHandler,
 	}
-	logger.Infof("Started httpd on http://%s", z.listener.Addr())
+	log.Printf("%s %s Started httpd on http://%s", logInfo, logName, z.listener.Addr())
 	err = server.Serve(z.listener)
 	if err != nil && z.Running() {
-		logger.Errorf("Cannot start httpd: %s\n", err.Error())
+		log.Printf("%s %s Cannot start httpd: %s\n", logError, logName, err.Error())
 		chErrors <- err
 		return
 	}
@@ -84,10 +88,10 @@ func (z *Service) Stop() error {
 	if l := z.listener; l != nil {
 		z.listener = nil
 		if err := l.Close(); err != nil {
-			logger.Errorf("Error stopping httpd: %s\n", err.Error())
+			log.Printf("%s %s Error stopping httpd: %s\n", logError, logName, err.Error())
 			return err
 		}
-		logger.Info("Stopped httpd")
+		log.Printf("%s %s Stopped httpd", logInfo, logName)
 	}
 	return nil
 }

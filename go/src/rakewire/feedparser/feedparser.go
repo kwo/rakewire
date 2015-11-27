@@ -8,8 +8,8 @@ import (
 	_ "github.com/rogpeppe/go-charset/data"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/url"
-	"rakewire/logging"
 	"strings"
 	"time"
 )
@@ -70,8 +70,12 @@ const (
 	linkAlternate = "alternate"
 )
 
-var (
-	logger = logging.New("feedparser")
+const (
+	logName  = "feedp"
+	logDebug = "DEBUG"
+	// logInfo  = "INFO "
+	// logWarn  = "WARN "
+	// logError = "ERROR"
 )
 
 // NewParser returns a new parser
@@ -109,7 +113,7 @@ Loop:
 
 		case xml.StartElement:
 			e := z.stack.Push(t)
-			logger.Debugf("Start %s :: %s\n", e.name.Local, z.stack.String())
+			log.Printf("%s %s Start %s :: %s\n", logDebug, logName, e.name.Local, z.stack.String())
 
 			switch {
 			case z.feed == nil:
@@ -142,7 +146,7 @@ Loop:
 				exitError = err
 				break Loop
 			}
-			logger.Debugf("End   %s :: %s\n", e.name.Local, z.stack.String())
+			log.Printf("%s %s End   %s :: %s\n", logDebug, logName, e.name.Local, z.stack.String())
 
 			switch {
 
@@ -169,7 +173,7 @@ Loop:
 
 	} // loop
 
-	logger.Debugf("exitError: %s", exitError)
+	log.Printf("%s %s exit error: %s", logDebug, logName, exitError)
 
 	if exitError != nil {
 		ioutil.ReadAll(reader)

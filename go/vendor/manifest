@@ -14,12 +14,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/Sirupsen/logrus",
-			"repository": "https://github.com/Sirupsen/logrus",
-			"revision": "fe6f2b03125e4fcafb21406381010e363a072c80",
-			"branch": "master"
-		},
-		{
 			"importpath": "github.com/akavel/rsrc/binutil",
 			"repository": "https://github.com/akavel/rsrc",
 			"revision": "59b2acb86e3659d46e181b8ee3eb1638995deb96",

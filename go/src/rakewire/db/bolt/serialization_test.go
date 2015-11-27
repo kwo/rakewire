@@ -78,7 +78,9 @@ func TestSerialization(t *testing.T) {
 	err = database.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog)) // works
 		value := b.Get([]byte(fmt.Sprintf("%s%s%s", fl2.ID, chSep, "IsUpdated")))
-		assertNil(t, value)
+		if value != nil {
+			t.Error("value must be nil")
+		}
 		return nil
 	})
 	assertNoError(t, err)

@@ -2,8 +2,8 @@ package bolt
 
 import (
 	"github.com/boltdb/bolt"
+	"log"
 	"rakewire/db"
-	"rakewire/logging"
 	"sync"
 	"time"
 )
@@ -17,6 +17,14 @@ const (
 	bucketIndexNextFetch = "idxNextFetch"
 )
 
+const (
+	logName  = "bolt "
+	logDebug = "DEBUG"
+	logInfo  = "INFO "
+	logWarn  = "WARN "
+	logError = "ERROR"
+)
+
 // Database implementation of Database
 type Database struct {
 	sync.Mutex
@@ -24,27 +32,23 @@ type Database struct {
 	databaseFile string
 }
 
-var (
-	logger = logging.New("db")
-)
-
 // Open the database
 func (z *Database) Open(cfg *db.Configuration) error {
 
 	db, err := bolt.Open(cfg.Location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
-		logger.Errorf("Cannot open database at %s. %s", cfg.Location, err.Error())
+		log.Printf("%s %s Cannot open database at %s. %s", logError, logName, cfg.Location, err.Error())
 		return err
 	}
 	z.db = db
 	z.databaseFile = cfg.Location
 
 	if err := checkSchema(z); err != nil {
-		logger.Errorf("Cannot initialize database: %s", err.Error())
+		log.Printf("%s %s Cannot initialize database: %s", logError, logName, err.Error())
 		return err
 	}
 
-	logger.Infof("Using database at %s\n", cfg.Location)
+	log.Printf("%s %s Using database at %s\n", logInfo, logName, cfg.Location)
 
 	return nil
 
@@ -55,10 +59,10 @@ func (z *Database) Close() error {
 	if db := z.db; db != nil {
 		z.db = nil
 		if err := db.Close(); err != nil {
-			logger.Warnf("Error closing database: %s\n", err.Error())
+			log.Printf("%s %s Error closing database: %s\n", logWarn, logName, err.Error())
 			return err
 		}
-		logger.Info("Closed database")
+		log.Printf("%s %s Closed database", logInfo, logName)
 	}
 	return nil
 }

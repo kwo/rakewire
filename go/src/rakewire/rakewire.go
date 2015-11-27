@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"rakewire/config"
 	"rakewire/db/bolt"
 	"rakewire/fetch"
 	"rakewire/httpd"
-	"rakewire/logging"
 	"rakewire/model"
 	"rakewire/pollfeed"
 	"rakewire/reaper"
@@ -16,10 +16,17 @@ import (
 	"syscall"
 )
 
+const (
+	logName  = "main "
+	logDebug = "DEBUG"
+	logInfo  = "INFO "
+	logWarn  = "WARN "
+	logError = "ERROR"
+)
+
 var (
 	database *bolt.Database
 	fetchd   *fetch.Service
-	logger   = logging.New("main")
 	polld    *pollfeed.Service
 	reaperd  *reaper.Service
 	ws       *httpd.Service
@@ -36,13 +43,10 @@ func main() {
 		return
 	}
 
-	// initialize logging
-	logging.Init(&cfg.Logging)
-
 	database = &bolt.Database{}
 	err := database.Open(&cfg.Database)
 	if err != nil {
-		logger.Errorf("Abort! Cannot access database: %s\n", err.Error())
+		log.Printf("%s %s Abort! Cannot access database: %s\n", logError, logName, err.Error())
 		os.Exit(1)
 		return
 	}
@@ -73,13 +77,13 @@ func monitorShutdown(chErrors chan error) {
 
 	select {
 	case err := <-chErrors:
-		logger.Errorf("Received error: %s", err.Error())
+		log.Printf("%s %s Received error: %s", logError, logName, err.Error())
 	case <-chSignals:
 		fmt.Println()
-		logger.Info("caught signal")
+		log.Printf("%s %s caught signal", logInfo, logName)
 	}
 
-	logger.Info("Stopping... ")
+	log.Printf("%s %s Stopping... ", logInfo, logName)
 
 	// shutdown httpd
 	ws.Stop()
@@ -98,6 +102,6 @@ func monitorShutdown(chErrors chan error) {
 	database.Close()
 	database = nil
 
-	logger.Info("Done")
+	log.Printf("%s %s Done", logInfo, logName)
 
 }
