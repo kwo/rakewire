@@ -39,54 +39,7 @@ func (z *Database) Open(cfg *db.Configuration) error {
 	z.db = db
 	z.databaseFile = cfg.Location
 
-	// check that buckets exist
-	z.Lock()
-	err = z.db.Update(func(tx *bolt.Tx) error {
-
-		bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
-		if err != nil {
-			return err
-		}
-		bucketIndex, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
-		if err != nil {
-			return err
-		}
-
-		_, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeed))
-		if err != nil {
-			return err
-		}
-		_, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeedLog))
-		if err != nil {
-			return err
-		}
-
-		bucketIndexFeed, err := bucketIndex.CreateBucketIfNotExists([]byte("Feed"))
-		if err != nil {
-			return err
-		}
-		if _, err = bucketIndexFeed.CreateBucketIfNotExists([]byte("URL")); err != nil {
-			return err
-		}
-		if _, err = bucketIndexFeed.CreateBucketIfNotExists([]byte("NextFetch")); err != nil {
-			return err
-		}
-
-		bucketIndexFeedLog, err := bucketIndex.CreateBucketIfNotExists([]byte("FeedLog"))
-		if err != nil {
-			return err
-		}
-		_, err = bucketIndexFeedLog.CreateBucketIfNotExists([]byte("FeedTime"))
-		if err != nil {
-			return err
-		}
-
-		return nil
-
-	})
-	z.Unlock()
-
-	if err != nil {
+	if err := checkSchema(z); err != nil {
 		logger.Errorf("Cannot initialize database: %s", err.Error())
 		return err
 	}

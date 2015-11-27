@@ -19,10 +19,6 @@ const (
 // TODO: add function to register data types on start to create buckets
 // TODO: create function to rebuild indexes
 
-// TODO: need a control table to keep track of schema version,
-// need functions to convert from one schema version to the next,
-// and that is how to rename fields.
-
 // Get retrieves the object with the given ID from the specified bucket.
 func Get(object interface{}, tx *bolt.Tx) error {
 
