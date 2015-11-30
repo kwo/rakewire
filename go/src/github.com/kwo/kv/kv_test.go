@@ -9,19 +9,32 @@ func TestDates(t *testing.T) {
 
 	t.Parallel()
 
+	assertEqual := func(a interface{}, b interface{}) {
+		if a != b {
+			t.Errorf("Not equal: expected %v, actual %v", a, b)
+		}
+	}
+
 	dt := time.Date(2015, time.November, 20, 20, 42, 55, 33, time.UTC)
 	tz, err := time.LoadLocation("Europe/Berlin")
-	assertNoError(t, err)
-	assertNotNil(t, tz)
+	if err != nil || tz == nil {
+		t.Fatalf("Timezone error: %v, %v\n", tz, err)
+	}
 
-	assertEqual(t, "2015-11-20T20:42:55Z", dt.UTC().Format(time.RFC3339))
-	assertEqual(t, "2015-11-20T21:42:55+01:00", dt.In(tz).Format(time.RFC3339))
+	assertEqual("2015-11-20T20:42:55Z", dt.UTC().Format(time.RFC3339))
+	assertEqual("2015-11-20T21:42:55+01:00", dt.In(tz).Format(time.RFC3339))
 
 }
 
 func TestEncode(t *testing.T) {
 
 	t.Parallel()
+
+	assertEqual := func(a interface{}, b interface{}) {
+		if a != b {
+			t.Errorf("Not equal: expected %v, actual %v", a, b)
+		}
+	}
 
 	type object struct {
 		ID         string
@@ -42,29 +55,29 @@ func TestEncode(t *testing.T) {
 	}
 
 	meta, data, err := Encode(o)
-	assertNoError(t, err)
-	assertNotNil(t, meta)
-	assertNotNil(t, data)
+	if err != nil || meta == nil || data == nil {
+		t.Fatalf("Encode error: %v, %v, %v\n", meta, data, err)
+	}
 
-	assertEqual(t, "object", meta.Name)
-	assertEqual(t, "ID", meta.Key)
-	assertEqual(t, 1, len(meta.Indexes))
-	assertEqual(t, 2, len(meta.Indexes["StartTime"]))
-	assertEqual(t, "StartTime", meta.Indexes["StartTime"][0])
-	assertEqual(t, "Key", meta.Indexes["StartTime"][1])
+	assertEqual("object", meta.Name)
+	assertEqual("ID", meta.Key)
+	assertEqual(1, len(meta.Indexes))
+	assertEqual(2, len(meta.Indexes["StartTime"]))
+	assertEqual("StartTime", meta.Indexes["StartTime"][0])
+	assertEqual("Key", meta.Indexes["StartTime"][1])
 
-	assertEqual(t, "object", data.Name)
-	assertEqual(t, "555", data.Key)
-	assertEqual(t, 1, len(data.Indexes))
-	assertEqual(t, 2, len(data.Indexes["StartTime"]))
-	assertEqual(t, "2015-11-20T20:42:55.000000033Z", data.Indexes["StartTime"][0])
-	assertEqual(t, "1", data.Indexes["StartTime"][1])
+	assertEqual("object", data.Name)
+	assertEqual("555", data.Key)
+	assertEqual(1, len(data.Indexes))
+	assertEqual(2, len(data.Indexes["StartTime"]))
+	assertEqual("2015-11-20T20:42:55.000000033Z", data.Indexes["StartTime"][0])
+	assertEqual("1", data.Indexes["StartTime"][1])
 
-	assertEqual(t, 4, len(data.Values))
-	assertEqual(t, "555", data.Values["ID"])
-	assertEqual(t, "1", data.Values["Key"])
-	assertEqual(t, "2015-11-20T20:42:55.000000033Z", data.Values["StartTime"])
-	assertEqual(t, "2015-11-20T20:42:55.000000033Z", data.Values["StartTime2"])
+	assertEqual(4, len(data.Values))
+	assertEqual("555", data.Values["ID"])
+	assertEqual("1", data.Values["Key"])
+	assertEqual("2015-11-20T20:42:55.000000033Z", data.Values["StartTime"])
+	assertEqual("2015-11-20T20:42:55.000000033Z", data.Values["StartTime2"])
 
 }
 
@@ -80,9 +93,11 @@ func TestEncodeNoKey(t *testing.T) {
 
 	o := &object{}
 
-	_, _, err := Encode(o)
-	assertNotNil(t, err)
-	assertEqual(t, "Empty primary key for object.", err.Error())
+	if _, _, err := Encode(o); err == nil {
+		t.Fatal("Encode error expected")
+	} else if err.Error() != "Empty primary key for object" {
+		t.Errorf("Wrong error message")
+	}
 
 }
 
@@ -99,15 +114,23 @@ func TestEncodeNonContiguousIndexes(t *testing.T) {
 
 	o := &object{}
 
-	_, _, err := Encode(o)
-	assertNotNil(t, err)
-	assertEqual(t, "Non-contiguous index names for entity object, index StartTime.", err.Error())
+	if _, _, err := Encode(o); err == nil {
+		t.Fatal("Encode error expected")
+	} else if err.Error() != "Non-contiguous index names for entity object, index StartTime" {
+		t.Error("Wrong error message")
+	}
 
 }
 
 func TestDecode(t *testing.T) {
 
 	t.Parallel()
+
+	assertEqual := func(a interface{}, b interface{}) {
+		if a != b {
+			t.Errorf("Not equal: expected %v, actual %v", a, b)
+		}
+	}
 
 	type object struct {
 		ID         string
@@ -124,17 +147,20 @@ func TestDecode(t *testing.T) {
 	}
 
 	err := Decode(o, values)
-	assertNoError(t, err)
+	if err != nil {
+		t.Fatalf("Encode error: %v\n", err)
+	}
 
 	dt := time.Date(2015, time.November, 20, 20, 42, 55, 33, time.UTC)
 	tz, err := time.LoadLocation("Europe/Berlin")
-	assertNoError(t, err)
-	assertNotNil(t, tz)
+	if err != nil || tz == nil {
+		t.Fatalf("Timezone error: %v, %v\n", tz, err)
+	}
 
-	assertEqual(t, "hello", o.ID)
-	assertEqual(t, 0, o.Key)
-	assertEqual(t, dt, o.StartTime)
-	assertEqual(t, dt, o.StartTime2.UTC())
+	assertEqual("hello", o.ID)
+	assertEqual(0, o.Key)
+	assertEqual(dt, o.StartTime)
+	assertEqual(dt, o.StartTime2.UTC())
 
 }
 
@@ -148,15 +174,23 @@ func TestDecodeNonPointer(t *testing.T) {
 	o := object{}
 	values := map[string]string{}
 
-	err := Decode(o, values)
-	assertNotNil(t, err)
-	assertEqual(t, "Cannot decode non-pointer object", err.Error())
+	if err := Decode(o, values); err == nil {
+		t.Fatal("Decode error expected")
+	} else if err.Error() != "Cannot decode non-pointer object" {
+		t.Errorf("Wrong error message, expected '%s'", "Cannot decode non-pointer object")
+	}
 
 }
 
 func TestDataFrom(t *testing.T) {
 
 	t.Parallel()
+
+	assertEqual := func(a interface{}, b interface{}) {
+		if a != b {
+			t.Errorf("Not equal: expected %v, actual %v", a, b)
+		}
+	}
 
 	type object struct {
 		ID        string
@@ -178,12 +212,14 @@ func TestDataFrom(t *testing.T) {
 	}
 
 	data := DataFrom(metadata, values)
-	assertNotNil(t, data)
+	if data == nil {
+		t.Fatal("Nil result from DataFrom")
+	}
 
-	assertEqual(t, "hello", data.Key)
-	assertEqual(t, 1, len(data.Indexes))
-	assertEqual(t, "2015-11-20T20:42:55Z", data.Indexes["StartTime"][0])
-	assertEqual(t, "", data.Indexes["StartTime"][1])
+	assertEqual("hello", data.Key)
+	assertEqual(1, len(data.Indexes))
+	assertEqual("2015-11-20T20:42:55Z", data.Indexes["StartTime"][0])
+	assertEqual("", data.Indexes["StartTime"][1])
 
 }
 
@@ -191,37 +227,21 @@ func TestEncodeFields(t *testing.T) {
 
 	t.Parallel()
 
+	assertEqual := func(a interface{}, b interface{}) {
+		if a != b {
+			t.Errorf("Not equal: expected %v, actual %v", a, b)
+		}
+	}
+
 	value := EncodeFields(1, 4.5, time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC), "hello")
-	assertNotNil(t, value)
-
-	assertEqual(t, 4, len(value))
-	assertEqual(t, "1", value[0])
-	assertEqual(t, "4.5", value[1])
-	assertEqual(t, "2015-11-20T20:42:55Z", value[2])
-	assertEqual(t, "hello", value[3])
-
-}
-
-func assertNoError(t *testing.T, e error) {
-	if e != nil {
-		t.Fatalf("Error: %s", e.Error())
+	if value == nil {
+		t.Fatal("Nil result from EncodeFields")
 	}
-}
 
-func assertNil(t *testing.T, v interface{}) {
-	if v != nil {
-		t.Fatal("Expected nil value")
-	}
-}
+	assertEqual(4, len(value))
+	assertEqual("1", value[0])
+	assertEqual("4.5", value[1])
+	assertEqual("2015-11-20T20:42:55Z", value[2])
+	assertEqual("hello", value[3])
 
-func assertNotNil(t *testing.T, v interface{}) {
-	if v == nil {
-		t.Fatal("Expected not nil value")
-	}
-}
-
-func assertEqual(t *testing.T, a interface{}, b interface{}) {
-	if a != b {
-		t.Errorf("Not equal: expected %v, actual %v", a, b)
-	}
 }
