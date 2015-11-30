@@ -146,7 +146,7 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 
 	// validate that primary key is not an empty string
 	if meta.Key == empty {
-		return nil, nil, fmt.Errorf("Empty primary key for %s.", meta.Name)
+		return nil, nil, fmt.Errorf("Empty primary key for %s", meta.Name)
 	}
 
 	// validate contiguous indexes
@@ -154,7 +154,7 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 		index := meta.Indexes[name]
 		for _, field := range index {
 			if field == empty {
-				return nil, nil, fmt.Errorf("Non-contiguous index names for entity %s, index %s.", meta.Name, name)
+				return nil, nil, fmt.Errorf("Non-contiguous index names for entity %s, index %s", meta.Name, name)
 			}
 		}
 	}
