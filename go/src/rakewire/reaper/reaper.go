@@ -9,11 +9,11 @@ import (
 )
 
 const (
-	logName  = "reap "
-	logDebug = "DEBUG"
-	logInfo  = "INFO "
-	logWarn  = "WARN "
-	logError = "ERROR"
+	logName  = "[reap]"
+	logDebug = "[DEBUG]"
+	logInfo  = "[INFO]"
+	logWarn  = "[WARN]"
+	logError = "[ERROR]"
 )
 
 // Configuration for reaper service
@@ -42,24 +42,24 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 
 // Start Service
 func (z *Service) Start() {
-	log.Printf("%s %s service starting...", logInfo, logName)
+	log.Printf("%-7s %-7s service starting...", logInfo, logName)
 	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	log.Printf("%s %s service started.", logInfo, logName)
+	log.Printf("%-7s %-7s service started.", logInfo, logName)
 }
 
 // Stop service
 func (z *Service) Stop() {
-	log.Printf("%s %s service stopping...", logInfo, logName)
+	log.Printf("%-7s %-7s service stopping...", logInfo, logName)
 	z.killsignal <- true
 	z.runlatch.Wait()
-	log.Printf("%s %s service stopped.", logInfo, logName)
+	log.Printf("%-7s %-7s service stopped.", logInfo, logName)
 }
 
 func (z *Service) run() {
 
-	log.Printf("%s %s run starting...", logInfo, logName)
+	log.Printf("%-7s %-7s run starting...", logInfo, logName)
 
 run:
 	for {
@@ -75,7 +75,7 @@ run:
 
 	z.setRunning(false)
 	z.runlatch.Done()
-	log.Printf("%s %s run exited.", logInfo, logName)
+	log.Printf("%-7s %-7s run exited.", logInfo, logName)
 
 }
 
@@ -86,7 +86,7 @@ func (z *Service) processResponse(rsp *m.Feed) {
 	// convert feeds
 	err := z.database.SaveFeed(rsp)
 	if err != nil {
-		log.Printf("%s %s Cannot save feed %s: %s", logWarn, logName, rsp.URL, err.Error())
+		log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, rsp.URL, err.Error())
 	}
 
 }

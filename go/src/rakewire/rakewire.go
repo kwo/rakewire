@@ -16,12 +16,14 @@ import (
 	"syscall"
 )
 
+// TODO: replace yaml config with key value package - give each package only subset of all KVs.
+
 const (
-	logName  = "main "
-	logDebug = "DEBUG"
-	logInfo  = "INFO "
-	logWarn  = "WARN "
-	logError = "ERROR"
+	logName  = "[main]"
+	logDebug = "[DEBUG]"
+	logInfo  = "[INFO]"
+	logWarn  = "[WARN]"
+	logError = "[ERROR]"
 )
 
 var (
@@ -43,10 +45,13 @@ func main() {
 		return
 	}
 
+	// initialize logging
+	cfg.Logging.Init()
+
 	database = &bolt.Database{}
 	err := database.Open(&cfg.Database)
 	if err != nil {
-		log.Printf("%s %s Abort! Cannot access database: %s\n", logError, logName, err.Error())
+		log.Printf("%-7s %-7s Abort! Cannot access database: %s", logError, logName, err.Error())
 		os.Exit(1)
 		return
 	}
@@ -77,13 +82,13 @@ func monitorShutdown(chErrors chan error) {
 
 	select {
 	case err := <-chErrors:
-		log.Printf("%s %s Received error: %s", logError, logName, err.Error())
+		log.Printf("%-7s %-7s Received error: %s", logError, logName, err.Error())
 	case <-chSignals:
 		fmt.Println()
-		log.Printf("%s %s caught signal", logInfo, logName)
+		log.Printf("%-7s %-7s caught signal", logInfo, logName)
 	}
 
-	log.Printf("%s %s Stopping... ", logInfo, logName)
+	log.Printf("%-7s %-7s Stopping... ", logInfo, logName)
 
 	// shutdown httpd
 	ws.Stop()
@@ -102,6 +107,6 @@ func monitorShutdown(chErrors chan error) {
 	database.Close()
 	database = nil
 
-	log.Printf("%s %s Done", logInfo, logName)
+	log.Printf("%-7s %-7s Done", logInfo, logName)
 
 }

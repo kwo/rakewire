@@ -24,7 +24,7 @@ func checkSchema(z *Database) error {
 		for {
 
 			schemaVersion := getSchemaVersion(tx)
-			log.Printf("%s %s Schema Version: %d", logDebug, logName, schemaVersion)
+			log.Printf("%-7s %-7s Schema Version: %d", logDebug, logName, schemaVersion)
 			if schemaVersion == SchemaVersion {
 				break
 			}

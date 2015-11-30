@@ -41,11 +41,11 @@ func LogAdapter(filename string) Adapter {
 		logFile, err = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
 		if err != nil {
 			logFile = os.Stderr
-			log.Printf("%s %s Reverting to stderr, cannot open log file: %s", logWarn, logName, err.Error())
+			log.Printf("%-7s %-7s Reverting to stderr, cannot open log file: %s", logWarn, logName, err.Error())
 		}
 	}
 
-	log.Printf("%s %s Logging http access logs to %s", logInfo, logName, logFile.Name())
+	log.Printf("%-7s %-7s Logging http access logs to %s", logInfo, logName, logFile.Name())
 
 	return func(h http.Handler) http.Handler {
 		return gorillaHandlers.LoggingHandler(logFile, h)

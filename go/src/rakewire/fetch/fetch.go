@@ -26,11 +26,11 @@ const (
 )
 
 const (
-	logName  = "fetch"
-	logDebug = "DEBUG"
-	logInfo  = "INFO "
-	logWarn  = "WARN "
-	logError = "ERROR"
+	logName  = "[fetch]"
+	logDebug = "[DEBUG]"
+	logInfo  = "[INFO]"
+	logWarn  = "[WARN]"
+	logError = "[ERROR]"
 )
 
 // Configuration configuration
@@ -65,35 +65,35 @@ func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Se
 
 // Start service
 func (z *Service) Start() {
-	log.Printf("%s %s service starting...", logInfo, logName)
+	log.Printf("%-7s %-7s service starting...", logInfo, logName)
 	// initialize fetchers
 	for i := 0; i < z.workers; i++ {
 		z.latch.Add(1)
 		go z.run(i)
 	} // for
-	log.Printf("%s %s service started.", logInfo, logName)
+	log.Printf("%-7s %-7s service started", logInfo, logName)
 }
 
 // Stop service
 func (z *Service) Stop() {
-	log.Printf("%s %s service stopping...", logInfo, logName)
+	log.Printf("%-7s %-7s service stopping...", logInfo, logName)
 	if z != nil { // TODO #RAKEWIRE-55: remove hack because on app close object is apparently already garbage collected
 		z.latch.Wait()
 		z.input = nil
 		z.output = nil
 	}
-	log.Printf("%s %s service stopped", logInfo, logName)
+	log.Printf("%-7s %-7s service stopped", logInfo, logName)
 }
 
 func (z *Service) run(id int) {
 
-	log.Printf("%s %s fetcher %2d starting...\n", logInfo, logName, id)
+	log.Printf("%-7s %-7s fetcher %2d starting...", logInfo, logName, id)
 
 	for req := range z.input {
 		z.processFeed(req, id)
 	}
 
-	log.Printf("%s %s fetcher %2d exited.\n", logInfo, logName, id)
+	log.Printf("%-7s %-7s fetcher %2d exited", logInfo, logName, id)
 	z.latch.Done()
 
 }
@@ -192,7 +192,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.AdjustFetchTime(24 * time.Hour) // don't hammer site if error
 
 		case true:
-			log.Printf("%s %s Uncaught Status Code: %d", logWarn, logName, rsp.StatusCode)
+			log.Printf("%-7s %-7s Uncaught Status Code: %d", logWarn, logName, rsp.StatusCode)
 
 		} // switch
 
@@ -200,7 +200,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
 
-	log.Printf("%s %s fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s\n", logInfo, logName, id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.Flavor)
+	log.Printf("%-7s %-7s fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s", logInfo, logName, id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.Flavor)
 	z.output <- feed
 
 }

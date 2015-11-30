@@ -10,11 +10,11 @@ import (
 )
 
 const (
-	logName  = "httpd"
-	logDebug = "DEBUG"
-	logInfo  = "INFO "
-	logWarn  = "WARN "
-	logError = "ERROR"
+	logName  = "[httpd]"
+	logDebug = "[DEBUG]"
+	logInfo  = "[INFO]"
+	logWarn  = "[WARN]"
+	logError = "[ERROR]"
 )
 
 // Service server
@@ -50,14 +50,14 @@ const (
 func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 
 	if z.Database == nil {
-		log.Printf("%s %s Cannot start httpd, no database provided", logError, logName)
+		log.Printf("%-7s %-7s Cannot start httpd, no database provided", logError, logName)
 		chErrors <- errors.New("No database")
 		return
 	}
 
 	router, err := z.mainRouter()
 	if err != nil {
-		log.Printf("%s %s Cannot load router: %s\n", logError, logName, err.Error())
+		log.Printf("%-7s %-7s Cannot load router: %s", logError, logName, err.Error())
 		chErrors <- err
 		return
 	}
@@ -65,7 +65,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Address, cfg.Port))
 	if err != nil {
-		log.Printf("%s %s Cannot start listener: %s\n", logError, logName, err.Error())
+		log.Printf("%-7s %-7s Cannot start listener: %s", logError, logName, err.Error())
 		chErrors <- err
 		return
 	}
@@ -73,10 +73,10 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 	server := http.Server{
 		Handler: mainHandler,
 	}
-	log.Printf("%s %s Started httpd on http://%s", logInfo, logName, z.listener.Addr())
+	log.Printf("%-7s %-7s Started httpd on http://%s", logInfo, logName, z.listener.Addr())
 	err = server.Serve(z.listener)
 	if err != nil && z.Running() {
-		log.Printf("%s %s Cannot start httpd: %s\n", logError, logName, err.Error())
+		log.Printf("%-7s %-7s Cannot start httpd: %s", logError, logName, err.Error())
 		chErrors <- err
 		return
 	}
@@ -88,10 +88,10 @@ func (z *Service) Stop() error {
 	if l := z.listener; l != nil {
 		z.listener = nil
 		if err := l.Close(); err != nil {
-			log.Printf("%s %s Error stopping httpd: %s\n", logError, logName, err.Error())
+			log.Printf("%-7s %-7s Error stopping httpd: %s", logError, logName, err.Error())
 			return err
 		}
-		log.Printf("%s %s Stopped httpd", logInfo, logName)
+		log.Printf("%-7s %-7s Stopped httpd", logInfo, logName)
 	}
 	return nil
 }

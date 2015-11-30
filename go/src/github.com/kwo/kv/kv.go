@@ -20,8 +20,8 @@ const (
 )
 
 const (
-	logName = "kv   "
-	logWarn = "WARN "
+	logName = "[kv]"
+	logWarn = "[WARN]"
 )
 
 // TODO: only do metedata validation upon registration to serialization
@@ -274,11 +274,11 @@ func getValue(field reflect.Value) string {
 				return v.UTC().Format(TimeFormat)
 			}
 		} else {
-			log.Printf("%s %s Will not evaluate struct: %s.", logWarn, logName, field.Type())
+			log.Printf("%-7s %-7s Will not evaluate struct: %s.", logWarn, logName, field.Type())
 		}
 
 	default:
-		log.Printf("%s %s Unknown field type when getting value: %s.", logWarn, logName, field.Kind())
+		log.Printf("%-7s %-7s Unknown field type when getting value: %s.", logWarn, logName, field.Kind())
 
 	} // switch
 

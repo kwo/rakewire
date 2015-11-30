@@ -71,11 +71,11 @@ const (
 )
 
 const (
-	logName  = "feedp"
-	logDebug = "DEBUG"
-	// logInfo  = "INFO "
-	// logWarn  = "WARN "
-	// logError = "ERROR"
+	logName = "[parsr]"
+	logDebug = "[DEBUG]"
+	// logInfo = "[INFO]"
+	// logWarn = "[WARN]"
+	// logError = "[ERROR]"
 )
 
 // NewParser returns a new parser
@@ -113,7 +113,7 @@ Loop:
 
 		case xml.StartElement:
 			e := z.stack.Push(t)
-			log.Printf("%s %s Start %s :: %s\n", logDebug, logName, e.name.Local, z.stack.String())
+			log.Printf("%-7s %-7s Start %s :: %s", logDebug, logName, e.name.Local, z.stack.String())
 
 			switch {
 			case z.feed == nil:
@@ -146,7 +146,7 @@ Loop:
 				exitError = err
 				break Loop
 			}
-			log.Printf("%s %s End   %s :: %s\n", logDebug, logName, e.name.Local, z.stack.String())
+			log.Printf("%-7s %-7s End   %s :: %s", logDebug, logName, e.name.Local, z.stack.String())
 
 			switch {
 
@@ -173,7 +173,7 @@ Loop:
 
 	} // loop
 
-	log.Printf("%s %s exit error: %s", logDebug, logName, exitError)
+	log.Printf("%-7s %-7s exit error: %s", logDebug, logName, exitError)
 
 	if exitError != nil {
 		ioutil.ReadAll(reader)
