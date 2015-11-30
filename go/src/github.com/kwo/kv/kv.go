@@ -2,7 +2,6 @@ package kv
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strconv"
 	"strings"
@@ -17,11 +16,6 @@ const (
 	// TimeFormat used to convert dates to strings
 	TimeFormat = time.RFC3339Nano
 	empty      = ""
-)
-
-const (
-	logName = "[kv]"
-	logWarn = "[WARN]"
 )
 
 // TODO: only do metedata validation upon registration to serialization
@@ -90,7 +84,11 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 			} else if tagField == "key" {
 				if meta.Key == empty {
 					meta.Key = fieldName
-					data.Key = getValue(field)
+					v, err := getValue(field)
+					if err != nil {
+						return nil, nil, err
+					}
+					data.Key = v
 					pkeyFound = true
 				} else {
 					return nil, nil, fmt.Errorf("Duplicate primary key defined for %s.", meta.Name)
@@ -121,7 +119,11 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 				for len(dataIndex) < indexPosition {
 					dataIndex = append(dataIndex, empty)
 				}
-				dataIndex[indexPosition-1] = getValue(field)
+				v, err := getValue(field)
+				if err != nil {
+					return nil, nil, err
+				}
+				dataIndex[indexPosition-1] = v
 				data.Indexes[indexName] = dataIndex
 
 			}
@@ -129,7 +131,11 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 		} // loop tag fields
 
 		if !ignoreField {
-			data.Values[fieldName] = getValue(field)
+			v, err := getValue(field)
+			if err != nil {
+				return nil, nil, err
+			}
+			data.Values[fieldName] = v
 		}
 
 	} // loop fields
@@ -140,7 +146,11 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 		idValue := wrapper.FieldByName(fieldName)
 		if idValue.IsValid() {
 			meta.Key = fieldName
-			data.Key = getValue(idValue)
+			v, err := getValue(idValue)
+			if err != nil {
+				return nil, nil, err
+			}
+			data.Key = v
 		}
 	}
 
@@ -164,14 +174,18 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 }
 
 // EncodeFields returns encoded values in a string slice
-func EncodeFields(fields ...interface{}) []string {
+func EncodeFields(fields ...interface{}) ([]string, error) {
 
 	var result []string
 	for _, field := range fields {
-		result = append(result, getValue(reflect.ValueOf(field)))
+		v, err := getValue(reflect.ValueOf(field))
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, v)
 	}
 
-	return result
+	return result, nil
 
 }
 
@@ -229,41 +243,41 @@ func DataFrom(metadata *Metadata, values map[string]string) *Data {
 
 }
 
-func getValue(field reflect.Value) string {
+func getValue(field reflect.Value) (string, error) {
 
 	switch field.Kind() {
 
 	case reflect.String:
-		return field.String()
+		return field.String(), nil
 
 	case reflect.Bool:
 		v := field.Bool()
 		if v {
-			return strconv.FormatBool(v)
+			return strconv.FormatBool(v), nil
 		}
 
 	case reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Int:
 		v := field.Int()
 		if v != 0 {
-			return strconv.FormatInt(v, 10)
+			return strconv.FormatInt(v, 10), nil
 		}
 
 	case reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uint:
 		v := field.Uint()
 		if v != 0 {
-			return strconv.FormatUint(v, 10)
+			return strconv.FormatUint(v, 10), nil
 		}
 
 	case reflect.Float32:
 		v := field.Float()
 		if v != 0 {
-			return strconv.FormatFloat(v, 'f', -1, 32)
+			return strconv.FormatFloat(v, 'f', -1, 32), nil
 		}
 
 	case reflect.Float64:
 		v := field.Float()
 		if v != 0 {
-			return strconv.FormatFloat(v, 'f', -1, 64)
+			return strconv.FormatFloat(v, 'f', -1, 64), nil
 		}
 
 	case reflect.Struct:
@@ -271,18 +285,18 @@ func getValue(field reflect.Value) string {
 			v := field.Interface().(time.Time)
 			if !v.IsZero() {
 				// dates must be in UTC so that indexes sort properly
-				return v.UTC().Format(TimeFormat)
+				return v.UTC().Format(TimeFormat), nil
 			}
 		} else {
-			log.Printf("%-7s %-7s Will not evaluate struct: %s.", logWarn, logName, field.Type())
+			return empty, fmt.Errorf("Will not evaluate struct: %s", field.Type())
 		}
 
 	default:
-		log.Printf("%-7s %-7s Unknown field type when getting value: %s.", logWarn, logName, field.Kind())
+		return empty, fmt.Errorf("Unknown field type when getting value: %s", field.Kind())
 
 	} // switch
 
-	return empty
+	return empty, nil
 
 }
 

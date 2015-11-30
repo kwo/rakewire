@@ -96,7 +96,7 @@ func TestEncodeNoKey(t *testing.T) {
 	if _, _, err := Encode(o); err == nil {
 		t.Fatal("Encode error expected")
 	} else if err.Error() != "Empty primary key for object" {
-		t.Errorf("Wrong error message")
+		t.Errorf("Wrong error message: %s", err.Error())
 	}
 
 }
@@ -117,7 +117,7 @@ func TestEncodeNonContiguousIndexes(t *testing.T) {
 	if _, _, err := Encode(o); err == nil {
 		t.Fatal("Encode error expected")
 	} else if err.Error() != "Non-contiguous index names for entity object, index StartTime" {
-		t.Error("Wrong error message")
+		t.Errorf("Wrong error message: %s", err.Error())
 	}
 
 }
@@ -233,9 +233,9 @@ func TestEncodeFields(t *testing.T) {
 		}
 	}
 
-	value := EncodeFields(1, 4.5, time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC), "hello")
-	if value == nil {
-		t.Fatal("Nil result from EncodeFields")
+	value, err := EncodeFields(1, 4.5, time.Date(2015, time.November, 20, 20, 42, 55, 0, time.UTC), "hello")
+	if err != nil || value == nil {
+		t.Fatalf("Nil result from EncodeFields: error: %v", err)
 	}
 
 	assertEqual(4, len(value))
