@@ -91,21 +91,21 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 					data.Key = v
 					pkeyFound = true
 				} else {
-					return nil, nil, fmt.Errorf("Duplicate primary key defined for %s.", meta.Name)
+					return nil, nil, fmt.Errorf("Duplicate primary key defined for %s", meta.Name)
 				}
 
 			} else if tagField != empty {
 				// populate indexes
 				elements := strings.SplitN(tagField, ":", 2)
 				if len(elements) != 2 {
-					return nil, nil, fmt.Errorf("Invalid index definition: %s.", tagField)
+					return nil, nil, fmt.Errorf("Invalid index definition: %s", tagField)
 				}
 				indexName := elements[0]
 				indexPosition, err := strconv.Atoi(elements[1])
 				if err != nil {
-					return nil, nil, fmt.Errorf("Index position is not an integer: %s.", tagField)
+					return nil, nil, fmt.Errorf("Index position is not an integer: %s", tagField)
 				} else if indexPosition < 1 {
-					return nil, nil, fmt.Errorf("Index positions are one-based: %s.", tagField)
+					return nil, nil, fmt.Errorf("Index positions are one-based: %s", tagField)
 				}
 
 				metaIndex := meta.Indexes[indexName]
@@ -173,7 +173,7 @@ func Encode(object interface{}) (*Metadata, *Data, error) {
 
 }
 
-// EncodeFields returns encoded values in a string slice
+// EncodeFields returns multiple values encoded into a string slice
 func EncodeFields(fields ...interface{}) ([]string, error) {
 
 	var result []string
@@ -204,7 +204,7 @@ func Decode(object interface{}, values map[string]string) error {
 		// lookup up field in value
 		field := wrapper.FieldByName(fieldName)
 		if !field.IsValid() {
-			return fmt.Errorf("Invalid fieldname: %s.", fieldName)
+			return fmt.Errorf("Invalid fieldname: %s", fieldName)
 		}
 
 		if err := setValue(field, fieldName, v); err != nil {
@@ -396,11 +396,11 @@ func setValue(field reflect.Value, fieldName string, val string) error {
 				field.Set(reflect.ValueOf(time.Time{}))
 			}
 		} else {
-			return fmt.Errorf("Will not set value for struct: %s.", fieldName)
+			return fmt.Errorf("Will not set value for struct: %s", fieldName)
 		}
 
 	default:
-		return fmt.Errorf("Unknown field type when setting value for %s.", fieldName)
+		return fmt.Errorf("Unknown field type when setting value for %s", fieldName)
 
 	} // switch
 
