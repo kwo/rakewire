@@ -10,27 +10,27 @@
 		{
 			"importpath": "github.com/GeertJohan/go.rice",
 			"repository": "https://github.com/GeertJohan/go.rice",
-			"revision": "ada95a01c963696fb73320ee662195af68be81ae",
+			"revision": "53da841dfb99ea1866e11c44d83f064cc44df89d",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/akavel/rsrc/binutil",
 			"repository": "https://github.com/akavel/rsrc",
-			"revision": "59b2acb86e3659d46e181b8ee3eb1638995deb96",
+			"revision": "ba14da1f827188454a4591717fff29999010887f",
 			"branch": "master",
 			"path": "/binutil"
 		},
 		{
 			"importpath": "github.com/akavel/rsrc/coff",
 			"repository": "https://github.com/akavel/rsrc",
-			"revision": "59b2acb86e3659d46e181b8ee3eb1638995deb96",
+			"revision": "ba14da1f827188454a4591717fff29999010887f",
 			"branch": "master",
 			"path": "/coff"
 		},
 		{
 			"importpath": "github.com/boltdb/bolt",
 			"repository": "https://github.com/boltdb/bolt",
-			"revision": "ee716d1410cb44d1a6b7e59a96a2b2bec23366a9",
+			"revision": "6e1ca38c6a73025366cd8705553b404746ee6e63",
 			"branch": "master"
 		},
 		{
@@ -42,7 +42,7 @@
 		{
 			"importpath": "github.com/davecgh/go-spew/spew",
 			"repository": "https://github.com/davecgh/go-spew",
-			"revision": "2df174808ee097f90d259e432cc04442cf60be21",
+			"revision": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d",
 			"branch": "master",
 			"path": "/spew"
 		},
@@ -55,25 +55,25 @@
 		{
 			"importpath": "github.com/gorilla/handlers",
 			"repository": "https://github.com/gorilla/handlers",
-			"revision": "9a8d6fa6e6479b56ec164996e54fa5d7eb3ef544",
+			"revision": "e96366d97736da3bdec18b7fbaedd37c6fc97fb9",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/gorilla/mux",
 			"repository": "https://github.com/gorilla/mux",
-			"revision": "ad4d7a5882b961e07e2626045eb995c022ac6664",
+			"revision": "9c068cf16d982f8bd444b8c352acbeec34c4fe5b",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/jessevdk/go-flags",
 			"repository": "https://github.com/jessevdk/go-flags",
-			"revision": "4047bd797dd935ae2b557a79cc43f223066c9659",
+			"revision": "0a28dbe50f23d8fce6b016975b964cfe7b97a20a",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/kardianos/osext",
 			"repository": "https://github.com/kardianos/osext",
-			"revision": "6e7f843663477789fac7c02def0d0909e969b4e5",
+			"revision": "10da29423eb9a6269092eebdc2be32209612d9d2",
 			"branch": "master"
 		},
 		{
