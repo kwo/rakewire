@@ -32,9 +32,9 @@ class FeedEntry extends React.Component {
 			return formatTime(dt);
 		};
 
-		const formatDate = function(dt) {
-			return moment(dt).format('YYYY-MM-DD');
-		};
+		// const formatDate = function(dt) {
+		// 	return moment(dt).format('YYYY-MM-DD');
+		// };
 
 		const formatTime = function(dt) {
 			return moment(dt).format('dd HH:mm');
@@ -45,13 +45,8 @@ class FeedEntry extends React.Component {
 		if (!feed) {
 			return (
 				<tr key={0}>
-					<th>Next</th>
-					<th>Last</th>
 					<th>Status</th>
-					<th>Code</th>
-					<th>Updated</th>
-					<th>Check</th>
-					<th>Last Updated</th>
+					<th>Next</th>
 					<th>
 						Feed
 						<span className="pull-right"
@@ -65,21 +60,14 @@ class FeedEntry extends React.Component {
 			);
 		}
 
-		const status = feed.last.result;
-		const isUpdated = feed.last.updated ? 'Yes' : '';
-		const updateCheck = feed.last.updateCheck;
+		const status = feed.status;
 		const title = feed.title || feed.url;
 		const feedLinkURL = `/feeds/${feed.id}`;
 
 		return (
 			<tr>
-				<td>{formatTime(feed.nextFetch)}</td>
-				<td>{formatTime(feed.last.startTime)}</td>
 				<td>{status}</td>
-				<td>{feed.last.statusCode}</td>
-				<td>{isUpdated}</td>
-				<td>{updateCheck}</td>
-				<td>{formatDate(feed.lastUpdated)}</td>
+				<td>{formatTime(feed.nextFetch)}</td>
 				<td><Link to={feedLinkURL}>{title}</Link></td>
 			</tr>
 		);

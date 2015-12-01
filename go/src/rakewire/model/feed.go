@@ -8,28 +8,25 @@ import (
 
 // Feed feed descriptor
 type Feed struct {
-	// Current fetch attempt for feed
-	Attempt *FeedLog `kv:"-" json:"-"`
-	// ETag HTTP header on the last 200
-	ETag string `json:"etag"`
-	// Feed object parsed from Body
-	Feed *feedparser.Feed `kv:"-" json:"-"`
-	// UUID
-	ID string `kv:"key" json:"id"`
-	// LastModified HTTP header on the last 200
-	LastModified time.Time `json:"lastModified"`
-	// Time the feed was last updated
-	LastUpdated time.Time `json:"lastUpdated"`
-	// Past fetch attempts for feed
-	Log []*FeedLog `kv:"-" json:"-"`
-	// Time of next scheduled fetch
-	NextFetch time.Time `kv:"NextFetch:1" json:"nextFetch"`
-	// User notes of the feed
-	Notes string `json:"notes,omitempty"`
-	// User defined title of the feed
-	Title string `json:"title"`
-	// URL updated if feed is permenently redirected
+	Attempt *FeedLog         `kv:"-" json:"-"`
+	Feed    *feedparser.Feed `kv:"-" json:"-"`
+	Log     []*FeedLog       `kv:"-" json:"-"`
+
+	ID  string `kv:"key" json:"id"`
 	URL string `kv:"URL:1" json:"url"`
+
+	ETag         string    `json:"etag"`
+	LastModified time.Time `json:"lastModified"`
+
+	LastUpdated time.Time `json:"lastUpdated"`
+	NextFetch   time.Time `kv:"NextFetch:1" json:"nextFetch"`
+
+	Notes string `json:"notes,omitempty"`
+	Title string `json:"title"`
+
+	Status        string    `json:"status"`
+	StatusMessage string    `json:"statusMessage"`
+	StatusSince   time.Time `json:"statusSince"` // time of last status
 }
 
 // AddLog adds a feedlog to the Feed returning its ID

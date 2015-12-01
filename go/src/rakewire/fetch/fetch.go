@@ -196,11 +196,17 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 		} // switch
 
-	} // err
+	} // not err
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
+	if feed.Status != feed.Attempt.Result {
+		feed.StatusSince = time.Now()
+	}
+	feed.Status = feed.Attempt.Result
+	feed.StatusMessage = feed.Attempt.ResultMessage
 
-	log.Printf("%-7s %-7s fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s", logInfo, logName, id, feed.Attempt.Result, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.Attempt.ResultMessage, feed.Attempt.Flavor)
+	log.Printf("%-7s %-7s fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s", logInfo, logName, id, feed.Status, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.StatusMessage, feed.Attempt.Flavor)
+
 	z.output <- feed
 
 }

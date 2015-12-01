@@ -47,6 +47,7 @@ class Feeds extends React.Component {
 			lastRefresh: null,
 			message: {type: 'info', text: 'loading feeds...'}
 		});
+		const that = this;
 		this.getNextFeeds()
 			.then(feeds => {
 				this.setState({
@@ -57,7 +58,7 @@ class Feeds extends React.Component {
 				this.saveState();
 			})
 			.catch(e => {
-				this.setState({
+				that.setState({
 					feeds: null,
 					lastRefresh: null,
 					message: {type: 'warning', text: `Cannot load feeds: ${e}`}
