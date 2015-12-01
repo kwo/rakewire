@@ -2,8 +2,6 @@ import React, { PropTypes } from 'react';
 import { Link } from 'react-router';
 import moment from 'moment';
 
-// TODO: eliminate last and last200 so that everything is in feed
-
 class FeedEntry extends React.Component {
 
 	static displayName = 'feedentry';

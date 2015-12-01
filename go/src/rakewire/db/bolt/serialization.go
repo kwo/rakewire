@@ -17,7 +17,6 @@ const (
 
 // TODO: need delete function similar to query
 // TODO: add function to register data types on start to create buckets
-// TODO: create function to rebuild indexes
 
 // Get retrieves the object with the given ID from the specified bucket.
 func Get(object interface{}, tx *bolt.Tx) error {
