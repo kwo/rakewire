@@ -9,7 +9,7 @@
     "history": "^1.0",
     "moment": "^2.0",
     "react": "^0.14",
-    "react-bootstrap": "^0.27",
+    "react-bootstrap": "^0.28",
     "react-dom": "^0.14",
     "react-router": "^1.0",
     "whatwg-fetch": "^0.10"
@@ -22,7 +22,7 @@
     "babel-preset-react": "^6.0",
     "babel-preset-stage-0": "^6.0",
     "clean-webpack-plugin": "^0.1",
-    "css-loader": "^0.22",
+    "css-loader": "^0.23",
     "eslint": "^1.0",
     "eslint-loader": "^1.0",
     "eslint-plugin-react": "^3.0",
