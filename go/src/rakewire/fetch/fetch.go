@@ -185,7 +185,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			feed.Attempt.UpdateCheck = m.UpdateCheck304
 			feed.Attempt.ETag = rsp.Header.Get(hEtag)
 			feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
-			feed.UpdateFetchTime(time.Time{})
+			feed.UpdateFetchTime(time.Now())
 
 		case rsp.StatusCode >= 400:
 			feed.Attempt.Result = m.FetchResultServerError
