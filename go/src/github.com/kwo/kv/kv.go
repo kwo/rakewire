@@ -9,16 +9,16 @@ import (
 )
 
 // TODO: instantiate instance, register struct, keep metadata in cache
+// TODO: decode string arrays, use tagfield as separator char
+// TODO: only do metadata validation upon registration to serialization
 
 const (
-	// TagName ist the name of the struct tag used by this package
+	// TagName is the name of the struct tag used by this package
 	TagName = "kv"
 	// TimeFormat used to convert dates to strings
 	TimeFormat = time.RFC3339Nano
 	empty      = ""
 )
-
-// TODO: only do metedata validation upon registration to serialization
 
 // Metadata contains field names.
 type Metadata struct {
