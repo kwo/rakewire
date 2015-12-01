@@ -2,7 +2,7 @@ package model
 
 import (
 	"encoding/json"
-	"github.com/kwo/kv"
+	"rakewire/kv"
 	"testing"
 	"time"
 )
