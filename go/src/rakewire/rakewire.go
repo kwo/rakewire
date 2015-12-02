@@ -36,17 +36,17 @@ var (
 
 func main() {
 
-	fmt.Printf("Rakewire %s starting with %d CPUs\n", model.VERSION, runtime.NumCPU())
-
 	cfg := config.GetConfig()
 	if cfg == nil {
-		fmt.Printf("Abort! No config file found at %s\n", config.GetConfigFileLocation())
+		log.Printf("Abort! No config file found at %s\n", config.GetConfigFileLocation())
 		os.Exit(1)
 		return
 	}
 
 	// initialize logging
 	cfg.Logging.Init()
+
+	log.Printf("Rakewire %s starting with %d CPUs\n", model.VERSION, runtime.NumCPU())
 
 	database = &bolt.Database{}
 	err := database.Open(&cfg.Database)
