@@ -1,6 +1,8 @@
 package feedparser
 
 import (
+	"crypto/sha512"
+	"encoding/hex"
 	"encoding/xml"
 	"fmt"
 	"github.com/rogpeppe/go-charset/charset"
@@ -71,7 +73,7 @@ const (
 )
 
 const (
-	logName = "[parsr]"
+	logName  = "[parsr]"
 	logDebug = "[DEBUG]"
 	// logInfo = "[INFO]"
 	// logWarn = "[WARN]"
@@ -373,6 +375,10 @@ func (z *Parser) doEndEntryAtom(e *element) {
 		if z.entry.Updated.After(z.feed.Updated) {
 			z.feed.Updated = z.entry.Updated
 		}
+		// guarentee entry always has an id
+		if z.entry.ID == empty {
+			z.entry.ID = makeIDFromContents(z.entry.Title + z.entry.Summary + z.entry.Content)
+		}
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
 	}
@@ -390,6 +396,10 @@ func (z *Parser) doEndEntryRSS(e *element) {
 		}
 		if z.entry.Updated.After(z.feed.Updated) {
 			z.feed.Updated = z.entry.Updated
+		}
+		// guarentee entry always has an id
+		if z.entry.ID == empty {
+			z.entry.ID = makeIDFromContents(z.entry.Title + z.entry.Summary + z.entry.Content)
 		}
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
@@ -486,4 +496,8 @@ func (z *Parser) parseTime(formatted string) (t time.Time) {
 		}
 	}
 	return
+}
+
+func makeIDFromContents(contents string) string {
+	return hex.EncodeToString(sha512.New().Sum([]byte(contents)))
 }
