@@ -8,6 +8,7 @@ import (
 // Feed feed descriptor
 type Feed struct {
 	Attempt *FeedLog `kv:"-" json:"-"`
+	Entries []*Entry `kv:"-" json:"-"`
 
 	ID  string `kv:"key" json:"id"`
 	URL string `kv:"URL:1" json:"url"`
