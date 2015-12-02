@@ -98,19 +98,6 @@ func (z *Service) run(id int) {
 
 }
 
-func (z *Service) newRequest(feed *m.Feed) *http.Request {
-	req, _ := http.NewRequest(mGET, feed.URL, nil)
-	req.Header.Set(hUserAgent, httpUserAgent)
-	req.Header.Set(hAcceptEncoding, "gzip")
-	if !feed.LastModified.IsZero() {
-		req.Header.Set(hIfModifiedSince, feed.LastModified.UTC().Format(http.TimeFormat))
-	}
-	if feed.ETag != "" {
-		req.Header.Set(hIfNoneMatch, feed.ETag)
-	}
-	return req
-}
-
 func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	startTime := time.Now().UTC().Truncate(time.Millisecond)
@@ -120,7 +107,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 	feed.Attempt.URL = feed.URL
 	feed.Attempt.StartTime = now
 
-	rsp, err := z.client.Do(z.newRequest(feed))
+	rsp, err := z.client.Do(newRequest(feed))
 	if err != nil && (rsp == nil || rsp.StatusCode != http.StatusMovedPermanently) {
 		feed.Attempt.Result = m.FetchResultClientError
 		feed.Attempt.ResultMessage = err.Error()
@@ -226,4 +213,17 @@ func processFeedNotModified(feed *m.Feed, rsp *http.Response) {
 	feed.Attempt.ETag = rsp.Header.Get(hEtag)
 	feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 	feed.UpdateFetchTime(time.Now())
+}
+
+func newRequest(feed *m.Feed) *http.Request {
+	req, _ := http.NewRequest(mGET, feed.URL, nil)
+	req.Header.Set(hUserAgent, httpUserAgent)
+	req.Header.Set(hAcceptEncoding, "gzip")
+	if !feed.LastModified.IsZero() {
+		req.Header.Set(hIfModifiedSince, feed.LastModified.UTC().Format(http.TimeFormat))
+	}
+	if feed.ETag != "" {
+		req.Header.Set(hIfNoneMatch, feed.ETag)
+	}
+	return req
 }
