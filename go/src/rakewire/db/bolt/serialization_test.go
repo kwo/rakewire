@@ -25,7 +25,8 @@ func TestSerialization(t *testing.T) {
 	// marshal
 	database.Lock()
 	err := database.db.Update(func(tx *bolt.Tx) error {
-		return Put(fl, tx)
+		_, err := Put(fl, tx)
+		return err
 	})
 	database.Unlock()
 	assertNoError(t, err)
@@ -69,7 +70,8 @@ func TestSerialization(t *testing.T) {
 	fl2.IsUpdated = false
 	database.Lock()
 	err = database.db.Update(func(tx *bolt.Tx) error {
-		return Put(fl2, tx)
+		_, err := Put(fl2, tx)
+		return err
 	})
 	database.Unlock()
 	assertNoError(t, err)

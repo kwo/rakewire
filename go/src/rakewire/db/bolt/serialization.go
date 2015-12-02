@@ -40,25 +40,27 @@ func Get(object interface{}, tx *bolt.Tx) error {
 }
 
 // Put saves the object with the given ID to the specified bucket.
-func Put(object interface{}, tx *bolt.Tx) error {
+func Put(object interface{}, tx *bolt.Tx) (bool, error) {
+
+	updated := false
 
 	meta, data, err := kv.Encode(object)
 	if err != nil {
-		return err
+		return updated, err
 	}
 
 	valuesOld := load(data.Name, data.Key, tx)
 	dataOld := kv.DataFrom(meta, valuesOld)
 
-	if err = save(data.Name, data.Key, data.Values, tx); err != nil {
-		return err
+	if updated, err = save(data.Name, data.Key, data.Values, tx); err != nil {
+		return updated, err
 	}
 
 	if err = index(data.Name, data.Key, data.Indexes, dataOld.Indexes, tx); err != nil {
-		return err
+		return updated, err
 	}
 
-	return nil
+	return updated, nil
 
 }
 
@@ -203,43 +205,33 @@ func rangeIndex(name string, index string, min []byte, max []byte, add func() in
 
 }
 
-func save(name string, pkey string, values map[string]string, tx *bolt.Tx) error {
+func save(name string, pkey string, values map[string]string, tx *bolt.Tx) (bool, error) {
 
-	keyList := make(map[string]bool)
+	updated := false
 
-	//logger.Debugf("Saving %s ...", name)
 	bucketData := tx.Bucket([]byte(bucketData))
 	b := bucketData.Bucket([]byte(name))
 
-	// loop thru values
-	for fieldName := range values {
-
-		keyStr := fmt.Sprintf("%s%s%s", pkey, chSep, fieldName)
-		valueStr := values[fieldName]
-
-		key := []byte(keyStr)
-		value := []byte(valueStr)
-		if len(value) > 0 {
-			keyList[keyStr] = true
-			if err := b.Put(key, value); err != nil {
-				return err
-			}
-		}
-
-	} // for loop object fields
-
-	// loop with cursor thru record, remove database fields not in field list
+	// remove old records
 	c := b.Cursor()
 	min := []byte(pkey + chMin)
 	max := []byte(pkey + chMax)
-	// logger.Debugf("marshall cursor min/max: %s / %s", min, max)
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
-		if !keyList[string(k)] {
-			// logger.Debugf("Removing key: %s", k)
-			c.Delete()
-		}
+		updated = true
+		c.Delete()
 	}
 
-	return nil
+	// add new records
+	for fieldName := range values {
+		key := []byte(fmt.Sprintf("%s%s%s", pkey, chSep, fieldName))
+		value := []byte(values[fieldName])
+		if len(value) > 0 {
+			if err := b.Put(key, value); err != nil {
+				return updated, err
+			}
+		}
+	} // for loop object fields
+
+	return updated, nil
 
 }

@@ -107,13 +107,13 @@ func (z *Database) SaveFeed(feed *m.Feed) error {
 
 		// save feed log if available
 		if feed.Attempt != nil {
-			if err := Put(feed.Attempt, tx); err != nil {
+			if _, err := Put(feed.Attempt, tx); err != nil {
 				return err
 			}
 		}
 
 		// save feed itself
-		if err := Put(feed, tx); err != nil {
+		if _, err := Put(feed, tx); err != nil {
 			return err
 		}
 
