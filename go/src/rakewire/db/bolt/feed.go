@@ -56,12 +56,15 @@ func (z *Database) GetFeedByID(id string) (*m.Feed, error) {
 	err := z.db.View(func(tx *bolt.Tx) error {
 		return Get(result, tx)
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	if result.ID != id {
+	if result != nil && result.ID != id {
 		return nil, nil
 	}
 
-	return result, err
+	return result, nil
 
 }
 
@@ -78,6 +81,9 @@ func (z *Database) GetFeedByURL(url string) (*m.Feed, error) {
 	err := z.db.View(func(tx *bolt.Tx) error {
 		return Query("Feed", "URL", []interface{}{url}, []interface{}{url}, add, tx)
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	if len(feeds) == 0 {
 		return nil, nil
@@ -85,9 +91,7 @@ func (z *Database) GetFeedByURL(url string) (*m.Feed, error) {
 		return nil, fmt.Errorf("Unique index returned multiple results: %s, URL: %s", "Feed/URL", url)
 	}
 
-	feed := feeds[0]
-
-	return feed, err
+	return feeds[0], nil
 
 }
 
