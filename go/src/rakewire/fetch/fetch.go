@@ -166,8 +166,6 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 	feed.Status = feed.Attempt.Result
 	feed.StatusMessage = feed.Attempt.ResultMessage
 
-	log.Printf("%-7s %-7s fetch %2d: %2s  %3d  %5t  %2s  %s  %s %s", logInfo, logName, id, feed.Status, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.StatusMessage, feed.Attempt.Flavor)
-
 	z.output <- feed
 
 }
@@ -203,10 +201,9 @@ func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
 		feed.Attempt.UpdateCheck = m.UpdateCheckFeed
 		feed.AdjustFetchTime(1 * time.Hour) // give us time to work on solution
 	} else {
-		feed.Feed = xmlFeed
-		feed.Attempt.IsUpdated = isFeedUpdated(feed.Feed.Updated, feed.LastUpdated)
+		feed.Attempt.IsUpdated = isFeedUpdated(xmlFeed.Updated, feed.LastUpdated)
 		feed.Attempt.UpdateCheck = m.UpdateCheckFeed
-		feed.UpdateFetchTime(feed.Feed.Updated)
+		feed.UpdateFetchTime(xmlFeed.Updated)
 	}
 }
 

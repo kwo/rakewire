@@ -16,7 +16,6 @@ func TestNewFeed(t *testing.T) {
 	assertEqual(t, "http://localhost/", f.URL)
 	assertNotNil(t, f.NextFetch)
 	assertNotNil(t, f.ID)
-	assertEqual(t, 0, len(f.Log))
 	assertEqual(t, 36, len(f.ID))
 
 }
@@ -77,20 +76,6 @@ func TestFeedsJSON(t *testing.T) {
 	assertNoError(t, err)
 	assertEqual(t, 1, len(feeds2))
 	validateFeed(t, feeds2[0])
-
-}
-
-func TestFeedFunctions(t *testing.T) {
-
-	t.Parallel()
-
-	f := NewFeed("http://localhost")
-
-	f.AddLog(NewFeedLog(f.ID))
-	f.AddLog(NewFeedLog(f.ID))
-	f.AddLog(NewFeedLog(f.ID))
-
-	assertEqual(t, 3, len(f.Log))
 
 }
 

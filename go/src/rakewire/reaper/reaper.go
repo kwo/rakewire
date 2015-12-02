@@ -79,15 +79,19 @@ run:
 
 }
 
-func (z *Service) processResponse(rsp *m.Feed) {
+func (z *Service) processResponse(feed *m.Feed) {
 
-	//logger.Debugf("saving feed: %s %s", rsp.ID, rsp.URL)
+	// TODO: save entries, noting which ones are new
+	// TODO: for new entries with no date, assign time.Now()
+	// TODO: recalc feed.Updated
+	// save feed
 
-	// convert feeds
-	err := z.database.SaveFeed(rsp)
+	err := z.database.SaveFeed(feed)
 	if err != nil {
-		log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, rsp.URL, err.Error())
+		log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, feed.URL, err.Error())
 	}
+
+	log.Printf("%-7s %-7s: %2s  %3d  %5t  %2s  %s  %s %s", logInfo, logName, feed.Status, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.StatusMessage, feed.Attempt.Flavor)
 
 }
 

@@ -86,11 +86,6 @@ func (z *Database) GetFeedByURL(url string) (*m.Feed, error) {
 	}
 
 	feed := feeds[0]
-	logs, err := z.GetFeedLog(feed.ID, 30*24*time.Hour)
-	if err != nil {
-		return nil, err
-	}
-	feed.Log = logs
 
 	return feed, err
 

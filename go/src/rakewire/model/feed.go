@@ -2,15 +2,12 @@ package model
 
 import (
 	"github.com/pborman/uuid"
-	"rakewire/feedparser"
 	"time"
 )
 
 // Feed feed descriptor
 type Feed struct {
-	Attempt *FeedLog         `kv:"-" json:"-"`
-	Feed    *feedparser.Feed `kv:"-" json:"-"`
-	Log     []*FeedLog       `kv:"-" json:"-"`
+	Attempt *FeedLog `kv:"-" json:"-"`
 
 	ID  string `kv:"key" json:"id"`
 	URL string `kv:"URL:1" json:"url"`
@@ -27,12 +24,6 @@ type Feed struct {
 	Status        string    `json:"status"`
 	StatusMessage string    `json:"statusMessage"`
 	StatusSince   time.Time `json:"statusSince"` // time of last status
-}
-
-// AddLog adds a feedlog to the Feed returning its ID
-func (z *Feed) AddLog(feedlog *FeedLog) string {
-	z.Log = append(z.Log, feedlog)
-	return feedlog.ID
 }
 
 // ========== Feed ==========
