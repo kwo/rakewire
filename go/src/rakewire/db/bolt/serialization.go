@@ -88,10 +88,70 @@ func Query(name string, index string, min []interface{}, max []interface{}, add 
 	}
 
 	if index != empty {
-		return rangeIndex(name, index, minB, maxB, add, tx)
+		return queryIndex(name, index, minB, maxB, add, tx)
 	}
 
-	return rangeBucket(name, minB, maxB, add, tx)
+	return queryBucket(name, minB, maxB, add, tx)
+
+}
+
+func queryBucket(name string, min []byte, max []byte, add func() interface{}, tx *bolt.Tx) error {
+
+	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
+	c := b.Cursor()
+
+	initCursor := func(v []byte) ([]byte, []byte) {
+		if v == nil || len(v) == 0 {
+			return c.First()
+		}
+		return c.Seek(v)
+	}
+
+	lastKey := empty
+
+	for k, _ := initCursor(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
+
+		// assume proper key format of ID/fieldname
+		pkey := strings.SplitN(string(k), chSep, 2)[0]
+
+		if pkey != lastKey {
+			lastKey = pkey
+			values := load(name, pkey, tx)
+			if err := kv.Decode(add(), values); err != nil {
+				return err
+			}
+		}
+
+	} // cursor
+
+	return nil
+
+}
+
+func queryIndex(name string, index string, min []byte, max []byte, add func() interface{}, tx *bolt.Tx) error {
+
+	b := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
+	c := b.Cursor()
+
+	initCursor := func(v []byte) ([]byte, []byte) {
+		if v == nil || len(v) == 0 {
+			return c.First()
+		}
+		return c.Seek(v)
+	}
+
+	for k, v := initCursor(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+
+		pkey := string(v)
+
+		values := load(name, pkey, tx)
+		if err := kv.Decode(add(), values); err != nil {
+			return err
+		}
+
+	} // cursor
+
+	return nil
 
 }
 
@@ -142,66 +202,6 @@ func load(name string, pkey string, tx *bolt.Tx) map[string]string {
 	} // for loop
 
 	return result
-
-}
-
-func rangeBucket(name string, min []byte, max []byte, add func() interface{}, tx *bolt.Tx) error {
-
-	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
-	c := b.Cursor()
-
-	initCursor := func(v []byte) ([]byte, []byte) {
-		if v == nil || len(v) == 0 {
-			return c.First()
-		}
-		return c.Seek(v)
-	}
-
-	lastKey := empty
-
-	for k, _ := initCursor(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
-
-		// assume proper key format of ID/fieldname
-		pkey := strings.SplitN(string(k), chSep, 2)[0]
-
-		if pkey != lastKey {
-			lastKey = pkey
-			values := load(name, pkey, tx)
-			if err := kv.Decode(add(), values); err != nil {
-				return err
-			}
-		}
-
-	} // cursor
-
-	return nil
-
-}
-
-func rangeIndex(name string, index string, min []byte, max []byte, add func() interface{}, tx *bolt.Tx) error {
-
-	b := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
-	c := b.Cursor()
-
-	initCursor := func(v []byte) ([]byte, []byte) {
-		if v == nil || len(v) == 0 {
-			return c.First()
-		}
-		return c.Seek(v)
-	}
-
-	for k, v := initCursor(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-
-		pkey := string(v)
-
-		values := load(name, pkey, tx)
-		if err := kv.Decode(add(), values); err != nil {
-			return err
-		}
-
-	} // cursor
-
-	return nil
 
 }
 
