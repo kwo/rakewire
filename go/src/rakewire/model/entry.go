@@ -1,6 +1,7 @@
 package model
 
 import (
+	"github.com/pborman/uuid"
 	"time"
 )
 
@@ -15,4 +16,13 @@ type Entry struct {
 	Author   string    `json:"author"`
 	Title    string    `json:"title"`
 	Contents string    `json:"contents"`
+}
+
+// NewEntry instantiate a new Entry object with a new UUID
+func NewEntry(feedID string, entryID string) *Entry {
+	return &Entry{
+		ID:      uuid.NewUUID().String(),
+		EntryID: entryID,
+		FeedID:  feedID,
+	}
 }

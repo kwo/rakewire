@@ -112,7 +112,7 @@ func (z *Database) SaveFeed(feed *m.Feed) error {
 			}
 		}
 
-		// save entries // TODO: recalculate update times
+		// save entries
 		if feed.Entries != nil {
 			for _, entry := range feed.Entries {
 				if _, err := Put(entry, tx); err != nil {

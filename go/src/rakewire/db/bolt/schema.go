@@ -10,7 +10,7 @@ import (
 
 const (
 	// SchemaVersion of the database
-	SchemaVersion = 2
+	SchemaVersion = 3
 )
 
 func checkSchema(z *Database) error {
@@ -37,6 +37,11 @@ func checkSchema(z *Database) error {
 				}
 			case 1:
 				err = upgradeTo2(tx)
+				if err != nil {
+					break
+				}
+			case 2:
+				err = upgradeTo3(tx)
 				if err != nil {
 					break
 				}
@@ -137,5 +142,35 @@ func upgradeTo2(tx *bolt.Tx) error {
 	}
 
 	return setSchemaVersion(tx, 2)
+
+}
+
+func upgradeTo3(tx *bolt.Tx) error {
+
+	bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
+	if err != nil {
+		return err
+	}
+	_, err = bucketData.CreateBucketIfNotExists([]byte("Entry"))
+	if err != nil {
+		return err
+	}
+
+	bucketIndex, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
+	if err != nil {
+		return err
+	}
+	bucketIndexEntry, err := bucketIndex.CreateBucketIfNotExists([]byte("Entry"))
+	if err != nil {
+		return err
+	}
+	if _, err = bucketIndexEntry.CreateBucketIfNotExists([]byte("Date")); err != nil {
+		return err
+	}
+	if _, err = bucketIndexEntry.CreateBucketIfNotExists([]byte("EntryID")); err != nil {
+		return err
+	}
+
+	return setSchemaVersion(tx, 3)
 
 }

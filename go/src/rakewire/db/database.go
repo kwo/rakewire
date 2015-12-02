@@ -17,10 +17,11 @@ type Database interface {
 	GetFeeds() ([]*m.Feed, error)
 	// GetFetchFeeds get feeds to be fetched within the given max time parameter.
 	GetFetchFeeds(max time.Time) ([]*m.Feed, error)
-	SaveFeed(*m.Feed) error
 	// GetFeedLog retrieves the past fetch attempts for the feed in reverse chronological order.
 	// If since is equal to 0, return all.
 	GetFeedLog(feedID string, since time.Duration) ([]*m.FeedLog, error)
 	GetFeedEntries(feedID string, since time.Duration) ([]*m.Entry, error)
+	GetFeedEntriesFromIDs(feedID string, entryIDs []string) ([]*m.Entry, error)
+	SaveFeed(*m.Feed) error
 	Repair() error
 }
