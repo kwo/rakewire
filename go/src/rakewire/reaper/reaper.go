@@ -6,6 +6,7 @@ import (
 	m "rakewire/model"
 	"sync"
 	"sync/atomic"
+	"time"
 )
 
 const (
@@ -75,23 +76,68 @@ run:
 
 	z.setRunning(false)
 	z.runlatch.Done()
-	log.Printf("%-7s %-7s run exited.", logInfo, logName)
+	log.Printf("%-7s %-7s run exited", logInfo, logName)
 
 }
 
 func (z *Service) processResponse(feed *m.Feed) {
 
-	// TODO: save entries, noting which ones are new
-	// TODO: for new entries with no date, assign time.Now()
-	// TODO: recalc feed.Updated
-	// save feed
-
-	err := z.database.SaveFeed(feed)
+	// query previous entries of feed
+	var entryIDs []string
+	for _, entry := range feed.Entries {
+		entryIDs = append(entryIDs, entry.ID)
+	}
+	dbEntries, err := z.database.GetFeedEntriesFromIDs(feed.ID, entryIDs)
 	if err != nil {
-		log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, feed.URL, err.Error())
+		log.Printf("%-7s %-7s Cannot get previous feed entries %s: %s", logWarn, logName, feed.URL, err.Error())
+		return
 	}
 
-	log.Printf("%-7s %-7s: %2s  %3d  %5t  %2s  %s  %s %s", logInfo, logName, feed.Status, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, feed.URL, feed.StatusMessage, feed.Attempt.Flavor)
+	// setIDs, check dates for new entries
+	var mostRecent time.Time
+	newEntryCount := 0
+	for i, entry := range feed.Entries {
+		if dbEntries[i] == nil {
+			// new entry
+			newEntryCount++
+			entry.GenerateNewID()
+			if entry.Created.IsZero() {
+				entry.Created = time.Now()
+			}
+			if entry.Updated.IsZero() {
+				entry.Updated = entry.Created
+			}
+		} else {
+			// old entry
+			entry.ID = dbEntries[i].ID
+		}
+		if mostRecent.Before(entry.Updated) {
+			mostRecent = entry.Updated
+		}
+	} // loop entries
+
+	// recalc feed.LastUpdated
+	if feed.LastUpdated.Before(mostRecent) {
+		feed.LastUpdated = mostRecent
+	}
+
+	if feed.Attempt.Result == m.FetchResultOK {
+		if feed.LastUpdated.IsZero() {
+			feed.LastUpdated = time.Now()
+		}
+		feed.UpdateFetchTime(feed.LastUpdated)
+	}
+
+	feed.Attempt.IsUpdated = (newEntryCount > 0)
+
+	// save feed
+	err = z.database.SaveFeed(feed)
+	if err != nil {
+		log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, feed.URL, err.Error())
+		return
+	}
+
+	log.Printf("%-7s %-7s: %2s  %3d  %5t  %2s %2d %s  %s", logInfo, logName, feed.Status, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, newEntryCount, feed.URL, feed.StatusMessage)
 
 }
 

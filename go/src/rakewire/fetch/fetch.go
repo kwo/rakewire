@@ -109,8 +109,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 	rsp, err := z.client.Do(newRequest(feed))
 	if err != nil && (rsp == nil || rsp.StatusCode != http.StatusMovedPermanently) {
-		feed.Attempt.Result = m.FetchResultClientError
-		feed.Attempt.ResultMessage = err.Error()
+		processFeedClientError(feed, err)
 	} else {
 
 		feed.Attempt.StatusCode = rsp.StatusCode
@@ -137,7 +136,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 			processFeedNotModified(feed, rsp)
 
 		case rsp.StatusCode >= 400:
-			processFeedError(feed, rsp)
+			processFeedServerError(feed, rsp)
 
 		case true:
 			log.Printf("%-7s %-7s Uncaught Status Code: %d", logWarn, logName, rsp.StatusCode)
@@ -170,7 +169,7 @@ func processFeedOK(feed *m.Feed, rsp *http.Response) {
 func processFeedOKButCannotParse(feed *m.Feed, err error) {
 	feed.Attempt.Result = m.FetchResultFeedError
 	feed.Attempt.ResultMessage = err.Error()
-	feed.AdjustFetchTime(1 * time.Hour) // give us time to work on solution
+	feed.AdjustFetchTime(24 * time.Hour) // don't hammer site if error
 }
 
 func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
@@ -179,22 +178,39 @@ func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
 	feed.Attempt.Generator = xmlFeed.Generator
 	feed.Attempt.Title = xmlFeed.Title
 	feed.Attempt.LastUpdated = xmlFeed.Updated
+	feed.Attempt.UpdateCheck = m.UpdateCheckFeed
+
+	// set once, allow user override
 	if feed.Title == "" {
 		feed.Title = xmlFeed.Title
 	}
-	if xmlFeed.Updated.IsZero() {
-		feed.Attempt.Result = m.FetchResultFeedTimeError
-		feed.Attempt.IsUpdated = false
-		feed.Attempt.UpdateCheck = m.UpdateCheckFeed
-		feed.AdjustFetchTime(1 * time.Hour) // give us time to work on solution
-	} else {
-		feed.Attempt.IsUpdated = isFeedUpdated(xmlFeed.Updated, feed.LastUpdated)
-		feed.Attempt.UpdateCheck = m.UpdateCheckFeed
-		feed.UpdateFetchTime(xmlFeed.Updated)
+
+	// convert Entries to Entries
+	for _, xmlEntry := range xmlFeed.Entries {
+		entry := feed.AddEntry(xmlEntry.ID)
+		entry.Created = xmlEntry.Created
+		entry.Updated = xmlEntry.Updated
+		entry.Title = xmlEntry.Title
+		entry.URL = xmlEntry.GetLinkAlternate()
+		if len(xmlEntry.Authors) > 0 {
+			entry.Author = xmlEntry.Authors[0]
+		}
+		if xmlEntry.Content != "" {
+			entry.Content = xmlEntry.Content
+		} else {
+			entry.Content = xmlEntry.Summary
+		}
 	}
+
 }
 
-func processFeedError(feed *m.Feed, rsp *http.Response) {
+func processFeedClientError(feed *m.Feed, err error) {
+	feed.Attempt.Result = m.FetchResultClientError
+	feed.Attempt.ResultMessage = err.Error()
+	feed.AdjustFetchTime(1 * time.Minute) // try again soon
+}
+
+func processFeedServerError(feed *m.Feed, rsp *http.Response) {
 	feed.Attempt.Result = m.FetchResultServerError
 	feed.AdjustFetchTime(24 * time.Hour) // don't hammer site if error
 }
@@ -203,7 +219,8 @@ func processFeedMovedPermanently(feed *m.Feed, rsp *http.Response) {
 	feed.Attempt.Result = m.FetchResultRedirect
 	newURL := rsp.Header.Get(hLocation)
 	feed.Attempt.ResultMessage = fmt.Sprintf("%s moved %s", feed.URL, newURL)
-	feed.URL = newURL // update feed
+	feed.URL = newURL                     // update feed
+	feed.AdjustFetchTime(1 * time.Minute) // try again soon
 }
 
 func processFeedNotModified(feed *m.Feed, rsp *http.Response) {
@@ -212,7 +229,6 @@ func processFeedNotModified(feed *m.Feed, rsp *http.Response) {
 	feed.Attempt.UpdateCheck = m.UpdateCheck304
 	feed.Attempt.ETag = rsp.Header.Get(hEtag)
 	feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
-	feed.UpdateFetchTime(time.Now())
 }
 
 func newRequest(feed *m.Feed) *http.Request {

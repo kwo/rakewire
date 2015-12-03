@@ -38,6 +38,13 @@ func NewFeed(url string) *Feed {
 	}
 }
 
+// AddEntry to the feed
+func (z *Feed) AddEntry(entryID string) *Entry {
+	entry := NewEntry(z.ID, entryID)
+	z.Entries = append(z.Entries, entry)
+	return entry
+}
+
 // UpdateFetchTime increases the fetch interval
 func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 

@@ -22,18 +22,6 @@ func usesGzip(header string) bool {
 	return strings.Contains(header, "gzip")
 }
 
-func isFeedUpdated(newTime time.Time, lastTime time.Time) bool {
-
-	if !newTime.IsZero() && !lastTime.IsZero() {
-		return newTime.After(lastTime)
-	} else if !newTime.IsZero() {
-		return true
-	}
-
-	return false
-
-}
-
 func readBody(rsp *http.Response) (io.ReadCloser, error) {
 
 	if rsp.Body == nil {
