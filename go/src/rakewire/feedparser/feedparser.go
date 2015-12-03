@@ -1,7 +1,7 @@
 package feedparser
 
 import (
-	"crypto/sha512"
+	"crypto/md5"
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
@@ -509,5 +509,5 @@ func (z *Parser) parseTime(formatted string) (t time.Time) {
 }
 
 func makeIDFromContents(contents string) string {
-	return hex.EncodeToString(sha512.New().Sum([]byte(contents)))
+	return hex.EncodeToString(md5.New().Sum([]byte(contents)))
 }
