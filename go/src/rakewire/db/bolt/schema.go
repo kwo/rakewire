@@ -5,12 +5,11 @@ import (
 	"github.com/boltdb/bolt"
 	"log"
 	"strconv"
-	"strings"
 )
 
 const (
 	// SchemaVersion of the database
-	SchemaVersion = 3
+	SchemaVersion = 1
 )
 
 func checkSchema(z *Database) error {
@@ -35,16 +34,11 @@ func checkSchema(z *Database) error {
 				if err != nil {
 					break
 				}
-			case 1:
-				err = upgradeTo2(tx)
-				if err != nil {
-					break
-				}
-			case 2:
-				err = upgradeTo3(tx)
-				if err != nil {
-					break
-				}
+			// case 1:
+			// 	err = upgradeTo2(tx)
+			// 	if err != nil {
+			// 		break
+			// 	}
 			default:
 				err = fmt.Errorf("Unhandled schema version: %d", schemaVersion)
 			}
@@ -104,6 +98,10 @@ func upgradeTo1(tx *bolt.Tx) error {
 	if err != nil {
 		return err
 	}
+	_, err = bucketData.CreateBucketIfNotExists([]byte(bucketEntry))
+	if err != nil {
+		return err
+	}
 
 	bucketIndexFeed, err := bucketIndex.CreateBucketIfNotExists([]byte("Feed"))
 	if err != nil {
@@ -125,42 +123,7 @@ func upgradeTo1(tx *bolt.Tx) error {
 		return err
 	}
 
-	return setSchemaVersion(tx, 1)
-
-}
-
-func upgradeTo2(tx *bolt.Tx) error {
-
-	bucketFeed := tx.Bucket([]byte("Data")).Bucket([]byte("Feed"))
-	c := bucketFeed.Cursor()
-
-	for k, _ := c.First(); k != nil; k, _ = c.Next() {
-		fieldName := strings.SplitN(string(k), chSep, 2)[1]
-		if fieldName == "Last" || fieldName == "Last200" {
-			c.Delete()
-		}
-	}
-
-	return setSchemaVersion(tx, 2)
-
-}
-
-func upgradeTo3(tx *bolt.Tx) error {
-
-	bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
-	if err != nil {
-		return err
-	}
-	_, err = bucketData.CreateBucketIfNotExists([]byte("Entry"))
-	if err != nil {
-		return err
-	}
-
-	bucketIndex, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
-	if err != nil {
-		return err
-	}
-	bucketIndexEntry, err := bucketIndex.CreateBucketIfNotExists([]byte("Entry"))
+	bucketIndexEntry, err := bucketIndex.CreateBucketIfNotExists([]byte(bucketEntry))
 	if err != nil {
 		return err
 	}
@@ -171,6 +134,6 @@ func upgradeTo3(tx *bolt.Tx) error {
 		return err
 	}
 
-	return setSchemaVersion(tx, 3)
+	return setSchemaVersion(tx, 1)
 
 }
