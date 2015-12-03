@@ -84,6 +84,16 @@ const (
 	empty = ""
 )
 
+// GetLinkSelf returns the link to the feed, if available
+func (z *Entry) GetLinkSelf() string {
+	return z.Links[linkSelf]
+}
+
+// GetLinkAlternate returns the link to an alternate representation (HTML?) of the feed entry, if available
+func (z *Entry) GetLinkAlternate() string {
+	return z.Links[linkAlternate]
+}
+
 // NewParser returns a new parser
 func NewParser() *Parser {
 	return &Parser{}
