@@ -3,13 +3,78 @@ package feedparser
 import (
 	"encoding/xml"
 	"io"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
 
+func TestMain(m *testing.M) {
+
+	log.SetOutput(ioutil.Discard)
+
+	m.Run()
+
+}
+
+func TestRSSPerson(t *testing.T) {
+
+	t.Parallel()
+
+	rss := `
+	<?xml version="1.0" encoding="UTF-8"?>
+	<rss version="2.0">
+		<channel>
+			<title>Blog</title>
+			<link>http://localhost/</link>
+			<description>blog desc</description>
+			<item>
+				<author>a.ut-hor@author.com (Arthur A. Author)</author>
+				<author>other guy</author>
+				<title>The Title</title>
+				<link>http://localhost/?ts=a89ea735</link>
+				<guid>http://localhost/?ts=a89ea735</guid>
+			</item>
+		</channel>
+	</rss>
+	`
+
+	p := NewParser()
+	feed, err := p.Parse(ioutil.NopCloser(strings.NewReader(rss)), "")
+	if err != nil {
+		t.Fatalf("Cannot parse RSS feed: %s", err.Error())
+	}
+	if feed == nil {
+		t.Fatal("Nil feed object")
+	}
+
+	if count := len(feed.Entries); count != 1 {
+		t.Fatalf("bad entry count, expected: %d, actual: %d", 1, count)
+	}
+
+	expectedAuthorCount := 2
+	if count := len(feed.Entries[0].Authors); count != expectedAuthorCount {
+		t.Fatalf("bad author count, expected: %d, actual: %d", expectedAuthorCount, count)
+	}
+
+	expectedAuthor := "Arthur A. Author <a.ut-hor@author.com>"
+	if author := feed.Entries[0].Authors[0]; author != expectedAuthor {
+		t.Errorf("author malformed, expected: %s, actual: %s", expectedAuthor, author)
+	}
+
+	expectedAuthor = "other guy"
+	if author := feed.Entries[0].Authors[1]; author != expectedAuthor {
+		t.Errorf("author malformed, expected: %s, actual: %s", expectedAuthor, author)
+	}
+
+}
+
 func TestElementsAtom(t *testing.T) {
+
+	t.Parallel()
 
 	elements := &elements{}
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsAtom, Local: "feed"}})
@@ -29,6 +94,8 @@ func TestElementsAtom(t *testing.T) {
 }
 
 func TestElementsRSS(t *testing.T) {
+
+	t.Parallel()
 
 	elements := &elements{}
 	elements.stack = append(elements.stack, &element{name: xml.Name{Space: nsRSS, Local: "rss"}})
@@ -52,7 +119,9 @@ func TestElementsRSS(t *testing.T) {
 }
 
 func TestAtom(t *testing.T) {
-	//t.SkipNow()
+
+	t.Parallel()
+
 	f := testFile(t, "../../../test/feed/atomtest1.xml")
 
 	assertEqual(t, "atom", f.Flavor)
@@ -127,6 +196,8 @@ func TestAtom(t *testing.T) {
 
 func TestRSS(t *testing.T) {
 
+	t.Parallel()
+
 	f := testFile(t, "../../../test/feed/wordpress.xml")
 
 	assertEqual(t, "rss2.0", f.Flavor)
@@ -160,47 +231,6 @@ func TestRSS(t *testing.T) {
 	assertEqual(t, "<em>Libre</em> brings a stylish, classic look to your personal blog or longform writing site.<img alt=\"\" border=\"0\" src=\"https://pixel.wp.com/b.gif?host=en.blog.wordpress.com&#038;blog=3584907&#038;post=31505&#038;subd=en.blog&#038;ref=&#038;feed=1\" width=\"1\" height=\"1\" />", e.Summary)
 	assertEqual(t, "<p>Happy Theme Thursday, all! Today I&#8217;m happy to introduce <em>Libre</em>, a new free theme designed by <a href=\"http://carolinethemes.com/\">yours truly</a>.</p>\n<h3><a href=\"http://wordpress.com/themes/libre/\">Libre</a></h3>\n<p><a href=\"http://wordpress.com/themes/libre/\"><img class=\"aligncenter size-full wp-image-31516\" src=\"https://en-blog.files.wordpress.com/2015/06/librelg.png?w=635&#038;h=476\" alt=\"Libre\" width=\"635\" height=\"476\" /></a></p>\n<p><em>Libre</em> brings a stylish, classic look to your personal blog or longform writing site. The main navigation bar stays fixed to the top while your visitors read, keeping your most important content at hand. At the bottom of your site, three footer widget areas give your secondary content a comfortable home.</p>\n<p>Customize <em>Libre</em> with a logo or a header image to make it your own, or use one of two custom templates &#8212; including a full-width template\u00a0with no sidebar &#8212; to change up the look of your pages. <em>Libre</em> sports a clean, responsive design that works seamlessly on screens of any size.</p>\n<p><img class=\"aligncenter size-full wp-image-31517\" src=\"https://en-blog.files.wordpress.com/2015/06/libreresponsive.jpg?w=635&#038;h=252\" alt=\"Responsive design\" width=\"635\" height=\"252\" /></p>\n<p>Read more about <em>Libre</em> on the <a href=\"https://wordpress.com/themes/libre/\">Theme Showcase</a>, or activate it on your site from <em>Appearance → Themes</em>!</p><br />Filed under: <a href='https://en.blog.wordpress.com/category/themes/'>Themes</a>  <a rel=\"nofollow\" href=\"http://feeds.wordpress.com/1.0/gocomments/en.blog.wordpress.com/31505/\"><img alt=\"\" border=\"0\" src=\"http://feeds.wordpress.com/1.0/comments/en.blog.wordpress.com/31505/\" /></a> <img alt=\"\" border=\"0\" src=\"https://pixel.wp.com/b.gif?host=en.blog.wordpress.com&#038;blog=3584907&#038;post=31505&#038;subd=en.blog&#038;ref=&#038;feed=1\" width=\"1\" height=\"1\" />", e.Content)
 
-}
-
-// func TestContentType(t *testing.T) {
-// 	t.SkipNow()
-// 	f, err := os.Open("../../../test/feed/intertwingly-net-blog.html")
-// 	assertNoError(t, err)
-// 	assertNotNil(t, f)
-// 	defer f.Close()
-//
-// 	body, err := ioutil.ReadAll(f)
-// 	assertNoError(t, err)
-// 	assertNotNil(t, body)
-//
-// 	ct := http.DetectContentType(body)
-// 	_, name, certain := charset.DetermineEncoding(body, "application/xml")
-// 	//t.Logf("encoding: %s", encoding)
-//
-// 	assertEqual(t, ct, "text/html; charset=utf-8")
-// 	assertEqual(t, "utf-8", name)
-// 	assertEqual(t, true, certain)
-//
-// }
-
-func TestAtomMalformed1(t *testing.T) {
-	t.SkipNow()
-	testURL(t, "http://www.quirksmode.org/blog/atom.xml")
-}
-
-func TestAtomMalformed2(t *testing.T) {
-	t.SkipNow()
-	testURL(t, "https://coreos.com/atom.xml")
-}
-
-func TestHtml1(t *testing.T) {
-	t.SkipNow()
-	testURL(t, "http://intertwingly.net/blog/")
-}
-
-func TestRSSMalformed1(t *testing.T) {
-	t.SkipNow()
-	testURL(t, "http://feeds.feedburner.com/auth0")
 }
 
 func testFeed(t *testing.T, reader io.ReadCloser, contentType string) *Feed {
