@@ -7,12 +7,11 @@ import (
 
 // FetchResults
 const (
-	FetchResultOK            = "OK"
-	FetchResultRedirect      = "MV" // message contains old URL -> new URL
-	FetchResultClientError   = "EC" // message contains error text
-	FetchResultServerError   = "ES" // check http status code
-	FetchResultFeedError     = "FP" // cannot parse feed
-	FetchResultFeedTimeError = "FT" // cannot parse time
+	FetchResultOK          = "OK"
+	FetchResultRedirect    = "MV" // message contains old URL -> new URL
+	FetchResultClientError = "EC" // message contains error text
+	FetchResultServerError = "ES" // check http status code
+	FetchResultFeedError   = "FP" // cannot parse feed
 )
 
 // Check Levels for Update Status
