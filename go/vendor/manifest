@@ -77,24 +77,24 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/pborman/uuid",
-			"repository": "https://github.com/pborman/uuid",
-			"revision": "cccd189d45f7ac3368a0d127efb7f4d08ae0b655",
-			"branch": "master"
-		},
-		{
-			"importpath": "github.com/rogpeppe/go-charset/charset",
-			"repository": "https://github.com/rogpeppe/go-charset",
-			"revision": "e9ff06f347d3f5d0013d59ed83754f0e88de10d4",
+			"importpath": "github.com/paulrosania/go-charset/charset",
+			"repository": "https://github.com/paulrosania/go-charset",
+			"revision": "621bb39fcc835dce592e682f5073025d0169587b",
 			"branch": "master",
 			"path": "/charset"
 		},
 		{
-			"importpath": "github.com/rogpeppe/go-charset/data",
-			"repository": "https://github.com/rogpeppe/go-charset",
-			"revision": "e9ff06f347d3f5d0013d59ed83754f0e88de10d4",
+			"importpath": "github.com/paulrosania/go-charset/data",
+			"repository": "https://github.com/paulrosania/go-charset",
+			"revision": "621bb39fcc835dce592e682f5073025d0169587b",
 			"branch": "master",
 			"path": "/data"
+		},
+		{
+			"importpath": "github.com/pborman/uuid",
+			"repository": "https://github.com/pborman/uuid",
+			"revision": "cccd189d45f7ac3368a0d127efb7f4d08ae0b655",
+			"branch": "master"
 		},
 		{
 			"importpath": "gopkg.in/yaml.v2",

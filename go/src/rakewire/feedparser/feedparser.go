@@ -5,9 +5,9 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
-	"github.com/rogpeppe/go-charset/charset"
+	"github.com/paulrosania/go-charset/charset"
 	// required by go-charset
-	_ "github.com/rogpeppe/go-charset/data"
+	_ "github.com/paulrosania/go-charset/data"
 	"io"
 	"io/ioutil"
 	"log"
