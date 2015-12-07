@@ -2,12 +2,8 @@
 
 ## Roadmap
 
-### Immediate
-  - Save Feed Entries
-  - Feed parser: use base to fix relative HREFs in XML
-  - Feed parser: convert to HTML if type is Text
-
 ### Goals
+  - Save Feed Entries
   - implememt Fever API
   - add support for Hot Links to Fever API support
 
@@ -27,9 +23,6 @@
     - number of feeds
     - size of database
     - oldest posts
-
-
-
 
 ### Push
   - Add support for Sever Sent Events
@@ -89,16 +82,6 @@
     - see [Atom Digital Signatures](https://tools.ietf.org/html/rfc4287#section-5.1)
 
 ### Installation
-  - Stamp binary with BuildTime, Version and Web Hash
-    - See https://ariejan.net/2015/10/03/a-makefile-for-golang-cli-tools/
-
-			var (
-				Version   = "1.0.0"
-				BuildTime = "2015-10-03T11:08:49+0200"
-			)
-			go build -ldflags "-X github.com/ariejan/roll/core.Version=1.0.0 -X github.com/ariejan/roll/core.BuildTime=2015-10-03T11:08:49+0200" main.go}}
-
-
   - Make rakewire run as service
     - Consider https://github.com/kardianos/service
   - Mac Taskbar icon
