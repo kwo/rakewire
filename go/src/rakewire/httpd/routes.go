@@ -1,32 +1,19 @@
 package httpd
 
+//go:generate esc -o static.go -pkg httpd -prefix $PROJECT_HOME/web $PROJECT_HOME/web/public
+
 import (
-	"github.com/GeertJohan/go.rice"
 	gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"net/http"
 )
 
-type singleFileSystem struct {
-	name string
-	root http.FileSystem
-}
-
-func (z singleFileSystem) Open(name string) (http.File, error) {
-	// ignore name and use z.name
-	return z.root.Open(z.name)
-}
-
 func (z *Service) mainRouter() (*mux.Router, error) {
 
-	// get box for static web site
-	box, err := rice.FindBox("public")
-	if err != nil {
-		return nil, err
-	}
+	// TODO: useLocal with go run, otherwise use embedded
 
-	bfs := box.HTTPBox()
-	sfs := singleFileSystem{name: "/index.html", root: bfs}
+	fs := Dir(true, "/public")
+	ofs := oneFS{name: "/index.html", root: fs}
 
 	router := mux.NewRouter()
 
@@ -38,7 +25,7 @@ func (z *Service) mainRouter() (*mux.Router, error) {
 
 	// HTML5 routes: any path without a dot (thus an extension)
 	router.Path("/{route:[a-z0-9/-]+}").Handler(
-		Adapt(http.FileServer(sfs), NoCache(), gorillaHandlers.CompressHandler),
+		Adapt(http.FileServer(ofs), NoCache(), gorillaHandlers.CompressHandler),
 	)
 
 	// always redirect /index.html to /
@@ -48,7 +35,7 @@ func (z *Service) mainRouter() (*mux.Router, error) {
 
 	// static web site
 	router.PathPrefix("/").Handler(
-		Adapt(http.FileServer(bfs), NoCache(), gorillaHandlers.CompressHandler),
+		Adapt(http.FileServer(fs), NoCache(), gorillaHandlers.CompressHandler),
 	)
 
 	return router, nil
@@ -106,4 +93,14 @@ func notSupported(w http.ResponseWriter, req *http.Request) {
 
 func sendError(w http.ResponseWriter, code int) {
 	http.Error(w, http.StatusText(code), code)
+}
+
+type oneFS struct {
+	name string
+	root http.FileSystem
+}
+
+func (z oneFS) Open(name string) (http.File, error) {
+	// ignore name and use z.name
+	return z.root.Open(z.name)
 }
