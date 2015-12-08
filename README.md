@@ -20,6 +20,12 @@ Additionally add GOBIN and web/npm_modules/.bin to the PATH
 
 	export PATH=$GOBIN:$PROJECT_ROOT/web/npm_modules/.bin:$PATH
 
+Finally, be sure the following go executables are installed are in the PATH.
+They are necessary for go generate commands.
+
+	go get github.com/mjibson/esc
+
+
 ### Build
 
 This will place the executable in $PROJECT_ROOT/go/bin
