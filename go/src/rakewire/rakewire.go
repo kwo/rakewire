@@ -21,6 +21,7 @@ import (
 
 const (
 	logName  = "[main]"
+	logTrace = "[TRACE]"
 	logDebug = "[DEBUG]"
 	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"
@@ -38,6 +39,7 @@ var (
 func main() {
 
 	var debug = flag.Bool("debug", false, "run in debug mode")
+	var trace = flag.Bool("trace", false, "run in trace mode, implies debug")
 	flag.Parse()
 
 	cfg := config.GetConfig()
@@ -49,7 +51,11 @@ func main() {
 
 	if *debug {
 		cfg.Logging.Level = "DEBUG"
-		cfg.Httpd.TestMode = true
+		cfg.Httpd.UseLocal = true
+	}
+	if *trace {
+		cfg.Logging.Level = "TRACE"
+		cfg.Httpd.UseLocal = true
 	}
 
 	// initialize logging
@@ -58,6 +64,9 @@ func main() {
 	log.Printf("Rakewire %s starting with %d CPUs\n", model.VERSION, runtime.NumCPU())
 	if *debug {
 		log.Printf("%-7s %-7s Debug mode enabled.", logDebug, logName)
+	}
+	if *trace {
+		log.Printf("%-7s %-7s Trace mode enabled.", logTrace, logName)
 	}
 
 	database = &bolt.Database{}

@@ -28,7 +28,7 @@ type Configuration struct {
 	AccessLog string
 	Address   string
 	Port      int
-	TestMode  bool
+	UseLocal  bool
 }
 
 const (

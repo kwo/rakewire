@@ -1,2 +1,2 @@
 cd $PROJECT_HOME/go
-go run ./src/rakewire/rakewire.go -debug
+go run ./src/rakewire/rakewire.go $*

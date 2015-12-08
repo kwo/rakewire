@@ -20,7 +20,7 @@ type Configuration struct {
 // Init the logging system
 func (cfg *Configuration) Init() {
 
-	cfg.Levels = []string{"DEBUG", "INFO", "WARN", "ERROR"}
+	cfg.Levels = []string{"TRACE", "DEBUG", "INFO", "WARN", "ERROR"}
 
 	badLevels := make(map[string]struct{})
 	for _, level := range cfg.Levels {

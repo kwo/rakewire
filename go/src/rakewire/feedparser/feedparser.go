@@ -75,10 +75,7 @@ const (
 
 const (
 	logName  = "[parsr]"
-	logDebug = "[DEBUG]"
-	// logInfo = "[INFO]"
-	// logWarn = "[WARN]"
-	// logError = "[ERROR]"
+	logTrace = "[TRACE]"
 )
 
 const (
@@ -131,7 +128,7 @@ Loop:
 
 		case xml.StartElement:
 			e := z.stack.Push(t)
-			log.Printf("%-7s %-7s Start %s :: %s", logDebug, logName, e.name.Local, z.stack.String())
+			log.Printf("%-7s %-7s Start %s :: %s", logTrace, logName, e.name.Local, z.stack.String())
 
 			switch {
 			case z.feed == nil:
@@ -164,7 +161,7 @@ Loop:
 				exitError = err
 				break Loop
 			}
-			log.Printf("%-7s %-7s End   %s :: %s", logDebug, logName, e.name.Local, z.stack.String())
+			log.Printf("%-7s %-7s End   %s :: %s", logTrace, logName, e.name.Local, z.stack.String())
 
 			switch {
 
@@ -190,8 +187,6 @@ Loop:
 		} // switch token
 
 	} // loop
-
-	log.Printf("%-7s %-7s exit error: %s", logDebug, logName, exitError)
 
 	if exitError != nil {
 		ioutil.ReadAll(reader)

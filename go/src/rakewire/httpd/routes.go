@@ -12,7 +12,7 @@ func (z *Service) mainRouter(cfg *Configuration) (*mux.Router, error) {
 
 	// TODO: useLocal with go run, otherwise use embedded
 
-	fs := Dir(cfg.TestMode, "/public")
+	fs := Dir(cfg.UseLocal, "/public")
 	ofs := oneFS{name: "/index.html", root: fs}
 
 	router := mux.NewRouter()
