@@ -33,13 +33,12 @@ This will place the executable in $PROJECT_ROOT/go/bin
 
 ### Top-Level Dependencies
 
- - [github.com/GeertJohan/go.rice](https://github.com/GeertJohan/go.rice)
  - [github.com/boltdb/bolt](https://github.com/boltdb/bolt)
  - [github.com/gorilla/handlers](https://github.com/gorilla/handlers)
  - [github.com/gorilla/mux](https://github.com/gorilla/mux)
+ - [github.com/paulrosania/go-charset/charset](https://github.com/paulrosania/go-charset/charset)
+ - [github.com/paulrosania/go-charset/data](https://github.com/paulrosania/go-charset/data)
  - [github.com/pborman/uuid](https://github.com/pborman/uuid)
- - [github.com/rogpeppe/go-charset/charset](https://github.com/rogpeppe/go-charset/charset)
- - [github.com/rogpeppe/go-charset/data](https://github.com/rogpeppe/go-charset/data)
  - [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2)
 
 ## Web

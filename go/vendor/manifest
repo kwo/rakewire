@@ -4,7 +4,7 @@
 		{
 			"importpath": "github.com/boltdb/bolt",
 			"repository": "https://github.com/boltdb/bolt",
-			"revision": "6e1ca38c6a73025366cd8705553b404746ee6e63",
+			"revision": "b34b35ea8d06bb9ae69d9a349119252e4c1d8ee0",
 			"branch": "master"
 		},
 		{
@@ -16,7 +16,7 @@
 		{
 			"importpath": "github.com/gorilla/handlers",
 			"repository": "https://github.com/gorilla/handlers",
-			"revision": "e96366d97736da3bdec18b7fbaedd37c6fc97fb9",
+			"revision": "1af6d56d7cd39d982856bc0cee11142baf392c52",
 			"branch": "master"
 		},
 		{
@@ -48,7 +48,7 @@
 		{
 			"importpath": "gopkg.in/yaml.v2",
 			"repository": "https://gopkg.in/yaml.v2",
-			"revision": "53feefa2559fb8dfa8d81baad31be332c97d6c77",
+			"revision": "f7716cbe52baa25d2e9b0d0da546fcf909fc16b4",
 			"branch": "v2"
 		}
 	]
