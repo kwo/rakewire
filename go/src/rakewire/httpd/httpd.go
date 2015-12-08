@@ -28,8 +28,7 @@ type Configuration struct {
 	AccessLog string
 	Address   string
 	Port      int
-	TLSCert   string
-	TLSKey    string
+	TestMode  bool
 }
 
 const (
@@ -55,7 +54,7 @@ func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
 		return
 	}
 
-	router, err := z.mainRouter()
+	router, err := z.mainRouter(cfg)
 	if err != nil {
 		log.Printf("%-7s %-7s Cannot load router: %s", logError, logName, err.Error())
 		chErrors <- err

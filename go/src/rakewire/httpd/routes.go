@@ -8,11 +8,11 @@ import (
 	"net/http"
 )
 
-func (z *Service) mainRouter() (*mux.Router, error) {
+func (z *Service) mainRouter(cfg *Configuration) (*mux.Router, error) {
 
 	// TODO: useLocal with go run, otherwise use embedded
 
-	fs := Dir(true, "/public")
+	fs := Dir(cfg.TestMode, "/public")
 	ofs := oneFS{name: "/index.html", root: fs}
 
 	router := mux.NewRouter()

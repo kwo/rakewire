@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -36,6 +37,9 @@ var (
 
 func main() {
 
+	var debug = flag.Bool("debug", false, "run in debug mode")
+	flag.Parse()
+
 	cfg := config.GetConfig()
 	if cfg == nil {
 		log.Printf("Abort! No config file found at %s\n", config.GetConfigFileLocation())
@@ -43,10 +47,18 @@ func main() {
 		return
 	}
 
+	if *debug {
+		cfg.Logging.Level = "DEBUG"
+		cfg.Httpd.TestMode = true
+	}
+
 	// initialize logging
 	cfg.Logging.Init()
 
 	log.Printf("Rakewire %s starting with %d CPUs\n", model.VERSION, runtime.NumCPU())
+	if *debug {
+		log.Printf("%-7s %-7s Debug mode enabled.", logDebug, logName)
+	}
 
 	database = &bolt.Database{}
 	err := database.Open(&cfg.Database)
