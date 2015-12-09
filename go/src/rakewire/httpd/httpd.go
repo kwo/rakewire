@@ -92,16 +92,10 @@ func (z *Service) Start(chErrors chan<- error) {
 		Handler: mainHandler,
 	}
 
+	go server.Serve(z.listener)
+
 	z.running = true
 	log.Printf("%-7s %-7s Started httpd on http://%s:%d", logInfo, logName, z.cfg.Address, z.cfg.Port)
-
-	go func() {
-		err = server.Serve(z.listener)
-		if err != nil && z.IsRunning() {
-			log.Printf("%-7s %-7s Cannot start httpd: %s", logError, logName, err.Error())
-			chErrors <- err
-		}
-	}()
 
 }
 
