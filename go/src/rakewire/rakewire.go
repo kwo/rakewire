@@ -60,9 +60,9 @@ func main() {
 	// initialize logging
 	cfg.Logging.Init()
 
-	log.Printf("%-7s %-7s Rakewire %s\n", logInfo, logName, model.Version)
-	log.Printf("%-7s %-7s Build Time: %s\n", logInfo, logName, model.BuildTime)
-	log.Printf("%-7s %-7s Build Hash: %s\n", logInfo, logName, model.BuildHash)
+	log.Printf("Rakewire %s\n", model.Version)
+	log.Printf("Build Time: %s\n", model.BuildTime)
+	log.Printf("Build Hash: %s\n", model.BuildHash)
 	if *debug {
 		log.Printf("%-7s %-7s Debug mode enabled.", logDebug, logName)
 	}
