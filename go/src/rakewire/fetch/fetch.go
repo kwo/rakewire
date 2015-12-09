@@ -90,13 +90,13 @@ func (z *Service) Stop() {
 
 func (z *Service) run(id int) {
 
-	log.Printf("%-7s %-7s fetcher %2d starting...", logInfo, logName, id)
+	log.Printf("%-7s %-7s fetcher %2d starting...", logDebug, logName, id)
 
 	for req := range z.input {
 		z.processFeed(req, id)
 	}
 
-	log.Printf("%-7s %-7s fetcher %2d exited", logInfo, logName, id)
+	log.Printf("%-7s %-7s fetcher %2d exited", logDebug, logName, id)
 	z.latch.Done()
 
 }
