@@ -13,8 +13,8 @@ The project dependencies are located at vendor/src according to the gb conventio
 
 Therefore, set the following environment varibles:
 
-	export GOPATH=$PROJECT_ROOT/go:$PROJECT_ROOT/go/vendor
-	export GOBIN=$PROJECT_ROOT/go/bin
+	export GOPATH=$PROJECT_ROOT/go/vendor:$PROJECT_ROOT/go
+	export GOBIN=$PROJECT_ROOT/go/vendor/bin
 
 Additionally add GOBIN and web/npm_modules/.bin to the PATH
 
@@ -23,19 +23,18 @@ Additionally add GOBIN and web/npm_modules/.bin to the PATH
 Finally, be sure the following go executables are installed are in the PATH.
 They are necessary for go generate commands.
 
-	go get github.com/mjibson/esc
+	go get -u github.com/mjibson/esc
 
 
 ### Build
 
-This will place the executable in $PROJECT_ROOT/go/bin
+This will place the executable in $PROJECT_ROOT
 
 	b.build
 
 ### Run
 
-	cd $PROJECT_ROOT
-	./build.sh run
+	g.run
 
 ### Top-Level Dependencies
 
@@ -60,11 +59,10 @@ Install the node modules.
 
 To compile a UI fit for production.
 
-	webpack
+	w.build
 
 ### Run
 
 Run webpack in watch mode to keep files up-to-date.
 
-	cd $PROJECT_ROOT
-	./build.sh web
+	w.run
