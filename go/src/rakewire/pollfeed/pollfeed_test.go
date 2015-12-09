@@ -17,10 +17,10 @@ func TestPoll(t *testing.T) {
 	//t.SkipNow()
 
 	// open database
-	database := &bolt.Database{}
-	err := database.Open(&db.Configuration{
+	database := bolt.NewService(&db.Configuration{
 		Location: databaseFile,
 	})
+	err := database.Open()
 	assertNoError(t, err)
 
 	// create service
@@ -37,8 +37,7 @@ func TestPoll(t *testing.T) {
 	assertEqual(t, false, pf.IsRunning())
 
 	// close database
-	err = database.Close()
-	assertNoError(t, err)
+	database.Close()
 
 	// remove file
 	err = os.Remove(databaseFile)

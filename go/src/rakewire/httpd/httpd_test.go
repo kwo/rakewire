@@ -35,8 +35,8 @@ func TestMain(m *testing.M) {
 	cfg := db.Configuration{
 		Location: testDatabaseFile,
 	}
-	testDatabase := &bolt.Database{}
-	err := testDatabase.Open(&cfg)
+	testDatabase := bolt.NewService(&cfg)
+	err := testDatabase.Open()
 	if err != nil {
 		fmt.Printf("Cannot open database: %s\n", err.Error())
 		os.Exit(1)
