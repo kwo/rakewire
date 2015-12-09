@@ -31,41 +31,63 @@ type Database struct {
 	sync.Mutex
 	db           *bolt.DB
 	databaseFile string
+	running      bool
+}
+
+// NewService creates a new database service.
+func NewService(cfg *db.Configuration) *Database {
+	return &Database{
+		databaseFile: cfg.Location,
+	}
 }
 
 // Open the database
-func (z *Database) Open(cfg *db.Configuration) error {
+func (z *Database) Open() error {
 
-	db, err := bolt.Open(cfg.Location, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	z.Lock()
+	defer z.Unlock()
+	if z.running {
+		log.Printf("%-7s %-7s Database already opened, exiting...", logWarn, logName)
+		return nil
+	}
+
+	db, err := bolt.Open(z.databaseFile, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
-		log.Printf("%-7s %-7s Cannot open database at %s. %s", logError, logName, cfg.Location, err.Error())
+		log.Printf("%-7s %-7s Cannot open database at %s. %s", logError, logName, z.databaseFile, err.Error())
 		return err
 	}
 	z.db = db
-	z.databaseFile = cfg.Location
 
 	if err := checkSchema(z); err != nil {
 		log.Printf("%-7s %-7s Cannot initialize database: %s", logError, logName, err.Error())
 		return err
 	}
 
-	log.Printf("%-7s %-7s Using database at %s", logInfo, logName, cfg.Location)
-
+	z.running = true
+	log.Printf("%-7s %-7s Using database at %s", logInfo, logName, z.databaseFile)
 	return nil
 
 }
 
 // Close the database
-func (z *Database) Close() error {
-	if db := z.db; db != nil {
-		z.db = nil
-		if err := db.Close(); err != nil {
-			log.Printf("%-7s %-7s Error closing database: %s", logWarn, logName, err.Error())
-			return err
-		}
-		log.Printf("%-7s %-7s Closed database", logInfo, logName)
+func (z *Database) Close() {
+
+	z.Lock()
+	defer z.Unlock()
+	if !z.running {
+		log.Printf("%-7s %-7s Database already closed, exiting...", logWarn, logName)
+		return
 	}
-	return nil
+
+	if err := z.db.Close(); err != nil {
+		log.Printf("%-7s %-7s Error closing database: %s", logWarn, logName, err.Error())
+		return
+	}
+
+	z.db = nil
+	z.running = false
+	log.Printf("%-7s %-7s Closed database", logInfo, logName)
+
 }
 
 // Repair the database

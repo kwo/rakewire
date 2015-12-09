@@ -15,7 +15,7 @@ const (
 func checkSchema(z *Database) error {
 
 	// check that buckets exist
-	z.Lock()
+	// z.Lock() - called in z.Open
 	err := z.db.Update(func(tx *bolt.Tx) error {
 
 		var err error
@@ -48,7 +48,7 @@ func checkSchema(z *Database) error {
 		return nil
 
 	})
-	z.Unlock()
+	// z.Unlock() - called in z.Open
 
 	return err
 

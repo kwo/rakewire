@@ -26,11 +26,14 @@ func openDatabase(t *testing.T) *Database {
 	filename := f.Name()
 	f.Close()
 
-	database := &Database{}
-	err = database.Open(&db.Configuration{
+	database := NewService(&db.Configuration{
 		Location: filename,
 	})
+	err = database.Open()
 	assertNoError(t, err)
+	if !database.running {
+		t.Error("database is not running")
+	}
 
 	return database
 
@@ -39,14 +42,16 @@ func openDatabase(t *testing.T) *Database {
 func closeDatabase(t *testing.T, database *Database) {
 
 	// close database
-	err := database.Close()
-	assertNoError(t, err)
+	database.Close()
+	if database.running {
+		t.Error("database is still running")
+	}
 	if database.db != nil {
 		t.Error("database.db is not nil")
 	}
 
 	// remove file
-	err = os.Remove(database.databaseFile)
+	err := os.Remove(database.databaseFile)
 	assertNoError(t, err)
 
 }

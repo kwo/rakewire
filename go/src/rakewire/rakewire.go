@@ -70,8 +70,8 @@ func main() {
 		log.Printf("%-7s %-7s Trace mode enabled.", logTrace, logName)
 	}
 
-	database = &bolt.Database{}
-	err := database.Open(&cfg.Database)
+	database = bolt.NewService(&cfg.Database)
+	err := database.Open()
 	if err != nil {
 		log.Printf("%-7s %-7s Abort! Cannot access database: %s", logError, logName, err.Error())
 		os.Exit(1)
