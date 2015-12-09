@@ -44,10 +44,12 @@ type Configuration struct {
 
 // Service fetches feeds
 type Service struct {
+	sync.Mutex
+	running bool
 	input   chan *m.Feed
 	output  chan *m.Feed
 	workers int
-	latch   *sync.WaitGroup
+	latch   sync.WaitGroup
 	client  *http.Client
 }
 
@@ -61,31 +63,60 @@ func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Se
 		input:   input,
 		output:  output,
 		workers: cfg.Workers,
-		latch:   &sync.WaitGroup{},
 		client:  newInternalClient(timeout),
 	}
 }
 
 // Start service
 func (z *Service) Start() {
+
+	z.Lock()
+	defer z.Unlock()
+	if z.running {
+		log.Printf("%-7s %-7s service already started, exiting...", logWarn, logName)
+		return
+	}
+
 	log.Printf("%-7s %-7s service starting...", logInfo, logName)
-	// initialize fetchers
 	for i := 0; i < z.workers; i++ {
 		z.latch.Add(1)
 		go z.run(i)
-	} // for
+	}
+	z.running = true
 	log.Printf("%-7s %-7s service started", logInfo, logName)
+
 }
 
 // Stop service
 func (z *Service) Stop() {
-	log.Printf("%-7s %-7s service stopping...", logInfo, logName)
-	if z != nil { // TODO #RAKEWIRE-55: remove hack because on app close object is apparently already garbage collected
-		z.latch.Wait()
-		z.input = nil
-		z.output = nil
+
+	// TODO #RAKEWIRE-55: remove hack because on app close object is apparently already garbage collected
+	if z == nil {
+		log.Printf("%-7s %-7s service is nil, exiting...", logError, logName)
+		return
 	}
+
+	z.Lock()
+	defer z.Unlock()
+	if !z.running {
+		log.Printf("%-7s %-7s service already stopped, exiting...", logWarn, logName)
+		return
+	}
+
+	log.Printf("%-7s %-7s service stopping...", logInfo, logName)
+	z.latch.Wait()
+	z.input = nil
+	z.output = nil
+	z.running = false
 	log.Printf("%-7s %-7s service stopped", logInfo, logName)
+
+}
+
+// IsRunning indicated if the service is active or not.
+func (z *Service) IsRunning() bool {
+	z.Lock()
+	defer z.Unlock()
+	return z.running
 }
 
 func (z *Service) run(id int) {
