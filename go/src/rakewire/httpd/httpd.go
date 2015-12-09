@@ -20,7 +20,7 @@ const (
 // Service server
 type Service struct {
 	listener net.Listener
-	Database db.Database
+	database db.Database
 }
 
 // Configuration configuration
@@ -46,9 +46,11 @@ const (
 )
 
 // Start web service
-func (z *Service) Start(cfg *Configuration, chErrors chan<- error) {
+func (z *Service) Start(cfg *Configuration, database db.Database, chErrors chan<- error) {
 
-	if z.Database == nil {
+	z.database = database
+
+	if z.database == nil {
 		log.Printf("%-7s %-7s Cannot start httpd, no database provided", logError, logName)
 		chErrors <- errors.New("No database")
 		return

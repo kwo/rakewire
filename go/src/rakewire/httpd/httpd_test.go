@@ -43,12 +43,10 @@ func TestMain(m *testing.M) {
 	}
 
 	chErrors := make(chan error)
-	ws = &Service{
-		Database: testDatabase,
-	}
+	ws = &Service{}
 	go ws.Start(&Configuration{
 		Port: httpPort,
-	}, chErrors)
+	}, testDatabase, chErrors)
 
 	select {
 	case err := <-chErrors:

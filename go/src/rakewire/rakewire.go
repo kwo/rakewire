@@ -88,10 +88,8 @@ func main() {
 
 	chErrors := make(chan error)
 
-	ws = &httpd.Service{
-		Database: database,
-	}
-	go ws.Start(&cfg.Httpd, chErrors)
+	ws = &httpd.Service{}
+	go ws.Start(&cfg.Httpd, database, chErrors)
 
 	monitorShutdown(chErrors)
 

@@ -10,7 +10,7 @@ import (
 
 func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
 
-	feeds, err := z.Database.GetFeeds()
+	feeds, err := z.database.GetFeeds()
 	if err != nil {
 		log.Printf("%-7s %-7s Error in db.GetFeeds: %s", logWarn, logName, err.Error())
 		http.Error(w, "Cannot retrieve feeds from database.", http.StatusInternalServerError)
@@ -32,7 +32,7 @@ func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
 func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 
 	maxTime := time.Now().Truncate(time.Second).Add(36 * time.Hour)
-	feeds, err := z.Database.GetFetchFeeds(maxTime)
+	feeds, err := z.database.GetFetchFeeds(maxTime)
 	if err != nil {
 		log.Printf("%-7s %-7s Error in db.GetFetchFeeds: %s", logWarn, logName, err.Error())
 		http.Error(w, "Cannot retrieve feeds from database.", http.StatusInternalServerError)
@@ -56,7 +56,7 @@ func (z *Service) feedsGetFeedByID(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	feedID := vars["feedID"]
 
-	feed, err := z.Database.GetFeedByID(feedID)
+	feed, err := z.database.GetFeedByID(feedID)
 	if err != nil {
 		log.Printf("%-7s %-7s Error in db.GetFeedByID: %s", logWarn, logName, err.Error())
 		http.Error(w, "Cannot retrieve feed from database.", http.StatusInternalServerError)
@@ -83,7 +83,7 @@ func (z *Service) feedsGetFeedByURL(w http.ResponseWriter, req *http.Request) {
 
 	url := req.URL.Query().Get("url")
 
-	feed, err := z.Database.GetFeedByURL(url)
+	feed, err := z.database.GetFeedByURL(url)
 	if err != nil {
 		log.Printf("%-7s %-7s Error in db.GetFeedByURL: %s", logWarn, logName, err.Error())
 		http.Error(w, "Cannot retrieve feed from database.", http.StatusInternalServerError)
@@ -146,7 +146,7 @@ func (z *Service) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds []*m.Feed) {
 
 	for _, feed := range feeds {
-		err := z.Database.SaveFeed(feed)
+		err := z.database.SaveFeed(feed)
 		if err != nil {
 			log.Printf("%-7s %-7s Error in db.SaveFeed: %s", logWarn, logName, err.Error())
 			http.Error(w, "Cannot save feed to database.", http.StatusInternalServerError)
@@ -171,7 +171,7 @@ func (z *Service) feedsGetFeedLogByID(w http.ResponseWriter, req *http.Request) 
 	vars := mux.Vars(req)
 	feedID := vars["feedID"]
 
-	entries, err := z.Database.GetFeedLog(feedID, 7*24*time.Hour)
+	entries, err := z.database.GetFeedLog(feedID, 7*24*time.Hour)
 	if err != nil {
 		log.Printf("%-7s %-7s Error in db.GetFeedLog: %s", logWarn, logName, err.Error())
 		http.Error(w, "Cannot retrieve feed logs from database.", http.StatusInternalServerError)
