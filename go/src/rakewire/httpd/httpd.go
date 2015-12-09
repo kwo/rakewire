@@ -76,7 +76,7 @@ func (z *Service) Start(cfg *Configuration, database db.Database, chErrors chan<
 	}
 	log.Printf("%-7s %-7s Started httpd on http://%s", logInfo, logName, z.listener.Addr())
 	err = server.Serve(z.listener)
-	if err != nil && z.Running() {
+	if err != nil && z.IsRunning() {
 		log.Printf("%-7s %-7s Cannot start httpd: %s", logError, logName, err.Error())
 		chErrors <- err
 		return
@@ -97,7 +97,7 @@ func (z *Service) Stop() error {
 	return nil
 }
 
-// Running indicates if server is running or not
-func (z *Service) Running() bool {
+// IsRunning indicates if server is running or not
+func (z *Service) IsRunning() bool {
 	return z.listener != nil
 }
