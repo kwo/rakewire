@@ -12,48 +12,6 @@ const (
 	databaseFile = "../../../test/pollfeed.db"
 )
 
-func TestTickerKillSignal(t *testing.T) {
-
-	beenThere := false
-	killsignal := make(chan bool)
-	ticker := time.NewTicker(5 * time.Minute)
-	go func() {
-	run:
-		for {
-			select {
-			case <-ticker.C:
-				t.Fatal(t, "ticker should never fire")
-			case <-killsignal:
-				ticker.Stop()
-				break run
-			}
-		}
-		beenThere = true
-	}()
-	killsignal <- true
-	assertEqual(t, true, beenThere)
-
-}
-
-func TestTickerPositive(t *testing.T) {
-
-	beenThere := false
-	ticker := time.NewTicker(1 * time.Millisecond)
-	go func() {
-		for {
-			select {
-			case <-ticker.C:
-				beenThere = !beenThere
-				ticker.Stop()
-				break
-			}
-		}
-	}()
-	time.Sleep(2 * time.Millisecond)
-	assertEqual(t, true, beenThere)
-
-}
-
 func TestPoll(t *testing.T) {
 
 	//t.SkipNow()
