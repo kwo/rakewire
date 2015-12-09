@@ -1,6 +1,8 @@
 package model
 
-const (
-	// VERSION application version
-	VERSION = "0.1.0"
+// application level variables
+var (
+	BuildHash string
+	BuildTime string
+	Version   string
 )

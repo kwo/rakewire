@@ -1,8 +1,9 @@
 /go/bin
 /go/depgraph.svg
 /go/pkg
-/go/rakewire
+/rakewire
 /go/test/*.db
+/go/vendor/bin
 /go/vendor/pkg
 /web/node_modules
 /web/public

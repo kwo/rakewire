@@ -13,7 +13,6 @@ import (
 	"rakewire/model"
 	"rakewire/pollfeed"
 	"rakewire/reaper"
-	"runtime"
 	"syscall"
 )
 
@@ -61,7 +60,9 @@ func main() {
 	// initialize logging
 	cfg.Logging.Init()
 
-	log.Printf("Rakewire %s starting with %d CPUs\n", model.VERSION, runtime.NumCPU())
+	log.Printf("%-7s %-7s Rakewire %s\n", logInfo, logName, model.Version)
+	log.Printf("%-7s %-7s Build Time: %s\n", logInfo, logName, model.BuildTime)
+	log.Printf("%-7s %-7s Build Hash: %s\n", logInfo, logName, model.BuildHash)
 	if *debug {
 		log.Printf("%-7s %-7s Debug mode enabled.", logDebug, logName)
 	}

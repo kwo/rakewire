@@ -4,6 +4,18 @@ import (
 	"testing"
 )
 
+func TestAppVariables(t *testing.T) {
+	if BuildHash == "" {
+		t.Error("Build hash not set")
+	}
+	if BuildTime == "" {
+		t.Error("Build time not set")
+	}
+	if Version == "" {
+		t.Error("Version not set")
+	}
+}
+
 func assertNoError(t *testing.T, e error) {
 	if e != nil {
 		t.Fatalf("Error: %s", e.Error())

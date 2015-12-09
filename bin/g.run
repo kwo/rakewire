@@ -1,2 +1,3 @@
 cd $PROJECT_HOME/go
-go run ./src/rakewire/rakewire.go $*
+. $PROJECT_HOME/bin/b.vars
+go run -ldflags "$LDFLAGS" ./src/rakewire/rakewire.go $*

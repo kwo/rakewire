@@ -1,3 +1,4 @@
 cd $PROJECT_HOME/go
+. $PROJECT_HOME/bin/b.vars
 go generate ./src/rakewire/...
-go build ./src/rakewire/rakewire.go
+go build -ldflags "$LDFLAGS" -o ../rakewire ./src/rakewire/rakewire.go

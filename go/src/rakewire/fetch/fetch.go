@@ -11,8 +11,6 @@ import (
 )
 
 const (
-	defaultTimeout   = time.Second * 20
-	httpUserAgent    = "Rakewire " + m.VERSION
 	hAcceptEncoding  = "Accept-Encoding"
 	hContentEncoding = "Content-Encoding"
 	hContentType     = "Content-Type"
@@ -31,6 +29,11 @@ const (
 	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"
 	logError = "[ERROR]"
+)
+
+var (
+	defaultTimeout = time.Second * 20
+	httpUserAgent  = "Rakewire " + m.Version
 )
 
 // Configuration configuration
