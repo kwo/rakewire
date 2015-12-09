@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/pborman/uuid"
 	"time"
 )
 
@@ -23,7 +22,7 @@ const (
 // NewFeedLog instantiates a new FeedLog with the required fields set.
 func NewFeedLog(feedID string) *FeedLog {
 	return &FeedLog{
-		ID:     uuid.NewUUID().String(),
+		ID:     getUUID(),
 		FeedID: feedID,
 	}
 }

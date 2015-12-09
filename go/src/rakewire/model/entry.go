@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/pborman/uuid"
 	"time"
 )
 
@@ -28,5 +27,5 @@ func NewEntry(feedID string, entryID string) *Entry {
 
 // GenerateNewID generates a new UUID for Entry.ID
 func (z *Entry) GenerateNewID() {
-	z.ID = uuid.NewUUID().String()
+	z.ID = getUUID()
 }

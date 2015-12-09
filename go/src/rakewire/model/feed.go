@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/pborman/uuid"
 	"time"
 )
 
@@ -32,7 +31,7 @@ type Feed struct {
 // NewFeed instantiate a new Feed object with a new UUID
 func NewFeed(url string) *Feed {
 	return &Feed{
-		ID:        uuid.NewUUID().String(),
+		ID:        getUUID(),
 		URL:       url,
 		NextFetch: time.Now(),
 	}
