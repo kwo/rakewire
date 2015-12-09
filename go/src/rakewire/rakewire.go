@@ -78,18 +78,16 @@ func main() {
 		return
 	}
 
+	chErrors := make(chan error, 1)
 	polld = pollfeed.NewService(&cfg.Poll, database)
 	reaperd = reaper.NewService(&cfg.Reaper, database)
 	fetchd := fetch.NewService(&cfg.Fetcher, polld.Output, reaperd.Input)
+	ws = httpd.NewService(&cfg.Httpd, database)
 
 	polld.Start()
 	fetchd.Start()
 	reaperd.Start()
-
-	chErrors := make(chan error)
-
-	ws = &httpd.Service{}
-	go ws.Start(&cfg.Httpd, database, chErrors)
+	ws.Start(chErrors)
 
 	monitorShutdown(chErrors)
 

@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"rakewire/db"
+	"sync"
 )
 
 const (
@@ -19,8 +20,11 @@ const (
 
 // Service server
 type Service struct {
-	listener net.Listener
+	sync.Mutex
+	cfg      *Configuration
 	database db.Database
+	listener net.Listener
+	running  bool
 }
 
 // Configuration configuration
@@ -45,10 +49,23 @@ const (
 	mimeText         = "text/plain; charset=utf-8"
 )
 
-// Start web service
-func (z *Service) Start(cfg *Configuration, database db.Database, chErrors chan<- error) {
+// NewService creates a new httpd service.
+func NewService(cfg *Configuration, database db.Database) *Service {
+	return &Service{
+		cfg:      cfg,
+		database: database,
+	}
+}
 
-	z.database = database
+// Start web service
+func (z *Service) Start(chErrors chan<- error) {
+
+	z.Lock()
+	defer z.Unlock()
+	if z.running {
+		log.Printf("%-7s %-7s Server already started, exiting...", logWarn, logName)
+		return
+	}
 
 	if z.database == nil {
 		log.Printf("%-7s %-7s Cannot start httpd, no database provided", logError, logName)
@@ -56,48 +73,62 @@ func (z *Service) Start(cfg *Configuration, database db.Database, chErrors chan<
 		return
 	}
 
-	router, err := z.mainRouter(cfg)
+	router, err := z.mainRouter(z.cfg.UseLocal)
 	if err != nil {
 		log.Printf("%-7s %-7s Cannot load router: %s", logError, logName, err.Error())
 		chErrors <- err
 		return
 	}
-	mainHandler := Adapt(router, LogAdapter(cfg.AccessLog))
+	mainHandler := Adapt(router, LogAdapter(z.cfg.AccessLog))
 
-	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", cfg.Address, cfg.Port))
+	z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.cfg.Address, z.cfg.Port))
 	if err != nil {
 		log.Printf("%-7s %-7s Cannot start listener: %s", logError, logName, err.Error())
 		chErrors <- err
 		return
 	}
-	z.listener = l
+
 	server := http.Server{
 		Handler: mainHandler,
 	}
-	log.Printf("%-7s %-7s Started httpd on http://%s", logInfo, logName, z.listener.Addr())
-	err = server.Serve(z.listener)
-	if err != nil && z.IsRunning() {
-		log.Printf("%-7s %-7s Cannot start httpd: %s", logError, logName, err.Error())
-		chErrors <- err
-		return
-	}
+
+	z.running = true
+	log.Printf("%-7s %-7s Started httpd on http://%s:%d", logInfo, logName, z.cfg.Address, z.cfg.Port)
+
+	go func() {
+		err = server.Serve(z.listener)
+		if err != nil && z.IsRunning() {
+			log.Printf("%-7s %-7s Cannot start httpd: %s", logError, logName, err.Error())
+			chErrors <- err
+		}
+	}()
 
 }
 
 // Stop stop the server
-func (z *Service) Stop() error {
-	if l := z.listener; l != nil {
-		z.listener = nil
-		if err := l.Close(); err != nil {
-			log.Printf("%-7s %-7s Error stopping httpd: %s", logError, logName, err.Error())
-			return err
-		}
-		log.Printf("%-7s %-7s Stopped httpd", logInfo, logName)
+func (z *Service) Stop() {
+
+	z.Lock()
+	defer z.Unlock()
+	if !z.running {
+		log.Printf("%-7s %-7s Server already stopped, exiting...", logWarn, logName)
+		return
 	}
-	return nil
+
+	if err := z.listener.Close(); err != nil {
+		log.Printf("%-7s %-7s Error stopping httpd: %s", logError, logName, err.Error())
+	}
+
+	z.listener = nil
+	z.running = false
+
+	log.Printf("%-7s %-7s Stopped httpd", logInfo, logName)
+
 }
 
 // IsRunning indicates if server is running or not
 func (z *Service) IsRunning() bool {
-	return z.listener != nil
+	z.Lock()
+	defer z.Unlock()
+	return z.running
 }
