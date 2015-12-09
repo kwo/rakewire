@@ -19,6 +19,8 @@ const (
 	feedURL          = "http://localhost:5555/feed.xml"
 	hLastModified    = "Last-Modified"
 	hIfModifiedSince = "If-Modified-Since"
+	httpHost         = "localhost"
+	httpPort         = 4444
 )
 
 var (
@@ -45,7 +47,7 @@ func TestMain(m *testing.M) {
 		Database: testDatabase,
 	}
 	go ws.Start(&Configuration{
-		Port: 4444,
+		Port: httpPort,
 	}, chErrors)
 
 	select {
@@ -315,7 +317,7 @@ func getZBodyAsString(r io.Reader) (string, error) {
 }
 
 func newRequest(method string, path string) *http.Request {
-	req, _ := http.NewRequest(method, fmt.Sprintf("http://%s%s", ws.listener.Addr(), path), nil)
+	req, _ := http.NewRequest(method, fmt.Sprintf("http://%s:%d%s", httpHost, httpPort, path), nil)
 	req.Header.Add(hAcceptEncoding, "gzip")
 	return req
 }
