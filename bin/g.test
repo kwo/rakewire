@@ -1,3 +1,8 @@
-cd $PROJECT_HOME/go
-. $PROJECT_HOME/bin/b.vars
-go test -ldflags "$LDFLAGS" ./src/...
+if [ "$1" = "." ]; then
+	. $PROJECT_HOME/bin/b.vars
+	go test -ldflags "$LDFLAGS" -race
+else
+	cd $PROJECT_HOME/go
+	. $PROJECT_HOME/bin/b.vars
+	go test -ldflags "$LDFLAGS" -race ./src/...
+fi
