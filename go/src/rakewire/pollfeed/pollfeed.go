@@ -15,6 +15,7 @@ const (
 
 const (
 	logName  = "[poll]"
+	logTrace = "[TRACE]"
 	logDebug = "[DEBUG]"
 	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"
@@ -69,8 +70,16 @@ func (z *Service) Start() error {
 
 // Stop service
 func (z *Service) Stop() {
+
+	if !z.IsRunning() {
+		log.Printf("%-7s %-7s service already stopped, exiting...", logWarn, logName)
+		return
+	}
+
 	log.Printf("%-7s %-7s service stopping...", logDebug, logName)
+	log.Printf("%-7s %-7s killing...", logTrace, logName)
 	z.kill()
+	log.Printf("%-7s %-7s waiting on latch", logTrace, logName)
 	z.runlatch.Wait()
 	log.Printf("%-7s %-7s service stopped", logInfo, logName)
 }

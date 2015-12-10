@@ -53,6 +53,12 @@ func (z *Service) Start() error {
 
 // Stop service
 func (z *Service) Stop() {
+
+	if !z.IsRunning() {
+		log.Printf("%-7s %-7s service already stopped, exiting...", logWarn, logName)
+		return
+	}
+
 	log.Printf("%-7s %-7s service stopping...", logDebug, logName)
 	z.killsignal <- true
 	z.runlatch.Wait()
