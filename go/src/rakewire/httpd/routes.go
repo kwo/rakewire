@@ -10,8 +10,6 @@ import (
 
 func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
 
-	// TODO: useLocal with go run, otherwise use embedded
-
 	fs := Dir(useLocal, "/public")
 	ofs := oneFS{name: "/index.html", root: fs}
 
