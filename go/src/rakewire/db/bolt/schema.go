@@ -5,11 +5,12 @@ import (
 	"github.com/boltdb/bolt"
 	"log"
 	"strconv"
+	"strings"
 )
 
 const (
 	// SchemaVersion of the database
-	SchemaVersion = 1
+	SchemaVersion = 2
 )
 
 func checkSchema(z *Service) error {
@@ -34,11 +35,11 @@ func checkSchema(z *Service) error {
 				if err != nil {
 					break
 				}
-			// case 1:
-			// 	err = upgradeTo2(tx)
-			// 	if err != nil {
-			// 		break
-			// 	}
+			case 1:
+				err = upgradeTo2(tx)
+				if err != nil {
+					break
+				}
 			default:
 				err = fmt.Errorf("Unhandled schema version: %d", schemaVersion)
 			}
@@ -135,5 +136,21 @@ func upgradeTo1(tx *bolt.Tx) error {
 	}
 
 	return setSchemaVersion(tx, 1)
+
+}
+
+func upgradeTo2(tx *bolt.Tx) error {
+
+	bFeedLog := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog))
+
+	c := bFeedLog.Cursor()
+	for k, _ := c.First(); k != nil; k, _ = c.Next() {
+		key := string(k)
+		if strings.HasSuffix(key, "/IsUpdated") || strings.HasSuffix(key, "/UpdateCheck") {
+			c.Delete()
+		}
+	}
+
+	return setSchemaVersion(tx, 2)
 
 }

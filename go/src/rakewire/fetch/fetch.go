@@ -219,7 +219,6 @@ func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
 	feed.Attempt.Generator = xmlFeed.Generator
 	feed.Attempt.Title = xmlFeed.Title
 	feed.Attempt.LastUpdated = xmlFeed.Updated
-	feed.Attempt.UpdateCheck = m.UpdateCheckFeed
 
 	// set once, allow user override
 	if feed.Title == "" {
@@ -266,8 +265,6 @@ func processFeedMovedPermanently(feed *m.Feed, rsp *http.Response) {
 
 func processFeedNotModified(feed *m.Feed, rsp *http.Response) {
 	feed.Attempt.Result = m.FetchResultOK
-	feed.Attempt.IsUpdated = false
-	feed.Attempt.UpdateCheck = m.UpdateCheck304
 	feed.Attempt.ETag = rsp.Header.Get(hEtag)
 	feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 }

@@ -35,16 +35,14 @@ class FeedLogEntry extends React.Component {
 			return (
 				<thead>
 					<tr>
-						<th colSpan="6" style={style.oh}>General</th>
+						<th colSpan="3" style={style.oh}>General</th>
 						<th colSpan="6" style={style.oh}>HTTP</th>
-						<th colSpan="4" style={style.oh}>Feed</th>
+						<th colSpan="5" style={style.oh}>Feed</th>
 					</tr>
 					<tr>
 						<th>Start Time</th>
 						<th>Duration</th>
 						<th>Result</th>
-						<th>IsUpdated</th>
-						<th>UpCheck</th>
 
 						<th>Status Code</th>
 						<th>Size</th>
@@ -56,6 +54,7 @@ class FeedLogEntry extends React.Component {
 						<th>Flavor</th>
 						<th>Generator</th>
 						<th>Title</th>
+						<th>New</th>
 						<th>Updated</th>
 					</tr>
 				</thead>
@@ -112,8 +111,6 @@ class FeedLogEntry extends React.Component {
 					<td>{formatDateTime(logEntry.startTime)}</td>
 					<td style={style.num}>{logEntry.duration / 1000000}</td>
 					<td>{formatValue(logEntry.result, logEntry.resultMessage, 'result')}</td>
-					<td>{formatBool(logEntry.updated, 'updated')}</td>
-					<td>{logEntry.updateCheck}</td>
 
 					<td style={style.num}>{logEntry.statusCode}</td>
 					<td style={style.num}>{getReadableFileSizeString(logEntry.contentLength)}</td>
@@ -125,6 +122,7 @@ class FeedLogEntry extends React.Component {
 					<td>{logEntry.flavor}</td>
 					<td>{logEntry.generator}</td>
 					<td>{logEntry.title}</td>
+					<td>{logEntry.newEntries}</td>
 					<td>{formatDateTime(logEntry.lastUpdated)}</td>
 
 				</tr>

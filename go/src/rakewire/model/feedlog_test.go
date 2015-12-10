@@ -67,7 +67,6 @@ func getNewFeedLog() *FeedLog {
 	fl.ETag = "etag"
 	fl.Flavor = "flavor"
 	fl.Generator = ""
-	fl.IsUpdated = true
 	//fl.LastModified = dt
 	fl.LastUpdated = dt
 	fl.Result = FetchResultOK
@@ -76,8 +75,8 @@ func getNewFeedLog() *FeedLog {
 	fl.StatusCode = 200
 	fl.Title = "title"
 	fl.URL = "url"
-	fl.UpdateCheck = UpdateCheckFeed
 	fl.UsesGzip = false
+	fl.NewEntries = 2
 
 	return fl
 
@@ -96,7 +95,6 @@ func validateFeedLog(t *testing.T, fl *FeedLog) {
 	assertEqual(t, "flavor", fl.Flavor)
 	assertEqual(t, "", fl.Generator)
 	assertEqual(t, 36, len(fl.ID))
-	assertEqual(t, true, fl.IsUpdated)
 	assertEqual(t, time.Time{}.UnixNano(), fl.LastModified.UnixNano())
 	assertEqual(t, dt.UnixNano(), fl.LastUpdated.UnixNano())
 	assertEqual(t, FetchResultOK, fl.Result)
@@ -105,7 +103,7 @@ func validateFeedLog(t *testing.T, fl *FeedLog) {
 	assertEqual(t, 200, fl.StatusCode)
 	assertEqual(t, "title", fl.Title)
 	assertEqual(t, "url", fl.URL)
-	assertEqual(t, UpdateCheckFeed, fl.UpdateCheck)
 	assertEqual(t, false, fl.UsesGzip)
+	assertEqual(t, 2, fl.NewEntries)
 
 }

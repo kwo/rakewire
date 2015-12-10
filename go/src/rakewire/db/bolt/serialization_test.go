@@ -18,9 +18,9 @@ func TestSerialization(t *testing.T) {
 	fl := m.NewFeedLog("0000-FEED-ID")
 	fl.ContentLength = 50
 	fl.Duration = 6 * time.Millisecond
-	fl.IsUpdated = true
 	fl.Result = "OK"
 	fl.StartTime = time.Now()
+	fl.UsesGzip = true
 
 	// marshal
 	database.Lock()
@@ -56,18 +56,17 @@ func TestSerialization(t *testing.T) {
 	assertEqual(t, fl.FeedID, fl2.FeedID)
 	assertEqual(t, fl.ContentLength, fl2.ContentLength)
 	assertEqual(t, fl.Duration, fl2.Duration)
-	assertEqual(t, fl.IsUpdated, fl2.IsUpdated)
 	assertEqual(t, fl.Result, fl2.Result)
 	assertEqual(t, fl.StartTime.UTC(), fl2.StartTime)
 	assertEqual(t, fl.LastUpdated, fl2.LastUpdated)
 	// zero values are not saved
 	assertEqual(t, 0, fl2.StatusCode)
-	assertEqual(t, false, fl2.UsesGzip)
+	assertEqual(t, true, fl2.UsesGzip)
 	assertEqual(t, "", fl2.ETag)
 	assertEqual(t, time.Time{}, fl2.LastUpdated)
 
 	// modify and resave
-	fl2.IsUpdated = false
+	fl2.UsesGzip = false
 	database.Lock()
 	err = database.db.Update(func(tx *bolt.Tx) error {
 		_, err := Put(fl2, tx)
@@ -79,7 +78,7 @@ func TestSerialization(t *testing.T) {
 	// assert key is not present
 	err = database.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog)) // works
-		value := b.Get([]byte(fmt.Sprintf("%s%s%s", fl2.ID, chSep, "IsUpdated")))
+		value := b.Get([]byte(fmt.Sprintf("%s%s%s", fl2.ID, chSep, "UsesGzip")))
 		if value != nil {
 			t.Error("value must be nil")
 		}

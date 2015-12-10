@@ -135,7 +135,7 @@ func (z *Service) processResponse(feed *m.Feed) {
 		feed.UpdateFetchTime(feed.LastUpdated)
 	}
 
-	feed.Attempt.IsUpdated = (newEntryCount > 0)
+	feed.Attempt.NewEntries = newEntryCount
 
 	// save feed
 	err = z.database.SaveFeed(feed)
@@ -144,7 +144,7 @@ func (z *Service) processResponse(feed *m.Feed) {
 		return
 	}
 
-	log.Printf("%-7s %-7s: %2s  %3d  %5t  %2s %2d %s  %s", logInfo, logName, feed.Status, feed.Attempt.StatusCode, feed.Attempt.IsUpdated, feed.Attempt.UpdateCheck, newEntryCount, feed.URL, feed.StatusMessage)
+	log.Printf("%-7s %-7s %2s  %3d  %s  %2d  %s  %s", logInfo, logName, feed.Status, feed.Attempt.StatusCode, feed.Attempt.LastUpdated.Local().Format("02.01.06 15:04"), feed.Attempt.NewEntries, feed.URL, feed.StatusMessage)
 
 }
 

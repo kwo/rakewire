@@ -13,12 +13,6 @@ const (
 	FetchResultFeedError   = "FP" // cannot parse feed
 )
 
-// Check Levels for Update Status
-const (
-	UpdateCheck304  = "NM" // HTTP Status Code 304
-	UpdateCheckFeed = "LU" // No 304  but feed LastUpdated is the same
-)
-
 // NewFeedLog instantiates a new FeedLog with the required fields set.
 func NewFeedLog(feedID string) *FeedLog {
 	return &FeedLog{
@@ -32,10 +26,8 @@ type FeedLog struct {
 	ID            string        `json:"id" kv:"key"`
 	FeedID        string        `json:"feedId" kv:"FeedTime:1"`
 	Duration      time.Duration `json:"duration"`
-	IsUpdated     bool          `json:"updated"`
 	Result        string        `json:"result"`
 	ResultMessage string        `json:"resultMessage"`
-	UpdateCheck   string        `json:"updateCheck"`
 	StartTime     time.Time     `json:"startTime" kv:"FeedTime:2"`
 	URL           string        `json:"url"`
 	ContentLength int           `json:"contentLength"`
@@ -48,4 +40,5 @@ type FeedLog struct {
 	Generator     string        `json:"generator"`
 	Title         string        `json:"title"`
 	LastUpdated   time.Time     `json:"lastUpdated"`
+	NewEntries    int           `json:"newEntries"`
 }
