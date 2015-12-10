@@ -218,7 +218,6 @@ func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
 	feed.Attempt.Flavor = xmlFeed.Flavor
 	feed.Attempt.Generator = xmlFeed.Generator
 	feed.Attempt.Title = xmlFeed.Title
-	feed.Attempt.LastUpdated = xmlFeed.Updated
 
 	// set once, allow user override
 	if feed.Title == "" {

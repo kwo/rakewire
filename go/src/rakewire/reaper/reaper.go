@@ -129,6 +129,7 @@ func (z *Service) processResponse(feed *m.Feed) {
 		}
 	} // loop entries
 
+	feed.Attempt.LastUpdated = mostRecent
 	// recalc feed.LastUpdated
 	if feed.LastUpdated.Before(mostRecent) {
 		feed.LastUpdated = mostRecent
