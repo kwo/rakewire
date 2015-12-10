@@ -92,7 +92,7 @@ func (z *Service) processResponse(feed *m.Feed) {
 	// query previous entries of feed
 	var entryIDs []string
 	for _, entry := range feed.Entries {
-		entryIDs = append(entryIDs, entry.ID)
+		entryIDs = append(entryIDs, entry.EntryID)
 	}
 	dbEntries, err := z.database.GetFeedEntriesFromIDs(feed.ID, entryIDs)
 	if err != nil {
@@ -103,8 +103,8 @@ func (z *Service) processResponse(feed *m.Feed) {
 	// setIDs, check dates for new entries
 	var mostRecent time.Time
 	newEntryCount := 0
-	for i, entry := range feed.Entries {
-		if dbEntries[i] == nil {
+	for _, entry := range feed.Entries {
+		if dbEntry := dbEntries[entry.EntryID]; dbEntry == nil {
 			// new entry
 			newEntryCount++
 			entry.GenerateNewID()
@@ -116,7 +116,7 @@ func (z *Service) processResponse(feed *m.Feed) {
 			}
 		} else {
 			// old entry
-			entry.ID = dbEntries[i].ID
+			entry.ID = dbEntry.ID
 		}
 		if mostRecent.Before(entry.Updated) {
 			mostRecent = entry.Updated
