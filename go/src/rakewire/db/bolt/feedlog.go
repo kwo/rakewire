@@ -8,7 +8,7 @@ import (
 
 // GetFeedLog retrieves the past fetch attempts for the feed in reverse chronological order.
 // If since is equal to 0, return all.
-func (z *Database) GetFeedLog(feedID string, since time.Duration) ([]*m.FeedLog, error) {
+func (z *Service) GetFeedLog(feedID string, since time.Duration) ([]*m.FeedLog, error) {
 
 	maxDate := time.Now()
 	minDate := maxDate.Add(-since)

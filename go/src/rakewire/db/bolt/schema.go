@@ -12,7 +12,7 @@ const (
 	SchemaVersion = 1
 )
 
-func checkSchema(z *Database) error {
+func checkSchema(z *Service) error {
 
 	// check that buckets exist
 	// z.Lock() - called in z.Open

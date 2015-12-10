@@ -36,7 +36,7 @@ func TestMain(m *testing.M) {
 		Location: testDatabaseFile,
 	}
 	testDatabase := bolt.NewService(&cfg)
-	err := testDatabase.Open()
+	err := testDatabase.Start()
 	if err != nil {
 		fmt.Printf("Cannot open database: %s\n", err.Error())
 		os.Exit(1)
@@ -51,13 +51,13 @@ func TestMain(m *testing.M) {
 	select {
 	case err := <-chErrors:
 		fmt.Printf("Error: %s\n", err.Error())
-		testDatabase.Close()
+		testDatabase.Stop()
 		os.Remove(testDatabaseFile)
 		os.Exit(1)
 	case <-time.After(1 * time.Second):
 		status := m.Run()
 		ws.Stop()
-		testDatabase.Close()
+		testDatabase.Stop()
 		os.Remove(testDatabaseFile)
 		os.Exit(status)
 	}

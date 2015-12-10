@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"rakewire/db"
+	m "rakewire/model"
 	"testing"
 )
 
@@ -12,14 +13,25 @@ const (
 	databaseTempDirectory = "../../../../test"
 )
 
-func TestInterface(t *testing.T) {
+func TestInterfaceDatabase(t *testing.T) {
 
-	var d db.Database = &Database{}
-	assertNotNil(t, d)
+	var d db.Database = &Service{}
+	if d == nil {
+		t.Fatal("Does not implement db.Database interface.")
+	}
 
 }
 
-func openDatabase(t *testing.T) *Database {
+func TestInterfaceService(t *testing.T) {
+
+	var s m.Service = &Service{}
+	if s == nil {
+		t.Fatal("Does not implement m.Service interface.")
+	}
+
+}
+
+func openDatabase(t *testing.T) *Service {
 
 	f, err := ioutil.TempFile(empty, "bolt-")
 	assertNoError(t, err)
@@ -29,7 +41,7 @@ func openDatabase(t *testing.T) *Database {
 	database := NewService(&db.Configuration{
 		Location: filename,
 	})
-	err = database.Open()
+	err = database.Start()
 	assertNoError(t, err)
 	if !database.running {
 		t.Error("database is not running")
@@ -39,10 +51,10 @@ func openDatabase(t *testing.T) *Database {
 
 }
 
-func closeDatabase(t *testing.T, database *Database) {
+func closeDatabase(t *testing.T, database *Service) {
 
 	// close database
-	database.Close()
+	database.Stop()
 	if database.running {
 		t.Error("database is still running")
 	}

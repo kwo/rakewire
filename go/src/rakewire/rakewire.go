@@ -28,7 +28,7 @@ const (
 )
 
 var (
-	database *bolt.Database
+	database *bolt.Service
 	fetchd   *fetch.Service
 	polld    *pollfeed.Service
 	reaperd  *reaper.Service
@@ -71,7 +71,7 @@ func main() {
 	}
 
 	database = bolt.NewService(&cfg.Database)
-	err := database.Open()
+	err := database.Start()
 	if err != nil {
 		log.Printf("%-7s %-7s Abort! Cannot access database: %s", logError, logName, err.Error())
 		os.Exit(1)
@@ -110,20 +110,10 @@ func monitorShutdown(chErrors chan error) {
 
 	// shutdown httpd
 	ws.Stop()
-	ws = nil
-
 	polld.Stop()
-	polld = nil
-
 	fetchd.Stop()
-	fetchd = nil
-
 	reaperd.Stop()
-	reaperd = nil
-
-	// close database
-	database.Close()
-	database = nil
+	database.Stop()
 
 	log.Printf("%-7s %-7s Done", logInfo, logName)
 

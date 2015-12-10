@@ -26,8 +26,8 @@ const (
 	logError = "[ERROR]"
 )
 
-// Database implementation of Database
-type Database struct {
+// Service implementation of Database
+type Service struct {
 	sync.Mutex
 	db           *bolt.DB
 	databaseFile string
@@ -35,14 +35,14 @@ type Database struct {
 }
 
 // NewService creates a new database service.
-func NewService(cfg *db.Configuration) *Database {
-	return &Database{
+func NewService(cfg *db.Configuration) *Service {
+	return &Service{
 		databaseFile: cfg.Location,
 	}
 }
 
-// Open the database
-func (z *Database) Open() error {
+// Start the database
+func (z *Service) Start() error {
 
 	z.Lock()
 	defer z.Unlock()
@@ -69,8 +69,8 @@ func (z *Database) Open() error {
 
 }
 
-// Close the database
-func (z *Database) Close() {
+// Stop the database
+func (z *Service) Stop() {
 
 	z.Lock()
 	defer z.Unlock()
@@ -90,8 +90,15 @@ func (z *Database) Close() {
 
 }
 
+// IsRunning indicated if the service is active or not.
+func (z *Service) IsRunning() bool {
+	z.Lock()
+	defer z.Unlock()
+	return z.running
+}
+
 // Repair the database
-func (z *Database) Repair() error {
+func (z *Service) Repair() error {
 
 	// TODO: reimplement repair database
 

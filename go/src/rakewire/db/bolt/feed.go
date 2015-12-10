@@ -8,7 +8,7 @@ import (
 )
 
 // GetFeeds list feeds
-func (z *Database) GetFeeds() ([]*m.Feed, error) {
+func (z *Service) GetFeeds() ([]*m.Feed, error) {
 
 	result := []*m.Feed{}
 	add := func() interface{} {
@@ -26,7 +26,7 @@ func (z *Database) GetFeeds() ([]*m.Feed, error) {
 }
 
 // GetFetchFeeds get feeds to be fetched within the given max time parameter.
-func (z *Database) GetFetchFeeds(maxTime time.Time) ([]*m.Feed, error) {
+func (z *Service) GetFetchFeeds(maxTime time.Time) ([]*m.Feed, error) {
 
 	if maxTime.IsZero() {
 		maxTime = time.Now()
@@ -48,7 +48,7 @@ func (z *Database) GetFetchFeeds(maxTime time.Time) ([]*m.Feed, error) {
 }
 
 // GetFeedByID return feed given UUID
-func (z *Database) GetFeedByID(id string) (*m.Feed, error) {
+func (z *Service) GetFeedByID(id string) (*m.Feed, error) {
 
 	result := m.NewFeed("")
 	result.ID = id
@@ -69,7 +69,7 @@ func (z *Database) GetFeedByID(id string) (*m.Feed, error) {
 }
 
 // GetFeedByURL return feed given url
-func (z *Database) GetFeedByURL(url string) (*m.Feed, error) {
+func (z *Service) GetFeedByURL(url string) (*m.Feed, error) {
 
 	feeds := []*m.Feed{}
 	add := func() interface{} {
@@ -96,7 +96,7 @@ func (z *Database) GetFeedByURL(url string) (*m.Feed, error) {
 }
 
 // SaveFeed save feeds
-func (z *Database) SaveFeed(feed *m.Feed) error {
+func (z *Service) SaveFeed(feed *m.Feed) error {
 
 	if feed == nil {
 		return fmt.Errorf("Nil feed")

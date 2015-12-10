@@ -8,13 +8,13 @@ import (
 )
 
 // GetFeedEntries retrieves entries for a feed since a specific time
-func (z *Database) GetFeedEntries(feedID string, since time.Duration) ([]*m.Entry, error) {
+func (z *Service) GetFeedEntries(feedID string, since time.Duration) ([]*m.Entry, error) {
 	// TODO: get feed entries
 	return nil, nil
 }
 
 // GetFeedEntriesFromIDs retrieves entries for specific entryIDs
-func (z *Database) GetFeedEntriesFromIDs(feedID string, entryIDs []string) ([]*m.Entry, error) {
+func (z *Service) GetFeedEntriesFromIDs(feedID string, entryIDs []string) ([]*m.Entry, error) {
 
 	result := []*m.Entry{}
 
