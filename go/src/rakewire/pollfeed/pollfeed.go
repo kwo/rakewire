@@ -58,25 +58,26 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 }
 
 // Start Service
-func (z *Service) Start() {
-	log.Printf("%-7s %-7s service starting...", logInfo, logName)
+func (z *Service) Start() error {
+	log.Printf("%-7s %-7s service starting...", logDebug, logName)
 	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	log.Printf("%-7s %-7s service started.", logInfo, logName)
+	log.Printf("%-7s %-7s service started", logInfo, logName)
+	return nil
 }
 
 // Stop service
 func (z *Service) Stop() {
-	log.Printf("%-7s %-7s service stopping...", logInfo, logName)
+	log.Printf("%-7s %-7s service stopping...", logDebug, logName)
 	z.kill()
 	z.runlatch.Wait()
-	log.Printf("%-7s %-7s service stopped.", logInfo, logName)
+	log.Printf("%-7s %-7s service stopped", logInfo, logName)
 }
 
 func (z *Service) run() {
 
-	log.Printf("%-7s %-7s run starting...", logInfo, logName)
+	log.Printf("%-7s %-7s run starting...", logDebug, logName)
 
 	// run once initially
 	z.setPolling(true)
@@ -94,7 +95,7 @@ run:
 				z.polllatch.Add(1)
 				go z.poll(tick)
 			} else {
-				log.Printf("%-7s %-7s Polling still in progress, skipping.", logInfo, logName)
+				log.Printf("%-7s %-7s Polling still in progress, skipping", logDebug, logName)
 			}
 		case <-z.killsignal:
 			break run
@@ -108,13 +109,13 @@ run:
 
 	z.setRunning(false)
 	z.runlatch.Done()
-	log.Printf("%-7s %-7s run exited.", logInfo, logName)
+	log.Printf("%-7s %-7s run exited", logDebug, logName)
 
 }
 
 func (z *Service) poll(t time.Time) {
 
-	log.Printf("%-7s %-7s polling...", logInfo, logName)
+	log.Printf("%-7s %-7s polling...", logDebug, logName)
 
 	// get next feeds
 	feeds, err := z.database.GetFetchFeeds(t)
@@ -126,7 +127,7 @@ func (z *Service) poll(t time.Time) {
 	}
 
 	// convert feeds
-	log.Printf("%-7s %-7s request feeds: %d", logInfo, logName, len(feeds))
+	log.Printf("%-7s %-7s polling feeds: %d", logInfo, logName, len(feeds))
 
 	// send to output
 	for i := 0; i < len(feeds) && !z.isKilled(); i++ {

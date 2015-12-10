@@ -1,6 +1,7 @@
 package bolt
 
 import (
+	"errors"
 	"github.com/boltdb/bolt"
 	"log"
 	"rakewire/db"
@@ -26,6 +27,11 @@ const (
 	logError = "[ERROR]"
 )
 
+var (
+	// ErrRestart indicates that the service cannot be started because it is already running.
+	ErrRestart = errors.New("The service is already started")
+)
+
 // Service implementation of Database
 type Service struct {
 	sync.Mutex
@@ -48,7 +54,7 @@ func (z *Service) Start() error {
 	defer z.Unlock()
 	if z.running {
 		log.Printf("%-7s %-7s Database already opened, exiting...", logWarn, logName)
-		return nil
+		return ErrRestart
 	}
 
 	db, err := bolt.Open(z.databaseFile, 0600, &bolt.Options{Timeout: 1 * time.Second})
@@ -64,7 +70,7 @@ func (z *Service) Start() error {
 	}
 
 	z.running = true
-	log.Printf("%-7s %-7s Using database at %s", logInfo, logName, z.databaseFile)
+	log.Printf("%-7s %-7s service started using %s", logInfo, logName, z.databaseFile)
 	return nil
 
 }
@@ -86,7 +92,7 @@ func (z *Service) Stop() {
 
 	z.db = nil
 	z.running = false
-	log.Printf("%-7s %-7s Closed database", logInfo, logName)
+	log.Printf("%-7s %-7s service stopped", logInfo, logName)
 
 }
 

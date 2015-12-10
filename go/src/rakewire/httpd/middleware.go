@@ -45,7 +45,7 @@ func LogAdapter(filename string) Adapter {
 		}
 	}
 
-	log.Printf("%-7s %-7s Logging http access logs to %s", logInfo, logName, logFile.Name())
+	log.Printf("%-7s %-7s logging http access logs to %s", logDebug, logName, logFile.Name())
 
 	return func(h http.Handler) http.Handler {
 		return gorillaHandlers.LoggingHandler(logFile, h)

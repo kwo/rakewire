@@ -5,6 +5,15 @@ import (
 	"testing"
 )
 
+func TestInterfaceService(t *testing.T) {
+
+	var s m.Service = &Service{}
+	if s == nil {
+		t.Fatal("Does not implement m.Service interface.")
+	}
+
+}
+
 func TestFetch(t *testing.T) {
 
 	t.SkipNow()

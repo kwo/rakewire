@@ -23,7 +23,7 @@ func checkSchema(z *Service) error {
 		for {
 
 			schemaVersion := getSchemaVersion(tx)
-			log.Printf("%-7s %-7s Schema Version: %d", logDebug, logName, schemaVersion)
+			log.Printf("%-7s %-7s schema version: %d", logDebug, logName, schemaVersion)
 			if schemaVersion == SchemaVersion {
 				break
 			}

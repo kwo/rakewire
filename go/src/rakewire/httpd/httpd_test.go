@@ -10,6 +10,7 @@ import (
 	"os"
 	"rakewire/db"
 	"rakewire/db/bolt"
+	m "rakewire/model"
 	"strconv"
 	"testing"
 	"time"
@@ -42,24 +43,29 @@ func TestMain(m *testing.M) {
 		os.Exit(1)
 	}
 
-	chErrors := make(chan error)
 	ws = NewService(&Configuration{
 		Port: httpPort,
 	}, testDatabase)
-	go ws.Start(chErrors)
 
-	select {
-	case err := <-chErrors:
+	status := 0
+	err = ws.Start()
+	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
-		testDatabase.Stop()
-		os.Remove(testDatabaseFile)
-		os.Exit(1)
-	case <-time.After(1 * time.Second):
-		status := m.Run()
+	} else {
+		status = m.Run()
 		ws.Stop()
-		testDatabase.Stop()
-		os.Remove(testDatabaseFile)
-		os.Exit(status)
+	}
+	testDatabase.Stop()
+	os.Remove(testDatabaseFile)
+	os.Exit(status)
+
+}
+
+func TestInterfaceService(t *testing.T) {
+
+	var s m.Service = &Service{}
+	if s == nil {
+		t.Fatal("Does not implement m.Service interface.")
 	}
 
 }

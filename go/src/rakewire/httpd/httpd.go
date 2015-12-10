@@ -18,6 +18,11 @@ const (
 	logError = "[ERROR]"
 )
 
+var (
+	// ErrRestart indicates that the service cannot be started because it is already running.
+	ErrRestart = errors.New("The service is already started")
+)
+
 // Service server
 type Service struct {
 	sync.Mutex
@@ -58,34 +63,31 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 }
 
 // Start web service
-func (z *Service) Start(chErrors chan<- error) {
+func (z *Service) Start() error {
 
 	z.Lock()
 	defer z.Unlock()
 	if z.running {
 		log.Printf("%-7s %-7s Server already started, exiting...", logWarn, logName)
-		return
+		return ErrRestart
 	}
 
 	if z.database == nil {
 		log.Printf("%-7s %-7s Cannot start httpd, no database provided", logError, logName)
-		chErrors <- errors.New("No database")
-		return
+		return errors.New("No database")
 	}
 
 	router, err := z.mainRouter(z.cfg.UseLocal)
 	if err != nil {
 		log.Printf("%-7s %-7s Cannot load router: %s", logError, logName, err.Error())
-		chErrors <- err
-		return
+		return err
 	}
 	mainHandler := Adapt(router, LogAdapter(z.cfg.AccessLog))
 
 	z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.cfg.Address, z.cfg.Port))
 	if err != nil {
 		log.Printf("%-7s %-7s Cannot start listener: %s", logError, logName, err.Error())
-		chErrors <- err
-		return
+		return err
 	}
 
 	server := http.Server{
@@ -95,7 +97,8 @@ func (z *Service) Start(chErrors chan<- error) {
 	go server.Serve(z.listener)
 
 	z.running = true
-	log.Printf("%-7s %-7s Started httpd on http://%s:%d", logInfo, logName, z.cfg.Address, z.cfg.Port)
+	log.Printf("%-7s %-7s service started on http://%s:%d", logInfo, logName, z.cfg.Address, z.cfg.Port)
+	return nil
 
 }
 
@@ -116,7 +119,7 @@ func (z *Service) Stop() {
 	z.listener = nil
 	z.running = false
 
-	log.Printf("%-7s %-7s Stopped httpd", logInfo, logName)
+	log.Printf("%-7s %-7s service stopped", logInfo, logName)
 
 }
 

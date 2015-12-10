@@ -42,25 +42,26 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 }
 
 // Start Service
-func (z *Service) Start() {
-	log.Printf("%-7s %-7s service starting...", logInfo, logName)
+func (z *Service) Start() error {
+	log.Printf("%-7s %-7s service starting...", logDebug, logName)
 	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	log.Printf("%-7s %-7s service started.", logInfo, logName)
+	log.Printf("%-7s %-7s service started", logInfo, logName)
+	return nil
 }
 
 // Stop service
 func (z *Service) Stop() {
-	log.Printf("%-7s %-7s service stopping...", logInfo, logName)
+	log.Printf("%-7s %-7s service stopping...", logDebug, logName)
 	z.killsignal <- true
 	z.runlatch.Wait()
-	log.Printf("%-7s %-7s service stopped.", logInfo, logName)
+	log.Printf("%-7s %-7s service stopped", logInfo, logName)
 }
 
 func (z *Service) run() {
 
-	log.Printf("%-7s %-7s run starting...", logInfo, logName)
+	log.Printf("%-7s %-7s run starting...", logDebug, logName)
 
 run:
 	for {
@@ -76,7 +77,7 @@ run:
 
 	z.setRunning(false)
 	z.runlatch.Done()
-	log.Printf("%-7s %-7s run exited", logInfo, logName)
+	log.Printf("%-7s %-7s run exited", logDebug, logName)
 
 }
 

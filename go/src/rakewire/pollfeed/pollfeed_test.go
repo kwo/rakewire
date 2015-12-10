@@ -4,6 +4,7 @@ import (
 	"os"
 	"rakewire/db"
 	"rakewire/db/bolt"
+	m "rakewire/model"
 	"testing"
 	"time"
 )
@@ -11,6 +12,15 @@ import (
 const (
 	databaseFile = "../../../test/pollfeed.db"
 )
+
+func TestInterfaceService(t *testing.T) {
+
+	var s m.Service = &Service{}
+	if s == nil {
+		t.Fatal("Does not implement m.Service interface.")
+	}
+
+}
 
 func TestPoll(t *testing.T) {
 

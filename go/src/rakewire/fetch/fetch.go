@@ -1,6 +1,7 @@
 package fetch
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -29,6 +30,11 @@ const (
 	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"
 	logError = "[ERROR]"
+)
+
+var (
+	// ErrRestart indicates that the service cannot be started because it is already running.
+	ErrRestart = errors.New("The service is already started")
 )
 
 var (
@@ -68,22 +74,23 @@ func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Se
 }
 
 // Start service
-func (z *Service) Start() {
+func (z *Service) Start() error {
 
 	z.Lock()
 	defer z.Unlock()
 	if z.running {
 		log.Printf("%-7s %-7s service already started, exiting...", logWarn, logName)
-		return
+		return ErrRestart
 	}
 
-	log.Printf("%-7s %-7s service starting...", logInfo, logName)
+	log.Printf("%-7s %-7s service starting...", logDebug, logName)
 	for i := 0; i < z.workers; i++ {
 		z.latch.Add(1)
 		go z.run(i)
 	}
 	z.running = true
 	log.Printf("%-7s %-7s service started", logInfo, logName)
+	return nil
 
 }
 
@@ -103,7 +110,7 @@ func (z *Service) Stop() {
 		return
 	}
 
-	log.Printf("%-7s %-7s service stopping...", logInfo, logName)
+	log.Printf("%-7s %-7s service stopping...", logDebug, logName)
 	z.latch.Wait()
 	z.input = nil
 	z.output = nil

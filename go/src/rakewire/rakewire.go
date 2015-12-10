@@ -43,7 +43,7 @@ func main() {
 
 	cfg := config.GetConfig()
 	if cfg == nil {
-		log.Printf("Abort! No config file found at %s\n", config.GetConfigFileLocation())
+		log.Printf("abort! no config file found at %s\n", config.GetConfigFileLocation())
 		os.Exit(1)
 		return
 	}
@@ -64,31 +64,40 @@ func main() {
 	log.Printf("Build Time: %s\n", model.BuildTime)
 	log.Printf("Build Hash: %s\n", model.BuildHash)
 	if *debug {
-		log.Printf("%-7s %-7s Debug mode enabled.", logDebug, logName)
+		log.Printf("%-7s %-7s debug mode enabled", logDebug, logName)
 	}
 	if *trace {
-		log.Printf("%-7s %-7s Trace mode enabled.", logTrace, logName)
+		log.Printf("%-7s %-7s trace mode enabled", logTrace, logName)
 	}
 
 	database = bolt.NewService(&cfg.Database)
-	err := database.Start()
-	if err != nil {
-		log.Printf("%-7s %-7s Abort! Cannot access database: %s", logError, logName, err.Error())
-		os.Exit(1)
-		return
-	}
-
-	chErrors := make(chan error, 1)
 	polld = pollfeed.NewService(&cfg.Poll, database)
 	reaperd = reaper.NewService(&cfg.Reaper, database)
 	fetchd := fetch.NewService(&cfg.Fetcher, polld.Output, reaperd.Input)
 	ws = httpd.NewService(&cfg.Httpd, database)
 
-	polld.Start()
-	fetchd.Start()
-	reaperd.Start()
-	ws.Start(chErrors)
+	chErrors := make(chan error, 1)
+	for i := 0; i < 5; i++ {
+		var err error
+		switch i {
+		case 0:
+			err = database.Start()
+		case 1:
+			err = polld.Start()
+		case 2:
+			err = fetchd.Start()
+		case 3:
+			err = reaperd.Start()
+		case 4:
+			err = ws.Start()
+		} // select
+		if err != nil {
+			chErrors <- err
+			break
+		}
+	}
 
+	// we want this to run in the main goroutine
 	monitorShutdown(chErrors)
 
 }
@@ -100,13 +109,13 @@ func monitorShutdown(chErrors chan error) {
 
 	select {
 	case err := <-chErrors:
-		log.Printf("%-7s %-7s Received error: %s", logError, logName, err.Error())
+		log.Printf("%-7s %-7s received error: %s", logError, logName, err.Error())
 	case <-chSignals:
 		fmt.Println()
 		log.Printf("%-7s %-7s caught signal", logInfo, logName)
 	}
 
-	log.Printf("%-7s %-7s Stopping... ", logInfo, logName)
+	log.Printf("%-7s %-7s stopping... ", logInfo, logName)
 
 	// shutdown httpd
 	ws.Stop()
@@ -115,6 +124,6 @@ func monitorShutdown(chErrors chan error) {
 	reaperd.Stop()
 	database.Stop()
 
-	log.Printf("%-7s %-7s Done", logInfo, logName)
+	log.Printf("%-7s %-7s done", logInfo, logName)
 
 }
