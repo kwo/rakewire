@@ -68,25 +68,25 @@ func (z *Service) Start() error {
 	z.Lock()
 	defer z.Unlock()
 	if z.running {
-		log.Printf("%-7s %-7s Server already started, exiting...", logWarn, logName)
+		log.Printf("%-7s %-7s service already started, exiting...", logWarn, logName)
 		return ErrRestart
 	}
 
 	if z.database == nil {
-		log.Printf("%-7s %-7s Cannot start httpd, no database provided", logError, logName)
+		log.Printf("%-7s %-7s cannot start httpd, no database provided", logError, logName)
 		return errors.New("No database")
 	}
 
 	router, err := z.mainRouter(z.cfg.UseLocal)
 	if err != nil {
-		log.Printf("%-7s %-7s Cannot load router: %s", logError, logName, err.Error())
+		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
 		return err
 	}
 	mainHandler := Adapt(router, LogAdapter(z.cfg.AccessLog))
 
 	z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.cfg.Address, z.cfg.Port))
 	if err != nil {
-		log.Printf("%-7s %-7s Cannot start listener: %s", logError, logName, err.Error())
+		log.Printf("%-7s %-7s cannot start listener: %s", logError, logName, err.Error())
 		return err
 	}
 
@@ -108,12 +108,12 @@ func (z *Service) Stop() {
 	z.Lock()
 	defer z.Unlock()
 	if !z.running {
-		log.Printf("%-7s %-7s Server already stopped, exiting...", logWarn, logName)
+		log.Printf("%-7s %-7s service already stopped, exiting...", logWarn, logName)
 		return
 	}
 
 	if err := z.listener.Close(); err != nil {
-		log.Printf("%-7s %-7s Error stopping httpd: %s", logError, logName, err.Error())
+		log.Printf("%-7s %-7s error stopping httpd: %s", logError, logName, err.Error())
 	}
 
 	z.listener = nil

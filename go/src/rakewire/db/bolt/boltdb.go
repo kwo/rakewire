@@ -53,19 +53,19 @@ func (z *Service) Start() error {
 	z.Lock()
 	defer z.Unlock()
 	if z.running {
-		log.Printf("%-7s %-7s Database already opened, exiting...", logWarn, logName)
+		log.Printf("%-7s %-7s service already started, exiting...", logWarn, logName)
 		return ErrRestart
 	}
 
 	db, err := bolt.Open(z.databaseFile, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
-		log.Printf("%-7s %-7s Cannot open database at %s. %s", logError, logName, z.databaseFile, err.Error())
+		log.Printf("%-7s %-7s cannot open database at %s. %s", logError, logName, z.databaseFile, err.Error())
 		return err
 	}
 	z.db = db
 
 	if err := checkSchema(z); err != nil {
-		log.Printf("%-7s %-7s Cannot initialize database: %s", logError, logName, err.Error())
+		log.Printf("%-7s %-7s cannot initialize database: %s", logError, logName, err.Error())
 		return err
 	}
 
@@ -81,12 +81,12 @@ func (z *Service) Stop() {
 	z.Lock()
 	defer z.Unlock()
 	if !z.running {
-		log.Printf("%-7s %-7s Database already closed, exiting...", logWarn, logName)
+		log.Printf("%-7s %-7s service already stopped, exiting...", logWarn, logName)
 		return
 	}
 
 	if err := z.db.Close(); err != nil {
-		log.Printf("%-7s %-7s Error closing database: %s", logWarn, logName, err.Error())
+		log.Printf("%-7s %-7s error closing database: %s", logWarn, logName, err.Error())
 		return
 	}
 
