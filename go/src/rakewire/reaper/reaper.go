@@ -117,6 +117,12 @@ func (z *Service) processResponse(feed *m.Feed) {
 		} else {
 			// old entry
 			entry.ID = dbEntry.ID
+			if entry.Created.IsZero() {
+				entry.Created = dbEntry.Created
+			}
+			if entry.Updated.IsZero() {
+				entry.Updated = dbEntry.Updated
+			}
 		}
 		if mostRecent.Before(entry.Updated) {
 			mostRecent = entry.Updated
