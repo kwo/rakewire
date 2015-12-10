@@ -21,7 +21,7 @@ type Database interface {
 	// If since is equal to 0, return all.
 	GetFeedLog(feedID string, since time.Duration) ([]*m.FeedLog, error)
 	GetFeedEntries(feedID string, since time.Duration) ([]*m.Entry, error)
-	GetFeedEntriesFromIDs(feedID string, entryIDs []string) ([]*m.Entry, error)
+	GetFeedEntriesFromIDs(feedID string, entryIDs []string) (map[string]*m.Entry, error)
 	SaveFeed(*m.Feed) error
 	Repair() error
 }

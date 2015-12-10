@@ -14,9 +14,9 @@ func (z *Service) GetFeedEntries(feedID string, since time.Duration) ([]*m.Entry
 }
 
 // GetFeedEntriesFromIDs retrieves entries for specific entryIDs
-func (z *Service) GetFeedEntriesFromIDs(feedID string, entryIDs []string) ([]*m.Entry, error) {
+func (z *Service) GetFeedEntriesFromIDs(feedID string, entryIDs []string) (map[string]*m.Entry, error) {
 
-	result := []*m.Entry{}
+	result := make(map[string]*m.Entry)
 
 	for _, entryID := range entryIDs {
 
@@ -34,12 +34,10 @@ func (z *Service) GetFeedEntriesFromIDs(feedID string, entryIDs []string) ([]*m.
 			return nil, err
 		}
 
-		if len(entries) == 0 {
-			result = append(result, nil)
+		if len(entries) == 1 {
+			result[entries[0].EntryID] = entries[0]
 		} else if len(entries) > 1 {
 			return nil, fmt.Errorf("Unique index returned multiple results: %s, FeedID: %s, EntryID: %s", "Entry/EntryID", feedID, entryID)
-		} else {
-			result = append(result, entries[0])
 		}
 
 	} // loop entryIDs
