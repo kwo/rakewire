@@ -104,7 +104,9 @@ func (z *Service) processResponse(feed *m.Feed) {
 	var mostRecent time.Time
 	newEntryCount := 0
 	for _, entry := range feed.Entries {
+
 		if dbEntry := dbEntries[entry.EntryID]; dbEntry == nil {
+
 			// new entry
 			newEntryCount++
 			entry.GenerateNewID()
@@ -114,19 +116,35 @@ func (z *Service) processResponse(feed *m.Feed) {
 			if entry.Updated.IsZero() {
 				entry.Updated = entry.Created
 			}
+
 		} else {
+
 			// old entry
 			entry.ID = dbEntry.ID
-			if entry.Created.IsZero() {
+
+			// set if zero and prevent from creeping forward
+			if entry.Created.IsZero() || entry.Created.After(dbEntry.Created) {
 				entry.Created = dbEntry.Created
 			}
+
+			// set if zero
 			if entry.Updated.IsZero() {
 				entry.Updated = dbEntry.Updated
 			}
+
+			// prevent from creeping forward
+			if entry.Updated.After(dbEntry.Updated) {
+				if entry.Hash() == dbEntry.Hash() {
+					entry.Updated = dbEntry.Updated
+				}
+			}
+
 		}
+
 		if mostRecent.Before(entry.Updated) {
 			mostRecent = entry.Updated
 		}
+
 	} // loop entries
 
 	feed.Attempt.LastUpdated = mostRecent

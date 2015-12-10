@@ -1,6 +1,8 @@
 package model
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"time"
 )
 
@@ -28,4 +30,14 @@ func NewEntry(feedID string, entryID string) *Entry {
 // GenerateNewID generates a new UUID for Entry.ID
 func (z *Entry) GenerateNewID() {
 	z.ID = getUUID()
+}
+
+// Hash generated a fingerprint for the entry to test if it has been updated or not.
+func (z *Entry) Hash() string {
+	hash := sha256.New()
+	hash.Write([]byte(z.Author))
+	hash.Write([]byte(z.Content))
+	hash.Write([]byte(z.Title))
+	hash.Write([]byte(z.URL))
+	return hex.EncodeToString(hash.Sum(nil))
 }

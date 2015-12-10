@@ -45,6 +45,20 @@ type Entry struct {
 	Updated      time.Time
 }
 
+func (z *Entry) hash() string {
+
+	// Needs to be reproducible so that on future parsings of the same entry, the same ID will ge generated.
+	// Also needs to have enough variables to be unique within the feed.
+
+	hash := md5.New()
+	hash.Write([]byte(z.Content))
+	hash.Write([]byte(z.Summary))
+	hash.Write([]byte(z.Title))
+	hash.Write([]byte(z.Links[linkAlternate]))
+	return hex.EncodeToString(hash.Sum(nil))
+
+}
+
 // Parser can parse feeds
 type Parser struct {
 	decoder *xml.Decoder
@@ -243,6 +257,7 @@ func (z *Parser) doStartFeedAtom(e *element, start *xml.StartElement) {
 		z.feed.Subtitle = z.makeContent(e, start)
 	case e.Match(nsAtom, "title"):
 		z.feed.Title = z.makeContent(e, start)
+		// ignore feed updated, and calculate from entries (see doEndEntryAtom)
 		// case e.Match(nsAtom, "updated"):
 		// 	z.feed.Updated = z.parseTime(z.makeText(e, start))
 	} // z.stack
@@ -264,6 +279,7 @@ func (z *Parser) doStartFeedRSS(e *element, start *xml.StartElement) {
 		if image := z.makeRSSImage(e, start); image != nil {
 			z.feed.Icon = image.URL
 		}
+		// ignore feed updated, and calculate from entries (see doEndEntryRSS)
 	// case e.Match(nsRSS, "pubdate"):
 	// 	z.feed.Updated = z.parseTime(z.makeText(e, start))
 	case e.Match(nsRSS, "title"):
@@ -379,12 +395,12 @@ func (z *Parser) doEndEntryAtom(e *element) {
 		if z.entry.Created.IsZero() {
 			z.entry.Created = z.entry.Updated
 		}
-		if z.entry.Updated.After(z.feed.Updated) {
+		if z.feed.Updated.Before(z.entry.Updated) {
 			z.feed.Updated = z.entry.Updated
 		}
 		// guarentee entry always has an id
 		if z.entry.ID == empty {
-			z.entry.ID = makeIDFromContents(z.entry.Title + z.entry.Summary + z.entry.Content)
+			z.entry.ID = z.entry.hash()
 		}
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
@@ -401,12 +417,12 @@ func (z *Parser) doEndEntryRSS(e *element) {
 		if z.entry.Created.IsZero() {
 			z.entry.Created = z.entry.Updated
 		}
-		if z.entry.Updated.After(z.feed.Updated) {
+		if z.feed.Updated.Before(z.entry.Updated) {
 			z.feed.Updated = z.entry.Updated
 		}
 		// guarentee entry always has an id
 		if z.entry.ID == empty {
-			z.entry.ID = makeIDFromContents(z.entry.Title + z.entry.Summary + z.entry.Content)
+			z.entry.ID = z.entry.hash()
 		}
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
@@ -518,8 +534,4 @@ func parseTime(formatted string) (t time.Time) {
 		}
 	}
 	return
-}
-
-func makeIDFromContents(contents string) string {
-	return hex.EncodeToString(md5.New().Sum([]byte(contents)))
 }
