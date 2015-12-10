@@ -37,7 +37,7 @@ class FeedLogEntry extends React.Component {
 					<tr>
 						<th colSpan="3" style={style.oh}>General</th>
 						<th colSpan="6" style={style.oh}>HTTP</th>
-						<th colSpan="5" style={style.oh}>Feed</th>
+						<th colSpan="6" style={style.oh}>Feed</th>
 					</tr>
 					<tr>
 						<th>Start Time</th>
@@ -55,6 +55,7 @@ class FeedLogEntry extends React.Component {
 						<th>Generator</th>
 						<th>Title</th>
 						<th>New</th>
+						<th>Total</th>
 						<th>Updated</th>
 					</tr>
 				</thead>
@@ -123,6 +124,7 @@ class FeedLogEntry extends React.Component {
 					<td>{logEntry.generator}</td>
 					<td>{logEntry.title}</td>
 					<td>{logEntry.newEntries}</td>
+					<td>{logEntry.entryCount}</td>
 					<td>{formatDateTime(logEntry.lastUpdated)}</td>
 
 				</tr>
