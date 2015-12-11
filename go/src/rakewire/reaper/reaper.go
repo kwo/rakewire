@@ -170,7 +170,7 @@ func (z *Service) processResponse(feed *m.Feed) {
 		return
 	}
 
-	log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logInfo, logName, feed.Status, feed.Attempt.StatusCode, feed.LastUpdated.Local().Format("02.01.06 15:04"), feed.Attempt.NewEntries, feed.Attempt.EntryCount, feed.URL, feed.StatusMessage)
+	log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logDebug, logName, feed.Status, feed.Attempt.StatusCode, feed.LastUpdated.Local().Format("02.01.06 15:04"), feed.Attempt.NewEntries, feed.Attempt.EntryCount, feed.URL, feed.StatusMessage)
 
 }
 
