@@ -11,7 +11,7 @@ const config = {
 	},
 	output: {
 		path: path.resolve(__dirname, 'public'),
-		filename: 'app-[hash].js'
+		filename: '/app.js'
 	},
 	module: {
 		loaders: [
@@ -29,12 +29,12 @@ const config = {
 	},
 	plugins: [
 		new CleanPlugin(['public']),
-		new ExtractTextPlugin('styles-[hash].css'),
+		new ExtractTextPlugin('/styles.css'),
 		new HtmlPlugin({
 			template: path.resolve(__dirname, 'app/index.html'),
 			inject: 'body'
 		}),
-		new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor-[hash].js'),
+		new webpack.optimize.CommonsChunkPlugin('vendor', '/vendor.js'),
 		new webpack.optimize.UglifyJsPlugin({
 			compress: {
 				warnings: false
