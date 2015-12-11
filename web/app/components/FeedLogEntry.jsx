@@ -36,7 +36,7 @@ class FeedLogEntry extends React.Component {
 				<thead>
 					<tr>
 						<th colSpan="3" style={style.oh}>General</th>
-						<th colSpan="6" style={style.oh}>HTTP</th>
+						<th colSpan="5" style={style.oh}>HTTP</th>
 						<th colSpan="6" style={style.oh}>Feed</th>
 					</tr>
 					<tr>
@@ -47,7 +47,6 @@ class FeedLogEntry extends React.Component {
 						<th>Status Code</th>
 						<th>Size</th>
 						<th>Gzip</th>
-						<th>Mime</th>
 						<th>ETag</th>
 						<th>Last-Modified</th>
 
@@ -116,11 +115,10 @@ class FeedLogEntry extends React.Component {
 					<td style={style.num}>{logEntry.statusCode}</td>
 					<td style={style.num}>{getReadableFileSizeString(logEntry.contentLength)}</td>
 					<td>{formatBool(logEntry.gzip, 'gzip')}</td>
-					<td>{logEntry.contentType}</td>
 					<td>{formatBool(logEntry.etag, 'etag')}</td>
 					<td>{formatBool(logEntry.lastModified, 'lastModified')}</td>
 
-					<td>{logEntry.flavor}</td>
+					<td>{formatValue(logEntry.flavor, logEntry.contentType, 'flavor')}</td>
 					<td>{logEntry.generator}</td>
 					<td>{logEntry.title}</td>
 					<td>{logEntry.newEntries}</td>
