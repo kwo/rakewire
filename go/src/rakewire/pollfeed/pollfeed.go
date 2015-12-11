@@ -25,12 +25,14 @@ const (
 // Configuration for pump service
 type Configuration struct {
 	Interval string
+	Limit    int
 }
 
 // Service for pumping feeds between fetcher and database
 type Service struct {
 	Output       chan *m.Feed
 	database     db.Database
+	limit        int
 	pollInterval time.Duration
 	killsignal   chan bool
 	killed       int32
@@ -51,6 +53,7 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 
 	return &Service{
 		Output:       make(chan *m.Feed),
+		limit:        cfg.Limit,
 		database:     database,
 		pollInterval: interval,
 		killsignal:   make(chan bool),
@@ -133,6 +136,11 @@ func (z *Service) poll(t time.Time) {
 		z.setPolling(false)
 		z.polllatch.Done()
 		return
+	}
+
+	// limit runs to X feeds
+	if z.limit > 0 && len(feeds) > z.limit {
+		feeds = feeds[:z.limit]
 	}
 
 	// convert feeds

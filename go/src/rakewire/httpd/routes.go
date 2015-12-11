@@ -21,6 +21,12 @@ func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
 		Adapt(z.apiRouter(apiPrefix), NoCache()),
 	)
 
+	// fever api router
+	feverPrefix := "/fever"
+	router.PathPrefix(feverPrefix).Handler(
+		Adapt(z.feverRouter(feverPrefix), NoCache()),
+	)
+
 	// HTML5 routes: any path without a dot (thus an extension)
 	router.Path("/{route:[a-z0-9/-]+}").Handler(
 		Adapt(http.FileServer(ofs), NoCache(), gorillaHandlers.CompressHandler),
