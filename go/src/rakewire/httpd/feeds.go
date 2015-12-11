@@ -17,7 +17,7 @@ func (z *Service) feedsGet(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Printf("%-7s %-7s Getting feeds: %d", logInfo, logName, len(feeds))
+	log.Printf("%-7s %-7s Getting feeds: %d", logDebug, logName, len(feeds))
 
 	w.Header().Set(hContentType, mimeJSON)
 	err = serializeFeeds(feeds, w)
@@ -39,7 +39,7 @@ func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	log.Printf("%-7s %-7s Getting feeds: %d", logInfo, logName, len(feeds))
+	log.Printf("%-7s %-7s Getting feeds: %d", logDebug, logName, len(feeds))
 
 	w.Header().Set(hContentType, mimeJSON)
 	err = serializeFeeds(feeds, w)
