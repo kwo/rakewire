@@ -34,10 +34,10 @@ type Service struct {
 
 // Configuration configuration
 type Configuration struct {
-	AccessLog string
-	Address   string
-	Port      int
-	UseLocal  bool
+	AccessLevel string
+	Address     string
+	Port        int
+	UseLocal    bool
 }
 
 const (
@@ -82,7 +82,7 @@ func (z *Service) Start() error {
 		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
 		return err
 	}
-	mainHandler := Adapt(router, LogAdapter(z.cfg.AccessLog))
+	mainHandler := Adapt(router, LogAdapter(z.cfg.AccessLevel))
 
 	z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.cfg.Address, z.cfg.Port))
 	if err != nil {

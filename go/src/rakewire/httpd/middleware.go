@@ -4,7 +4,6 @@ import (
 	gorillaHandlers "github.com/gorilla/handlers"
 	"log"
 	"net/http"
-	"os"
 )
 
 const (
@@ -27,28 +26,33 @@ func Adapt(h http.Handler, adapters ...Adapter) http.Handler {
 	return h
 }
 
-// LogAdapter log requests and responses
-func LogAdapter(filename string) Adapter {
+// LogWriter is an io.Writer than writes to the log facility.
+type LogWriter struct {
+	name  string
+	level string
+}
 
-	var logFile *os.File
-	var err error
-	switch filename {
-	case "", "stderr":
-		logFile = os.Stderr
-	case "stdout":
-		logFile = os.Stdout
-	default:
-		logFile, err = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0660)
-		if err != nil {
-			logFile = os.Stderr
-			log.Printf("%-7s %-7s Reverting to stderr, cannot open log file: %s", logWarn, logName, err.Error())
-		}
+func (z *LogWriter) Write(p []byte) (n int, err error) {
+	log.Printf("%-7s %-7s %s", z.level, z.name, string(p))
+	return len(p), nil
+}
+
+// LogAdapter log requests and responses
+func LogAdapter(level string) Adapter {
+
+	if level != "" {
+		level = "[" + level + "]"
+	} else {
+		level = "[TRACE]"
 	}
 
-	log.Printf("%-7s %-7s logging http access logs to %s", logDebug, logName, logFile.Name())
+	logWriter := &LogWriter{
+		name:  "[access]",
+		level: level,
+	}
 
 	return func(h http.Handler) http.Handler {
-		return gorillaHandlers.LoggingHandler(logFile, h)
+		return gorillaHandlers.LoggingHandler(logWriter, h)
 	}
 
 }
