@@ -30,74 +30,57 @@ func TestEntryHash(t *testing.T) {
 	e := &Entry{}
 	lastHash := e.Hash()
 
-	for i := 0; i < 8; i++ {
+	e.GenerateNewID()
+	if h := e.Hash(); h != lastHash {
+		t.Fatal("ID should not be part of entry hash")
+	}
 
-		switch i {
+	e.EntryID = "entryID"
+	if h := e.Hash(); h != lastHash {
+		t.Fatal("entryID should not be part of entry hash")
+	}
 
-		case 0:
-			e.GenerateNewID()
-			if h := e.Hash(); h != lastHash {
-				t.Fatal("ID should not be part of entry hash")
-			}
+	e.FeedID = "feedID"
+	if h := e.Hash(); h != lastHash {
+		t.Fatal("entryID should not be part of entry hash")
+	}
 
-		case 1:
-			e.EntryID = "entryID"
-			if h := e.Hash(); h != lastHash {
-				t.Fatal("entryID should not be part of entry hash")
-			}
+	e.Created = time.Now()
+	if h := e.Hash(); h != lastHash {
+		t.Fatal("Created should not be part of entry hash")
+	}
 
-		case 2:
-			e.FeedID = "feedID"
-			if h := e.Hash(); h != lastHash {
-				t.Fatal("entryID should not be part of entry hash")
-			}
+	e.Updated = time.Now()
+	if h := e.Hash(); h != lastHash {
+		t.Fatal("Updated should not be part of entry hash")
+	}
 
-		case 3:
-			e.Created = time.Now()
-			if h := e.Hash(); h != lastHash {
-				t.Fatal("Created should not be part of entry hash")
-			}
+	e.URL = "url"
+	if h := e.Hash(); h == lastHash {
+		t.Fatal("URL should be part of entry hash")
+	} else {
+		lastHash = h
+	}
 
-		case 4:
-			e.Updated = time.Now()
-			if h := e.Hash(); h != lastHash {
-				t.Fatal("Updated should not be part of entry hash")
-			}
+	e.Author = "author"
+	if h := e.Hash(); h == lastHash {
+		t.Fatal("Author should be part of entry hash")
+	} else {
+		lastHash = h
+	}
 
-		case 5:
-			e.URL = "url"
-			if h := e.Hash(); h == lastHash {
-				t.Fatal("URL should be part of entry hash")
-			} else {
-				lastHash = h
-			}
+	e.Title = "title"
+	if h := e.Hash(); h == lastHash {
+		t.Fatal("Title should be part of entry hash")
+	} else {
+		lastHash = h
+	}
 
-		case 6:
-			e.Author = "author"
-			if h := e.Hash(); h == lastHash {
-				t.Fatal("Author should be part of entry hash")
-			} else {
-				lastHash = h
-			}
-
-		case 7:
-			e.Title = "title"
-			if h := e.Hash(); h == lastHash {
-				t.Fatal("Title should be part of entry hash")
-			} else {
-				lastHash = h
-			}
-
-		case 8:
-			e.Content = "content"
-			if h := e.Hash(); h == lastHash {
-				t.Fatal("Content should be part of entry hash")
-			} else {
-				lastHash = h
-			}
-
-		}
-
+	e.Content = "content"
+	if h := e.Hash(); h == lastHash {
+		t.Fatal("Content should be part of entry hash")
+	} else {
+		lastHash = h
 	}
 
 }
