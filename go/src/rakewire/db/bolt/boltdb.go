@@ -10,13 +10,12 @@ import (
 )
 
 const (
-	bucketData           = "Data"
-	bucketEntry          = "Entry"
-	bucketFeed           = "Feed"
-	bucketFeedLog        = "FeedLog"
-	bucketIndex          = "Index"
-	bucketIndexFeedByURL = "idxFeedByURL"
-	bucketIndexNextFetch = "idxNextFetch"
+	bucketData    = "Data"
+	bucketEntry   = "Entry"
+	bucketFeed    = "Feed"
+	bucketFeedLog = "FeedLog"
+	bucketIndex   = "Index"
+	bucketUser    = "User"
 )
 
 const (

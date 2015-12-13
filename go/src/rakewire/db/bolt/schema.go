@@ -5,12 +5,11 @@ import (
 	"github.com/boltdb/bolt"
 	"log"
 	"strconv"
-	"strings"
 )
 
 const (
 	// SchemaVersion of the database
-	SchemaVersion = 2
+	SchemaVersion = 1
 )
 
 func checkSchema(z *Service) error {
@@ -35,11 +34,11 @@ func checkSchema(z *Service) error {
 				if err != nil {
 					break
 				}
-			case 1:
-				err = upgradeTo2(tx)
-				if err != nil {
-					break
-				}
+			// case 1:
+			// 	err = upgradeTo2(tx)
+			// 	if err != nil {
+			// 		break
+			// 	}
 			default:
 				err = fmt.Errorf("Unhandled schema version: %d", schemaVersion)
 			}
@@ -82,6 +81,7 @@ func setSchemaVersion(tx *bolt.Tx, version int) error {
 
 func upgradeTo1(tx *bolt.Tx) error {
 
+	// top level
 	bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
 	if err != nil {
 		return err
@@ -91,6 +91,11 @@ func upgradeTo1(tx *bolt.Tx) error {
 		return err
 	}
 
+	// data
+	_, err = bucketData.CreateBucketIfNotExists([]byte(bucketUser))
+	if err != nil {
+		return err
+	}
 	_, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeed))
 	if err != nil {
 		return err
@@ -104,6 +109,23 @@ func upgradeTo1(tx *bolt.Tx) error {
 		return err
 	}
 
+	// indexes
+
+	// index user
+	bucketIndexUser, err := bucketIndex.CreateBucketIfNotExists([]byte("User"))
+	if err != nil {
+		return err
+	}
+	_, err = bucketIndexUser.CreateBucketIfNotExists([]byte("Username"))
+	if err != nil {
+		return err
+	}
+	_, err = bucketIndexUser.CreateBucketIfNotExists([]byte("FeverHash"))
+	if err != nil {
+		return err
+	}
+
+	// index feed
 	bucketIndexFeed, err := bucketIndex.CreateBucketIfNotExists([]byte("Feed"))
 	if err != nil {
 		return err
@@ -115,6 +137,7 @@ func upgradeTo1(tx *bolt.Tx) error {
 		return err
 	}
 
+	// index feedlog
 	bucketIndexFeedLog, err := bucketIndex.CreateBucketIfNotExists([]byte("FeedLog"))
 	if err != nil {
 		return err
@@ -124,6 +147,7 @@ func upgradeTo1(tx *bolt.Tx) error {
 		return err
 	}
 
+	// index entry
 	bucketIndexEntry, err := bucketIndex.CreateBucketIfNotExists([]byte(bucketEntry))
 	if err != nil {
 		return err
@@ -131,7 +155,7 @@ func upgradeTo1(tx *bolt.Tx) error {
 	if _, err = bucketIndexEntry.CreateBucketIfNotExists([]byte("Date")); err != nil {
 		return err
 	}
-	if _, err = bucketIndexEntry.CreateBucketIfNotExists([]byte("EntryID")); err != nil {
+	if _, err = bucketIndexEntry.CreateBucketIfNotExists([]byte("GUID")); err != nil {
 		return err
 	}
 
@@ -139,18 +163,19 @@ func upgradeTo1(tx *bolt.Tx) error {
 
 }
 
-func upgradeTo2(tx *bolt.Tx) error {
-
-	bFeedLog := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog))
-
-	c := bFeedLog.Cursor()
-	for k, _ := c.First(); k != nil; k, _ = c.Next() {
-		key := string(k)
-		if strings.HasSuffix(key, "/IsUpdated") || strings.HasSuffix(key, "/UpdateCheck") {
-			c.Delete()
-		}
-	}
-
-	return setSchemaVersion(tx, 2)
-
-}
+//
+// func upgradeTo2(tx *bolt.Tx) error {
+//
+// 	bFeedLog := tx.Bucket([]byte(bucketData)).Bucket([]byte(bucketFeedLog))
+//
+// 	c := bFeedLog.Cursor()
+// 	for k, _ := c.First(); k != nil; k, _ = c.Next() {
+// 		key := string(k)
+// 		if strings.HasSuffix(key, "/IsUpdated") || strings.HasSuffix(key, "/UpdateCheck") {
+// 			c.Delete()
+// 		}
+// 	}
+//
+// 	return setSchemaVersion(tx, 2)
+//
+// }
