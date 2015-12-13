@@ -38,8 +38,8 @@ func NewFeed(url string) *Feed {
 }
 
 // AddEntry to the feed
-func (z *Feed) AddEntry(entryID string) *Entry {
-	entry := NewEntry(z.ID, entryID)
+func (z *Feed) AddEntry(guID string) *Entry {
+	entry := NewEntry(z.ID, guID)
 	z.Entries = append(z.Entries, entry)
 	return entry
 }

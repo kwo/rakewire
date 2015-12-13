@@ -5,17 +5,17 @@ import (
 	"time"
 )
 
-func TestEntryID(t *testing.T) {
+func TestGUID(t *testing.T) {
 
-	e := NewEntry("feedID", "entryID")
+	e := NewEntry("feedID", "guid")
 	if e.ID != "" {
 		t.Error("entry.ID cannot be set by factory method")
 	}
 	if e.FeedID != "feedID" {
 		t.Error("entry.feedID not set correctly by factory method")
 	}
-	if e.EntryID != "entryID" {
-		t.Error("entry.entryID not set correctly by factory method")
+	if e.GUID != "guid" {
+		t.Error("entry.GUID not set correctly by factory method")
 	}
 
 	e.GenerateNewID()
@@ -35,14 +35,14 @@ func TestEntryHash(t *testing.T) {
 		t.Fatal("ID should not be part of entry hash")
 	}
 
-	e.EntryID = "entryID"
+	e.GUID = "GUID"
 	if h := e.Hash(); h != lastHash {
-		t.Fatal("entryID should not be part of entry hash")
+		t.Fatal("guID should not be part of entry hash")
 	}
 
 	e.FeedID = "feedID"
 	if h := e.Hash(); h != lastHash {
-		t.Fatal("entryID should not be part of entry hash")
+		t.Fatal("guID should not be part of entry hash")
 	}
 
 	e.Created = time.Now()
@@ -87,8 +87,8 @@ func TestEntryHash(t *testing.T) {
 
 func TestEntryHashEmpty(t *testing.T) {
 
-	e1 := NewEntry("feedID", "entryID")
-	e2 := NewEntry("feedID", "entryID")
+	e1 := NewEntry("feedID", "guID")
+	e2 := NewEntry("feedID", "guID")
 
 	h1 := e1.Hash()
 	h2 := e2.Hash()

@@ -26,12 +26,12 @@ func TestGetFeedEntriesFromIDs(t *testing.T) {
 		t.Fatal("error saving feed")
 	}
 
-	var entryIDs []string
+	var guIDs []string
 	for _, entry := range feed.Entries {
-		entryIDs = append(entryIDs, entry.EntryID)
+		guIDs = append(guIDs, entry.GUID)
 	}
 
-	if entries, err := db.GetFeedEntriesFromIDs(feed.ID, entryIDs); err != nil {
+	if entries, err := db.GetFeedEntriesFromIDs(feed.ID, guIDs); err != nil {
 		t.Fatal("error retrieving entries")
 	} else {
 
@@ -44,13 +44,13 @@ func TestGetFeedEntriesFromIDs(t *testing.T) {
 		}
 
 		for i := 0; i < 10; i++ {
-			entry := entries[entryIDs[i]]
-			t.Logf("Entry %s: %s", entry.EntryID, entry.Title)
+			entry := entries[guIDs[i]]
+			t.Logf("Entry %s: %s", entry.GUID, entry.Title)
 			if entry == nil {
 				t.Fatalf("entry is nil: %d", i)
 			}
-			if entry.EntryID != feed.Entries[i].EntryID {
-				t.Fatalf("not equal, expected %s, actual %s", feed.Entries[i].EntryID, entry.EntryID)
+			if entry.GUID != feed.Entries[i].GUID {
+				t.Fatalf("not equal, expected %s, actual %s", feed.Entries[i].GUID, entry.GUID)
 			}
 			if entry.Title != feed.Entries[i].Title {
 				t.Fatalf("not equal, expected %s, actual %s", feed.Entries[i].Title, entry.Title)

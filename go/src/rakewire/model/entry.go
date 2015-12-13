@@ -9,8 +9,8 @@ import (
 // Entry from a feed
 type Entry struct {
 	ID      string    `json:"id" kv:"key"`
-	EntryID string    `json:"-" kv:"EntryID:2"`
-	FeedID  string    `json:"feedId" kv:"Date:1,EntryID:1"`
+	GUID    string    `json:"-" kv:"GUID:2"`
+	FeedID  string    `json:"feedId" kv:"Date:1,GUID:1"`
 	Created time.Time `json:"created" kv:"Date:2"`
 	Updated time.Time `json:"updated"`
 	URL     string    `json:"url"`
@@ -20,10 +20,10 @@ type Entry struct {
 }
 
 // NewEntry instantiate a new Entry object with a new UUID
-func NewEntry(feedID string, entryID string) *Entry {
+func NewEntry(feedID string, guID string) *Entry {
 	return &Entry{
-		EntryID: entryID,
-		FeedID:  feedID,
+		GUID:   guID,
+		FeedID: feedID,
 	}
 }
 

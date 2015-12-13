@@ -90,11 +90,11 @@ run:
 func (z *Service) processResponse(feed *m.Feed) {
 
 	// query previous entries of feed
-	var entryIDs []string
+	var guIDs []string
 	for _, entry := range feed.Entries {
-		entryIDs = append(entryIDs, entry.EntryID)
+		guIDs = append(guIDs, entry.GUID)
 	}
-	dbEntries, err := z.database.GetFeedEntriesFromIDs(feed.ID, entryIDs)
+	dbEntries, err := z.database.GetFeedEntriesFromIDs(feed.ID, guIDs)
 	if err != nil {
 		log.Printf("%-7s %-7s Cannot get previous feed entries %s: %s", logWarn, logName, feed.URL, err.Error())
 		return
@@ -105,7 +105,7 @@ func (z *Service) processResponse(feed *m.Feed) {
 	newEntryCount := 0
 	for _, entry := range feed.Entries {
 
-		if dbEntry := dbEntries[entry.EntryID]; dbEntry == nil {
+		if dbEntry := dbEntries[entry.GUID]; dbEntry == nil {
 
 			// new entry
 			newEntryCount++
