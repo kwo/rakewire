@@ -23,5 +23,10 @@ type Database interface {
 	GetFeedEntries(feedID string, since time.Duration) ([]*m.Entry, error)
 	GetFeedEntriesFromIDs(feedID string, guIDs []string) (map[string]*m.Entry, error)
 	SaveFeed(*m.Feed) error
+
+	UserGetByUsername(username string) (*m.User, error)
+	UserGetByFeverHash(feverhash string) (*m.User, error)
+	UserSave(user *m.User) error // need app level check if username is unique
+
 	Repair() error
 }

@@ -8,7 +8,7 @@ import (
 
 //User defines a system user
 type User struct {
-	ID           string `kv:"Username:2,FeverHash:2"`
+	ID           string
 	Username     string `kv:"Username:1"`
 	PasswordHash string
 	FeverHash    string `kv:"FeverHash:1"`
