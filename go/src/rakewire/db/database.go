@@ -14,7 +14,7 @@ type Configuration struct {
 type Database interface {
 	UserGetByUsername(username string) (*m.User, error)
 	UserGetByFeverHash(feverhash string) (*m.User, error)
-	UserSave(user *m.User) error // need app level check if username is unique
+	UserSave(user *m.User) error
 
 	GetFeedByID(feedID string) (*m.Feed, error)
 	GetFeedByURL(url string) (*m.Feed, error)

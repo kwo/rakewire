@@ -2,6 +2,7 @@ package bolt
 
 import (
 	m "rakewire/model"
+	"strings"
 	"testing"
 )
 
@@ -55,6 +56,34 @@ func TestUser(t *testing.T) {
 		if !u2.MatchPassword(password) {
 			t.Error("user password does not match")
 		}
+	}
+
+}
+
+func TestUserUniqueUsername(t *testing.T) {
+
+	db := openDatabase(t)
+	defer closeDatabase(t, db)
+	if db == nil {
+		t.Fatal("cannot open database")
+	}
+
+	username := "Jeff@Jarvis.com"
+	password := "abcdefg"
+
+	u := m.NewUser(username)
+	u.SetPassword(password)
+	if err := db.UserSave(u); err != nil {
+		t.Fatalf("Error saving user: %s", err.Error())
+	}
+
+	u2 := m.NewUser(strings.ToUpper(username))
+	u2.SetPassword(password)
+	err := db.UserSave(u2)
+	if err == nil {
+		t.Error("Expected error, none returned")
+	} else if err.Error() != "Cannot save user, username is already taken: "+strings.ToLower(username) {
+		t.Errorf("Bad error text: %s", err.Error())
 	}
 
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"golang.org/x/crypto/bcrypt"
 	"strconv"
+	"strings"
 )
 
 //User defines a system user
@@ -129,7 +130,7 @@ func (z *User) Deserialize(values map[string]string) error {
 // IndexKeys returns the keys of all indexes for this object.
 func (z *User) IndexKeys() map[string][]string {
 	result := make(map[string][]string)
-	result[fUsername] = []string{z.Username}
+	result[fUsername] = []string{strings.ToLower(z.Username)}
 	result[fFeverHash] = []string{z.FeverHash}
 	return result
 }
