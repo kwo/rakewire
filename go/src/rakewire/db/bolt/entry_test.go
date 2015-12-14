@@ -19,7 +19,6 @@ func TestGetFeedEntriesFromIDs(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		entry := feed.AddEntry(fmt.Sprintf("http://localhost/post/%d", i))
 		entry.Title = fmt.Sprintf("Post %d", i)
-		entry.GenerateNewID()
 	}
 
 	if err := db.SaveFeed(feed); err != nil {
@@ -39,13 +38,12 @@ func TestGetFeedEntriesFromIDs(t *testing.T) {
 			t.Fatal("entries is nil")
 		}
 
-		if len(entries) != 10 {
-			t.Errorf("bad entry count, expected %d, actual: %d", 10, len(entries))
+		if len(entries) != len(guIDs) {
+			t.Errorf("bad entry count, expected %d, actual: %d", len(guIDs), len(entries))
 		}
 
 		for i := 0; i < 10; i++ {
 			entry := entries[guIDs[i]]
-			t.Logf("Entry %s: %s", entry.GUID, entry.Title)
 			if entry == nil {
 				t.Fatalf("entry is nil: %d", i)
 			}

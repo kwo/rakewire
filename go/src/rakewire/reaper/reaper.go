@@ -109,7 +109,6 @@ func (z *Service) processResponse(feed *m.Feed) {
 
 			// new entry
 			newEntryCount++
-			entry.GenerateNewID()
 			if entry.Created.IsZero() {
 				entry.Created = time.Now()
 			}

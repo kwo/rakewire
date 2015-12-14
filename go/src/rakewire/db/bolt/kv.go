@@ -11,7 +11,7 @@ import (
 const (
 	chMin = " "
 	chMax = "~"
-	chSep = "/"
+	chSep = "|"
 	empty = ""
 )
 
@@ -60,12 +60,11 @@ func kvSave(value db.DataObject, tx *bolt.Tx) error {
 
 func kvGet(id uint64, b *bolt.Bucket) map[string]string {
 
-	pkey := strconv.FormatUint(id, 10)
 	result := make(map[string]string)
 
 	c := b.Cursor()
-	min := []byte(pkey + chMin)
-	max := []byte(pkey + chMax)
+	min := []byte(kvMinKey(id))
+	max := []byte(kvMaxKey(id))
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		// assume proper key format of ID/fieldname
 		result[strings.SplitN(string(k), chSep, 2)[1]] = string(v)
@@ -79,7 +78,7 @@ func kvGetIndex(name string, index string, keys []string, tx *bolt.Tx) (map[stri
 
 	bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
 
-	keyStr := strings.Join(keys, chSep)
+	keyStr := kvKeys(keys)
 	idStr := string(bIndex.Get([]byte(keyStr)))
 
 	if idStr != empty {
@@ -100,19 +99,17 @@ func kvGetIndex(name string, index string, keys []string, tx *bolt.Tx) (map[stri
 
 func kvPut(id uint64, values map[string]string, b *bolt.Bucket) error {
 
-	pkey := strconv.FormatUint(id, 10)
-
 	// remove old records
 	c := b.Cursor()
-	min := []byte(pkey + chMin)
-	max := []byte(pkey + chMax)
+	min := []byte(kvMinKey(id))
+	max := []byte(kvMaxKey(id))
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
 		c.Delete()
 	}
 
 	// add new records
 	for fieldName := range values {
-		key := []byte(pkey + chSep + fieldName)
+		key := []byte(kvKey(id) + chSep + fieldName)
 		value := []byte(values[fieldName])
 		if err := b.Put(key, value); err != nil {
 			return err
@@ -132,7 +129,7 @@ func kvIndex(name string, id uint64, newIndexes map[string][]string, oldIndexes 
 	for indexName := range oldIndexes {
 		b := indexBucket.Bucket([]byte(indexName))
 		indexElements := oldIndexes[indexName]
-		keyStr := strings.Join(indexElements, chSep)
+		keyStr := kvKeys(indexElements)
 		if err := b.Delete([]byte(keyStr)); err != nil {
 			return err
 		}
@@ -142,7 +139,7 @@ func kvIndex(name string, id uint64, newIndexes map[string][]string, oldIndexes 
 	for indexName := range newIndexes {
 		b := indexBucket.Bucket([]byte(indexName))
 		indexElements := newIndexes[indexName]
-		keyStr := strings.Join(indexElements, chSep)
+		keyStr := kvKeys(indexElements)
 		if err := b.Put([]byte(keyStr), []byte(pkey)); err != nil {
 			return err
 		}
@@ -150,4 +147,21 @@ func kvIndex(name string, id uint64, newIndexes map[string][]string, oldIndexes 
 
 	return nil
 
+}
+
+func kvKey(id uint64) string {
+	pkey := strconv.FormatUint(id, 10)
+	return kvKeys([]string{pkey})
+}
+
+func kvMinKey(id uint64) string {
+	return kvKey(id) + chMin
+}
+
+func kvMaxKey(id uint64) string {
+	return kvKey(id) + chMax
+}
+
+func kvKeys(elements []string) string {
+	return "{" + strings.Join(elements, chSep) + "}"
 }

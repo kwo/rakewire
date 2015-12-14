@@ -3,11 +3,13 @@ package model
 import (
 	"github.com/pborman/uuid"
 	"sync"
+	"time"
 )
 
 const (
-	fID   = "ID"
-	empty = ""
+	fID        = "ID"
+	empty      = ""
+	timeFormat = time.RFC3339Nano
 )
 
 // application level variables

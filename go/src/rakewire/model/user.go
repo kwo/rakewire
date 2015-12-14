@@ -16,6 +16,13 @@ type User struct {
 	FeverHash    string
 }
 
+// index names
+const (
+	EntityUser         = "User"
+	IndexUserUsername  = "Username"
+	IndexUserFeverHash = "FeverHash"
+)
+
 const (
 	fUsername     = "Username"
 	fPasswordHash = "PasswordHash"
@@ -59,7 +66,7 @@ func (z *User) MatchPassword(password string) bool {
 
 // GetName return the name of the entity.
 func (z *User) GetName() string {
-	return "User"
+	return EntityUser
 }
 
 // GetID return the primary key of the object.
@@ -130,7 +137,7 @@ func (z *User) Deserialize(values map[string]string) error {
 // IndexKeys returns the keys of all indexes for this object.
 func (z *User) IndexKeys() map[string][]string {
 	result := make(map[string][]string)
-	result[fUsername] = []string{strings.ToLower(z.Username)}
-	result[fFeverHash] = []string{z.FeverHash}
+	result[IndexUserUsername] = []string{strings.ToLower(z.Username)}
+	result[IndexUserFeverHash] = []string{z.FeverHash}
 	return result
 }

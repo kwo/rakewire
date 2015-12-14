@@ -115,7 +115,7 @@ func (z *Service) SaveFeed(feed *m.Feed) error {
 		// save entries
 		if feed.Entries != nil {
 			for _, entry := range feed.Entries {
-				if _, err := Put(entry, tx); err != nil {
+				if err := kvSave(entry, tx); err != nil {
 					return err
 				}
 			}

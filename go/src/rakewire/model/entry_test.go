@@ -8,7 +8,7 @@ import (
 func TestGUID(t *testing.T) {
 
 	e := NewEntry("feedID", "guid")
-	if e.ID != "" {
+	if e.ID != 0 {
 		t.Error("entry.ID cannot be set by factory method")
 	}
 	if e.FeedID != "feedID" {
@@ -18,11 +18,6 @@ func TestGUID(t *testing.T) {
 		t.Error("entry.GUID not set correctly by factory method")
 	}
 
-	e.GenerateNewID()
-	if len(e.ID) != 36 {
-		t.Errorf("entry.ID not generated property, expected length: %d, actual: %d", 36, len(e.ID))
-	}
-
 }
 
 func TestEntryHash(t *testing.T) {
@@ -30,7 +25,7 @@ func TestEntryHash(t *testing.T) {
 	e := &Entry{}
 	lastHash := e.Hash()
 
-	e.GenerateNewID()
+	e.ID = 1
 	if h := e.Hash(); h != lastHash {
 		t.Fatal("ID should not be part of entry hash")
 	}

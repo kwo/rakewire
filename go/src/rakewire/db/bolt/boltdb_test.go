@@ -68,6 +68,19 @@ func closeDatabase(t *testing.T, database *Service) {
 
 }
 
+func closeDatabaseX(t *testing.T, database *Service) {
+
+	// close database
+	database.Stop()
+	if database.running {
+		t.Error("database is still running")
+	}
+	if database.db != nil {
+		t.Error("database.db is not nil")
+	}
+
+}
+
 func assertNoError(t *testing.T, e error) {
 	if e != nil {
 		t.Fatalf("Error: %s", e.Error())
