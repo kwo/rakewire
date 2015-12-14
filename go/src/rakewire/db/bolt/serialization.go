@@ -8,13 +8,6 @@ import (
 	"strings"
 )
 
-const (
-	chMin = " "
-	chMax = "~"
-	chSep = "/"
-	empty = ""
-)
-
 // TODO: need delete function similar to query
 // TODO: add function to register data types on start to create buckets
 

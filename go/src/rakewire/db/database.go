@@ -12,6 +12,10 @@ type Configuration struct {
 
 // Database interface
 type Database interface {
+	UserGetByUsername(username string) (*m.User, error)
+	UserGetByFeverHash(feverhash string) (*m.User, error)
+	UserSave(user *m.User) error // need app level check if username is unique
+
 	GetFeedByID(feedID string) (*m.Feed, error)
 	GetFeedByURL(url string) (*m.Feed, error)
 	GetFeeds() ([]*m.Feed, error)
@@ -24,9 +28,16 @@ type Database interface {
 	GetFeedEntriesFromIDs(feedID string, guIDs []string) (map[string]*m.Entry, error)
 	SaveFeed(*m.Feed) error
 
-	UserGetByUsername(username string) (*m.User, error)
-	UserGetByFeverHash(feverhash string) (*m.User, error)
-	UserSave(user *m.User) error // need app level check if username is unique
-
 	Repair() error
+}
+
+// DataObject defines the functions necessary for objects to be persisted to the database
+type DataObject interface {
+	GetName() string
+	GetID() uint64
+	SetID(id uint64)
+	Clear()
+	Serialize() map[string]string
+	Deserialize(map[string]string) error
+	IndexKeys() map[string][]string
 }

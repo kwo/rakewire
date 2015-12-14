@@ -5,6 +5,11 @@ import (
 	"sync"
 )
 
+const (
+	fID   = "ID"
+	empty = ""
+)
+
 // application level variables
 var (
 	BuildHash string
