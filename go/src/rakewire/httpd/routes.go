@@ -6,6 +6,7 @@ import (
 	gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"net/http"
+	"rakewire/httpd/fever"
 )
 
 func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
@@ -23,8 +24,9 @@ func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
 
 	// fever api router
 	feverPrefix := "/fever"
+	feverAPI := fever.NewAPI(feverPrefix, z.database)
 	router.PathPrefix(feverPrefix).Handler(
-		Adapt(z.feverRouter(feverPrefix), NoCache()),
+		Adapt(feverAPI.Router(), NoCache()),
 	)
 
 	// HTML5 routes: any path without a dot (thus an extension)
