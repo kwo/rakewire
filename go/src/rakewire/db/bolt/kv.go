@@ -2,6 +2,7 @@ package bolt
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/boltdb/bolt"
 	"rakewire/db"
 	"strconv"
@@ -14,6 +15,97 @@ const (
 	chSep = "|"
 	empty = ""
 )
+
+func kvGet(id uint64, b *bolt.Bucket) map[string]string {
+
+	result := make(map[string]string)
+
+	c := b.Cursor()
+	min := []byte(kvMinKey(id))
+	max := []byte(kvMaxKey(id))
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+		// assume proper key format of ID/fieldname
+		result[strings.SplitN(string(k), chSep, 2)[1]] = string(v)
+	} // for loop
+
+	return result
+
+}
+
+func kvGetIndex(name string, index string, keys []string, tx *bolt.Tx) (map[string]string, error) {
+
+	bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
+
+	keyStr := kvKeys(keys)
+	idStr := string(bIndex.Get([]byte(keyStr)))
+
+	if idStr != empty {
+
+		pkey, err := strconv.ParseUint(idStr, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		bData := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
+		return kvGet(pkey, bData), nil
+
+	}
+
+	return nil, nil
+
+}
+
+func kvIndex(name string, id uint64, newIndexes map[string][]string, oldIndexes map[string][]string, tx *bolt.Tx) error {
+
+	pkey := strconv.FormatUint(id, 10)
+	indexBucket := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name))
+
+	// delete old indexes
+	for indexName := range oldIndexes {
+		b := indexBucket.Bucket([]byte(indexName))
+		indexElements := oldIndexes[indexName]
+		keyStr := kvKeys(indexElements)
+		if err := b.Delete([]byte(keyStr)); err != nil {
+			return err
+		}
+	}
+
+	// add new indexes
+	for indexName := range newIndexes {
+		b := indexBucket.Bucket([]byte(indexName))
+		indexElements := newIndexes[indexName]
+		keyStr := kvKeys(indexElements)
+		if err := b.Put([]byte(keyStr), []byte(pkey)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func kvPut(id uint64, values map[string]string, b *bolt.Bucket) error {
+
+	// remove old records
+	c := b.Cursor()
+	min := []byte(kvMinKey(id))
+	max := []byte(kvMaxKey(id))
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
+		c.Delete()
+	}
+
+	// add new records
+	for fieldName := range values {
+		key := []byte(kvKey(id) + chSep + fieldName)
+		value := []byte(values[fieldName])
+		if err := b.Put(key, value); err != nil {
+			return err
+		}
+	} // for loop object fields
+
+	return nil
+
+}
 
 func kvSave(value db.DataObject, tx *bolt.Tx) error {
 
@@ -58,100 +150,8 @@ func kvSave(value db.DataObject, tx *bolt.Tx) error {
 
 }
 
-func kvGet(id uint64, b *bolt.Bucket) map[string]string {
-
-	result := make(map[string]string)
-
-	c := b.Cursor()
-	min := []byte(kvMinKey(id))
-	max := []byte(kvMaxKey(id))
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-		// assume proper key format of ID/fieldname
-		result[strings.SplitN(string(k), chSep, 2)[1]] = string(v)
-	} // for loop
-
-	return result
-
-}
-
-func kvGetIndex(name string, index string, keys []string, tx *bolt.Tx) (map[string]string, error) {
-
-	bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
-
-	keyStr := kvKeys(keys)
-	idStr := string(bIndex.Get([]byte(keyStr)))
-
-	if idStr != empty {
-
-		pkey, err := strconv.ParseUint(idStr, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		bData := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
-		return kvGet(pkey, bData), nil
-
-	}
-
-	return nil, nil
-
-}
-
-func kvPut(id uint64, values map[string]string, b *bolt.Bucket) error {
-
-	// remove old records
-	c := b.Cursor()
-	min := []byte(kvMinKey(id))
-	max := []byte(kvMaxKey(id))
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
-		c.Delete()
-	}
-
-	// add new records
-	for fieldName := range values {
-		key := []byte(kvKey(id) + chSep + fieldName)
-		value := []byte(values[fieldName])
-		if err := b.Put(key, value); err != nil {
-			return err
-		}
-	} // for loop object fields
-
-	return nil
-
-}
-
-func kvIndex(name string, id uint64, newIndexes map[string][]string, oldIndexes map[string][]string, tx *bolt.Tx) error {
-
-	pkey := strconv.FormatUint(id, 10)
-	indexBucket := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name))
-
-	// delete old indexes
-	for indexName := range oldIndexes {
-		b := indexBucket.Bucket([]byte(indexName))
-		indexElements := oldIndexes[indexName]
-		keyStr := kvKeys(indexElements)
-		if err := b.Delete([]byte(keyStr)); err != nil {
-			return err
-		}
-	}
-
-	// add new indexes
-	for indexName := range newIndexes {
-		b := indexBucket.Bucket([]byte(indexName))
-		indexElements := newIndexes[indexName]
-		keyStr := kvKeys(indexElements)
-		if err := b.Put([]byte(keyStr), []byte(pkey)); err != nil {
-			return err
-		}
-	}
-
-	return nil
-
-}
-
 func kvKey(id uint64) string {
-	pkey := strconv.FormatUint(id, 10)
-	return kvKeys([]string{pkey})
+	return fmt.Sprintf("%020d", id)
 }
 
 func kvMinKey(id uint64) string {
@@ -163,5 +163,5 @@ func kvMaxKey(id uint64) string {
 }
 
 func kvKeys(elements []string) string {
-	return "{" + strings.Join(elements, chSep) + "}"
+	return strings.Join(elements, chSep)
 }
