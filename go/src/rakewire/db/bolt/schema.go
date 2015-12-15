@@ -80,7 +80,25 @@ func setSchemaVersion(tx *bolt.Tx, version int) error {
 	return bucketInfo.Put([]byte("schema-version"), []byte(strconv.FormatInt(int64(version), 10)))
 }
 
+func bumpSequence(b *bolt.Bucket) error {
+
+	for {
+		n, err := b.NextSequence()
+		if err != nil {
+			return err
+		}
+		if n == 1000 {
+			break
+		}
+	}
+
+	return nil
+
+}
+
 func upgradeTo1(tx *bolt.Tx) error {
+
+	var b *bolt.Bucket
 
 	// top level
 	bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
@@ -93,22 +111,27 @@ func upgradeTo1(tx *bolt.Tx) error {
 	}
 
 	// data
-	_, err = bucketData.CreateBucketIfNotExists([]byte(bucketUser))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(bucketUser))
 	if err != nil {
 		return err
 	}
-	_, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeed))
+	bumpSequence(b)
+
+	b, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeed))
 	if err != nil {
 		return err
 	}
-	_, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeedLog))
+	bumpSequence(b)
+	b, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeedLog))
 	if err != nil {
 		return err
 	}
-	_, err = bucketData.CreateBucketIfNotExists([]byte(bucketEntry))
+	bumpSequence(b)
+	b, err = bucketData.CreateBucketIfNotExists([]byte(bucketEntry))
 	if err != nil {
 		return err
 	}
+	bumpSequence(b)
 
 	// indexes
 
