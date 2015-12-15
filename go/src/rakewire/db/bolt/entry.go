@@ -13,7 +13,7 @@ func (z *Service) GetFeedEntriesFromIDs(feedID string, guIDs []string) (map[stri
 	for _, guID := range guIDs {
 
 		err := z.db.View(func(tx *bolt.Tx) error {
-			data, err := kvGetIndex(m.EntityEntry, m.IndexEntryGUID, []string{feedID, guID}, tx)
+			data, err := kvGetFromIndex(m.EntryEntity, m.EntryIndexGUID, []string{feedID, guID}, tx)
 			if err != nil {
 				return err
 			}

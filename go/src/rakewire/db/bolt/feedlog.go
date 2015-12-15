@@ -10,18 +10,32 @@ import (
 // If since is equal to 0, return all.
 func (z *Service) GetFeedLog(feedID string, since time.Duration) ([]*m.FeedLog, error) {
 
-	maxDate := time.Now()
-	minDate := maxDate.Add(-since)
+	fl := &m.FeedLog{}
+	fl.FeedID = feedID
+	fl.StartTime = time.Now().Truncate(time.Second).Add(-since)
+	minKeys := fl.IndexKeys()[m.FeedLogIndexFeedTime]
+	nxtKeys := []string{chMax}
 
-	result := []*m.FeedLog{}
-	add := func() interface{} {
-		fl := &m.FeedLog{}
-		result = append(result, fl)
-		return fl
-	}
+	var result []*m.FeedLog
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		return Query("FeedLog", "FeedTime", []interface{}{feedID, minDate}, []interface{}{feedID, maxDate}, add, tx)
+
+		maps, err := kvQuery(m.FeedLogEntity, m.FeedLogIndexFeedTime, minKeys, nxtKeys, tx)
+		if err != nil {
+			return err
+		}
+
+		for _, data := range maps {
+			fl := &m.FeedLog{}
+			err = fl.Deserialize(data)
+			if err != nil {
+				return err
+			}
+			result = append(result, fl)
+		}
+
+		return nil
+
 	})
 
 	// reverse order of result

@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	chSep = "|"
 	empty = ""
+	chMax = "~"
+	chSep = "|"
 )
 
 func kvGet(id uint64, b *bolt.Bucket) map[string]string {
@@ -30,7 +31,7 @@ func kvGet(id uint64, b *bolt.Bucket) map[string]string {
 
 }
 
-func kvGetIndex(name string, index string, keys []string, tx *bolt.Tx) (map[string]string, error) {
+func kvGetFromIndex(name string, index string, keys []string, tx *bolt.Tx) (map[string]string, error) {
 
 	bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
 
@@ -39,46 +40,17 @@ func kvGetIndex(name string, index string, keys []string, tx *bolt.Tx) (map[stri
 
 	if idStr != empty {
 
-		pkey, err := strconv.ParseUint(idStr, 10, 64)
+		id, err := strconv.ParseUint(idStr, 10, 64)
 		if err != nil {
 			return nil, err
 		}
 
-		bData := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
-		return kvGet(pkey, bData), nil
+		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
+		return kvGet(id, b), nil
 
 	}
 
 	return nil, nil
-
-}
-
-func kvIndex(name string, id uint64, newIndexes map[string][]string, oldIndexes map[string][]string, tx *bolt.Tx) error {
-
-	pkey := strconv.FormatUint(id, 10)
-	indexBucket := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name))
-
-	// delete old indexes
-	for indexName := range oldIndexes {
-		b := indexBucket.Bucket([]byte(indexName))
-		indexElements := oldIndexes[indexName]
-		keyStr := kvKeys(indexElements)
-		if err := b.Delete([]byte(keyStr)); err != nil {
-			return err
-		}
-	}
-
-	// add new indexes
-	for indexName := range newIndexes {
-		b := indexBucket.Bucket([]byte(indexName))
-		indexElements := newIndexes[indexName]
-		keyStr := kvKeys(indexElements)
-		if err := b.Put([]byte(keyStr), []byte(pkey)); err != nil {
-			return err
-		}
-	}
-
-	return nil
 
 }
 
@@ -103,6 +75,30 @@ func kvPut(id uint64, values map[string]string, b *bolt.Bucket) error {
 
 	return nil
 
+}
+
+func kvQuery(name string, index string, minKeys []string, nxtKeys []string, tx *bolt.Tx) ([]map[string]string, error) {
+
+	var result []map[string]string
+
+	bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
+	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
+
+	c := bIndex.Cursor()
+	min := []byte(kvKeys(minKeys))
+	nxt := []byte(kvKeys(nxtKeys))
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+
+		pkey, err := strconv.ParseUint(string(v), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, kvGet(pkey, b))
+
+	}
+
+	return result, nil
 }
 
 func kvSave(value db.DataObject, tx *bolt.Tx) error {
@@ -140,8 +136,37 @@ func kvSave(value db.DataObject, tx *bolt.Tx) error {
 	}
 
 	// save indexes
-	if err := kvIndex(value.GetName(), value.GetID(), newIndexes, oldIndexes, tx); err != nil {
+	if err := kvSaveIndexes(value.GetName(), value.GetID(), newIndexes, oldIndexes, tx); err != nil {
 		return err
+	}
+
+	return nil
+
+}
+
+func kvSaveIndexes(name string, id uint64, newIndexes map[string][]string, oldIndexes map[string][]string, tx *bolt.Tx) error {
+
+	pkey := strconv.FormatUint(id, 10)
+	indexBucket := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name))
+
+	// delete old indexes
+	for indexName := range oldIndexes {
+		b := indexBucket.Bucket([]byte(indexName))
+		indexElements := oldIndexes[indexName]
+		keyStr := kvKeys(indexElements)
+		if err := b.Delete([]byte(keyStr)); err != nil {
+			return err
+		}
+	}
+
+	// add new indexes
+	for indexName := range newIndexes {
+		b := indexBucket.Bucket([]byte(indexName))
+		indexElements := newIndexes[indexName]
+		keyStr := kvKeys(indexElements)
+		if err := b.Put([]byte(keyStr), []byte(pkey)); err != nil {
+			return err
+		}
 	}
 
 	return nil

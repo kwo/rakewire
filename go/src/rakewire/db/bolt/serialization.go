@@ -10,7 +10,6 @@ import (
 
 const (
 	chMin = " "
-	chMax = "~"
 )
 
 // TODO: need delete function similar to query

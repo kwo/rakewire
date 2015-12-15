@@ -18,15 +18,16 @@ type User struct {
 
 // index names
 const (
-	EntityUser         = "User"
-	IndexUserUsername  = "Username"
-	IndexUserFeverHash = "FeverHash"
+	UserEntity         = "User"
+	UserIndexUsername  = "Username"
+	UserIndexFeverHash = "FeverHash"
 )
 
 const (
-	fUsername     = "Username"
-	fPasswordHash = "PasswordHash"
-	fFeverHash    = "FeverHash"
+	uID           = "ID"
+	uUsername     = "Username"
+	uPasswordHash = "PasswordHash"
+	uFeverHash    = "FeverHash"
 )
 
 // NewUser creates a new user with the specified username
@@ -66,7 +67,7 @@ func (z *User) MatchPassword(password string) bool {
 
 // GetName return the name of the entity.
 func (z *User) GetName() string {
-	return EntityUser
+	return UserEntity
 }
 
 // GetID return the primary key of the object.
@@ -90,25 +91,11 @@ func (z *User) Clear() {
 // Serialize serializes an object to a list of key-values.
 func (z *User) Serialize() map[string]string {
 	result := make(map[string]string)
-
-	if z.ID != 0 {
-		result[fID] = strconv.FormatUint(z.ID, 10)
-	}
-
-	if z.Username != empty {
-		result[fUsername] = z.Username
-	}
-
-	if z.PasswordHash != empty {
-		result[fPasswordHash] = z.PasswordHash
-	}
-
-	if z.FeverHash != empty {
-		result[fFeverHash] = z.FeverHash
-	}
-
+	setUint(z.ID, uID, result)
+	setString(z.Username, uUsername, result)
+	setString(z.PasswordHash, uPasswordHash, result)
+	setString(z.FeverHash, uFeverHash, result)
 	return result
-
 }
 
 // Deserialize serializes an object to a list of key-values.
@@ -116,17 +103,17 @@ func (z *User) Deserialize(values map[string]string) error {
 
 	for k, v := range values {
 		switch k {
-		case fID:
+		case uID:
 			id, err := strconv.ParseUint(v, 10, 64)
 			if err != nil {
 				return err
 			}
 			z.ID = id
-		case fUsername:
+		case uUsername:
 			z.Username = v
-		case fPasswordHash:
+		case uPasswordHash:
 			z.PasswordHash = v
-		case fFeverHash:
+		case uFeverHash:
 			z.FeverHash = v
 		}
 	}
@@ -137,7 +124,7 @@ func (z *User) Deserialize(values map[string]string) error {
 // IndexKeys returns the keys of all indexes for this object.
 func (z *User) IndexKeys() map[string][]string {
 	result := make(map[string][]string)
-	result[IndexUserUsername] = []string{strings.ToLower(z.Username)}
-	result[IndexUserFeverHash] = []string{z.FeverHash}
+	result[UserIndexUsername] = []string{strings.ToLower(z.Username)}
+	result[UserIndexFeverHash] = []string{z.FeverHash}
 	return result
 }

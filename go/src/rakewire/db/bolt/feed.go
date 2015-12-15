@@ -107,7 +107,7 @@ func (z *Service) SaveFeed(feed *m.Feed) error {
 
 		// save feed log if available
 		if feed.Attempt != nil {
-			if _, err := Put(feed.Attempt, tx); err != nil {
+			if err := kvSave(feed.Attempt, tx); err != nil {
 				return err
 			}
 		}

@@ -13,7 +13,7 @@ func (z *Service) UserGetByUsername(username string) (*m.User, error) {
 	user := &m.User{}
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		data, err := kvGetIndex(user.GetName(), m.IndexUserUsername, []string{username}, tx)
+		data, err := kvGetFromIndex(user.GetName(), m.UserIndexUsername, []string{username}, tx)
 		if err != nil {
 			return err
 		}
@@ -30,7 +30,7 @@ func (z *Service) UserGetByFeverHash(feverhash string) (*m.User, error) {
 	user := &m.User{}
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		data, err := kvGetIndex(user.GetName(), m.IndexUserFeverHash, []string{feverhash}, tx)
+		data, err := kvGetFromIndex(user.GetName(), m.UserIndexFeverHash, []string{feverhash}, tx)
 		if err != nil {
 			return err
 		}
@@ -50,8 +50,8 @@ func (z *Service) UserSave(user *m.User) error {
 
 		// new user, check for unique username
 		if user.GetID() == 0 {
-			indexName := m.IndexUserUsername
-			data, err := kvGetIndex(user.GetName(), indexName, user.IndexKeys()[indexName], tx)
+			indexName := m.UserIndexUsername
+			data, err := kvGetFromIndex(user.GetName(), indexName, user.IndexKeys()[indexName], tx)
 			if err != nil {
 				return err
 			}

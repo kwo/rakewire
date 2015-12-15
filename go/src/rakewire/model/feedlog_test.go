@@ -2,7 +2,6 @@ package model
 
 import (
 	"encoding/json"
-	"rakewire/kv"
 	"testing"
 	"time"
 )
@@ -12,28 +11,37 @@ func TestNewFeedLog(t *testing.T) {
 	t.Parallel()
 
 	fl := NewFeedLog("123")
-	assertNotNil(t, fl)
-	assertEqual(t, "123", fl.FeedID)
-	assertNotNil(t, fl.ID)
-	assertEqual(t, 36, len(fl.ID))
+
+	if fl == nil {
+		t.Fatalf("FeedLog factory not returning a valid feedlog")
+	}
+
+	if fl.ID != 0 {
+		t.Errorf("Factory method should not set th ID, expected %d, actual %d", 0, fl.ID)
+	}
+
+	if fl.FeedID != "123" {
+		t.Errorf("Factory method not setting FeedID properly, expected %s, actual %s", "123", fl.FeedID)
+	}
 
 }
 
-func TestFeedLogkv(t *testing.T) {
+func TestFeedLogSerialize(t *testing.T) {
 
 	t.Parallel()
 
 	fl := getNewFeedLog()
 	validateFeedLog(t, fl)
 
-	meta, data, err := kv.Encode(fl)
-	assertNoError(t, err)
-	assertNotNil(t, meta)
-	assertNotNil(t, data)
+	data := fl.Serialize()
+	if data == nil {
+		t.Fatal("FeedLog serialize returned a nil map")
+	}
 
 	fl2 := &FeedLog{}
-	err = kv.Decode(fl2, data.Values)
-	assertNoError(t, err)
+	if err := fl2.Deserialize(data); err != nil {
+		t.Fatalf("FeedLog deserialize returned an error: %s", err.Error())
+	}
 	validateFeedLog(t, fl2)
 
 }
@@ -87,6 +95,11 @@ func validateFeedLog(t *testing.T, fl *FeedLog) {
 	dt := time.Date(2015, time.November, 26, 13, 55, 0, 0, time.Local)
 
 	assertNotNil(t, fl)
+
+	if fl.ID != 0 {
+		t.Errorf("FeedLog ID incorrect, expected %d, actual %d", 0, fl.ID)
+	}
+
 	assertEqual(t, 0, fl.ContentLength)
 	assertEqual(t, "text/plain", fl.ContentType)
 	assertEqual(t, 6*time.Second, fl.Duration)
@@ -94,7 +107,6 @@ func validateFeedLog(t *testing.T, fl *FeedLog) {
 	assertEqual(t, "123", fl.FeedID)
 	assertEqual(t, "flavor", fl.Flavor)
 	assertEqual(t, "", fl.Generator)
-	assertEqual(t, 36, len(fl.ID))
 	assertEqual(t, time.Time{}.UnixNano(), fl.LastModified.UnixNano())
 	assertEqual(t, dt.UnixNano(), fl.LastUpdated.UnixNano())
 	assertEqual(t, FetchResultOK, fl.Result)

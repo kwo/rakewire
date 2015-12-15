@@ -22,20 +22,21 @@ type Entry struct {
 
 // index constants
 const (
-	EntityEntry    = "Entry"
-	IndexEntryGUID = "GUID"
-	IndexEntryDate = "Date"
+	EntryEntity    = "Entry"
+	EntryIndexGUID = "GUID"
+	EntryIndexDate = "Date"
 )
 
 const (
-	fGUID    = "GUID"
-	fFeedID  = "FeedID"
-	fCreated = "Created"
-	fUpdated = "Updated"
-	fURL     = "URL"
-	fAuthor  = "Author"
-	fTitle   = "Title"
-	fContent = "Content"
+	eID      = "ID"
+	eGUID    = "GUID"
+	eFeedID  = "FeedID"
+	eCreated = "Created"
+	eUpdated = "Updated"
+	eURL     = "URL"
+	eAuthor  = "Author"
+	eTitle   = "Title"
+	eContent = "Content"
 )
 
 // NewEntry instantiate a new Entry object with a new UUID
@@ -58,7 +59,7 @@ func (z *Entry) Hash() string {
 
 // GetName return the name of the entity.
 func (z *Entry) GetName() string {
-	return EntityEntry
+	return EntryEntity
 }
 
 // GetID return the primary key of the object.
@@ -87,45 +88,16 @@ func (z *Entry) Clear() {
 // Serialize serializes an object to a list of key-values.
 func (z *Entry) Serialize() map[string]string {
 	result := make(map[string]string)
-
-	if z.ID != 0 {
-		result[fID] = strconv.FormatUint(z.ID, 10)
-	}
-
-	if z.GUID != empty {
-		result[fGUID] = z.GUID
-	}
-
-	if z.FeedID != empty {
-		result[fFeedID] = z.FeedID
-	}
-
-	if !z.Created.IsZero() {
-		result[fCreated] = z.Created.Format(timeFormat)
-	}
-
-	if !z.Updated.IsZero() {
-		result[fUpdated] = z.Updated.Format(timeFormat)
-	}
-
-	if z.URL != empty {
-		result[fURL] = z.URL
-	}
-
-	if z.Author != empty {
-		result[fAuthor] = z.Author
-	}
-
-	if z.Title != empty {
-		result[fTitle] = z.Title
-	}
-
-	if z.Content != empty {
-		result[fContent] = z.Content
-	}
-
+	setUint(z.ID, eID, result)
+	setString(z.GUID, eGUID, result)
+	setString(z.FeedID, eFeedID, result)
+	setTime(z.Created, eCreated, result)
+	setTime(z.Updated, eUpdated, result)
+	setString(z.URL, eURL, result)
+	setString(z.Author, eAuthor, result)
+	setString(z.Title, eTitle, result)
+	setString(z.Content, eContent, result)
 	return result
-
 }
 
 // Deserialize serializes an object to a list of key-values.
@@ -133,35 +105,35 @@ func (z *Entry) Deserialize(values map[string]string) error {
 
 	for k, v := range values {
 		switch k {
-		case fID:
+		case eID:
 			id, err := strconv.ParseUint(v, 10, 64)
 			if err != nil {
 				return err
 			}
 			z.ID = id
-		case fGUID:
+		case eGUID:
 			z.GUID = v
-		case fFeedID:
+		case eFeedID:
 			z.FeedID = v
-		case fCreated:
+		case eCreated:
 			t, err := time.Parse(timeFormat, v)
 			if err != nil {
 				return err
 			}
 			z.Created = t
-		case fUpdated:
+		case eUpdated:
 			t, err := time.Parse(timeFormat, v)
 			if err != nil {
 				return err
 			}
 			z.Updated = t
-		case fURL:
+		case eURL:
 			z.URL = v
-		case fAuthor:
+		case eAuthor:
 			z.Author = v
-		case fTitle:
+		case eTitle:
 			z.Title = v
-		case fContent:
+		case eContent:
 			z.Content = v
 		}
 	}
@@ -174,7 +146,7 @@ func (z *Entry) Deserialize(values map[string]string) error {
 func (z *Entry) IndexKeys() map[string][]string {
 	data := z.Serialize()
 	result := make(map[string][]string)
-	result[IndexEntryDate] = []string{data[fFeedID], data[fCreated]}
-	result[IndexEntryGUID] = []string{data[fFeedID], data[fGUID]}
+	result[EntryIndexDate] = []string{data[eFeedID], data[eCreated]}
+	result[EntryIndexGUID] = []string{data[eFeedID], data[eGUID]}
 	return result
 }
