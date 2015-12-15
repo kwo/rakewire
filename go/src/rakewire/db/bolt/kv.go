@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/boltdb/bolt"
+	"log"
 	"rakewire/db"
 	"strconv"
 	"strings"
@@ -12,11 +13,13 @@ import (
 const (
 	empty = ""
 	chMax = "~"
+	chMin = " "
 	chSep = "|"
 )
 
-func kvGet(id uint64, b *bolt.Bucket) map[string]string {
+func kvGet(id uint64, b *bolt.Bucket) (map[string]string, bool) {
 
+	found := false
 	result := make(map[string]string)
 
 	c := b.Cursor()
@@ -25,13 +28,14 @@ func kvGet(id uint64, b *bolt.Bucket) map[string]string {
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 		// assume proper key format of ID/fieldname
 		result[strings.SplitN(string(k), chSep, 2)[1]] = string(v)
+		found = true
 	} // for loop
 
-	return result
+	return result, found
 
 }
 
-func kvGetFromIndex(name string, index string, keys []string, tx *bolt.Tx) (map[string]string, error) {
+func kvGetFromIndex(name string, index string, keys []string, tx *bolt.Tx) (map[string]string, bool) {
 
 	bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
 
@@ -42,15 +46,16 @@ func kvGetFromIndex(name string, index string, keys []string, tx *bolt.Tx) (map[
 
 		id, err := strconv.ParseUint(idStr, 10, 64)
 		if err != nil {
-			return nil, err
+			log.Printf("%-7s %-7s error parsing index value: %s", logWarn, logName, idStr)
+			return nil, false
 		}
 
 		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
-		return kvGet(id, b), nil
+		return kvGet(id, b)
 
 	}
 
-	return nil, nil
+	return nil, false
 
 }
 
@@ -77,30 +82,6 @@ func kvPut(id uint64, values map[string]string, b *bolt.Bucket) error {
 
 }
 
-func kvQuery(name string, index string, minKeys []string, nxtKeys []string, tx *bolt.Tx) ([]map[string]string, error) {
-
-	var result []map[string]string
-
-	bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name)).Bucket([]byte(index))
-	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
-
-	c := bIndex.Cursor()
-	min := []byte(kvKeys(minKeys))
-	nxt := []byte(kvKeys(nxtKeys))
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
-
-		pkey, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, kvGet(pkey, b))
-
-	}
-
-	return result, nil
-}
-
 func kvSave(value db.DataObject, tx *bolt.Tx) error {
 
 	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(value.GetName()))
@@ -113,7 +94,7 @@ func kvSave(value db.DataObject, tx *bolt.Tx) error {
 		value.SetID(id)
 	}
 
-	oldValues := kvGet(value.GetID(), b)
+	oldValues, _ := kvGet(value.GetID(), b)
 	newValues := value.Serialize()
 	newIndexes := value.IndexKeys()
 

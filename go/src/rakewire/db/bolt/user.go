@@ -10,34 +10,46 @@ import (
 // UserGetByUsername get a user object by username, nil if not found
 func (z *Service) UserGetByUsername(username string) (*m.User, error) {
 
+	found := false
 	user := &m.User{}
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		data, err := kvGetFromIndex(user.GetName(), m.UserIndexUsername, []string{username}, tx)
-		if err != nil {
-			return err
+		if data, ok := kvGetFromIndex(m.UserEntity, m.UserIndexUsername, []string{username}, tx); ok {
+			found = true
+			return user.Deserialize(data)
 		}
-		return user.Deserialize(data)
+		return nil
 	})
 
-	return user, err
+	if err != nil {
+		return nil, err
+	} else if !found {
+		return nil, nil
+	}
+	return user, nil
 
 }
 
 // UserGetByFeverHash get a user object by feverhash, nil if not found
 func (z *Service) UserGetByFeverHash(feverhash string) (*m.User, error) {
 
+	found := false
 	user := &m.User{}
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		data, err := kvGetFromIndex(user.GetName(), m.UserIndexFeverHash, []string{feverhash}, tx)
-		if err != nil {
-			return err
+		if data, ok := kvGetFromIndex(m.UserEntity, m.UserIndexFeverHash, []string{feverhash}, tx); ok {
+			found = true
+			return user.Deserialize(data)
 		}
-		return user.Deserialize(data)
+		return nil
 	})
 
-	return user, err
+	if err != nil {
+		return nil, err
+	} else if !found {
+		return nil, nil
+	}
+	return user, nil
 
 }
 
@@ -51,11 +63,7 @@ func (z *Service) UserSave(user *m.User) error {
 		// new user, check for unique username
 		if user.GetID() == 0 {
 			indexName := m.UserIndexUsername
-			data, err := kvGetFromIndex(user.GetName(), indexName, user.IndexKeys()[indexName], tx)
-			if err != nil {
-				return err
-			}
-			if data != nil {
+			if _, ok := kvGetFromIndex(m.UserEntity, indexName, user.IndexKeys()[indexName], tx); ok {
 				return fmt.Errorf("Cannot save user, username is already taken: %s", strings.ToLower(user.Username))
 			}
 		}

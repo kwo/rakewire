@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	m "rakewire/model"
+	"strconv"
 	"time"
 )
 
@@ -54,7 +55,11 @@ func (z *Service) feedsGetFeedsNext(w http.ResponseWriter, req *http.Request) {
 func (z *Service) feedsGetFeedByID(w http.ResponseWriter, req *http.Request) {
 
 	vars := mux.Vars(req)
-	feedID := vars["feedID"]
+	feedID, err := strconv.ParseUint(vars["feedID"], 10, 64)
+	if err != nil {
+		notFound(w, req)
+		return
+	}
 
 	feed, err := z.database.GetFeedByID(feedID)
 	if err != nil {
@@ -169,7 +174,11 @@ func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds []*m.Feed) {
 func (z *Service) feedsGetFeedLogByID(w http.ResponseWriter, req *http.Request) {
 
 	vars := mux.Vars(req)
-	feedID := vars["feedID"]
+	feedID, err := strconv.ParseUint(vars["feedID"], 10, 64)
+	if err != nil {
+		badRequest(w, req)
+		return
+	}
 
 	entries, err := z.database.GetFeedLog(feedID, 7*24*time.Hour)
 	if err != nil {

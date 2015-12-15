@@ -20,7 +20,6 @@ func TestFeedsPut(t *testing.T) {
 	buf := bytes.Buffer{}
 	var feeds []*m.Feed
 	feed := m.NewFeed(feedURL)
-	feedID = feed.ID
 	feeds = append(feeds, feed)
 	err := serializeFeeds(feeds, &buf)
 	assertNoError(t, err)
@@ -188,7 +187,7 @@ func TestFeedGetByID(t *testing.T) {
 
 	c := newHTTPClient()
 
-	req := newRequest(mGet, "/api/feeds/"+feedID)
+	req := newRequest(mGet, "/api/feeds/1")
 	rsp, err := c.Do(req)
 	assertNoError(t, err)
 	assertNotNil(t, rsp)

@@ -89,6 +89,10 @@ func badMediaType(w http.ResponseWriter, req *http.Request) {
 	sendError(w, http.StatusUnsupportedMediaType)
 }
 
+func badRequest(w http.ResponseWriter, req *http.Request) {
+	sendError(w, http.StatusBadRequest)
+}
+
 func notFound(w http.ResponseWriter, req *http.Request) {
 	sendError(w, http.StatusNotFound)
 }

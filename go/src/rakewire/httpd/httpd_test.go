@@ -25,8 +25,7 @@ const (
 )
 
 var (
-	ws     *Service
-	feedID string
+	ws *Service
 )
 
 func TestMain(m *testing.M) {
@@ -127,7 +126,7 @@ func TestHTML5Paths(t *testing.T) {
 		t.Error("Two responses not equal.")
 	}
 
-	// include paths with uuids
+	// FIXME: include paths with uuids
 	req = newRequest(mGet, "/feed/bf24f476-5899-11e5-af27-5cf938992b62/log")
 	rsp, err = c.Do(req)
 	assertHTML(t, rsp, err)

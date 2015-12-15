@@ -1,24 +1,50 @@
 package bolt
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/boltdb/bolt"
 	m "rakewire/model"
+	"strconv"
 	"time"
 )
 
 // GetFeeds list feeds
 func (z *Service) GetFeeds() ([]*m.Feed, error) {
 
-	result := []*m.Feed{}
-	add := func() interface{} {
-		f := m.NewFeed("")
-		result = append(result, f)
-		return f
-	}
+	// define index keys
+	minKeys := []string{chMin}
+	nxtKeys := []string{chMax}
+
+	var result []*m.Feed
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		return Query("Feed", empty, nil, []interface{}{chMax}, add, tx)
+
+		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.FeedEntity)).Bucket([]byte(m.FeedIndexURL))
+		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.FeedEntity))
+
+		c := bIndex.Cursor()
+		min := []byte(kvKeys(minKeys))
+		nxt := []byte(kvKeys(nxtKeys))
+		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+
+			id, err := strconv.ParseUint(string(v), 10, 64)
+			if err != nil {
+				return err
+			}
+
+			if data, ok := kvGet(id, b); ok {
+				f := &m.Feed{}
+				if err := f.Deserialize(data); err != nil {
+					return err
+				}
+				result = append(result, f)
+			}
+
+		}
+
+		return nil
+
 	})
 
 	return result, err
@@ -28,42 +54,70 @@ func (z *Service) GetFeeds() ([]*m.Feed, error) {
 // GetFetchFeeds get feeds to be fetched within the given max time parameter.
 func (z *Service) GetFetchFeeds(maxTime time.Time) ([]*m.Feed, error) {
 
+	// define index keys
 	if maxTime.IsZero() {
 		maxTime = time.Now()
 	}
+	f := &m.Feed{}
+	f.NextFetch = maxTime
+	minKeys := []string{chMin}
+	nxtKeys := f.IndexKeys()[m.FeedIndexNextFetch]
 
-	result := []*m.Feed{}
-	add := func() interface{} {
-		f := m.NewFeed("")
-		result = append(result, f)
-		return f
-	}
+	var result []*m.Feed
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		return Query("Feed", "NextFetch", nil, []interface{}{maxTime}, add, tx)
+
+		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.FeedEntity)).Bucket([]byte(m.FeedIndexNextFetch))
+		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.FeedEntity))
+
+		c := bIndex.Cursor()
+		min := []byte(kvKeys(minKeys))
+		nxt := []byte(kvKeys(nxtKeys))
+		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+
+			id, err := strconv.ParseUint(string(v), 10, 64)
+			if err != nil {
+				return err
+			}
+
+			if data, ok := kvGet(id, b); ok {
+				f := &m.Feed{}
+				if err := f.Deserialize(data); err != nil {
+					return err
+				}
+				result = append(result, f)
+			}
+
+		}
+
+		return nil
+
 	})
 
 	return result, err
 
 }
 
-// GetFeedByID return feed given UUID
-func (z *Service) GetFeedByID(id string) (*m.Feed, error) {
+// GetFeedByID return feed given id
+func (z *Service) GetFeedByID(id uint64) (*m.Feed, error) {
 
-	result := m.NewFeed("")
-	result.ID = id
+	found := false
+	result := &m.Feed{}
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		return Get(result, tx)
+		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.FeedEntity))
+		if data, ok := kvGet(id, b); ok {
+			found = true
+			return result.Deserialize(data)
+		}
+		return nil
 	})
+
 	if err != nil {
 		return nil, err
-	}
-
-	if result != nil && result.ID != id {
+	} else if !found {
 		return nil, nil
 	}
-
 	return result, nil
 
 }
@@ -71,27 +125,23 @@ func (z *Service) GetFeedByID(id string) (*m.Feed, error) {
 // GetFeedByURL return feed given url
 func (z *Service) GetFeedByURL(url string) (*m.Feed, error) {
 
-	feeds := []*m.Feed{}
-	add := func() interface{} {
-		f := m.NewFeed(url)
-		feeds = append(feeds, f)
-		return f
-	}
+	found := false
+	result := &m.Feed{}
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		return Query("Feed", "URL", []interface{}{url}, []interface{}{url}, add, tx)
+		if data, ok := kvGetFromIndex(m.FeedEntity, m.FeedIndexURL, []string{url}, tx); ok {
+			found = true
+			return result.Deserialize(data)
+		}
+		return nil
 	})
+
 	if err != nil {
 		return nil, err
-	}
-
-	if len(feeds) == 0 {
+	} else if !found {
 		return nil, nil
-	} else if len(feeds) > 1 {
-		return nil, fmt.Errorf("Unique index returned multiple results: %s, URL: %s", "Feed/URL", url)
 	}
-
-	return feeds[0], nil
+	return result, nil
 
 }
 
@@ -122,7 +172,7 @@ func (z *Service) SaveFeed(feed *m.Feed) error {
 		}
 
 		// save feed itself
-		if _, err := Put(feed, tx); err != nil {
+		if err := kvSave(feed, tx); err != nil {
 			return err
 		}
 

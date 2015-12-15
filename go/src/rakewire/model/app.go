@@ -1,9 +1,7 @@
 package model
 
 import (
-	"github.com/pborman/uuid"
 	"strconv"
-	"sync"
 	"time"
 )
 
@@ -18,14 +16,6 @@ var (
 	BuildTime string
 	Version   string
 )
-
-var uuidLock sync.Mutex
-
-func getUUID() string {
-	uuidLock.Lock()
-	defer uuidLock.Unlock()
-	return uuid.NewUUID().String()
-}
 
 func getBool(fieldName string, values map[string]string, errors []error) bool {
 	result, err := strconv.ParseBool(values[fieldName])

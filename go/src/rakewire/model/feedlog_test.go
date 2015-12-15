@@ -10,7 +10,7 @@ func TestNewFeedLog(t *testing.T) {
 
 	t.Parallel()
 
-	fl := NewFeedLog("123")
+	fl := NewFeedLog(123)
 
 	if fl == nil {
 		t.Fatalf("FeedLog factory not returning a valid feedlog")
@@ -20,7 +20,7 @@ func TestNewFeedLog(t *testing.T) {
 		t.Errorf("Factory method should not set th ID, expected %d, actual %d", 0, fl.ID)
 	}
 
-	if fl.FeedID != "123" {
+	if fl.FeedID != 123 {
 		t.Errorf("Factory method not setting FeedID properly, expected %s, actual %s", "123", fl.FeedID)
 	}
 
@@ -68,7 +68,7 @@ func getNewFeedLog() *FeedLog {
 
 	dt := time.Date(2015, time.November, 26, 13, 55, 0, 0, time.Local)
 
-	fl := NewFeedLog("123")
+	fl := NewFeedLog(123)
 	fl.ContentLength = 0
 	fl.ContentType = "text/plain"
 	fl.Duration = 6 * time.Second
@@ -104,7 +104,9 @@ func validateFeedLog(t *testing.T, fl *FeedLog) {
 	assertEqual(t, "text/plain", fl.ContentType)
 	assertEqual(t, 6*time.Second, fl.Duration)
 	assertEqual(t, "etag", fl.ETag)
-	assertEqual(t, "123", fl.FeedID)
+	if fl.FeedID != 123 {
+		t.Errorf("FeedIDs do not match, expected %d, actual %d", 123, fl.FeedID)
+	}
 	assertEqual(t, "flavor", fl.Flavor)
 	assertEqual(t, "", fl.Generator)
 	assertEqual(t, time.Time{}.UnixNano(), fl.LastModified.UnixNano())

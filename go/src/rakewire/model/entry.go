@@ -3,7 +3,6 @@ package model
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"strconv"
 	"time"
 )
 
@@ -11,7 +10,7 @@ import (
 type Entry struct {
 	ID      uint64    `json:"id"`
 	GUID    string    `json:"-"`
-	FeedID  string    `json:"feedId"`
+	FeedID  uint64    `json:"feedId"`
 	Created time.Time `json:"created"`
 	Updated time.Time `json:"updated"`
 	URL     string    `json:"url"`
@@ -39,8 +38,8 @@ const (
 	eContent = "Content"
 )
 
-// NewEntry instantiate a new Entry object with a new UUID
-func NewEntry(feedID string, guID string) *Entry {
+// NewEntry instantiate a new Entry object
+func NewEntry(feedID uint64, guID string) *Entry {
 	return &Entry{
 		FeedID: feedID,
 		GUID:   guID,
@@ -76,7 +75,7 @@ func (z *Entry) SetID(id uint64) {
 func (z *Entry) Clear() {
 	z.ID = 0
 	z.GUID = empty
-	z.FeedID = empty
+	z.FeedID = 0
 	z.Created = time.Time{}
 	z.Updated = time.Time{}
 	z.URL = empty
@@ -90,7 +89,7 @@ func (z *Entry) Serialize() map[string]string {
 	result := make(map[string]string)
 	setUint(z.ID, eID, result)
 	setString(z.GUID, eGUID, result)
-	setString(z.FeedID, eFeedID, result)
+	setUint(z.FeedID, eFeedID, result)
 	setTime(z.Created, eCreated, result)
 	setTime(z.Updated, eUpdated, result)
 	setString(z.URL, eURL, result)
@@ -102,44 +101,20 @@ func (z *Entry) Serialize() map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 func (z *Entry) Deserialize(values map[string]string) error {
-
-	for k, v := range values {
-		switch k {
-		case eID:
-			id, err := strconv.ParseUint(v, 10, 64)
-			if err != nil {
-				return err
-			}
-			z.ID = id
-		case eGUID:
-			z.GUID = v
-		case eFeedID:
-			z.FeedID = v
-		case eCreated:
-			t, err := time.Parse(timeFormat, v)
-			if err != nil {
-				return err
-			}
-			z.Created = t
-		case eUpdated:
-			t, err := time.Parse(timeFormat, v)
-			if err != nil {
-				return err
-			}
-			z.Updated = t
-		case eURL:
-			z.URL = v
-		case eAuthor:
-			z.Author = v
-		case eTitle:
-			z.Title = v
-		case eContent:
-			z.Content = v
-		}
+	var errors []error
+	z.ID = getUint(eID, values, errors)
+	z.GUID = getString(eGUID, values, errors)
+	z.FeedID = getUint(eFeedID, values, errors)
+	z.Created = getTime(eCreated, values, errors)
+	z.Updated = getTime(eUpdated, values, errors)
+	z.URL = getString(eURL, values, errors)
+	z.Author = getString(eAuthor, values, errors)
+	z.Title = getString(eTitle, values, errors)
+	z.Content = getString(eContent, values, errors)
+	if len(errors) > 0 {
+		return errors[0]
 	}
-
 	return nil
-
 }
 
 // IndexKeys returns the keys of all indexes for this object.
@@ -148,5 +123,6 @@ func (z *Entry) IndexKeys() map[string][]string {
 	result := make(map[string][]string)
 	result[EntryIndexDate] = []string{data[eFeedID], data[eCreated]}
 	result[EntryIndexGUID] = []string{data[eFeedID], data[eGUID]}
+	// FIXME: index IDs must be zero-padded
 	return result
 }

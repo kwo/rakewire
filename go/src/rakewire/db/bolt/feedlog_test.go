@@ -16,7 +16,7 @@ func TestFeedLog(t *testing.T) {
 	assertNotNil(t, database)
 
 	now := time.Now().Truncate(time.Second)
-	feedID := "12345"
+	var feedID uint64 = 12345
 
 	err := database.db.Update(func(tx *bolt.Tx) error {
 		for i := 0; i <= 100; i++ {

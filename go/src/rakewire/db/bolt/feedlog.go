@@ -1,37 +1,49 @@
 package bolt
 
 import (
+	"bytes"
 	"github.com/boltdb/bolt"
 	m "rakewire/model"
+	"strconv"
 	"time"
 )
 
 // GetFeedLog retrieves the past fetch attempts for the feed in reverse chronological order.
 // If since is equal to 0, return all.
-func (z *Service) GetFeedLog(feedID string, since time.Duration) ([]*m.FeedLog, error) {
+func (z *Service) GetFeedLog(feedID uint64, since time.Duration) ([]*m.FeedLog, error) {
 
+	var result []*m.FeedLog
+
+	// define index keys
 	fl := &m.FeedLog{}
 	fl.FeedID = feedID
 	fl.StartTime = time.Now().Truncate(time.Second).Add(-since)
 	minKeys := fl.IndexKeys()[m.FeedLogIndexFeedTime]
 	nxtKeys := []string{chMax}
 
-	var result []*m.FeedLog
-
 	err := z.db.View(func(tx *bolt.Tx) error {
 
-		maps, err := kvQuery(m.FeedLogEntity, m.FeedLogIndexFeedTime, minKeys, nxtKeys, tx)
-		if err != nil {
-			return err
-		}
+		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.FeedLogEntity)).Bucket([]byte(m.FeedLogIndexFeedTime))
+		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.FeedLogEntity))
 
-		for _, data := range maps {
-			fl := &m.FeedLog{}
-			err = fl.Deserialize(data)
+		c := bIndex.Cursor()
+		min := []byte(kvKeys(minKeys))
+		nxt := []byte(kvKeys(nxtKeys))
+		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+
+			id, err := strconv.ParseUint(string(v), 10, 64)
 			if err != nil {
 				return err
 			}
-			result = append(result, fl)
+
+			if data, ok := kvGet(id, b); ok {
+				fl := &m.FeedLog{}
+				if err := fl.Deserialize(data); err != nil {
+					return err
+				}
+				result = append(result, fl)
+			}
+
 		}
 
 		return nil

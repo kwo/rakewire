@@ -4,7 +4,6 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"golang.org/x/crypto/bcrypt"
-	"strconv"
 	"strings"
 )
 
@@ -100,24 +99,14 @@ func (z *User) Serialize() map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 func (z *User) Deserialize(values map[string]string) error {
-
-	for k, v := range values {
-		switch k {
-		case uID:
-			id, err := strconv.ParseUint(v, 10, 64)
-			if err != nil {
-				return err
-			}
-			z.ID = id
-		case uUsername:
-			z.Username = v
-		case uPasswordHash:
-			z.PasswordHash = v
-		case uFeverHash:
-			z.FeverHash = v
-		}
+	var errors []error
+	z.ID = getUint(uID, values, errors)
+	z.Username = getString(uUsername, values, errors)
+	z.PasswordHash = getString(uPasswordHash, values, errors)
+	z.FeverHash = getString(uFeverHash, values, errors)
+	if len(errors) > 0 {
+		return errors[0]
 	}
-
 	return nil
 }
 

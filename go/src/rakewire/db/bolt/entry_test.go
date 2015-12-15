@@ -15,6 +15,7 @@ func TestGetFeedEntriesFromIDs(t *testing.T) {
 	}
 
 	feed := m.NewFeed("http://localhost/")
+	feed.ID = 100
 
 	for i := 0; i < 10; i++ {
 		entry := feed.AddEntry(fmt.Sprintf("http://localhost/post/%d", i))

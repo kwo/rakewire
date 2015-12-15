@@ -2,7 +2,6 @@ package model
 
 import (
 	"encoding/json"
-	"rakewire/kv"
 	"testing"
 	"time"
 )
@@ -16,7 +15,9 @@ func TestNewFeed(t *testing.T) {
 	assertEqual(t, "http://localhost/", f.URL)
 	assertNotNil(t, f.NextFetch)
 	assertNotNil(t, f.ID)
-	assertEqual(t, 36, len(f.ID))
+	if f.ID != 0 {
+		t.Errorf("f.ID not equal, expected: %d, actual: %d", 0, f.ID)
+	}
 
 }
 
@@ -27,13 +28,11 @@ func TestFeedSerial(t *testing.T) {
 	f := getNewFeed()
 	validateFeed(t, f)
 
-	meta, data, err := kv.Encode(f)
-	assertNoError(t, err)
-	assertNotNil(t, meta)
+	data := f.Serialize()
 	assertNotNil(t, data)
 
 	f2 := &Feed{}
-	err = kv.Decode(f2, data.Values)
+	err := f2.Deserialize(data)
 	assertNoError(t, err)
 	validateFeed(t, f2)
 

@@ -7,7 +7,7 @@ import (
 // FeedLog represents an attempted HTTP request to a feed
 type FeedLog struct {
 	ID            uint64        `json:"id"`
-	FeedID        string        `json:"feedId"`
+	FeedID        uint64        `json:"feedId"`
 	Duration      time.Duration `json:"duration"`
 	Result        string        `json:"result"`
 	ResultMessage string        `json:"resultMessage"`
@@ -65,7 +65,7 @@ const (
 )
 
 // NewFeedLog instantiates a new FeedLog with the required fields set.
-func NewFeedLog(feedID string) *FeedLog {
+func NewFeedLog(feedID uint64) *FeedLog {
 	return &FeedLog{
 		FeedID: feedID,
 	}
@@ -89,7 +89,7 @@ func (z *FeedLog) SetID(id uint64) {
 // Clear reset all fields to zero/empty
 func (z *FeedLog) Clear() {
 	z.ID = 0
-	z.FeedID = empty
+	z.FeedID = 0
 	z.Duration = 0
 	z.Result = empty
 	z.ResultMessage = empty
@@ -113,7 +113,7 @@ func (z *FeedLog) Clear() {
 func (z *FeedLog) Serialize() map[string]string {
 	result := make(map[string]string)
 	setUint(z.ID, flID, result)
-	setString(z.FeedID, flFeedID, result)
+	setUint(z.FeedID, flFeedID, result)
 	setDuration(z.Duration, flDuration, result)
 	setString(z.Result, flResult, result)
 	setString(z.ResultMessage, flResultMessage, result)
@@ -138,7 +138,7 @@ func (z *FeedLog) Serialize() map[string]string {
 func (z *FeedLog) Deserialize(values map[string]string) error {
 	var errors []error
 	z.ID = getUint(flID, values, errors)
-	z.FeedID = getString(flFeedID, values, errors)
+	z.FeedID = getUint(flFeedID, values, errors)
 	z.Duration = getDuration(flDuration, values, errors)
 	z.Result = getString(flResult, values, errors)
 	z.ResultMessage = getString(flResultMessage, values, errors)

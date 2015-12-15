@@ -47,7 +47,9 @@ func TestURLIndex(t *testing.T) {
 
 	database := openDatabase(t)
 	defer closeDatabase(t, database)
-	assertNotNil(t, database)
+	if database == nil {
+		t.Fatal("database is nil")
+	}
 
 	// create feed
 	feed := m.NewFeed(URL1)
@@ -74,10 +76,18 @@ func TestURLIndex(t *testing.T) {
 
 	// get by URL
 	feed2, err = database.GetFeedByURL(URL1)
-	assertNoError(t, err)
-	assertNotNil(t, feed2)
-	assertEqual(t, feed.ID, feed2.ID)
-	assertEqual(t, URL1, feed2.URL)
+	if err != nil {
+		t.Fatalf("Error not nil: %s", err.Error())
+	}
+	if feed2 == nil {
+		t.Fatal("Feeds nil")
+	}
+	if feed.ID != feed2.ID {
+		t.Errorf("feed IDs do not match, expected %d, actual %d", feed.ID, feed2.ID)
+	}
+	if URL1 != feed2.URL {
+		t.Errorf("feed URLs do not match, expected %s, actual %d", URL1, feed2.URL)
+	}
 
 	// update URL
 	feed2 = feeds2[0]
@@ -99,7 +109,7 @@ func TestURLIndex(t *testing.T) {
 	feed2, err = database.GetFeedByURL(URL1)
 	assertNoError(t, err)
 	if feed2 != nil {
-		t.Error("feed2 should be nil")
+		t.Errorf("feed2 should be nil: %v", feed2)
 	}
 
 	// get by new URL

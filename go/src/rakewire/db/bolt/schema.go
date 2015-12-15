@@ -10,7 +10,7 @@ import (
 
 const (
 	// SchemaVersion of the database
-	SchemaVersion = 2
+	SchemaVersion = 1
 )
 
 func checkSchema(z *Service) error {
@@ -35,11 +35,11 @@ func checkSchema(z *Service) error {
 				if err != nil {
 					break
 				}
-			case 1:
-				err = upgradeTo2(tx)
-				if err != nil {
-					break
-				}
+			// case 1:
+			// 	err = upgradeTo2(tx)
+			// 	if err != nil {
+			// 		break
+			// 	}
 			default:
 				err = fmt.Errorf("Unhandled schema version: %d", schemaVersion)
 			}
@@ -160,19 +160,26 @@ func upgradeTo1(tx *bolt.Tx) error {
 		return err
 	}
 
+	u := m.NewUser("testuser@localhost")
+	u.SetPassword("abcdefg")
+
+	if err := kvSave(u, tx); err != nil {
+		return err
+	}
+
 	return setSchemaVersion(tx, 1)
 
 }
 
-func upgradeTo2(tx *bolt.Tx) error {
-
-	u := m.NewUser("testuser@localhost")
-	u.SetPassword("abcdefg")
-
-	if _, err := Put(u, tx); err != nil {
-		return err
-	}
-
-	return setSchemaVersion(tx, 2)
-
-}
+// func upgradeTo2(tx *bolt.Tx) error {
+//
+// 	u := m.NewUser("testuser@localhost")
+// 	u.SetPassword("abcdefg")
+//
+// 	if err := kvSave(u, tx); err != nil {
+// 		return err
+// 	}
+//
+// 	return setSchemaVersion(tx, 2)
+//
+// }
