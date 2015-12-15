@@ -10,8 +10,6 @@ import (
 )
 
 const (
-	chMin = " "
-	chMax = "~"
 	chSep = "|"
 	empty = ""
 )
@@ -22,8 +20,8 @@ func kvGet(id uint64, b *bolt.Bucket) map[string]string {
 
 	c := b.Cursor()
 	min := []byte(kvMinKey(id))
-	max := []byte(kvMaxKey(id))
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+	nxt := []byte(kvNxtKey(id))
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 		// assume proper key format of ID/fieldname
 		result[strings.SplitN(string(k), chSep, 2)[1]] = string(v)
 	} // for loop
@@ -89,8 +87,8 @@ func kvPut(id uint64, values map[string]string, b *bolt.Bucket) error {
 	// remove old records
 	c := b.Cursor()
 	min := []byte(kvMinKey(id))
-	max := []byte(kvMaxKey(id))
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
+	nxt := []byte(kvNxtKey(id))
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
 		c.Delete()
 	}
 
@@ -155,11 +153,11 @@ func kvKey(id uint64) string {
 }
 
 func kvMinKey(id uint64) string {
-	return kvKey(id) + chMin
+	return kvKey(id)
 }
 
-func kvMaxKey(id uint64) string {
-	return kvKey(id) + chMax
+func kvNxtKey(id uint64) string {
+	return kvKey(id + 1)
 }
 
 func kvKeys(elements []string) string {
