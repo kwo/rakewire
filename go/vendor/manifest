@@ -40,12 +40,6 @@
 			"path": "/data"
 		},
 		{
-			"importpath": "github.com/pborman/uuid",
-			"repository": "https://github.com/pborman/uuid",
-			"revision": "cccd189d45f7ac3368a0d127efb7f4d08ae0b655",
-			"branch": "master"
-		},
-		{
 			"importpath": "golang.org/x/crypto/bcrypt",
 			"repository": "https://go.googlesource.com/crypto",
 			"revision": "7b85b097bf7527677d54d3220065e966a0e3b613",
