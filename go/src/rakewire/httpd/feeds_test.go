@@ -187,7 +187,8 @@ func TestFeedGetByID(t *testing.T) {
 
 	c := newHTTPClient()
 
-	req := newRequest(mGet, "/api/feeds/1")
+	// FIXME: these tests are not standalone!
+	req := newRequest(mGet, "/api/feeds/10001")
 	rsp, err := c.Do(req)
 	assertNoError(t, err)
 	assertNotNil(t, rsp)
