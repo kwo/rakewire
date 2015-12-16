@@ -15,11 +15,13 @@ func (z *Service) GetFeedLog(feedID uint64, since time.Duration) ([]*m.FeedLog, 
 	var result []*m.FeedLog
 
 	// define index keys
+	now := time.Now().Truncate(time.Second)
 	fl := &m.FeedLog{}
 	fl.FeedID = feedID
-	fl.StartTime = time.Now().Truncate(time.Second).Add(-since)
+	fl.StartTime = now.Add(-since)
 	minKeys := fl.IndexKeys()[m.FeedLogIndexFeedTime]
-	nxtKeys := []string{chMax}
+	fl.StartTime = now.Add(1 * time.Minute) // max later than now
+	nxtKeys := fl.IndexKeys()[m.FeedLogIndexFeedTime]
 
 	err := z.db.View(func(tx *bolt.Tx) error {
 

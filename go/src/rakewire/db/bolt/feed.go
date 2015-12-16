@@ -12,10 +12,6 @@ import (
 // GetFeeds list feeds
 func (z *Service) GetFeeds() ([]*m.Feed, error) {
 
-	// define index keys
-	minKeys := []string{chMin}
-	nxtKeys := []string{chMax}
-
 	var result []*m.Feed
 
 	err := z.db.View(func(tx *bolt.Tx) error {
@@ -24,9 +20,7 @@ func (z *Service) GetFeeds() ([]*m.Feed, error) {
 		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.FeedEntity))
 
 		c := bIndex.Cursor()
-		min := []byte(kvKeys(minKeys))
-		nxt := []byte(kvKeys(nxtKeys))
-		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+		for k, v := c.First(); k != nil; k, v = c.Next() {
 
 			id, err := strconv.ParseUint(string(v), 10, 64)
 			if err != nil {
@@ -60,7 +54,6 @@ func (z *Service) GetFetchFeeds(maxTime time.Time) ([]*m.Feed, error) {
 	}
 	f := &m.Feed{}
 	f.NextFetch = maxTime
-	minKeys := []string{chMin}
 	nxtKeys := f.IndexKeys()[m.FeedIndexNextFetch]
 
 	var result []*m.Feed
@@ -71,9 +64,8 @@ func (z *Service) GetFetchFeeds(maxTime time.Time) ([]*m.Feed, error) {
 		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.FeedEntity))
 
 		c := bIndex.Cursor()
-		min := []byte(kvKeys(minKeys))
 		nxt := []byte(kvKeys(nxtKeys))
-		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+		for k, v := c.First(); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 
 			id, err := strconv.ParseUint(string(v), 10, 64)
 			if err != nil {

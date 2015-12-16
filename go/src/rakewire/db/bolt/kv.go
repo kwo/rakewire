@@ -12,8 +12,6 @@ import (
 
 const (
 	empty = ""
-	chMax = "~"
-	chMin = " "
 	chSep = "|"
 )
 
