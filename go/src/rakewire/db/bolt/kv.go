@@ -155,7 +155,7 @@ func kvSaveIndexes(name string, id uint64, newIndexes map[string][]string, oldIn
 }
 
 func kvKey(id uint64) string {
-	return fmt.Sprintf("%020d", id)
+	return fmt.Sprintf("%05d", id)
 }
 
 func kvMinKey(id uint64) string {

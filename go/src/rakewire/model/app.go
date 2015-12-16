@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -106,6 +107,6 @@ func setTime(value time.Time, fieldName string, result map[string]string) {
 
 func setUint(value uint64, fieldName string, result map[string]string) {
 	if value != 0 {
-		result[fieldName] = strconv.FormatUint(value, 10)
+		result[fieldName] = fmt.Sprintf("%05d", value)
 	}
 }

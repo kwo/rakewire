@@ -87,7 +87,7 @@ func bumpSequence(b *bolt.Bucket) error {
 		if err != nil {
 			return err
 		}
-		if n == 1000 {
+		if n >= 10000 {
 			break
 		}
 	}
