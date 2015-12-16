@@ -7,12 +7,14 @@ import (
 	"strings"
 )
 
+//go:generate gokv $GOFILE
+
 //User defines a system user
 type User struct {
 	ID           uint64
-	Username     string
+	Username     string `kv:"Username:1"`
 	PasswordHash string
-	FeverHash    string
+	FeverHash    string `kv:"FeverHash:1"`
 }
 
 // index names

@@ -1,0 +1,2 @@
+cd $PROJECT_HOME/go
+go install ./src/tools/gokv/gokv.go
