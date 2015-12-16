@@ -34,7 +34,9 @@ func TestInterfaceService(t *testing.T) {
 func openDatabase(t *testing.T) *Service {
 
 	f, err := ioutil.TempFile(empty, "bolt-")
-	assertNoError(t, err)
+	if err != nil {
+		t.Fatalf("Error creating tempfile: %s", err.Error())
+	}
 	filename := f.Name()
 	f.Close()
 
