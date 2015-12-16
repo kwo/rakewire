@@ -30,16 +30,22 @@ var (
 
 func TestMain(m *testing.M) {
 
-	testDatabaseFile := "../../../test/httpd.db"
+	f, err := ioutil.TempFile("", "bolt-")
+	if err != nil {
+		fmt.Printf("Error creating tempfile: %s\n", err.Error())
+		return
+	}
+	testDatabaseFile := f.Name()
+	f.Close()
 
 	cfg := db.Configuration{
 		Location: testDatabaseFile,
 	}
 	testDatabase := bolt.NewService(&cfg)
-	err := testDatabase.Start()
+	err = testDatabase.Start()
 	if err != nil {
 		fmt.Printf("Cannot open database: %s\n", err.Error())
-		os.Exit(1)
+		return
 	}
 
 	ws = NewService(&Configuration{
@@ -51,7 +57,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 	} else {
-		status = m.Run()
+		m.Run()
 		ws.Stop()
 	}
 	testDatabase.Stop()
