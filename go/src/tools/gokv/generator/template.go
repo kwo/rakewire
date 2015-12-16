@@ -3,11 +3,17 @@ package generator
 // KVTemplate is the top-level template
 type KVTemplate struct {
 	PackageName string
+	Imports     map[string]bool
 	Structures  []*StructInfo
 }
 
 var kvTemplateText = `
 package {{.PackageName}}
+
+import (
+	{{range $k := .Imports}}"{{$k}}"
+	{{end}}
+)
 
 {{range $index, $structure := .Structures}}
 
@@ -47,10 +53,21 @@ func (z *{{.Name}}) Clear() {
 // Serialize serializes an object to a list of key-values.
 func (z *{{.Name}}) Serialize() map[string]string {
 	result := make(map[string]string)
-	setUint(z.ID, uID, result)
-	setString(z.Username, uUsername, result)
-	setString(z.PasswordHash, uPasswordHash, result)
-	setString(z.FeverHash, uFeverHash, result)
+	{{range $index, $field := .Fields}}
+		{{if eq .Type "bool"}}
+			if z.{{.Name}} {
+				result[{{$structure.Name}}{{.Name}}] = z.{{.Name}}
+			}
+		{{else if eq .Type "uint64"}}
+			if z.{{.Name}} != {{.EmptyValue}} {
+				result[{{$structure.Name}}{{.Name}}] = strconv.FormatUint(uint64(z.{{.Name}}), 10)
+			}
+		{{else}}
+			if z.{{.Name}} != {{.EmptyValue}} {
+				result[{{$structure.Name}}{{.Name}}] = z.{{.Name}}
+			}
+		{{end}}
+	{{end}}
 	return result
 }
 

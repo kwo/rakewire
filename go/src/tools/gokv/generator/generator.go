@@ -7,6 +7,7 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
+	"go/types"
 	"os"
 	"strconv"
 	"strings"
@@ -16,6 +17,7 @@ import (
 // StructInfo describes a struct
 type StructInfo struct {
 	Name    string
+	Imports map[string]bool
 	Fields  []*FieldInfo
 	Indexes map[string][]string
 }
@@ -23,7 +25,7 @@ type StructInfo struct {
 // FieldInfo describes a field
 type FieldInfo struct {
 	Name       string
-	Type       ast.Expr
+	Type       string
 	Tags       map[string]string
 	Comment    string
 	EmptyValue string
@@ -32,7 +34,13 @@ type FieldInfo struct {
 // Finalize populates index and key information from tags.
 func (z *StructInfo) Finalize() error {
 
+	hasTime := false
+
 	for _, field := range z.Fields {
+
+		if field.Type == "time.Time" {
+			hasTime = true
+		}
 
 		tagFields := strings.Split(field.Tags["kv"], ",")
 		for _, tagField := range tagFields {
@@ -63,6 +71,10 @@ func (z *StructInfo) Finalize() error {
 
 	} // fields
 
+	if hasTime {
+		z.Imports["time"] = true
+	}
+
 	return nil
 
 }
@@ -75,8 +87,16 @@ func Generate(filename, kvFilename string) error {
 		return err
 	}
 
+	imports := make(map[string]bool)
+	for _, s := range structInfos {
+		for k := range s.Imports {
+			imports[k] = true
+		}
+	}
+
 	kvTemplate := &KVTemplate{
 		PackageName: packageName,
+		Imports:     imports,
 		Structures:  structInfos,
 	}
 
@@ -121,6 +141,7 @@ func ExtractStructs(filename string) (string, []*StructInfo, error) {
 		if d.Kind == ast.Typ {
 			structInfo := &StructInfo{
 				Name:    k,
+				Imports: make(map[string]bool),
 				Indexes: make(map[string][]string),
 			}
 
@@ -130,12 +151,12 @@ func ExtractStructs(filename string) (string, []*StructInfo, error) {
 					structs = append(structs, structInfo)
 					for _, field := range x.Fields.List {
 						f := &FieldInfo{
-							Name:       field.Names[0].String(),
-							Type:       field.Type,
-							Tags:       extractTags(field.Tag),
-							Comment:    extractCommentTexts(field.Comment),
-							EmptyValue: getEmptyValue(field.Type),
+							Name:    field.Names[0].String(),
+							Type:    types.ExprString(field.Type),
+							Tags:    extractTags(field.Tag),
+							Comment: extractCommentTexts(field.Comment),
 						}
+						f.EmptyValue = getEmptyValue(f.Type)
 						if f.Tags["kv"] != "-" {
 							structInfo.Fields = append(structInfo.Fields, f)
 						}
@@ -188,16 +209,25 @@ func extractTags(literal *ast.BasicLit) map[string]string {
 	return result
 }
 
-func getEmptyValue(typ ast.Expr) string {
-	return "0"
+func getEmptyValue(typ string) string {
 
-	// switch typ {
-	// case "string":
-	// 	return "\"\""
-	//
-	// default:
-	// 	return "0"
-	//
-	// }
+	switch typ {
+	case "string":
+		return "\"\""
+
+	case "bool":
+		return "false"
+
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64":
+		return "0"
+
+	case "time.Time":
+		return "time.Time{}"
+
+	default:
+		fmt.Printf("Unknown type: %s\n", typ)
+		return "0"
+
+	}
 
 }
