@@ -80,14 +80,18 @@ func (z *{{.Name}}) Deserialize(values map[string]string) error {
 
 // IndexKeys returns the keys of all indexes for this object.
 func (z *{{.Name}}) IndexKeys() map[string][]string {
+	{{$struct := .}}
 	result := make(map[string][]string)
+	{{if ne (len .Indexes) 0}}
+	data := z.Serialize()
+	{{end}}
 	{{range $name, $fields := .Indexes}}
 	result[{{$structure.Name}}Index{{$name}}] = []string{
 		{{range $index, $f := $fields}}
 			{{if eq $f.Filter "lower"}}
-				strings.ToLower(z.{{$f.Field}}),
+				strings.ToLower(data[{{$struct.NameLower}}{{$f.Field}}]),
 			{{else}}
-				z.{{$f.Field}},
+				data[{{$struct.NameLower}}{{$f.Field}}],
 			{{end}}
 	  {{end}}
 	}
@@ -150,12 +154,27 @@ var tplDeserializeTime = `func (fieldName string, values map[string]string, erro
 }({{.StructNameLower}}{{.Name}}, values, errors)
 `
 
+var tplDeserializeDuration = `func (fieldName string, values map[string]string, errors []error) time.Duration {
+	var result time.Duration
+	if value, ok := values[fieldName]; ok {
+		t, err := time.ParseDuration(value)
+		if err != nil {
+			errors = append(errors, err)
+		} else {
+			result = t
+		}
+	}
+	return result
+}({{.StructNameLower}}{{.Name}}, values, errors)
+`
+
 var tplSerializeDefault = `z.{{.Name}}`
 var tplSerializeBool = `fmt.Sprintf("%t", z.{{.Name}})`
 var tplSerializeFloat = `fmt.Sprintf("%f", z.{{.Name}})`
 var tplSerializeInt = `fmt.Sprintf("%d", z.{{.Name}})`
 var tplSerializeIntKey = `fmt.Sprintf("%05d", z.{{.Name}})`
 var tplSerializeTime = `z.{{.Name}}.Format(time.RFC3339Nano)`
+var tplSerializeDuration = `z.{{.Name}}.String()`
 
 var tplZeroTestDefault = `z.{{.Name}} != {{.EmptyValue}}`
 var tplZeroTestBool = `z.{{.Name}}`

@@ -154,8 +154,14 @@ func (z *FieldInfo) Finalize(s *StructInfo) error {
 		z.SerializeCommand = executeTemplate("SerializeTime", z)
 		z.DeserializeCommand = executeTemplate("DeserializeTime", z)
 
+	case "time.Duration":
+		z.EmptyValue = "0"
+		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
+		z.SerializeCommand = executeTemplate("SerializeDuration", z)
+		z.DeserializeCommand = executeTemplate("DeserializeDuration", z)
+
 	default:
-		fmt.Printf("Unknown type for fmt verb: %s\n", z.Type)
+		fmt.Printf("Unknown type %s, field: %s, struct: %s\n", z.Type, z.Name, z.StructName)
 		z.EmptyValue = "0"
 		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
 		z.SerializeCommand = executeTemplate("SerializeDefault", z)
@@ -176,6 +182,7 @@ func Generate(filename, kvFilename string) error {
 	templates["DeserializeInt"] = template.Must(template.New("DeserializeInt").Parse(tplDeserializeInt))
 	templates["DeserializeUint"] = template.Must(template.New("DeserializeUint").Parse(tplDeserializeUint))
 	templates["DeserializeTime"] = template.Must(template.New("DeserializeTime").Parse(tplDeserializeTime))
+	templates["DeserializeDuration"] = template.Must(template.New("DeserializeDuration").Parse(tplDeserializeDuration))
 
 	templates["SerializeDefault"] = template.Must(template.New("SerializeDefault").Parse(tplSerializeDefault))
 	templates["SerializeBool"] = template.Must(template.New("SerializeBool").Parse(tplSerializeBool))
@@ -183,6 +190,7 @@ func Generate(filename, kvFilename string) error {
 	templates["SerializeInt"] = template.Must(template.New("SerializeInt").Parse(tplSerializeInt))
 	templates["SerializeIntKey"] = template.Must(template.New("SerializeIntKey").Parse(tplSerializeIntKey))
 	templates["SerializeTime"] = template.Must(template.New("SerializeTime").Parse(tplSerializeTime))
+	templates["SerializeDuration"] = template.Must(template.New("SerializeDuration").Parse(tplSerializeDuration))
 
 	templates["ZeroTestDefault"] = template.Must(template.New("ZeroTestDefault").Parse(tplZeroTestDefault))
 	templates["ZeroTestBool"] = template.Must(template.New("ZeroTestBool").Parse(tplZeroTestBool))
@@ -270,8 +278,8 @@ func ExtractStructs(filename string) (string, []*StructInfo, error) {
 							Tags:      extractTags(field.Tag),
 							Comment:   extractCommentTexts(field.Comment),
 						}
-						f.Finalize(structInfo)
 						if f.Tags["kv"] != "-" {
+							f.Finalize(structInfo)
 							structInfo.Fields = append(structInfo.Fields, f)
 						}
 					}
