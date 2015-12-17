@@ -2,10 +2,7 @@ package fever
 
 import (
 	"encoding/xml"
-	"fmt"
 	m "rakewire/model"
-	"strconv"
-	"time"
 )
 
 // API top level struct
@@ -21,25 +18,9 @@ type Database interface {
 
 // Response defines the json/xml response return by requests.
 type Response struct {
-	XMLName       xml.Name  `json:"-" xml:"response"`
-	Version       int       `json:"api_version" xml:"api_version"`
-	Authorized    int       `json:"auth" xml:"auth"`
-	LastRefreshed feverTime `json:"last_refreshed_on_time,omitempty" xml:"last_refreshed_on_time,omitempty"`
-}
-
-type feverTime struct {
-	time.Time
-}
-
-func (z feverTime) MarshalJSON() ([]byte, error) {
-	return []byte(fmt.Sprintf("\"%s\"", strconv.FormatInt(z.Unix(), 10))), nil
-}
-
-func (z feverTime) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
-	if !z.IsZero() {
-		e.EncodeToken(start)
-		e.EncodeToken(xml.CharData([]byte(strconv.FormatInt(z.Unix(), 10))))
-		e.EncodeToken(xml.EndElement{Name: start.Name})
-	}
-	return nil
+	Version    int `json:"api_version" xml:"api_version"`
+	Authorized int `json:"auth" xml:"auth"`
+	// LastRefreshed is the time of the last refesh on the server expressed as seconds since the unix epoch.
+	LastRefreshed int64    `json:"last_refreshed_on_time,string,omitempty" xml:"last_refreshed_on_time,omitempty"`
+	XMLName       xml.Name `json:"-" xml:"response"`
 }

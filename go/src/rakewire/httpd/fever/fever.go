@@ -26,8 +26,8 @@ func (z *API) Router() *mux.Router {
 
 	router := mux.NewRouter()
 
-	router.Queries("api", "").Methods(mPost).HandlerFunc(z.mux)
-	router.Queries("api", "").HandlerFunc(notSupported)
+	router.Path(z.prefix).Queries("api", "").Methods(mPost).HandlerFunc(z.mux)
+	router.Path(z.prefix).Queries("api", "").HandlerFunc(notSupported)
 	router.Path(z.prefix).HandlerFunc(notFound)
 
 	return router
@@ -66,7 +66,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 
 			switch k {
 			case "api":
-				rsp.LastRefreshed = feverTime{time.Now()} // TODO: get last refreshed
+				rsp.LastRefreshed = time.Now().Unix() // TODO: get last refreshed
 			case "feeds":
 				// add to response
 			}
