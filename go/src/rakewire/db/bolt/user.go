@@ -68,7 +68,7 @@ func (z *Service) UserSave(user *m.User) error {
 			}
 		}
 
-		return kvSave(user, tx)
+		return kvSave(m.UserEntity, user, tx)
 
 	})
 

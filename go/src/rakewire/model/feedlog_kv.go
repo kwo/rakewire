@@ -39,11 +39,6 @@ const (
 	feedlogNewEntries    = "NewEntries"
 )
 
-// GetName return the name of the entity.
-func (z *FeedLog) GetName() string {
-	return FeedLogEntity
-}
-
 // GetID return the primary key of the object.
 func (z *FeedLog) GetID() uint64 {
 	return z.ID

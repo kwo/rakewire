@@ -32,7 +32,6 @@ type Database interface {
 
 // DataObject defines the functions necessary for objects to be persisted to the database
 type DataObject interface {
-	GetName() string
 	GetID() uint64
 	SetID(id uint64)
 	Clear()

@@ -186,7 +186,7 @@ func upgradeTo1(tx *bolt.Tx) error {
 	u := m.NewUser("testuser@localhost")
 	u.SetPassword("abcdefg")
 
-	if err := kvSave(u, tx); err != nil {
+	if err := kvSave(m.UserEntity, u, tx); err != nil {
 		return err
 	}
 

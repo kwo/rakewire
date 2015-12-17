@@ -25,11 +25,6 @@ const (
 	userFeverHash    = "FeverHash"
 )
 
-// GetName return the name of the entity.
-func (z *User) GetName() string {
-	return UserEntity
-}
-
 // GetID return the primary key of the object.
 func (z *User) GetID() uint64 {
 	return z.ID

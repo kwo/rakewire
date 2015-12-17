@@ -150,7 +150,7 @@ func (z *Service) SaveFeed(feed *m.Feed) error {
 
 		// save feed log if available
 		if feed.Attempt != nil {
-			if err := kvSave(feed.Attempt, tx); err != nil {
+			if err := kvSave(m.FeedLogEntity, feed.Attempt, tx); err != nil {
 				return err
 			}
 		}
@@ -158,14 +158,14 @@ func (z *Service) SaveFeed(feed *m.Feed) error {
 		// save entries
 		if feed.Entries != nil {
 			for _, entry := range feed.Entries {
-				if err := kvSave(entry, tx); err != nil {
+				if err := kvSave(m.EntryEntity, entry, tx); err != nil {
 					return err
 				}
 			}
 		}
 
 		// save feed itself
-		if err := kvSave(feed, tx); err != nil {
+		if err := kvSave(m.FeedEntity, feed, tx); err != nil {
 			return err
 		}
 

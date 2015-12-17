@@ -30,11 +30,6 @@ const (
 	entryContent = "Content"
 )
 
-// GetName return the name of the entity.
-func (z *Entry) GetName() string {
-	return EntryEntity
-}
-
 // GetID return the primary key of the object.
 func (z *Entry) GetID() uint64 {
 	return z.ID

@@ -24,7 +24,7 @@ func TestFeedLog(t *testing.T) {
 			entry := m.NewFeedLog(feedID)
 			entry.StartTime = dt
 			entry.Duration = time.Duration(i)
-			if err := kvSave(entry, tx); err != nil {
+			if err := kvSave(m.FeedLogEntity, entry, tx); err != nil {
 				return err
 			}
 		}

@@ -34,11 +34,6 @@ const (
 {{end}}
 )
 
-// GetName return the name of the entity.
-func (z *{{.Name}}) GetName() string {
-	return {{.Name}}Entity
-}
-
 // GetID return the primary key of the object.
 func (z *{{.Name}}) GetID() uint64 {
 	return z.ID

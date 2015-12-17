@@ -33,11 +33,6 @@ const (
 	feedStatusSince   = "StatusSince"
 )
 
-// GetName return the name of the entity.
-func (z *Feed) GetName() string {
-	return FeedEntity
-}
-
 // GetID return the primary key of the object.
 func (z *Feed) GetID() uint64 {
 	return z.ID

@@ -80,9 +80,9 @@ func kvPut(id uint64, values map[string]string, b *bolt.Bucket) error {
 
 }
 
-func kvSave(value db.DataObject, tx *bolt.Tx) error {
+func kvSave(name string, value db.DataObject, tx *bolt.Tx) error {
 
-	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(value.GetName()))
+	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
 
 	if value.GetID() == 0 {
 		id, err := b.NextSequence()
@@ -115,7 +115,7 @@ func kvSave(value db.DataObject, tx *bolt.Tx) error {
 	}
 
 	// save indexes
-	if err := kvSaveIndexes(value.GetName(), value.GetID(), newIndexes, oldIndexes, tx); err != nil {
+	if err := kvSaveIndexes(name, value.GetID(), newIndexes, oldIndexes, tx); err != nil {
 		return err
 	}
 
