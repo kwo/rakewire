@@ -11,7 +11,7 @@ var kvTemplateText = `
 package {{.PackageName}}
 
 import (
-	{{range $k := .Imports}}"{{$k}}"
+	{{range $k, $v := .Imports}}"{{$k}}"
 	{{end}}
 )
 
@@ -25,7 +25,7 @@ const (
 )
 
 const (
-{{range $index, $field := .Fields}}{{$structure.Name}}{{.Name}} = "{{.Name}}"
+{{range $index, $field := .Fields}}{{$structure.NameLower}}{{.Name}} = "{{.Name}}"
 {{end}}
 )
 
@@ -54,19 +54,9 @@ func (z *{{.Name}}) Clear() {
 func (z *{{.Name}}) Serialize() map[string]string {
 	result := make(map[string]string)
 	{{range $index, $field := .Fields}}
-		{{if eq .Type "bool"}}
-			if z.{{.Name}} {
-				result[{{$structure.Name}}{{.Name}}] = z.{{.Name}}
-			}
-		{{else if eq .Type "uint64"}}
-			if z.{{.Name}} != {{.EmptyValue}} {
-				result[{{$structure.Name}}{{.Name}}] = strconv.FormatUint(uint64(z.{{.Name}}), 10)
-			}
-		{{else}}
-			if z.{{.Name}} != {{.EmptyValue}} {
-				result[{{$structure.Name}}{{.Name}}] = z.{{.Name}}
-			}
-		{{end}}
+		if {{.ZeroTest}} {
+			result[{{$structure.NameLower}}{{.Name}}] = {{.FormatCommand}}
+		}
 	{{end}}
 	return result
 }
@@ -98,3 +88,13 @@ func (z *{{.Name}}) IndexKeys() map[string][]string {
 {{end}}
 
 `
+
+var tplFormatDefault = `z.{{.Name}}`
+var tplFormatBool = `fmt.Sprintf("%t", z.{{.Name}})`
+var tplFormatNumeric = `fmt.Sprintf("%d", z.{{.Name}})`
+var tplFormatNumericKey = `fmt.Sprintf("%05d", z.{{.Name}})`
+var tplFormatTime = `z.{{.Name}}.Format(time.RFC3339Nano)`
+
+var tplZeroTestDefault = `z.{{.Name}} != {{.EmptyValue}}`
+var tplZeroTestBool = `z.{{.Name}}`
+var tplZeroTestTime = `!z.{{.Name}}.IsZero()`

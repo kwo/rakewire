@@ -29,7 +29,7 @@ func main() {
 	outFile := path.Join(path.Dir(inFile), strings.TrimSuffix(path.Base(inFile), path.Ext(inFile))+"_kv.go")
 
 	if err := generator.Generate(inFile, outFile); err != nil {
-		fmt.Println(err.Error())
+		fmt.Printf("Generator error: %s\n", err.Error())
 		os.Exit(1)
 	}
 

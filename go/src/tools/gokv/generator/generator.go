@@ -2,6 +2,7 @@ package generator
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"go/ast"
 	"go/format"
@@ -14,21 +15,30 @@ import (
 	"text/template"
 )
 
+var (
+	templates       = make(map[string]*template.Template)
+	flagUnformatted = flag.Bool("u", false, "Leave generated source code unformatted.")
+)
+
 // StructInfo describes a struct
 type StructInfo struct {
-	Name    string
-	Imports map[string]bool
-	Fields  []*FieldInfo
-	Indexes map[string][]string
+	Name      string
+	NameLower string
+	Imports   map[string]bool
+	Fields    []*FieldInfo
+	Indexes   map[string][]string
 }
 
 // FieldInfo describes a field
 type FieldInfo struct {
-	Name       string
-	Type       string
-	Tags       map[string]string
-	Comment    string
-	EmptyValue string
+	Name          string
+	NameLower     string
+	Type          string
+	Tags          map[string]string
+	Comment       string
+	EmptyValue    string
+	ZeroTest      string
+	FormatCommand string
 }
 
 // Finalize populates index and key information from tags.
@@ -79,8 +89,58 @@ func (z *StructInfo) Finalize() error {
 
 }
 
+// Finalize populates index and key information from tags.
+func (z *FieldInfo) Finalize() error {
+
+	switch z.Type {
+	case "string":
+		z.EmptyValue = "\"\""
+		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
+		z.FormatCommand = executeTemplate("FormatDefault", z)
+
+	case "bool":
+		z.EmptyValue = "false"
+		z.ZeroTest = executeTemplate("ZeroTestBool", z)
+		z.FormatCommand = executeTemplate("FormatBool", z)
+
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "float32", "float64":
+		z.EmptyValue = "0"
+		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
+		z.FormatCommand = executeTemplate("FormatNumeric", z)
+
+	case "uint64":
+		z.EmptyValue = "0"
+		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
+		z.FormatCommand = executeTemplate("FormatNumericKey", z)
+
+	case "time.Time":
+		z.EmptyValue = "time.Time{}"
+		z.ZeroTest = executeTemplate("ZeroTestTime", z)
+		z.FormatCommand = executeTemplate("FormatTime", z)
+
+	default:
+		fmt.Printf("Unknown type for fmt verb: %s\n", z.Type)
+		z.EmptyValue = "0"
+		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
+		z.FormatCommand = executeTemplate("FormatDefault", z)
+
+	}
+
+	return nil
+
+}
+
 // Generate ${filename}_kv.go for the given file
 func Generate(filename, kvFilename string) error {
+
+	templates["FormatDefault"] = template.Must(template.New("FormatDefault").Parse(tplFormatDefault))
+	templates["FormatBool"] = template.Must(template.New("FormatBool").Parse(tplFormatBool))
+	templates["FormatNumeric"] = template.Must(template.New("FormatNumeric").Parse(tplFormatNumeric))
+	templates["FormatNumericKey"] = template.Must(template.New("FormatNumericKey").Parse(tplFormatNumericKey))
+	templates["FormatTime"] = template.Must(template.New("FormatTime").Parse(tplFormatTime))
+	templates["ZeroTestDefault"] = template.Must(template.New("ZeroTestDefault").Parse(tplZeroTestDefault))
+	templates["ZeroTestBool"] = template.Must(template.New("ZeroTestBool").Parse(tplZeroTestBool))
+	templates["ZeroTestTime"] = template.Must(template.New("ZeroTestTime").Parse(tplZeroTestTime))
 
 	packageName, structInfos, err := ExtractStructs(filename)
 	if err != nil {
@@ -88,6 +148,7 @@ func Generate(filename, kvFilename string) error {
 	}
 
 	imports := make(map[string]bool)
+	imports["fmt"] = true
 	for _, s := range structInfos {
 		for k := range s.Imports {
 			imports[k] = true
@@ -108,9 +169,13 @@ func Generate(filename, kvFilename string) error {
 		return err
 	}
 
-	formatted, err := format.Source(buf.Bytes())
-	if err != nil {
-		return err
+	resultBytes := buf.Bytes()
+	if !*flagUnformatted {
+		formatted, err := format.Source(buf.Bytes())
+		if err != nil {
+			return err
+		}
+		resultBytes = formatted
 	}
 
 	f, err := os.OpenFile(kvFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0660)
@@ -119,7 +184,7 @@ func Generate(filename, kvFilename string) error {
 	}
 	defer f.Close()
 
-	_, err = f.Write(formatted)
+	_, err = f.Write(resultBytes)
 	return err
 
 }
@@ -140,9 +205,10 @@ func ExtractStructs(filename string) (string, []*StructInfo, error) {
 	for k, d := range f.Scope.Objects {
 		if d.Kind == ast.Typ {
 			structInfo := &StructInfo{
-				Name:    k,
-				Imports: make(map[string]bool),
-				Indexes: make(map[string][]string),
+				Name:      k,
+				NameLower: strings.ToLower(k),
+				Imports:   make(map[string]bool),
+				Indexes:   make(map[string][]string),
 			}
 
 			ast.Inspect(d.Decl.(ast.Node), func(n ast.Node) bool {
@@ -151,12 +217,13 @@ func ExtractStructs(filename string) (string, []*StructInfo, error) {
 					structs = append(structs, structInfo)
 					for _, field := range x.Fields.List {
 						f := &FieldInfo{
-							Name:    field.Names[0].String(),
-							Type:    types.ExprString(field.Type),
-							Tags:    extractTags(field.Tag),
-							Comment: extractCommentTexts(field.Comment),
+							Name:      field.Names[0].String(),
+							NameLower: strings.ToLower(field.Names[0].String()),
+							Type:      types.ExprString(field.Type),
+							Tags:      extractTags(field.Tag),
+							Comment:   extractCommentTexts(field.Comment),
 						}
-						f.EmptyValue = getEmptyValue(f.Type)
+						f.Finalize()
 						if f.Tags["kv"] != "-" {
 							structInfo.Fields = append(structInfo.Fields, f)
 						}
@@ -175,6 +242,20 @@ func ExtractStructs(filename string) (string, []*StructInfo, error) {
 
 	return packageName, structs, nil
 
+}
+
+func executeTemplate(tplName string, data interface{}) string {
+	t := templates[tplName]
+	if t == nil {
+		fmt.Printf("Template does not exist: %s\n", tplName)
+		return ""
+	}
+	buf := new(bytes.Buffer)
+	err := t.Execute(buf, data)
+	if err != nil {
+		fmt.Printf("Error executing template: %s\n", err.Error())
+	}
+	return string(buf.Bytes())
 }
 
 func extractCommentTexts(comments *ast.CommentGroup) string {
@@ -207,27 +288,4 @@ func extractTags(literal *ast.BasicLit) map[string]string {
 		}
 	}
 	return result
-}
-
-func getEmptyValue(typ string) string {
-
-	switch typ {
-	case "string":
-		return "\"\""
-
-	case "bool":
-		return "false"
-
-	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64":
-		return "0"
-
-	case "time.Time":
-		return "time.Time{}"
-
-	default:
-		fmt.Printf("Unknown type: %s\n", typ)
-		return "0"
-
-	}
-
 }
