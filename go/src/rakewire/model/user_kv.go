@@ -1,5 +1,10 @@
 package model
 
+/*
+ *  CODE GENERATED AUTOMATICALLY WITH gokv.
+ *  THIS FILE SHOULD NOT BE EDITED BY HAND.
+ */
+
 import (
 	"fmt"
 	"strconv"

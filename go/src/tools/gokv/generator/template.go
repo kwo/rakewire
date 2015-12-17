@@ -10,6 +10,11 @@ type KVTemplate struct {
 var kvTemplateText = `
 package {{.PackageName}}
 
+/*
+ *  CODE GENERATED AUTOMATICALLY WITH gokv.
+ *  THIS FILE SHOULD NOT BE EDITED BY HAND.
+ */
+
 import (
 	{{range $k, $v := .Imports}}"{{$k}}"
 	{{end}}
