@@ -6,6 +6,7 @@ import (
 	"github.com/boltdb/bolt"
 	m "rakewire/model"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -121,7 +122,7 @@ func (z *Service) GetFeedByURL(url string) (*m.Feed, error) {
 	result := &m.Feed{}
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		if data, ok := kvGetFromIndex(m.FeedEntity, m.FeedIndexURL, []string{url}, tx); ok {
+		if data, ok := kvGetFromIndex(m.FeedEntity, m.FeedIndexURL, []string{strings.ToLower(url)}, tx); ok {
 			found = true
 			return result.Deserialize(data)
 		}
