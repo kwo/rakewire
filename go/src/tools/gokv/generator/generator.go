@@ -111,12 +111,6 @@ func (z *FieldInfo) Finalize(s *StructInfo) error {
 		z.SerializeCommand = executeTemplate("SerializeBool", z)
 		z.DeserializeCommand = executeTemplate("DeserializeBool", z)
 
-	case "uint64":
-		z.EmptyValue = "0"
-		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
-		z.SerializeCommand = executeTemplate("SerializeIntKey", z)
-		z.DeserializeCommand = executeTemplate("DeserializeUint", z)
-
 	case "int", "int8", "int16", "int32", "int64":
 		z.EmptyValue = "0"
 		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
@@ -127,6 +121,12 @@ func (z *FieldInfo) Finalize(s *StructInfo) error {
 		z.EmptyValue = "0"
 		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
 		z.SerializeCommand = executeTemplate("SerializeInt", z)
+		z.DeserializeCommand = executeTemplate("DeserializeUint", z)
+
+	case "uint64":
+		z.EmptyValue = "0"
+		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
+		z.SerializeCommand = executeTemplate("SerializeIntKey", z)
 		z.DeserializeCommand = executeTemplate("DeserializeUint", z)
 
 	case "float32", "float64":
