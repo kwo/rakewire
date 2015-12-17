@@ -1,12 +1,12 @@
 package model
 
+//go:generate gokv $GOFILE
+
 import (
 	"crypto/md5"
 	"encoding/hex"
 	"golang.org/x/crypto/bcrypt"
 )
-
-//go:generate gokv $GOFILE
 
 //User defines a system user
 type User struct {

@@ -99,16 +99,19 @@ func (z *User) Deserialize(values map[string]string) error {
 
 // IndexKeys returns the keys of all indexes for this object.
 func (z *User) IndexKeys() map[string][]string {
+
 	result := make(map[string][]string)
+
+	data := z.Serialize()
 
 	result[UserIndexFeverHash] = []string{
 
-		z.FeverHash,
+		data[userFeverHash],
 	}
 
 	result[UserIndexUsername] = []string{
 
-		strings.ToLower(z.Username),
+		strings.ToLower(data[userUsername]),
 	}
 
 	return result
