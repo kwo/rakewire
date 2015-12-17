@@ -55,7 +55,7 @@ func (z *{{.Name}}) Serialize() map[string]string {
 	result := make(map[string]string)
 	{{range $index, $field := .Fields}}
 		if {{.ZeroTest}} {
-			result[{{$structure.NameLower}}{{.Name}}] = {{.FormatCommand}}
+			result[{{$structure.NameLower}}{{.Name}}] = {{.SerializeCommand}}
 		}
 	{{end}}
 	return result
@@ -64,10 +64,9 @@ func (z *{{.Name}}) Serialize() map[string]string {
 // Deserialize serializes an object to a list of key-values.
 func (z *{{.Name}}) Deserialize(values map[string]string) error {
 	var errors []error
-	z.ID = getUint(uID, values, errors)
-	z.Username = getString(uUsername, values, errors)
-	z.PasswordHash = getString(uPasswordHash, values, errors)
-	z.FeverHash = getString(uFeverHash, values, errors)
+	{{range $index, $field := .Fields}}
+		z.{{.Name}} = {{.DeserializeCommand}}
+	{{end}}
 	if len(errors) > 0 {
 		return errors[0]
 	}
@@ -89,11 +88,63 @@ func (z *{{.Name}}) IndexKeys() map[string][]string {
 
 `
 
-var tplFormatDefault = `z.{{.Name}}`
-var tplFormatBool = `fmt.Sprintf("%t", z.{{.Name}})`
-var tplFormatNumeric = `fmt.Sprintf("%d", z.{{.Name}})`
-var tplFormatNumericKey = `fmt.Sprintf("%05d", z.{{.Name}})`
-var tplFormatTime = `z.{{.Name}}.Format(time.RFC3339Nano)`
+var tplDeserializeDefault = `values[{{.StructNameLower}}{{.Name}}]`
+var tplDeserializeBool = `func (fieldName string, values map[string]string, errors []error) bool {
+	result, err := strconv.ParseBool(values[fieldName])
+	if err != nil {
+		errors = append(errors, err)
+		return false
+	}
+	return result
+}({{.StructNameLower}}{{.Name}}, values, errors)
+`
+var tplDeserializeFloat = `func (fieldName string, values map[string]string, errors []error) {{.Type}} {
+	result, err := strconv.ParseFloat(values[fieldName], 64)
+	if err != nil {
+		errors = append(errors, err)
+		return 0
+	}
+	return {{.Type}}(result)
+}({{.StructNameLower}}{{.Name}}, values, errors)
+`
+var tplDeserializeInt = `func (fieldName string, values map[string]string, errors []error) {{.Type}} {
+	result, err := strconv.ParseInt(values[fieldName], 10, 64)
+	if err != nil {
+		errors = append(errors, err)
+		return 0
+	}
+	return {{.Type}}(result)
+}({{.StructNameLower}}{{.Name}}, values, errors)
+`
+var tplDeserializeUint = `func (fieldName string, values map[string]string, errors []error) {{.Type}} {
+	result, err := strconv.ParseUint(values[fieldName], 10, 64)
+	if err != nil {
+		errors = append(errors, err)
+		return 0
+	}
+	return {{.Type}}(result)
+}({{.StructNameLower}}{{.Name}}, values, errors)
+`
+var tplDeserializeTime = `func (fieldName string, values map[string]string, errors []error) time.Time {
+	result := time.Time{}
+	if value, ok := values[fieldName]; ok {
+		t, err := time.Parse(time.RFC3339Nano, value)
+		if err != nil {
+			errors = append(errors, err)
+		} else {
+			result = t
+		}
+	}
+	return result
+}({{.StructNameLower}}{{.Name}}, values, errors)
+`
+
+var tplSerializeDefault = `z.{{.Name}}`
+var tplSerializeBool = `fmt.Sprintf("%t", z.{{.Name}})`
+var tplSerializeFloat = `fmt.Sprintf("%f", z.{{.Name}})`
+var tplSerializeInt = `fmt.Sprintf("%d", z.{{.Name}})`
+var tplSerializeIntKey = `fmt.Sprintf("%05d", z.{{.Name}})`
+var tplSerializeTime = `z.{{.Name}}.Format(time.RFC3339Nano)`
 
 var tplZeroTestDefault = `z.{{.Name}} != {{.EmptyValue}}`
 var tplZeroTestBool = `z.{{.Name}}`

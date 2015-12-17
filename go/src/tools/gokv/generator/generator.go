@@ -31,14 +31,17 @@ type StructInfo struct {
 
 // FieldInfo describes a field
 type FieldInfo struct {
-	Name          string
-	NameLower     string
-	Type          string
-	Tags          map[string]string
-	Comment       string
-	EmptyValue    string
-	ZeroTest      string
-	FormatCommand string
+	Name               string
+	NameLower          string
+	StructName         string
+	StructNameLower    string
+	Type               string
+	Tags               map[string]string
+	Comment            string
+	EmptyValue         string
+	ZeroTest           string
+	SerializeCommand   string
+	DeserializeCommand string
 }
 
 // Finalize populates index and key information from tags.
@@ -90,39 +93,60 @@ func (z *StructInfo) Finalize() error {
 }
 
 // Finalize populates index and key information from tags.
-func (z *FieldInfo) Finalize() error {
+func (z *FieldInfo) Finalize(s *StructInfo) error {
+
+	z.StructName = s.Name
+	z.StructNameLower = s.NameLower
 
 	switch z.Type {
 	case "string":
 		z.EmptyValue = "\"\""
 		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
-		z.FormatCommand = executeTemplate("FormatDefault", z)
+		z.SerializeCommand = executeTemplate("SerializeDefault", z)
+		z.DeserializeCommand = executeTemplate("DeserializeDefault", z)
 
 	case "bool":
 		z.EmptyValue = "false"
 		z.ZeroTest = executeTemplate("ZeroTestBool", z)
-		z.FormatCommand = executeTemplate("FormatBool", z)
-
-	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "float32", "float64":
-		z.EmptyValue = "0"
-		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
-		z.FormatCommand = executeTemplate("FormatNumeric", z)
+		z.SerializeCommand = executeTemplate("SerializeBool", z)
+		z.DeserializeCommand = executeTemplate("DeserializeBool", z)
 
 	case "uint64":
 		z.EmptyValue = "0"
 		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
-		z.FormatCommand = executeTemplate("FormatNumericKey", z)
+		z.SerializeCommand = executeTemplate("SerializeIntKey", z)
+		z.DeserializeCommand = executeTemplate("DeserializeUint", z)
+
+	case "int", "int8", "int16", "int32", "int64":
+		z.EmptyValue = "0"
+		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
+		z.SerializeCommand = executeTemplate("SerializeInt", z)
+		z.DeserializeCommand = executeTemplate("DeserializeInt", z)
+
+	case "uint", "uint8", "uint16", "uint32":
+		z.EmptyValue = "0"
+		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
+		z.SerializeCommand = executeTemplate("SerializeInt", z)
+		z.DeserializeCommand = executeTemplate("DeserializeUint", z)
+
+	case "float32", "float64":
+		z.EmptyValue = "0"
+		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
+		z.SerializeCommand = executeTemplate("SerializeFloat", z)
+		z.DeserializeCommand = executeTemplate("DeserializeFloat", z)
 
 	case "time.Time":
 		z.EmptyValue = "time.Time{}"
 		z.ZeroTest = executeTemplate("ZeroTestTime", z)
-		z.FormatCommand = executeTemplate("FormatTime", z)
+		z.SerializeCommand = executeTemplate("SerializeTime", z)
+		z.DeserializeCommand = executeTemplate("DeserializeTime", z)
 
 	default:
 		fmt.Printf("Unknown type for fmt verb: %s\n", z.Type)
 		z.EmptyValue = "0"
 		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
-		z.FormatCommand = executeTemplate("FormatDefault", z)
+		z.SerializeCommand = executeTemplate("SerializeDefault", z)
+		z.DeserializeCommand = executeTemplate("DeserializeDefault", z)
 
 	}
 
@@ -133,11 +157,20 @@ func (z *FieldInfo) Finalize() error {
 // Generate ${filename}_kv.go for the given file
 func Generate(filename, kvFilename string) error {
 
-	templates["FormatDefault"] = template.Must(template.New("FormatDefault").Parse(tplFormatDefault))
-	templates["FormatBool"] = template.Must(template.New("FormatBool").Parse(tplFormatBool))
-	templates["FormatNumeric"] = template.Must(template.New("FormatNumeric").Parse(tplFormatNumeric))
-	templates["FormatNumericKey"] = template.Must(template.New("FormatNumericKey").Parse(tplFormatNumericKey))
-	templates["FormatTime"] = template.Must(template.New("FormatTime").Parse(tplFormatTime))
+	templates["DeserializeDefault"] = template.Must(template.New("DeserializeDefault").Parse(tplDeserializeDefault))
+	templates["DeserializeBool"] = template.Must(template.New("DeserializeBool").Parse(tplDeserializeBool))
+	templates["DeserializeFloat"] = template.Must(template.New("DeserializeFloat").Parse(tplDeserializeFloat))
+	templates["DeserializeInt"] = template.Must(template.New("DeserializeInt").Parse(tplDeserializeInt))
+	templates["DeserializeUint"] = template.Must(template.New("DeserializeUint").Parse(tplDeserializeUint))
+	templates["DeserializeTime"] = template.Must(template.New("DeserializeTime").Parse(tplDeserializeTime))
+
+	templates["SerializeDefault"] = template.Must(template.New("SerializeDefault").Parse(tplSerializeDefault))
+	templates["SerializeBool"] = template.Must(template.New("SerializeBool").Parse(tplSerializeBool))
+	templates["SerializeFloat"] = template.Must(template.New("SerializeFloat").Parse(tplSerializeFloat))
+	templates["SerializeInt"] = template.Must(template.New("SerializeInt").Parse(tplSerializeInt))
+	templates["SerializeIntKey"] = template.Must(template.New("SerializeIntKey").Parse(tplSerializeIntKey))
+	templates["SerializeTime"] = template.Must(template.New("SerializeTime").Parse(tplSerializeTime))
+
 	templates["ZeroTestDefault"] = template.Must(template.New("ZeroTestDefault").Parse(tplZeroTestDefault))
 	templates["ZeroTestBool"] = template.Must(template.New("ZeroTestBool").Parse(tplZeroTestBool))
 	templates["ZeroTestTime"] = template.Must(template.New("ZeroTestTime").Parse(tplZeroTestTime))
@@ -149,6 +182,7 @@ func Generate(filename, kvFilename string) error {
 
 	imports := make(map[string]bool)
 	imports["fmt"] = true
+	imports["strconv"] = true
 	for _, s := range structInfos {
 		for k := range s.Imports {
 			imports[k] = true
@@ -223,7 +257,7 @@ func ExtractStructs(filename string) (string, []*StructInfo, error) {
 							Tags:      extractTags(field.Tag),
 							Comment:   extractCommentTexts(field.Comment),
 						}
-						f.Finalize()
+						f.Finalize(structInfo)
 						if f.Tags["kv"] != "-" {
 							structInfo.Fields = append(structInfo.Fields, f)
 						}
