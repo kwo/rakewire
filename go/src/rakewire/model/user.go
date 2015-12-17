@@ -11,7 +11,7 @@ import (
 //User defines a system user
 type User struct {
 	ID           uint64
-	Username     string `kv:"Username:1"`
+	Username     string `kv:"Username:1:lower"`
 	PasswordHash string
 	FeverHash    string `kv:"FeverHash:1"`
 }

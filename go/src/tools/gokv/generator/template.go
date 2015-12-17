@@ -83,7 +83,13 @@ func (z *{{.Name}}) IndexKeys() map[string][]string {
 	result := make(map[string][]string)
 	{{range $name, $fields := .Indexes}}
 	result[{{$structure.Name}}Index{{$name}}] = []string{
-		{{range $index, $f := $fields}} z.{{$f}}, {{end}}
+		{{range $index, $f := $fields}}
+			{{if eq $f.Filter "lower"}}
+				strings.ToLower(z.{{$f.Field}}),
+			{{else}}
+				z.{{$f.Field}},
+			{{end}}
+	  {{end}}
 	}
 	{{end}}
 	return result

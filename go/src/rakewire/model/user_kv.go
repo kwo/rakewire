@@ -8,6 +8,7 @@ package model
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // index names
@@ -101,11 +102,13 @@ func (z *User) IndexKeys() map[string][]string {
 	result := make(map[string][]string)
 
 	result[UserIndexFeverHash] = []string{
+
 		z.FeverHash,
 	}
 
 	result[UserIndexUsername] = []string{
-		z.Username,
+
+		strings.ToLower(z.Username),
 	}
 
 	return result

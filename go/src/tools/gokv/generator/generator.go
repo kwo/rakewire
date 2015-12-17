@@ -26,7 +26,7 @@ type StructInfo struct {
 	NameLower string
 	Imports   map[string]bool
 	Fields    []*FieldInfo
-	Indexes   map[string][]string
+	Indexes   map[string][]*IndexField
 }
 
 // FieldInfo describes a field
@@ -42,6 +42,12 @@ type FieldInfo struct {
 	ZeroTest           string
 	SerializeCommand   string
 	DeserializeCommand string
+}
+
+// IndexField represents a single value in an index key
+type IndexField struct {
+	Field  string
+	Filter string
 }
 
 // Finalize populates index and key information from tags.
@@ -62,9 +68,16 @@ func (z *StructInfo) Finalize() error {
 			}
 
 			elements := strings.Split(tagField, ":")
-			if len(elements) != 2 {
+			var filter string
+			switch len(elements) {
+			case 2:
+			case 3:
+				filter = elements[2]
+				z.Imports["strings"] = true
+			default:
 				return fmt.Errorf("Invalid index definition: %s", tagField)
 			}
+
 			indexName := elements[0]
 			indexPosition, err := strconv.Atoi(elements[1])
 			if err != nil {
@@ -75,9 +88,9 @@ func (z *StructInfo) Finalize() error {
 
 			index := z.Indexes[indexName]
 			for len(index) < indexPosition {
-				index = append(index, "")
+				index = append(index, nil)
 			}
-			index[indexPosition-1] = field.Name
+			index[indexPosition-1] = &IndexField{Field: field.Name, Filter: filter}
 			z.Indexes[indexName] = index
 
 		} // tagFields
@@ -242,7 +255,7 @@ func ExtractStructs(filename string) (string, []*StructInfo, error) {
 				Name:      k,
 				NameLower: strings.ToLower(k),
 				Imports:   make(map[string]bool),
-				Indexes:   make(map[string][]string),
+				Indexes:   make(map[string][]*IndexField),
 			}
 
 			ast.Inspect(d.Decl.(ast.Node), func(n ast.Node) bool {
