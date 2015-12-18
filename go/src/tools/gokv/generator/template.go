@@ -168,7 +168,7 @@ var tplSerializeBool = `fmt.Sprintf("%t", z.{{.Name}})`
 var tplSerializeFloat = `fmt.Sprintf("%f", z.{{.Name}})`
 var tplSerializeInt = `fmt.Sprintf("%d", z.{{.Name}})`
 var tplSerializeIntKey = `fmt.Sprintf("%05d", z.{{.Name}})`
-var tplSerializeTime = `z.{{.Name}}.Format(time.RFC3339)`
+var tplSerializeTime = `z.{{.Name}}.UTC().Format(time.RFC3339)`
 var tplSerializeDuration = `z.{{.Name}}.String()`
 
 var tplZeroTestDefault = `z.{{.Name}} != {{.EmptyValue}}`

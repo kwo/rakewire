@@ -71,11 +71,11 @@ func (z *Entry) Serialize() map[string]string {
 	}
 
 	if !z.Created.IsZero() {
-		result[entryCreated] = z.Created.Format(time.RFC3339Nano)
+		result[entryCreated] = z.Created.UTC().Format(time.RFC3339)
 	}
 
 	if !z.Updated.IsZero() {
-		result[entryUpdated] = z.Updated.Format(time.RFC3339Nano)
+		result[entryUpdated] = z.Updated.UTC().Format(time.RFC3339)
 	}
 
 	if z.URL != "" {
@@ -124,7 +124,7 @@ func (z *Entry) Deserialize(values map[string]string) error {
 	z.Created = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339Nano, value)
+			t, err := time.Parse(time.RFC3339, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
@@ -137,7 +137,7 @@ func (z *Entry) Deserialize(values map[string]string) error {
 	z.Updated = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339Nano, value)
+			t, err := time.Parse(time.RFC3339, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {

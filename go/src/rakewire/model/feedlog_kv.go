@@ -98,7 +98,7 @@ func (z *FeedLog) Serialize() map[string]string {
 	}
 
 	if !z.StartTime.IsZero() {
-		result[feedlogStartTime] = z.StartTime.Format(time.RFC3339Nano)
+		result[feedlogStartTime] = z.StartTime.UTC().Format(time.RFC3339)
 	}
 
 	if z.URL != "" {
@@ -118,7 +118,7 @@ func (z *FeedLog) Serialize() map[string]string {
 	}
 
 	if !z.LastModified.IsZero() {
-		result[feedlogLastModified] = z.LastModified.Format(time.RFC3339Nano)
+		result[feedlogLastModified] = z.LastModified.UTC().Format(time.RFC3339)
 	}
 
 	if z.StatusCode != 0 {
@@ -142,7 +142,7 @@ func (z *FeedLog) Serialize() map[string]string {
 	}
 
 	if !z.LastUpdated.IsZero() {
-		result[feedlogLastUpdated] = z.LastUpdated.Format(time.RFC3339Nano)
+		result[feedlogLastUpdated] = z.LastUpdated.UTC().Format(time.RFC3339)
 	}
 
 	if z.EntryCount != 0 {
@@ -198,7 +198,7 @@ func (z *FeedLog) Deserialize(values map[string]string) error {
 	z.StartTime = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339Nano, value)
+			t, err := time.Parse(time.RFC3339, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
@@ -226,7 +226,7 @@ func (z *FeedLog) Deserialize(values map[string]string) error {
 	z.LastModified = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339Nano, value)
+			t, err := time.Parse(time.RFC3339, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
@@ -263,7 +263,7 @@ func (z *FeedLog) Deserialize(values map[string]string) error {
 	z.LastUpdated = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339Nano, value)
+			t, err := time.Parse(time.RFC3339, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
