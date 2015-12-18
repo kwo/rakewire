@@ -64,7 +64,9 @@ func kvPut(id uint64, values map[string]string, b *bolt.Bucket) error {
 	min := []byte(kvMinKey(id))
 	nxt := []byte(kvNxtKey(id))
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
-		c.Delete()
+		if err := c.Delete(); err != nil {
+			return err
+		}
 	}
 
 	// add new records
@@ -144,6 +146,37 @@ func kvSaveIndexes(name string, id uint64, newIndexes map[string][]string, oldIn
 		indexElements := newIndexes[indexName]
 		keyStr := kvKeys(indexElements)
 		if err := b.Put([]byte(keyStr), []byte(pkey)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func kvDelete(name string, value db.DataObject, tx *bolt.Tx) error {
+
+	if value.GetID() == 0 {
+		return fmt.Errorf("Cannot delete %s with ID of 0", name)
+	}
+
+	// delete data
+	b := tx.Bucket([]byte(bucketData)).Bucket([]byte(name))
+	c := b.Cursor()
+	min := []byte(kvMinKey(value.GetID()))
+	nxt := []byte(kvNxtKey(value.GetID()))
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
+		if err := c.Delete(); err != nil {
+			return err
+		}
+	}
+
+	// delete indexes
+	indexBucket := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name))
+	for indexName, indexElements := range value.IndexKeys() {
+		b := indexBucket.Bucket([]byte(indexName))
+		keyStr := kvKeys(indexElements)
+		if err := b.Delete([]byte(keyStr)); err != nil {
 			return err
 		}
 	}

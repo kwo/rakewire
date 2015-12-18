@@ -8,6 +8,24 @@ import (
 	"strconv"
 )
 
+// GroupGet retrieves a single group.
+func (z *Service) GroupGet(groupID uint64) (*m.Group, error) {
+	var group *m.Group
+	z.Lock()
+	defer z.Unlock()
+	err := z.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.GroupEntity))
+		if values, ok := kvGet(groupID, b); ok {
+			group = &m.Group{}
+			if err := group.Deserialize(values); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return group, err
+}
+
 // GroupGetAllByUser retrieves the groups belonging to the user.
 func (z *Service) GroupGetAllByUser(userID uint64) ([]*m.Group, error) {
 
@@ -73,4 +91,14 @@ func (z *Service) GroupSave(group *m.Group) error {
 
 	return err
 
+}
+
+// GroupDelete deletes a group in the database.
+func (z *Service) GroupDelete(group *m.Group) error {
+	z.Lock()
+	defer z.Unlock()
+	err := z.db.Update(func(tx *bolt.Tx) error {
+		return kvDelete(m.GroupEntity, group, tx)
+	})
+	return err
 }
