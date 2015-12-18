@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"log"
+	m "rakewire/model"
 	"strconv"
 )
 
 const (
 	// SchemaVersion of the database
-	SchemaVersion = 1
+	SchemaVersion = 2
 )
 
 func checkSchema(z *Service) error {
@@ -34,11 +35,11 @@ func checkSchema(z *Service) error {
 				if err != nil {
 					break
 				}
-			// case 1:
-			// 	err = upgradeTo2(tx)
-			// 	if err != nil {
-			// 		break
-			// 	}
+			case 1:
+				err = upgradeTo2(tx)
+				if err != nil {
+					break
+				}
 			default:
 				err = fmt.Errorf("Unhandled schema version: %d", schemaVersion)
 			}
@@ -110,23 +111,31 @@ func upgradeTo1(tx *bolt.Tx) error {
 	}
 
 	// data
-	b, err = bucketData.CreateBucketIfNotExists([]byte(bucketUser))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(m.UserEntity))
 	if err != nil {
 		return err
 	}
 	bumpSequence(b)
 
-	b, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeed))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(m.GroupEntity))
 	if err != nil {
 		return err
 	}
 	bumpSequence(b)
-	b, err = bucketData.CreateBucketIfNotExists([]byte(bucketFeedLog))
+
+	b, err = bucketData.CreateBucketIfNotExists([]byte(m.FeedEntity))
 	if err != nil {
 		return err
 	}
 	bumpSequence(b)
-	b, err = bucketData.CreateBucketIfNotExists([]byte(bucketEntry))
+
+	b, err = bucketData.CreateBucketIfNotExists([]byte(m.FeedLogEntity))
+	if err != nil {
+		return err
+	}
+	bumpSequence(b)
+
+	b, err = bucketData.CreateBucketIfNotExists([]byte(m.EntryEntity))
 	if err != nil {
 		return err
 	}
@@ -134,67 +143,100 @@ func upgradeTo1(tx *bolt.Tx) error {
 
 	// indexes
 
-	// index user
-	bucketIndexUser, err := bucketIndex.CreateBucketIfNotExists([]byte("User"))
+	// indexes user
+	user := m.NewUser("")
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.UserEntity))
 	if err != nil {
 		return err
 	}
-	_, err = bucketIndexUser.CreateBucketIfNotExists([]byte("Username"))
-	if err != nil {
-		return err
-	}
-	_, err = bucketIndexUser.CreateBucketIfNotExists([]byte("FeverHash"))
-	if err != nil {
-		return err
+	for k := range user.IndexKeys() {
+		_, err = b.CreateBucketIfNotExists([]byte(k))
+		if err != nil {
+			return err
+		}
 	}
 
-	// index feed
-	bucketIndexFeed, err := bucketIndex.CreateBucketIfNotExists([]byte("Feed"))
+	group := m.NewGroup(0, "")
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.GroupEntity))
 	if err != nil {
 		return err
 	}
-	if _, err = bucketIndexFeed.CreateBucketIfNotExists([]byte("URL")); err != nil {
-		return err
-	}
-	if _, err = bucketIndexFeed.CreateBucketIfNotExists([]byte("NextFetch")); err != nil {
-		return err
+	for k := range group.IndexKeys() {
+		_, err = b.CreateBucketIfNotExists([]byte(k))
+		if err != nil {
+			return err
+		}
 	}
 
-	// index feedlog
-	bucketIndexFeedLog, err := bucketIndex.CreateBucketIfNotExists([]byte("FeedLog"))
+	feed := m.NewFeed("")
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.FeedEntity))
 	if err != nil {
 		return err
 	}
-	_, err = bucketIndexFeedLog.CreateBucketIfNotExists([]byte("FeedTime"))
-	if err != nil {
-		return err
+	for k := range feed.IndexKeys() {
+		_, err = b.CreateBucketIfNotExists([]byte(k))
+		if err != nil {
+			return err
+		}
 	}
 
-	// index entry
-	bucketIndexEntry, err := bucketIndex.CreateBucketIfNotExists([]byte(bucketEntry))
+	feedlog := m.NewFeedLog(feed.ID)
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.FeedLogEntity))
 	if err != nil {
 		return err
 	}
-	if _, err = bucketIndexEntry.CreateBucketIfNotExists([]byte("Date")); err != nil {
+	for k := range feedlog.IndexKeys() {
+		_, err = b.CreateBucketIfNotExists([]byte(k))
+		if err != nil {
+			return err
+		}
+	}
+
+	entry := m.NewEntry(feed.ID, "")
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.EntryEntity))
+	if err != nil {
 		return err
 	}
-	if _, err = bucketIndexEntry.CreateBucketIfNotExists([]byte("GUID")); err != nil {
-		return err
+	for k := range entry.IndexKeys() {
+		_, err = b.CreateBucketIfNotExists([]byte(k))
+		if err != nil {
+			return err
+		}
 	}
 
 	return setSchemaVersion(tx, 1)
 
 }
 
-// func upgradeTo2(tx *bolt.Tx) error {
-//
-// 	u := m.NewUser("testuser@localhost")
-// 	u.SetPassword("abcdefg")
-//
-// 	if err := kvSave(u, tx); err != nil {
-// 		return err
-// 	}
-//
-// 	return setSchemaVersion(tx, 2)
-//
-// }
+func upgradeTo2(tx *bolt.Tx) error {
+
+	bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
+	if err != nil {
+		return err
+	}
+	bucketIndex, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
+	if err != nil {
+		return err
+	}
+
+	b, err := bucketData.CreateBucketIfNotExists([]byte(m.GroupEntity))
+	if err != nil {
+		return err
+	}
+	bumpSequence(b)
+
+	group := m.NewGroup(0, "")
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.GroupEntity))
+	if err != nil {
+		return err
+	}
+	for k := range group.IndexKeys() {
+		_, err = b.CreateBucketIfNotExists([]byte(k))
+		if err != nil {
+			return err
+		}
+	}
+
+	return setSchemaVersion(tx, 2)
+
+}

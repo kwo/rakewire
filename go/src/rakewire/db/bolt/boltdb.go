@@ -10,12 +10,8 @@ import (
 )
 
 const (
-	bucketData    = "Data"
-	bucketEntry   = "Entry"
-	bucketFeed    = "Feed"
-	bucketFeedLog = "FeedLog"
-	bucketIndex   = "Index"
-	bucketUser    = "User"
+	bucketData  = "Data"
+	bucketIndex = "Index"
 )
 
 const (
