@@ -48,7 +48,7 @@ func TestAuthJson(t *testing.T) {
 	u := server.URL + "/fever?api"
 
 	values := url.Values{}
-	values.Set("api_key", user.FeverHash)
+	values.Set(AuthParam, user.FeverHash)
 	rsp, err := http.PostForm(u, values)
 	if err != nil {
 		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())
@@ -134,7 +134,7 @@ func TestAuthXml(t *testing.T) {
 	u := server.URL + "/fever?api=xml"
 
 	values := url.Values{}
-	values.Set("api_key", user.FeverHash)
+	values.Set(AuthParam, user.FeverHash)
 	rsp, err := http.PostForm(u, values)
 	if err != nil {
 		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())

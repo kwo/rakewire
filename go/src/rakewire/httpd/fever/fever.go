@@ -13,6 +13,11 @@ import (
 
 // http://feedafever.com/api
 
+const (
+	// AuthParam must be sent with ever Fever request to authenticate to the service.
+	AuthParam = "api_key"
+)
+
 // NewAPI creates a new Fever API instance
 func NewAPI(prefix string, db Database) *API {
 	return &API{
@@ -50,7 +55,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 		Version: 3,
 	}
 
-	if apiKey := req.PostFormValue("api_key"); apiKey != "" {
+	if apiKey := req.PostFormValue(AuthParam); apiKey != "" {
 		if u, err := z.db.UserGetByFeverHash(apiKey); err == nil && u != nil {
 			rsp.Authorized = 1
 			log.Printf("%-7s %-7s authorized: %s", logDebug, logName, u.Username)
