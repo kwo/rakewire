@@ -12,14 +12,11 @@ import (
 	"rakewire/db"
 	"rakewire/db/bolt"
 	"rakewire/logging"
+	m "rakewire/model"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
-)
-
-const (
-	testAPIKey = "3533ec66783a4f37a234e699db814d79"
 )
 
 func TestMain(m *testing.M) {
@@ -36,6 +33,13 @@ func TestAuthJson(t *testing.T) {
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
 
+	// add test user
+	user := m.NewUser("testuser@localhost")
+	user.SetPassword("abcdefg")
+	if err := database.UserSave(user); err != nil {
+		t.Fatalf("Cannot save user: %s", err.Error())
+	}
+
 	apiFever := NewAPI("/fever", database)
 
 	server := httptest.NewServer(apiFever.Router())
@@ -44,7 +48,7 @@ func TestAuthJson(t *testing.T) {
 	u := server.URL + "/fever?api"
 
 	values := url.Values{}
-	values.Set("api_key", testAPIKey)
+	values.Set("api_key", user.FeverHash)
 	rsp, err := http.PostForm(u, values)
 	if err != nil {
 		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())
@@ -115,6 +119,13 @@ func TestAuthXml(t *testing.T) {
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
 
+	// add test user
+	user := m.NewUser("testuser@localhost")
+	user.SetPassword("abcdefg")
+	if err := database.UserSave(user); err != nil {
+		t.Fatalf("Cannot save user: %s", err.Error())
+	}
+
 	apiFever := NewAPI("/fever", database)
 
 	server := httptest.NewServer(apiFever.Router())
@@ -123,7 +134,7 @@ func TestAuthXml(t *testing.T) {
 	u := server.URL + "/fever?api=xml"
 
 	values := url.Values{}
-	values.Set("api_key", testAPIKey)
+	values.Set("api_key", user.FeverHash)
 	rsp, err := http.PostForm(u, values)
 	if err != nil {
 		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())

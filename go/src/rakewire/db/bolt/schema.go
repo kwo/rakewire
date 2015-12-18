@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/boltdb/bolt"
 	"log"
-	m "rakewire/model"
 	"strconv"
 )
 
@@ -180,13 +179,6 @@ func upgradeTo1(tx *bolt.Tx) error {
 		return err
 	}
 	if _, err = bucketIndexEntry.CreateBucketIfNotExists([]byte("GUID")); err != nil {
-		return err
-	}
-
-	u := m.NewUser("testuser@localhost")
-	u.SetPassword("abcdefg")
-
-	if err := kvSave(m.UserEntity, u, tx); err != nil {
 		return err
 	}
 
