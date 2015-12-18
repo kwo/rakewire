@@ -14,7 +14,7 @@ func (z *Service) UserGetByUsername(username string) (*m.User, error) {
 	user := &m.User{}
 
 	err := z.db.View(func(tx *bolt.Tx) error {
-		if data, ok := kvGetFromIndex(m.UserEntity, m.UserIndexUsername, []string{username}, tx); ok {
+		if data, ok := kvGetFromIndex(m.UserEntity, m.UserIndexUsername, []string{strings.ToLower(username)}, tx); ok {
 			found = true
 			return user.Deserialize(data)
 		}
