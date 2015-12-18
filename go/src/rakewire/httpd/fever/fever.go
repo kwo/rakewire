@@ -48,8 +48,6 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 
 	useXML := req.URL.Query().Get("api") == "xml"
 
-	// TODO: omit last_refreshed_on_time when unauthorized
-
 	//var user *m.User
 	rsp := &Response{
 		Version: 3,
@@ -71,7 +69,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 
 			switch k {
 			case "api":
-				rsp.LastRefreshed = time.Now().Unix() // TODO: get last refreshed
+				rsp.LastRefreshed = time.Now().Unix() // TODO: get last refreshed feed for user; need groups first
 			case "feeds":
 				// add to response
 			}
