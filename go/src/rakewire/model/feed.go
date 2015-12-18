@@ -11,7 +11,7 @@ type Feed struct {
 	Attempt *FeedLog `json:"-" kv:"-"`
 	Entries []*Entry `json:"-" kv:"-"`
 
-	ID  uint64 `json:"id"`
+	ID  uint64 `json:"id"  kv:"NextFetch:2"`
 	URL string `json:"url" kv:"URL:1:lower"`
 
 	ETag         string    `json:"etag"`
@@ -47,7 +47,7 @@ func (z *Feed) AddEntry(guID string) *Entry {
 func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
 	if lastUpdated.IsZero() {
-		lastUpdated = time.Now().Truncate(1 * time.Second)
+		lastUpdated = time.Now()
 	}
 
 	d := time.Now().Sub(lastUpdated) // how long since the last update?
@@ -65,5 +65,5 @@ func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
 // AdjustFetchTime sets the FetchTime to interval units in the future.
 func (z *Feed) AdjustFetchTime(interval time.Duration) {
-	z.NextFetch = time.Now().Add(interval)
+	z.NextFetch = time.Now().Add(interval).Truncate(time.Second)
 }

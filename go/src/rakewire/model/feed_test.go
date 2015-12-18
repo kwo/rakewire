@@ -92,7 +92,7 @@ func TestAdjustFetchTime(t *testing.T) {
 
 	diff := 3 * time.Hour
 	f.AdjustFetchTime(diff)
-	assertEqual(t, now.Add(diff).Truncate(time.Millisecond), f.NextFetch.Truncate(time.Millisecond))
+	assertEqual(t, now.Add(diff).Truncate(time.Second), f.NextFetch.Truncate(time.Second))
 
 }
 
@@ -108,19 +108,29 @@ func TestUpdateFetchTime(t *testing.T) {
 	now := time.Now()
 
 	f.UpdateFetchTime(now.Add(-29 * time.Minute))
-	assertEqual(t, now.Add(10*time.Minute).Truncate(time.Millisecond), f.NextFetch.Truncate(time.Millisecond))
+	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(10 * time.Minute).Truncate(time.Second)) {
+		t.Errorf("bad fetch time, expected %d minutes from now, actual %v", 10, f.NextFetch.Truncate(time.Second).Sub(now))
+	}
 
 	f.UpdateFetchTime(now.Add(-30 * time.Minute))
-	assertEqual(t, now.Add(1*time.Hour).Truncate(time.Millisecond), f.NextFetch.Truncate(time.Millisecond))
+	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(1 * time.Hour).Truncate(time.Second)) {
+		t.Errorf("bad fetch time, expected %d hours from now, actual %v", 1, f.NextFetch.Truncate(time.Second).Sub(now))
+	}
 
 	f.UpdateFetchTime(now.Add(-3 * time.Hour))
-	assertEqual(t, now.Add(1*time.Hour).Truncate(time.Millisecond), f.NextFetch.Truncate(time.Millisecond))
+	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(1 * time.Hour).Truncate(time.Second)) {
+		t.Errorf("bad fetch time, expected %d hours from now, actual %v", 1, f.NextFetch.Truncate(time.Second).Sub(now))
+	}
 
 	f.UpdateFetchTime(now.Add(-72 * time.Hour))
-	assertEqual(t, now.Add(24*time.Hour).Truncate(time.Millisecond), f.NextFetch.Truncate(time.Millisecond))
+	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(24 * time.Hour).Truncate(time.Second)) {
+		t.Errorf("bad fetch time, expected %d hours from now, actual %v", 24, f.NextFetch.Truncate(time.Second).Sub(now))
+	}
 
 	f.UpdateFetchTime(time.Time{})
-	assertEqual(t, now.Add(24*time.Hour).Truncate(time.Millisecond), f.NextFetch.Truncate(time.Millisecond))
+	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(10 * time.Minute).Truncate(time.Second)) {
+		t.Errorf("bad fetch time, expected %d minutes from now, actual %v", 10, f.NextFetch.Sub(now))
+	}
 
 }
 

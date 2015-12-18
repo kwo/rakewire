@@ -203,6 +203,8 @@ func (z *Feed) IndexKeys() map[string][]string {
 	result[FeedIndexNextFetch] = []string{
 
 		data[feedNextFetch],
+
+		data[feedID],
 	}
 
 	result[FeedIndexURL] = []string{
