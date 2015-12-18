@@ -246,7 +246,11 @@ func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
 func processFeedClientError(feed *m.Feed, err error) {
 	feed.Attempt.Result = m.FetchResultClientError
 	feed.Attempt.ResultMessage = err.Error()
-	feed.AdjustFetchTime(1 * time.Minute) // try again soon
+	if feed.Status == m.FetchResultClientError {
+		feed.UpdateFetchTime(feed.StatusSince) // don't hammer site if repeating error
+	} else {
+		feed.AdjustFetchTime(1 * time.Minute)
+	}
 }
 
 func processFeedServerError(feed *m.Feed, rsp *http.Response) {

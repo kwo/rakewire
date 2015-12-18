@@ -47,12 +47,10 @@ func (z *Feed) AddEntry(guID string) *Entry {
 func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
 	if lastUpdated.IsZero() {
-		return
+		lastUpdated = time.Now().Truncate(1 * time.Second)
 	}
 
-	z.LastUpdated = lastUpdated
-
-	d := time.Now().Sub(z.LastUpdated) // how long since the last update?
+	d := time.Now().Sub(lastUpdated) // how long since the last update?
 
 	switch {
 	case d < 30*time.Minute:
