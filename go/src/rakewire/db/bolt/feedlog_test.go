@@ -9,7 +9,7 @@ import (
 
 func TestFeedLog(t *testing.T) {
 
-	// t.SkipNow()
+	t.Parallel()
 
 	database := openDatabase(t)
 	defer closeDatabase(t, database)

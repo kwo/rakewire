@@ -15,6 +15,8 @@ const (
 
 func TestInterfaceDatabase(t *testing.T) {
 
+	t.Parallel()
+
 	var d db.Database = &Service{}
 	if d == nil {
 		t.Fatal("Does not implement db.Database interface.")
@@ -23,6 +25,8 @@ func TestInterfaceDatabase(t *testing.T) {
 }
 
 func TestInterfaceService(t *testing.T) {
+
+	t.Parallel()
 
 	var s m.Service = &Service{}
 	if s == nil {

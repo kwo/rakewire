@@ -8,6 +8,8 @@ import (
 
 func TestGetFeedEntriesFromIDs(t *testing.T) {
 
+	t.Parallel()
+
 	db := openDatabase(t)
 	defer closeDatabase(t, db)
 	if db == nil {

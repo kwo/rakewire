@@ -8,7 +8,8 @@ import (
 
 func TestFeeds(t *testing.T) {
 
-	//t.SkipNow()
+	t.Parallel()
+
 	database := openDatabase(t)
 	defer closeDatabase(t, database)
 	assertNotNil(t, database)
@@ -40,7 +41,7 @@ func TestFeeds(t *testing.T) {
 
 func TestURLIndex(t *testing.T) {
 
-	//t.SkipNow()
+	t.Parallel()
 
 	const URL1 = "http://localhost/"
 	const URL2 = "http://localhost:8888/"
@@ -123,7 +124,7 @@ func TestURLIndex(t *testing.T) {
 
 func TestIndexFetch(t *testing.T) {
 
-	//t.SkipNow()
+	t.Parallel()
 
 	database := openDatabase(t)
 	defer closeDatabase(t, database)
