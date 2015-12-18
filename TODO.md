@@ -16,7 +16,7 @@
   - add client sort to feed list
   - list fetcher activity
   - have fetchers signal when they are idle, FetcherService signal when it is idle
-  - Switch to Semantic-UI (like Gogs)
+  - Switch to Semantic-UI (like Gogs) OR Elemental UI http://elemental-ui.com/home
   - manually specify feed fetchTime interval for strange feeds: Eilmeldungen, z.B.
   - Dashboard
     - Rename home screen to Dashboard. Include various statistics including:
