@@ -141,9 +141,20 @@ func upgradeTo1(tx *bolt.Tx) error {
 	}
 	bumpSequence(b)
 
+	b, err = bucketData.CreateBucketIfNotExists([]byte(m.UserEntryEntity))
+	if err != nil {
+		return err
+	}
+	bumpSequence(b)
+
+	b, err = bucketData.CreateBucketIfNotExists([]byte(m.UserFeedEntity))
+	if err != nil {
+		return err
+	}
+	bumpSequence(b)
+
 	// indexes
 
-	// indexes user
 	user := m.NewUser("")
 	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.UserEntity))
 	if err != nil {
@@ -198,6 +209,30 @@ func upgradeTo1(tx *bolt.Tx) error {
 		return err
 	}
 	for k := range entry.IndexKeys() {
+		_, err = b.CreateBucketIfNotExists([]byte(k))
+		if err != nil {
+			return err
+		}
+	}
+
+	ue := m.UserEntry{}
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.UserEntryEntity))
+	if err != nil {
+		return err
+	}
+	for k := range ue.IndexKeys() {
+		_, err = b.CreateBucketIfNotExists([]byte(k))
+		if err != nil {
+			return err
+		}
+	}
+
+	uf := m.NewUserFeed(user.ID, feed.ID)
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.UserFeedEntity))
+	if err != nil {
+		return err
+	}
+	for k := range uf.IndexKeys() {
 		_, err = b.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
 			return err
