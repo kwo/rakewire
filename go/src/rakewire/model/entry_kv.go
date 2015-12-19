@@ -14,7 +14,6 @@ import (
 // index names
 const (
 	EntryEntity    = "Entry"
-	EntryIndexDate = "Date"
 	EntryIndexGUID = "GUID"
 )
 
@@ -167,13 +166,6 @@ func (z *Entry) IndexKeys() map[string][]string {
 	result := make(map[string][]string)
 
 	data := z.Serialize()
-
-	result[EntryIndexDate] = []string{
-
-		data[entryFeedID],
-
-		data[entryCreated],
-	}
 
 	result[EntryIndexGUID] = []string{
 

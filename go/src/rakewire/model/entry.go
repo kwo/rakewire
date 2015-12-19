@@ -12,8 +12,8 @@ import (
 type Entry struct {
 	ID      uint64    `json:"id"`
 	GUID    string    `json:"-" kv:"GUID:2"`
-	FeedID  uint64    `json:"feedId" kv:"Date:1,GUID:1"`
-	Created time.Time `json:"created" kv:"Date:2"`
+	FeedID  uint64    `json:"feedId" kv:"GUID:1"`
+	Created time.Time `json:"created"`
 	Updated time.Time `json:"updated"`
 	URL     string    `json:"url"`
 	Author  string    `json:"author"`
