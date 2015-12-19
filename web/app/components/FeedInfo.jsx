@@ -63,6 +63,11 @@ class FeedInfo extends React.Component {
 				</tr>
 
 				<tr key={5}>
+					<td><strong>Status Since</strong></td>
+					<td>{formatDate(feed.statusSince)}</td>
+				</tr>
+
+				<tr key={6}>
 					<td><strong>Notes</strong></td>
 					<td>{feed.notes}</td>
 				</tr>
