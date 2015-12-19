@@ -187,7 +187,7 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 	} // not err
 
 	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
-	if feed.Status != feed.Attempt.Result {
+	if feed.StatusSince.IsZero() || feed.Status != feed.Attempt.Result {
 		feed.StatusSince = time.Now()
 	}
 	feed.Status = feed.Attempt.Result
