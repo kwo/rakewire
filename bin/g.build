@@ -1,3 +1,4 @@
+g.tools
 cd $PROJECT_HOME/go
 . $PROJECT_HOME/bin/b.vars
 go generate ./src/rakewire/...
