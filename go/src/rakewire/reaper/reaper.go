@@ -126,41 +126,50 @@ func (z *Service) processResponse(feed *m.Feed) {
 				entry.Created = dbEntry.Created
 			}
 
-			// set if zero
+			// set if zero and prevent from creeping forward
 			if entry.Updated.IsZero() {
 				entry.Updated = dbEntry.Updated
-			}
-
-			// prevent from creeping forward
-			if entry.Updated.After(dbEntry.Updated) {
-				if entry.Hash() == dbEntry.Hash() {
-					entry.Updated = dbEntry.Updated
-				}
+			} else if entry.Updated.After(dbEntry.Updated) && entry.Hash() == dbEntry.Hash() {
+				entry.Updated = dbEntry.Updated
 			}
 
 		}
 
-		if mostRecent.Before(entry.Updated) {
+		if entry.Updated.After(mostRecent) {
 			mostRecent = entry.Updated
 		}
 
 	} // loop entries
 
 	feed.Attempt.LastUpdated = mostRecent
-	// recalc feed.LastUpdated
-	if feed.LastUpdated.Before(mostRecent) {
+
+	// only bump up LastUpdated if mostRecent is after previous time
+	// lastUpdated can move forward if no new entries, if an existing entry has been updated
+	if mostRecent.After(feed.LastUpdated) {
 		feed.LastUpdated = mostRecent
 	}
 
 	if feed.Attempt.Result == m.FetchResultOK {
 		if feed.LastUpdated.IsZero() {
-			feed.LastUpdated = time.Now()
+			feed.LastUpdated = time.Now() // only if new entries?
 		}
-		feed.UpdateFetchTime(feed.LastUpdated)
 	}
 
 	feed.Attempt.EntryCount = len(feed.Entries)
 	feed.Attempt.NewEntries = newEntryCount
+
+	switch feed.Status {
+	case m.FetchResultOK:
+		feed.UpdateFetchTime(feed.LastUpdated)
+	case m.FetchResultRedirect:
+		feed.AdjustFetchTime(1 * time.Second)
+	default: // errors
+		if feed.StatusSince.IsZero() {
+			feed.UpdateFetchTime(time.Now())
+		} else {
+			feed.UpdateFetchTime(feed.StatusSince)
+		}
+	}
 
 	// save feed
 	err = z.database.SaveFeed(feed)

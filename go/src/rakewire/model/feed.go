@@ -46,10 +46,6 @@ func (z *Feed) AddEntry(guID string) *Entry {
 // UpdateFetchTime increases the fetch interval
 func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
-	if lastUpdated.IsZero() {
-		lastUpdated = time.Now()
-	}
-
 	d := time.Now().Sub(lastUpdated) // how long since the last update?
 
 	switch {

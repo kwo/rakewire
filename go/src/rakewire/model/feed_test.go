@@ -128,8 +128,8 @@ func TestUpdateFetchTime(t *testing.T) {
 	}
 
 	f.UpdateFetchTime(time.Time{})
-	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(10 * time.Minute).Truncate(time.Second)) {
-		t.Errorf("bad fetch time, expected %d minutes from now, actual %v", 10, f.NextFetch.Sub(now))
+	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(24 * time.Hour).Truncate(time.Second)) {
+		t.Errorf("bad fetch time, expected %d hours from now, actual %v", 24, f.NextFetch.Sub(now))
 	}
 
 }

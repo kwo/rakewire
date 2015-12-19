@@ -210,7 +210,6 @@ func processFeedOK(feed *m.Feed, rsp *http.Response) {
 func processFeedOKButCannotParse(feed *m.Feed, err error) {
 	feed.Attempt.Result = m.FetchResultFeedError
 	feed.Attempt.ResultMessage = err.Error()
-	feed.AdjustFetchTime(24 * time.Hour) // don't hammer site if error
 }
 
 func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
@@ -246,24 +245,17 @@ func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
 func processFeedClientError(feed *m.Feed, err error) {
 	feed.Attempt.Result = m.FetchResultClientError
 	feed.Attempt.ResultMessage = err.Error()
-	if feed.Status == m.FetchResultClientError {
-		feed.UpdateFetchTime(feed.StatusSince) // don't hammer site if repeating error
-	} else {
-		feed.AdjustFetchTime(1 * time.Minute)
-	}
 }
 
 func processFeedServerError(feed *m.Feed, rsp *http.Response) {
 	feed.Attempt.Result = m.FetchResultServerError
-	feed.AdjustFetchTime(24 * time.Hour) // don't hammer site if error
 }
 
 func processFeedMovedPermanently(feed *m.Feed, rsp *http.Response) {
 	feed.Attempt.Result = m.FetchResultRedirect
 	newURL := rsp.Header.Get(hLocation)
 	feed.Attempt.ResultMessage = fmt.Sprintf("%s moved %s", feed.URL, newURL)
-	feed.URL = newURL                     // update feed
-	feed.AdjustFetchTime(1 * time.Minute) // try again soon
+	feed.URL = newURL // update feed
 }
 
 func processFeedNotModified(feed *m.Feed, rsp *http.Response) {
