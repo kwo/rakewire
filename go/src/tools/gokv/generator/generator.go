@@ -53,12 +53,12 @@ type IndexField struct {
 // Finalize populates index and key information from tags.
 func (z *StructInfo) Finalize() error {
 
-	hasTime := false
-
 	for _, field := range z.Fields {
 
+		//fmt.Printf("%s/%s: %s\n", z.Name, field.Name, field.Type)
+
 		if field.Type == "time.Time" {
-			hasTime = true
+			z.Imports["time"] = true
 		}
 
 		tagFields := strings.Split(field.Tags["kv"], ",")
@@ -96,10 +96,6 @@ func (z *StructInfo) Finalize() error {
 		} // tagFields
 
 	} // fields
-
-	if hasTime {
-		z.Imports["time"] = true
-	}
 
 	return nil
 
@@ -160,6 +156,14 @@ func (z *FieldInfo) Finalize(s *StructInfo) error {
 		z.SerializeCommand = executeTemplate("SerializeDuration", z)
 		z.DeserializeCommand = executeTemplate("DeserializeDuration", z)
 
+	case "[]uint64":
+		z.EmptyValue = "[]uint64{}"
+		z.ZeroTest = executeTemplate("ZeroTestArray", z)
+		z.SerializeCommand = executeTemplate("SerializeIntArray", z)
+		z.DeserializeCommand = executeTemplate("DeserializeUintArray", z)
+		s.Imports["bytes"] = true
+		s.Imports["strings"] = true
+
 	default:
 		fmt.Printf("Unknown type %s, field: %s, struct: %s\n", z.Type, z.Name, z.StructName)
 		z.EmptyValue = "0"
@@ -183,6 +187,7 @@ func Generate(filename, kvFilename string) error {
 	templates["DeserializeUint"] = template.Must(template.New("DeserializeUint").Parse(tplDeserializeUint))
 	templates["DeserializeTime"] = template.Must(template.New("DeserializeTime").Parse(tplDeserializeTime))
 	templates["DeserializeDuration"] = template.Must(template.New("DeserializeDuration").Parse(tplDeserializeDuration))
+	templates["DeserializeUintArray"] = template.Must(template.New("DeserializeUintArray").Parse(tplDeserializeUintArray))
 
 	templates["SerializeDefault"] = template.Must(template.New("SerializeDefault").Parse(tplSerializeDefault))
 	templates["SerializeBool"] = template.Must(template.New("SerializeBool").Parse(tplSerializeBool))
@@ -191,10 +196,12 @@ func Generate(filename, kvFilename string) error {
 	templates["SerializeIntKey"] = template.Must(template.New("SerializeIntKey").Parse(tplSerializeIntKey))
 	templates["SerializeTime"] = template.Must(template.New("SerializeTime").Parse(tplSerializeTime))
 	templates["SerializeDuration"] = template.Must(template.New("SerializeDuration").Parse(tplSerializeDuration))
+	templates["SerializeIntArray"] = template.Must(template.New("SerializeIntArray").Parse(tplSerializeIntArray))
 
 	templates["ZeroTestDefault"] = template.Must(template.New("ZeroTestDefault").Parse(tplZeroTestDefault))
 	templates["ZeroTestBool"] = template.Must(template.New("ZeroTestBool").Parse(tplZeroTestBool))
 	templates["ZeroTestTime"] = template.Must(template.New("ZeroTestTime").Parse(tplZeroTestTime))
+	templates["ZeroTestArray"] = template.Must(template.New("ZeroTestArray").Parse(tplZeroTestArray))
 
 	packageName, structInfos, err := ExtractStructs(filename)
 	if err != nil {

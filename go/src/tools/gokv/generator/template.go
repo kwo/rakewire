@@ -163,6 +163,23 @@ var tplDeserializeDuration = `func (fieldName string, values map[string]string, 
 }({{.StructNameLower}}{{.Name}}, values, errors)
 `
 
+var tplDeserializeUintArray = `func (fieldName string, values map[string]string, errors []error) {{.Type}} {
+	var result {{.Type}}
+	if value, ok := values[fieldName]; ok {
+		elements := strings.Fields(value)
+		for _, element := range elements {
+			value, err := strconv.ParseUint(element, 10, 64)
+			if err != nil {
+				errors = append(errors, err)
+				break
+			}
+			result = append(result, value)
+		}
+	}
+	return result
+}({{.StructNameLower}}{{.Name}}, values, errors)
+`
+
 var tplSerializeDefault = `z.{{.Name}}`
 var tplSerializeBool = `fmt.Sprintf("%t", z.{{.Name}})`
 var tplSerializeFloat = `fmt.Sprintf("%f", z.{{.Name}})`
@@ -170,7 +187,18 @@ var tplSerializeInt = `fmt.Sprintf("%d", z.{{.Name}})`
 var tplSerializeIntKey = `fmt.Sprintf("%05d", z.{{.Name}})`
 var tplSerializeTime = `z.{{.Name}}.UTC().Format(time.RFC3339)`
 var tplSerializeDuration = `z.{{.Name}}.String()`
+var tplSerializeIntArray = `func(values {{.Type}}) string {
+	var buffer bytes.Buffer
+  for i, value := range values {
+		if i > 0 {
+			buffer.WriteString(" ")
+		}
+		buffer.WriteString(fmt.Sprintf("%d", value))
+	}
+	return buffer.String()
+}(z.{{.Name}})`
 
 var tplZeroTestDefault = `z.{{.Name}} != {{.EmptyValue}}`
 var tplZeroTestBool = `z.{{.Name}}`
 var tplZeroTestTime = `!z.{{.Name}}.IsZero()`
+var tplZeroTestArray = `len(z.{{.Name}}) > 0`
