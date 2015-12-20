@@ -32,7 +32,7 @@ type Feed struct {
 func NewFeed(url string) *Feed {
 	return &Feed{
 		URL:       url,
-		NextFetch: time.Now(),
+		NextFetch: time.Now().Truncate(time.Second),
 	}
 }
 
@@ -46,15 +46,27 @@ func (z *Feed) AddEntry(guID string) *Entry {
 // UpdateFetchTime increases the fetch interval
 func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
-	d := time.Now().Sub(lastUpdated) // how long since the last update?
+	now := time.Now()
+
+	bumpFetchTime :=
+		func(interval time.Duration) {
+			min := now.Add(1 * interval).Add(-1 * time.Minute)
+			result := lastUpdated
+			for result.Before(min) {
+				result = result.Add(interval)
+			}
+			z.NextFetch = result.Truncate(time.Second)
+		}
+
+	d := now.Sub(lastUpdated) // how long since the last update?
 
 	switch {
 	case d < 30*time.Minute:
-		z.AdjustFetchTime(10 * time.Minute)
+		bumpFetchTime(10 * time.Minute)
 	case d > 72*time.Hour:
-		z.AdjustFetchTime(24 * time.Hour)
+		bumpFetchTime(24 * time.Hour)
 	case true:
-		z.AdjustFetchTime(1 * time.Hour)
+		bumpFetchTime(1 * time.Hour)
 	}
 
 }

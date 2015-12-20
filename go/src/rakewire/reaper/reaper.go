@@ -164,11 +164,7 @@ func (z *Service) processResponse(feed *m.Feed) {
 	case m.FetchResultRedirect:
 		feed.AdjustFetchTime(1 * time.Second)
 	default: // errors
-		if feed.StatusSince.IsZero() {
-			feed.UpdateFetchTime(time.Now())
-		} else {
-			feed.UpdateFetchTime(feed.StatusSince)
-		}
+		feed.UpdateFetchTime(feed.StatusSince)
 	}
 
 	// save feed

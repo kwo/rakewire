@@ -96,40 +96,118 @@ func TestAdjustFetchTime(t *testing.T) {
 
 }
 
-func TestUpdateFetchTime(t *testing.T) {
+func TestUpdateFetchTime1(t *testing.T) {
 
 	t.Parallel()
 
+	now := time.Now().Truncate(time.Second)
+
 	f := NewFeed("http://localhost")
-	assertNotNil(t, f)
-	assertNotNil(t, f.NextFetch)
-	assertEqual(t, false, f.NextFetch.IsZero()) // nextfetch is initialized to now
-
-	now := time.Now()
-
-	f.UpdateFetchTime(now.Add(-29 * time.Minute))
-	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(10 * time.Minute).Truncate(time.Second)) {
-		t.Errorf("bad fetch time, expected %d minutes from now, actual %v", 10, f.NextFetch.Truncate(time.Second).Sub(now))
+	if f == nil {
+		t.Fatal("NewFeed returned a nil feed")
+	}
+	if f.NextFetch.IsZero() {
+		t.Fatalf("NewFeed must set NextFetch to now, actual: %v", f.NextFetch)
 	}
 
-	f.UpdateFetchTime(now.Add(-30 * time.Minute))
-	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(1 * time.Hour).Truncate(time.Second)) {
-		t.Errorf("bad fetch time, expected %d hours from now, actual %v", 1, f.NextFetch.Truncate(time.Second).Sub(now))
+	f.LastUpdated = now.Add(-47 * time.Second)
+	f.UpdateFetchTime(f.LastUpdated)
+
+	expectedTime := f.LastUpdated.Add(10 * time.Minute)
+	t.Logf("now:         %v", now)
+	t.Logf("lastUpdated: %v", f.LastUpdated)
+	t.Logf("nextFetch:   %v", f.NextFetch)
+	t.Logf("expected:    %v", expectedTime)
+
+	if !f.NextFetch.Equal(expectedTime) {
+		t.Errorf("bad fetch time, expected %v from now, actual %v", expectedTime, f.NextFetch)
 	}
 
-	f.UpdateFetchTime(now.Add(-3 * time.Hour))
-	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(1 * time.Hour).Truncate(time.Second)) {
-		t.Errorf("bad fetch time, expected %d hours from now, actual %v", 1, f.NextFetch.Truncate(time.Second).Sub(now))
+}
+
+func TestUpdateFetchTime2(t *testing.T) {
+
+	t.Parallel()
+
+	now := time.Now().Truncate(time.Second)
+
+	f := NewFeed("http://localhost")
+	if f == nil {
+		t.Fatal("NewFeed returned a nil feed")
+	}
+	if f.NextFetch.IsZero() {
+		t.Fatalf("NewFeed must set NextFetch to now, actual: %v", f.NextFetch)
 	}
 
-	f.UpdateFetchTime(now.Add(-72 * time.Hour))
-	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(24 * time.Hour).Truncate(time.Second)) {
-		t.Errorf("bad fetch time, expected %d hours from now, actual %v", 24, f.NextFetch.Truncate(time.Second).Sub(now))
+	f.LastUpdated = now.Add(-29 * time.Minute)
+	f.UpdateFetchTime(f.LastUpdated)
+
+	expectedTime := f.LastUpdated.Add(40 * time.Minute)
+	t.Logf("now:         %v", now)
+	t.Logf("lastUpdated: %v", f.LastUpdated)
+	t.Logf("nextFetch:   %v", f.NextFetch)
+	t.Logf("expected:    %v", expectedTime)
+
+	if !f.NextFetch.Equal(expectedTime) {
+		t.Errorf("bad fetch time, expected %v from now, actual %v", expectedTime, f.NextFetch)
 	}
 
-	f.UpdateFetchTime(time.Time{})
-	if !f.NextFetch.Truncate(time.Second).Equal(now.Add(24 * time.Hour).Truncate(time.Second)) {
-		t.Errorf("bad fetch time, expected %d hours from now, actual %v", 24, f.NextFetch.Sub(now))
+}
+
+func TestUpdateFetchTime3(t *testing.T) {
+
+	t.Parallel()
+
+	now := time.Now().Truncate(time.Second)
+
+	f := NewFeed("http://localhost")
+	if f == nil {
+		t.Fatal("NewFeed returned a nil feed")
+	}
+	if f.NextFetch.IsZero() {
+		t.Fatalf("NewFeed must set NextFetch to now, actual: %v", f.NextFetch)
+	}
+
+	f.LastUpdated = now.Add(-3 * time.Hour).Add(-47 * time.Minute)
+	f.UpdateFetchTime(f.LastUpdated)
+
+	expectedTime := f.LastUpdated.Add(5 * time.Hour)
+	t.Logf("now:         %v", now)
+	t.Logf("lastUpdated: %v", f.LastUpdated)
+	t.Logf("nextFetch:   %v", f.NextFetch)
+	t.Logf("expected:    %v", expectedTime)
+
+	if !f.NextFetch.Equal(expectedTime) {
+		t.Errorf("bad fetch time, expected %v from now, actual %v", expectedTime, f.NextFetch)
+	}
+
+}
+
+func TestUpdateFetchTime4(t *testing.T) {
+
+	t.Parallel()
+
+	now := time.Now().Truncate(time.Second)
+
+	f := NewFeed("http://localhost")
+	if f == nil {
+		t.Fatal("NewFeed returned a nil feed")
+	}
+	if f.NextFetch.IsZero() {
+		t.Fatalf("NewFeed must set NextFetch to now, actual: %v", f.NextFetch)
+	}
+
+	f.LastUpdated = now.Add(-4 * 24 * time.Hour)
+	f.UpdateFetchTime(f.LastUpdated)
+
+	expectedTime := f.LastUpdated.Add(5 * 24 * time.Hour)
+	t.Logf("now:         %v", now)
+	t.Logf("lastUpdated: %v", f.LastUpdated)
+	t.Logf("nextFetch:   %v", f.NextFetch)
+	t.Logf("expected:    %v", expectedTime)
+
+	if !f.NextFetch.Equal(expectedTime) {
+		t.Errorf("bad fetch time, expected %v from now, actual %v", expectedTime, f.NextFetch)
 	}
 
 }
