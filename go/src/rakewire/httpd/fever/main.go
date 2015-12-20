@@ -2,12 +2,10 @@ package fever
 
 import (
 	"encoding/json"
-	"encoding/xml"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	m "rakewire/model"
-	"strings"
 	"time"
 )
 
@@ -46,14 +44,16 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var user *m.User
-	useXML := req.URL.Query().Get("api") == "xml"
+	if req.URL.Query().Get("api") == "xml" {
+		http.Error(w, "xml api not supported\n", 400)
+		return
+	}
 
-	//var user *m.User
 	rsp := &Response{
 		Version: 3,
 	}
 
+	var user *m.User
 	if apiKey := req.PostFormValue(AuthParam); apiKey != "" {
 		if u, err := z.db.UserGetByFeverHash(apiKey); err == nil && u != nil {
 			rsp.Authorized = 1
@@ -83,17 +83,9 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	if useXML {
-		w.Header().Set(hContentType, mimeXML)
-		w.Write([]byte(strings.ToLower(strings.TrimSuffix(xml.Header, "\n")))) // lowercase without trailing newline
-		if err := xml.NewEncoder(w).Encode(&rsp); err != nil {
-			log.Printf("%-7s %-7s cannot serialize fever XML response: %s", logWarn, logName, err.Error())
-		}
-	} else {
-		w.Header().Set(hContentType, mimeJSON)
-		if err := json.NewEncoder(w).Encode(&rsp); err != nil {
-			log.Printf("%-7s %-7s cannot serialize fever JSON response: %s", logWarn, logName, err.Error())
-		}
+	w.Header().Set(hContentType, mimeJSON)
+	if err := json.NewEncoder(w).Encode(&rsp); err != nil {
+		log.Printf("%-7s %-7s cannot serialize fever JSON response: %s", logWarn, logName, err.Error())
 	}
 
 }

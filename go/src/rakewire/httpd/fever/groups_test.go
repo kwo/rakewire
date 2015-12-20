@@ -1,8 +1,8 @@
 package fever
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/antonholmquist/jason"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -54,20 +54,30 @@ func TestGroups(t *testing.T) {
 		t.Fatalf("Error reading response body: %s", err.Error())
 	}
 
-	dataString := string(data)
-	t.Logf("raw response: %s", dataString)
+	t.Logf("raw response: %s", string(data))
 
-	response := &Response{}
-	if err := json.Unmarshal(data, response); err != nil {
-		t.Fatalf("Invalid JSON response: %s\n", err.Error())
+	response, err := jason.NewObjectFromBytes(data)
+	if err != nil {
+		t.Fatalf("Error parsing json response: %s", err.Error())
 	}
 
-	if response.Groups == nil {
-		t.Fatal("No groups")
-	}
-
-	if len(response.Groups) != 2 {
-		t.Errorf("bad group count, expected %d, actual %d", 2, len(response.Groups))
+	if groups, err := response.GetObjectArray("groups"); err != nil {
+		t.Fatalf("Error getting json groups: %s", err.Error())
+	} else if len(groups) != 2 {
+		t.Errorf("bad group count, expected %d, actual %d", 2, len(groups))
+	} else {
+		for i, group := range groups {
+			if id, err := group.GetInt64("id"); err != nil {
+				t.Errorf("Cannot retrieve group.id: %s", err.Error())
+			} else if id <= 0 {
+				t.Errorf("group.id mimatch, expected positive value, actual %d", id)
+			}
+			if name, err := group.GetString("title"); err != nil {
+				t.Errorf("Cannot retrieve group.title: %s", err.Error())
+			} else if name != fmt.Sprintf("Group%d", i) {
+				t.Errorf("group.title mimatch, expected %s, actual %s", fmt.Sprintf("Group%d", i), name)
+			}
+		}
 	}
 
 }

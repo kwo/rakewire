@@ -16,7 +16,6 @@ const (
 	hContentType = "Content-Type"
 	mPost        = "POST"
 	mimeJSON     = "text/json; charset=utf-8"
-	mimeXML      = "text/xml; charset=utf-8"
 )
 
 func notFound(w http.ResponseWriter, req *http.Request) {

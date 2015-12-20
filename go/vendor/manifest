@@ -2,6 +2,12 @@
 	"version": 0,
 	"dependencies": [
 		{
+			"importpath": "github.com/antonholmquist/jason",
+			"repository": "https://github.com/antonholmquist/jason",
+			"revision": "45d2bc81fe7570f04969728f3a941216fc565b61",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/boltdb/bolt",
 			"repository": "https://github.com/boltdb/bolt",
 			"revision": "b34b35ea8d06bb9ae69d9a349119252e4c1d8ee0",
