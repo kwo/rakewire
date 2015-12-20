@@ -2,26 +2,43 @@ package fever
 
 import (
 	m "rakewire/model"
+	"strconv"
+	"strings"
 )
 
-func (z *API) getGroups(userID uint64) ([]*Group, error) {
+func (z *API) getGroupsAndFeedGroups(userID uint64) ([]*Group, []*FeedGroup, error) {
 
-	result := []*Group{}
+	groups := []*Group{}
+	feedGroups := []*FeedGroup{}
 
-	groups, err := z.db.GroupGetAllByUser(userID)
+	groupFeeds, err := z.getGroupFeeds(userID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	for _, group := range groups {
+	for group, userfeeds := range groupFeeds {
+
 		g := &Group{
 			ID:    group.ID,
 			Title: group.Name,
 		}
-		result = append(result, g)
+		groups = append(groups, g)
+
+		var feedIDs []string
+		for _, userfeed := range userfeeds {
+			feedID := strconv.Itoa(int(userfeed.ID))
+			feedIDs = append(feedIDs, feedID)
+		}
+
+		fg := &FeedGroup{
+			GroupID: group.ID,
+			FeedIDs: strings.Join(feedIDs, ","),
+		}
+		feedGroups = append(feedGroups, fg)
+
 	}
 
-	return result, nil
+	return groups, feedGroups, nil
 
 }
 

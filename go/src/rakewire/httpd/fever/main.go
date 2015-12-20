@@ -66,22 +66,23 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 
 	if rsp.Authorized == 1 {
 
+	Loop:
 		for k := range req.URL.Query() {
-
 			switch k {
 			case "api":
 				rsp.LastRefreshed = time.Now().Unix() // TODO: get last refreshed feed for user; need groups first
 			case "groups":
-				if groups, err := z.getGroups(user.ID); err == nil {
+				if groups, feedGroups, err := z.getGroupsAndFeedGroups(user.ID); err == nil {
 					rsp.Groups = groups
+					rsp.FeedGroups = feedGroups
 				} else {
-					log.Printf("%-7s %-7s error retrieving groups: %s", logWarn, logName, err.Error())
+					log.Printf("%-7s %-7s error retrieving feeds and groups: %s", logWarn, logName, err.Error())
 				}
+				break Loop
 			}
-
 		} // loop
 
-	}
+	} // authorized
 
 	w.Header().Set(hContentType, mimeJSON)
 	if err := json.NewEncoder(w).Encode(&rsp); err != nil {
