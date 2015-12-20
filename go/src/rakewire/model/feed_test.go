@@ -171,7 +171,7 @@ func TestUpdateFetchTime3(t *testing.T) {
 	f.LastUpdated = now.Add(-3 * time.Hour).Add(-47 * time.Minute)
 	f.UpdateFetchTime(f.LastUpdated)
 
-	expectedTime := f.LastUpdated.Add(5 * time.Hour)
+	expectedTime := f.LastUpdated.Add(4 * time.Hour)
 	t.Logf("now:         %v", now)
 	t.Logf("lastUpdated: %v", f.LastUpdated)
 	t.Logf("nextFetch:   %v", f.NextFetch)

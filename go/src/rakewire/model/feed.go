@@ -50,7 +50,7 @@ func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
 	bumpFetchTime :=
 		func(interval time.Duration) {
-			min := now.Add(1 * interval).Add(-1 * time.Minute)
+			min := now.Add(1 * time.Minute)
 			result := lastUpdated
 			for result.Before(min) {
 				result = result.Add(interval)
