@@ -139,3 +139,26 @@ func TestBadAuth(t *testing.T) {
 	}
 
 }
+
+func TestXmlUnsupported(t *testing.T) {
+
+	t.Parallel()
+
+	database, databaseFile := openDatabase(t)
+	defer closeDatabase(t, database, databaseFile)
+
+	apiFever := NewAPI("/fever", database)
+
+	server := httptest.NewServer(apiFever.Router())
+	defer server.Close()
+
+	u := server.URL + "/fever?api=xml"
+
+	rsp, err := http.PostForm(u, nil)
+	if err != nil {
+		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())
+	} else if rsp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("Bad error code, expected %d, actual %d", http.StatusBadRequest, rsp.StatusCode)
+	}
+
+}
