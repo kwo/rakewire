@@ -12,9 +12,13 @@ type Configuration struct {
 
 // Database interface
 type Database interface {
+	GroupGetAllByUser(userID uint64) ([]*m.Group, error)
+
 	UserGetByUsername(username string) (*m.User, error)
 	UserGetByFeverHash(feverhash string) (*m.User, error)
 	UserSave(user *m.User) error
+
+	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
 
 	GetFeedByID(feedID uint64) (*m.Feed, error)
 	GetFeedByURL(url string) (*m.Feed, error)

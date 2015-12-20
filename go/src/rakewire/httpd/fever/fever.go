@@ -6,7 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	//m "rakewire/model"
+	m "rakewire/model"
 	"strings"
 	"time"
 )
@@ -46,6 +46,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	var user *m.User
 	useXML := req.URL.Query().Get("api") == "xml"
 
 	//var user *m.User
@@ -57,7 +58,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 		if u, err := z.db.UserGetByFeverHash(apiKey); err == nil && u != nil {
 			rsp.Authorized = 1
 			log.Printf("%-7s %-7s authorized: %s", logDebug, logName, u.Username)
-			//user = u
+			user = u
 		}
 	}
 
@@ -70,8 +71,12 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 			switch k {
 			case "api":
 				rsp.LastRefreshed = time.Now().Unix() // TODO: get last refreshed feed for user; need groups first
-			case "feeds":
-				// add to response
+			case "groups":
+				if groups, err := z.getGroups(user.ID); err == nil {
+					rsp.Groups = groups
+				} else {
+					log.Printf("%-7s %-7s error retrieving groups: %s", logWarn, logName, err.Error())
+				}
 			}
 
 		} // loop
