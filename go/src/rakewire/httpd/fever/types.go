@@ -37,3 +37,14 @@ type FeedGroup struct {
 	GroupID uint64 `json:"group_id"`
 	FeedIDs string `json:"feed_ids"` // comma separated
 }
+
+// Feed is a fever feed construct
+type Feed struct {
+	ID          uint64 `json:"id"`
+	FaviconID   uint64 `json:"favicon_id"`
+	Title       string `json:"title"`
+	URL         string `json:"url"`
+	SiteURL     string `json:"site_url"`
+	IsSpark     bool   `json:"is_spark"`
+	LastUpdated int64  `json:"last_updated_on_time,string"`
+}

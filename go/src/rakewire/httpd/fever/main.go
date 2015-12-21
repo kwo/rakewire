@@ -72,7 +72,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 			case "api":
 				rsp.LastRefreshed = time.Now().Unix() // TODO: get last refreshed feed for user; need groups first
 			case "groups":
-				if groups, feedGroups, err := z.getGroupsAndFeedGroups(user.ID); err == nil {
+				if groups, feedGroups, err := z.getGroups(user.ID); err == nil {
 					rsp.Groups = groups
 					rsp.FeedGroups = feedGroups
 				} else {

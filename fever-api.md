@@ -12,12 +12,33 @@
 
 Response contains groups and feeds_groups.
 
+A group object has the following members:
+id (positive integer)
+title (utf-8 string)
+
+A feeds_group object has the following members:
+group_id (positive integer)
+feed_ids (string/comma-separated list of positive integers)
+
 
 ### feeds (TODO)
 
 	?api&feeds
 
 Response contains feeds and feeds_groups.
+
+A feeds_group object has the following members:
+group_id (positive integer)
+feed_ids (string/comma-separated list of positive integers)
+
+A feed object has the following members:
+id (positive integer)
+favicon_id (positive integer)
+title (utf-8 string)
+url (utf-8 string)
+site_url (utf-8 string)
+is_spark (boolean integer)
+last_updated_on_time (Unix timestamp/integer)
 
 ### favicons
 
