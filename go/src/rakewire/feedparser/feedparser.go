@@ -98,6 +98,16 @@ const (
 var rssPerson = regexp.MustCompile(`^(.+)\s+\((.+)\)$`)
 
 // GetLinkSelf returns the link to the feed, if available
+func (z *Feed) GetLinkSelf() string {
+	return z.Links[linkSelf]
+}
+
+// GetLinkAlternate returns the link to an alternate representation (HTML?) of the feed, if available
+func (z *Feed) GetLinkAlternate() string {
+	return z.Links[linkAlternate]
+}
+
+// GetLinkSelf returns the link to the entry, if available
 func (z *Entry) GetLinkSelf() string {
 	return z.Links[linkSelf]
 }

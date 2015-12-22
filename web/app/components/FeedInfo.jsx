@@ -53,21 +53,26 @@ class FeedInfo extends React.Component {
 				</tr>
 
 				<tr key={3}>
+					<td><strong>Site</strong></td>
+					<td><a href={feed.siteURL}>{feed.siteURL}</a></td>
+				</tr>
+
+				<tr key={4}>
 					<td><strong>Last Updated</strong></td>
 					<td>{formatDate(feed.lastUpdated)}</td>
 				</tr>
 
-				<tr key={4}>
+				<tr key={5}>
 					<td><strong>Next Fetch</strong></td>
 					<td>{formatDate(feed.nextFetch)}</td>
 				</tr>
 
-				<tr key={5}>
+				<tr key={6}>
 					<td><strong>Status Since</strong></td>
 					<td>{formatDate(feed.statusSince)}</td>
 				</tr>
 
-				<tr key={6}>
+				<tr key={7}>
 					<td><strong>Notes</strong></td>
 					<td>{feed.notes}</td>
 				</tr>

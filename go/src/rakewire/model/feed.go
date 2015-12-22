@@ -11,8 +11,9 @@ type Feed struct {
 	Attempt *FeedLog `json:"-" kv:"-"`
 	Entries []*Entry `json:"-" kv:"-"`
 
-	ID  uint64 `json:"id"  kv:"NextFetch:2"`
-	URL string `json:"url" kv:"URL:1:lower"`
+	ID      uint64 `json:"id"  kv:"NextFetch:2"`
+	URL     string `json:"url" kv:"URL:1:lower"`
+	SiteURL string `json:"siteURL"`
 
 	ETag         string    `json:"etag"`
 	LastModified time.Time `json:"lastModified"`
@@ -50,7 +51,7 @@ func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
 	bumpFetchTime :=
 		func(interval time.Duration) {
-			min := now.Add(1 * time.Minute)
+			min := now.Add(1 * time.Minute) // TODO: add interval back in but round down/up to next interval
 			result := lastUpdated
 			for result.Before(min) {
 				result = result.Add(interval)

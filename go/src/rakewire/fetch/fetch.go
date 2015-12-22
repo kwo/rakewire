@@ -217,11 +217,8 @@ func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
 	feed.Attempt.Flavor = xmlFeed.Flavor
 	feed.Attempt.Generator = xmlFeed.Generator
 	feed.Attempt.Title = xmlFeed.Title
-
-	// set once, allow user override
-	if feed.Title == "" {
-		feed.Title = xmlFeed.Title
-	}
+	feed.Title = xmlFeed.Title
+	feed.SiteURL = xmlFeed.GetLinkAlternate()
 
 	// convert Entries to Entries
 	for _, xmlEntry := range xmlFeed.Entries {
