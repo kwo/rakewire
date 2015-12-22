@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	minPollInterval = time.Minute * 1
+	defaultPollInterval = time.Minute * 1
 )
 
 const (
@@ -46,9 +46,9 @@ type Service struct {
 func NewService(cfg *Configuration, database db.Database) *Service {
 
 	interval, err := time.ParseDuration(cfg.Interval)
-	if err != nil || interval < minPollInterval {
-		interval = minPollInterval
-		log.Printf("%-7s %-7s Bad or missing interval configuration parameter (%s), setting to default of %s.", logWarn, logName, cfg.Interval, minPollInterval.String())
+	if err != nil {
+		interval = defaultPollInterval
+		log.Printf("%-7s %-7s Bad or missing interval configuration parameter (%s), setting to default of %s.", logWarn, logName, cfg.Interval, defaultPollInterval.String())
 	}
 
 	return &Service{
@@ -144,7 +144,9 @@ func (z *Service) poll(t time.Time) {
 	}
 
 	// convert feeds
-	log.Printf("%-7s %-7s polling feeds: %d", logInfo, logName, len(feeds))
+	if numFeeds := len(feeds); numFeeds > 0 {
+		log.Printf("%-7s %-7s polling feeds: %d", logInfo, logName, numFeeds)
+	}
 
 	// send to output
 	for i := 0; i < len(feeds) && !z.isKilled(); i++ {
