@@ -71,12 +71,20 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 			switch k {
 			case "api":
 				rsp.LastRefreshed = time.Now().Unix() // TODO: get last refreshed feed for user; need groups first
+			case "feeds":
+				if feeds, feedGroups, err := z.getFeeds(user.ID); err == nil {
+					rsp.Feeds = feeds
+					rsp.FeedGroups = feedGroups
+				} else {
+					log.Printf("%-7s %-7s error retrieving feeds and feed_groups: %s", logWarn, logName, err.Error())
+				}
+				break Loop
 			case "groups":
 				if groups, feedGroups, err := z.getGroups(user.ID); err == nil {
 					rsp.Groups = groups
 					rsp.FeedGroups = feedGroups
 				} else {
-					log.Printf("%-7s %-7s error retrieving feeds and groups: %s", logWarn, logName, err.Error())
+					log.Printf("%-7s %-7s error retrieving groups and feed_groups: %s", logWarn, logName, err.Error())
 				}
 				break Loop
 			}

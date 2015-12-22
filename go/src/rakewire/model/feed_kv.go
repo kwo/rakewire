@@ -22,6 +22,7 @@ const (
 const (
 	feedID            = "ID"
 	feedURL           = "URL"
+	feedSiteURL       = "SiteURL"
 	feedETag          = "ETag"
 	feedLastModified  = "LastModified"
 	feedLastUpdated   = "LastUpdated"
@@ -47,6 +48,7 @@ func (z *Feed) SetID(id uint64) {
 func (z *Feed) Clear() {
 	z.ID = 0
 	z.URL = ""
+	z.SiteURL = ""
 	z.ETag = ""
 	z.LastModified = time.Time{}
 	z.LastUpdated = time.Time{}
@@ -69,6 +71,10 @@ func (z *Feed) Serialize() map[string]string {
 
 	if z.URL != "" {
 		result[feedURL] = z.URL
+	}
+
+	if z.SiteURL != "" {
+		result[feedSiteURL] = z.SiteURL
 	}
 
 	if z.ETag != "" {
@@ -124,6 +130,8 @@ func (z *Feed) Deserialize(values map[string]string) error {
 	}(feedID, values, errors)
 
 	z.URL = values[feedURL]
+
+	z.SiteURL = values[feedSiteURL]
 
 	z.ETag = values[feedETag]
 

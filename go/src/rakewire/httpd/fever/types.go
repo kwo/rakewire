@@ -22,8 +22,9 @@ type Response struct {
 	Version       int          `json:"api_version"`
 	Authorized    int          `json:"auth"`
 	LastRefreshed int64        `json:"last_refreshed_on_time,string,omitempty"`
+	Feeds         []*Feed      `json:"feeds,omitempty"`
+	FeedGroups    []*FeedGroup `json:"feed_groups,omitempty"`
 	Groups        []*Group     `json:"groups,omitempty"`
-	FeedGroups    []*FeedGroup `json:"feeds_groups,omitempty"`
 }
 
 // Group is the fever group construct
