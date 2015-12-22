@@ -20,7 +20,7 @@ type Database interface {
 // Response defines the json/xml response return by requests.
 type Response struct {
 	Version       int          `json:"api_version"`
-	Authorized    int          `json:"auth"`
+	Authorized    uint8        `json:"auth"`
 	LastRefreshed int64        `json:"last_refreshed_on_time,string,omitempty"`
 	Feeds         []*Feed      `json:"feeds,omitempty"`
 	FeedGroups    []*FeedGroup `json:"feed_groups,omitempty"`
@@ -46,6 +46,19 @@ type Feed struct {
 	Title       string `json:"title"`
 	URL         string `json:"url"`
 	SiteURL     string `json:"site_url"`
-	IsSpark     bool   `json:"is_spark"`
+	IsSpark     uint8  `json:"is_spark"`
 	LastUpdated int64  `json:"last_updated_on_time,string"`
+}
+
+// Item is a fever item construct
+type Item struct {
+	ID      uint64 `json:"id"`
+	FeedID  uint64 `json:"feed_id"`
+	Title   string `json:"title"`
+	Author  string `json:"author"`
+	HTML    string `json:"html"`
+	URL     string `json:"url"`
+	IsSaved uint8  `json:"is_saved"`
+	IsRead  uint8  `json:"is_read"`
+	Created int64  `json:"created_on_time"`
 }

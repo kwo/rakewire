@@ -6,7 +6,7 @@
 
 ## Read
 
-### groups (TODO)
+### groups (DONE)
 
 	?api&groups
 
@@ -21,7 +21,7 @@ group_id (positive integer)
 feed_ids (string/comma-separated list of positive integers)
 
 
-### feeds (TODO)
+### feeds (DONE)
 
 	?api&feeds
 
@@ -51,6 +51,27 @@ Response contains favicons.
 	?api&items [&since_id=] [&max_id=] [&with_ids=id,id]
 
 Response contains items and total_items.
+
+
+Use the since_id argument with the highest id of locally cached items to request 50 additional items. Repeat until the items array in the response is empty.
+
+Use the max_id argument with the lowest id of locally cached items (or 0 initially) to request 50 previous items. Repeat until the items array in the response is empty. (added in API version 2)
+
+Use the with_ids argument with a comma-separated list of item ids to request (a maximum of 50) specific items. (added in API version 2)
+
+
+total_items: contains the total number of items stored in the database
+
+An item object has the following members:
+id (positive integer)
+feed_id (positive integer)
+title (utf-8 string)
+author (utf-8 string)
+html (utf-8 string)
+url (utf-8 string)
+is_saved (boolean integer)
+is_read (boolean integer)
+created_on_time (Unix timestamp/integer)
 
 
 ### hot links

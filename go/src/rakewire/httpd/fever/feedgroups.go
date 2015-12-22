@@ -26,7 +26,7 @@ func (z *API) getFeeds(userID uint64) ([]*Feed, []*FeedGroup, error) {
 			FaviconID:   0, // TODO: favicon ID
 			URL:         mFeed.Feed.URL,
 			SiteURL:     mFeed.Feed.SiteURL,
-			IsSpark:     false,
+			IsSpark:     0,
 			LastUpdated: mFeed.Feed.LastUpdated.Unix(),
 		}
 		feeds = append(feeds, feed)
