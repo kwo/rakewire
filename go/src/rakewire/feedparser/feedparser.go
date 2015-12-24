@@ -259,6 +259,9 @@ func (z *Parser) doStartFeedAtom(e *element, start *xml.StartElement) {
 		z.feed.ID = z.makeText(e, start)
 	case e.Match(nsAtom, "link"):
 		key := e.Attr(nsNone, "rel")
+		if key == "" {
+			key = linkAlternate
+		}
 		value := makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 		z.feed.Links[key] = value
 	case e.Match(nsAtom, "rights"):

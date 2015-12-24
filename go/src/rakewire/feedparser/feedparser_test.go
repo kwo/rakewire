@@ -20,6 +20,56 @@ func TestMain(m *testing.M) {
 
 }
 
+func TestLinkWithoutRel(t *testing.T) {
+
+	// reference https://www.tbray.org/ongoing/ongoing.atom
+
+	t.Parallel()
+
+	atom := `
+	<?xml version='1.0' encoding='UTF-8'?>
+	<feed xmlns='http://www.w3.org/2005/Atom'
+	      xmlns:thr='http://purl.org/syndication/thread/1.0'
+	      xml:lang='en-us'>
+	 <title>ongoing by Tim Bray</title>
+	 <link rel='hub' href='http://pubsubhubbub.appspot.com/' />
+	 <id>https://www.tbray.org/ongoing/</id>
+	 <link href='https://www.tbray.org/ongoing/' />
+	 <link rel='self' href='https://www.tbray.org/ongoing/ongoing.atom' />
+	 <link rel='replies'       thr:count='101'       href='https://www.tbray.org/ongoing/comments.atom' />
+	 <logo>rsslogo.jpg</logo>
+	 <icon>/favicon.ico</icon>
+	 <updated>2015-12-24T01:04:28-08:00</updated>
+	 <author><name>Tim Bray</name></author>
+	 <subtitle>ongoing fragmented essay by Tim Bray</subtitle>
+	</feed>
+	`
+
+	p := NewParser()
+	feed, err := p.Parse(ioutil.NopCloser(strings.NewReader(atom)), "")
+	if err != nil {
+		t.Fatalf("Cannot parse Aton feed: %s", err.Error())
+	}
+	if feed == nil {
+		t.Fatal("Nil feed object")
+	}
+
+	if count := len(feed.Entries); count != 0 {
+		t.Fatalf("bad entry count, expected: %d, actual: %d", 0, count)
+	}
+
+	htmlLink := feed.GetLinkAlternate()
+	if htmlLink != "https://www.tbray.org/ongoing/" {
+		t.Errorf("Links without rel not being intrepreted as alternate link: expected: %s, actual: %s", "https://www.tbray.org/ongoing/", htmlLink)
+	}
+
+	selfLink := feed.GetLinkSelf()
+	if selfLink != "https://www.tbray.org/ongoing/ongoing.atom" {
+		t.Errorf("Links without rel not being intrepreted as alternate link: expected: %s, actual: %s", "https://www.tbray.org/ongoing/ongoing.atom", htmlLink)
+	}
+
+}
+
 func TestRSSPerson(t *testing.T) {
 
 	t.Parallel()
