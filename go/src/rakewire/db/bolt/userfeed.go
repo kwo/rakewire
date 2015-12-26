@@ -40,7 +40,7 @@ func (z *Service) UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error) {
 				if err := uf.Deserialize(data); err != nil {
 					return err
 				}
-				if data, ok := kvGet(id, bFeed); ok {
+				if data, ok := kvGet(uf.FeedID, bFeed); ok {
 					f := &m.Feed{}
 					if err := f.Deserialize(data); err != nil {
 						return err
