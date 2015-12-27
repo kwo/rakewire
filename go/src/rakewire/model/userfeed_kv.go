@@ -15,6 +15,7 @@ import (
 // index names
 const (
 	UserFeedEntity    = "UserFeed"
+	UserFeedIndexFeed = "Feed"
 	UserFeedIndexUser = "User"
 )
 
@@ -151,6 +152,13 @@ func (z *UserFeed) IndexKeys() map[string][]string {
 	result := make(map[string][]string)
 
 	data := z.Serialize()
+
+	result[UserFeedIndexFeed] = []string{
+
+		data[userfeedFeedID],
+
+		data[userfeedUserID],
+	}
 
 	result[UserFeedIndexUser] = []string{
 

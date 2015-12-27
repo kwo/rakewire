@@ -25,7 +25,7 @@ func kvGet(id uint64, b *bolt.Bucket) (map[string]string, bool) {
 	nxt := []byte(kvNxtKey(id))
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 		// assume proper key format of ID/fieldname
-		result[strings.SplitN(string(k), chSep, 2)[1]] = string(v)
+		result[kvKeyElement(k, 1)] = string(v)
 		found = true
 	} // for loop
 
@@ -183,6 +183,14 @@ func kvDelete(name string, value db.DataObject, tx *bolt.Tx) error {
 
 	return nil
 
+}
+
+func kvKeyElement(k []byte, index int) string {
+	return strings.Split(string(k), chSep)[index]
+}
+
+func kvKeyElementID(k []byte, index int) (uint64, error) {
+	return strconv.ParseUint(kvKeyElement(k, index), 10, 64)
 }
 
 func kvKey(id uint64) string {

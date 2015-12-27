@@ -6,19 +6,19 @@ import (
 	m "rakewire/model"
 )
 
-// SaveFeedsResponse response for SaveFeeds
-type SaveFeedsResponse struct {
+// FeedSavesResponse response for FeedSaves
+type FeedSavesResponse struct {
 	Count int `json:"count"`
 }
 
-func serializeSaveFeedsResponse(count int) ([]byte, error) {
-	return json.Marshal(&SaveFeedsResponse{
+func serializeFeedSavesResponse(count int) ([]byte, error) {
+	return json.Marshal(&FeedSavesResponse{
 		Count: count,
 	})
 }
 
-func deserializeSaveFeedsResponse(r io.Reader) (int, error) {
-	result := &SaveFeedsResponse{}
+func deserializeFeedSavesResponse(r io.Reader) (int, error) {
+	result := &FeedSavesResponse{}
 	err := json.NewDecoder(r).Decode(result)
 	if result == nil {
 		return 0, nil

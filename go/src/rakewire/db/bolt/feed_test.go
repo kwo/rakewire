@@ -24,7 +24,7 @@ func TestFeeds(t *testing.T) {
 	}
 
 	for _, feed := range feeds {
-		err = database.SaveFeed(feed)
+		_, err = database.FeedSave(feed)
 		assertNoError(t, err)
 	}
 
@@ -59,7 +59,7 @@ func TestURLIndex(t *testing.T) {
 	assertEqual(t, feed.ID, feed.Attempt.FeedID)
 
 	// save feeds
-	err := database.SaveFeed(feed)
+	_, err := database.FeedSave(feed)
 	assertNoError(t, err)
 
 	var feed2 *m.Feed
@@ -93,7 +93,7 @@ func TestURLIndex(t *testing.T) {
 	// update URL
 	feed2 = feeds2[0]
 	feed2.URL = URL2
-	err = database.SaveFeed(feed2)
+	_, err = database.FeedSave(feed2)
 	assertNoError(t, err)
 
 	// get feeds2, feed2
@@ -144,7 +144,7 @@ func TestIndexFetch(t *testing.T) {
 
 	// create new feed, add to database
 	feed := m.NewFeed("http://localhost/")
-	err = database.SaveFeed(feed)
+	_, err = database.FeedSave(feed)
 	assertNoError(t, err)
 
 	// retest
@@ -163,9 +163,9 @@ func TestIndexFetch(t *testing.T) {
 	// create new feed, add to database
 	feed2 := m.NewFeed("https://localhost/")
 	feed2.ID = feed.ID
-	err = database.SaveFeed(feed2)
+	_, err = database.FeedSave(feed2)
 	f3 := m.NewFeed("http://kangaroo.com/")
-	err = database.SaveFeed(f3)
+	_, err = database.FeedSave(f3)
 	assertNoError(t, err)
 
 	// retest

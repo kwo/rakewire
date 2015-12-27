@@ -42,7 +42,7 @@ func TestGroups(t *testing.T) {
 	mUserFeeds := []*m.UserFeed{}
 	for i := 0; i < 4; i++ {
 		f := m.NewFeed(fmt.Sprintf("http://localhost%d", i))
-		if err := database.SaveFeed(f); err != nil {
+		if _, err := database.FeedSave(f); err != nil {
 			t.Fatalf("Cannot add feed: %s", err.Error())
 		}
 		uf := m.NewUserFeed(user.ID, f.ID)
@@ -161,7 +161,7 @@ func TestFeeds(t *testing.T) {
 	mUserFeeds := []*m.UserFeed{}
 	for i := 0; i < 4; i++ {
 		f := m.NewFeed(fmt.Sprintf("http://localhost%d", i))
-		if err := database.SaveFeed(f); err != nil {
+		if _, err := database.FeedSave(f); err != nil {
 			t.Fatalf("Cannot add feed: %s", err.Error())
 		}
 		uf := m.NewUserFeed(user.ID, f.ID)

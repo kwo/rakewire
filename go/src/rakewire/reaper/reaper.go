@@ -168,7 +168,7 @@ func (z *Service) processResponse(feed *m.Feed) {
 	}
 
 	// save feed
-	err = z.database.SaveFeed(feed)
+	_, err = z.database.FeedSave(feed)
 	if err != nil {
 		log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, feed.URL, err.Error())
 		return

@@ -151,15 +151,15 @@ func (z *Service) feedsSaveText(w http.ResponseWriter, req *http.Request) {
 func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds []*m.Feed) {
 
 	for _, feed := range feeds {
-		err := z.database.SaveFeed(feed)
+		_, err := z.database.FeedSave(feed)
 		if err != nil {
-			log.Printf("%-7s %-7s Error in db.SaveFeed: %s", logWarn, logName, err.Error())
+			log.Printf("%-7s %-7s Error in db.FeedSave: %s", logWarn, logName, err.Error())
 			http.Error(w, "Cannot save feed to database.", http.StatusInternalServerError)
 			return
 		}
 	}
 
-	data, err := serializeSaveFeedsResponse(len(feeds))
+	data, err := serializeFeedSavesResponse(len(feeds))
 	if err != nil {
 		log.Printf("%-7s %-7s Error serializing response: %s", logWarn, logName, err.Error())
 		http.Error(w, "Cannot serialize response.", http.StatusInternalServerError)

@@ -16,6 +16,7 @@ const (
 
 const (
 	logName  = "[bolt]"
+	logTrace = "[TRACE]"
 	logDebug = "[DEBUG]"
 	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"

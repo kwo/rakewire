@@ -8,18 +8,21 @@ package model
 import (
 	"fmt"
 	"strconv"
+	"time"
 )
 
 // index names
 const (
-	UserEntryEntity       = "UserEntry"
-	UserEntryIndexStarred = "Starred"
-	UserEntryIndexUser    = "User"
+	UserEntryEntity    = "UserEntry"
+	UserEntryIndexRead = "Read"
+	UserEntryIndexStar = "Star"
 )
 
 const (
 	userentryID      = "ID"
 	userentryUserID  = "UserID"
+	userentryEntryID = "EntryID"
+	userentryUpdated = "Updated"
 	userentryRead    = "Read"
 	userentryStarred = "Starred"
 )
@@ -38,6 +41,8 @@ func (z *UserEntry) SetID(id uint64) {
 func (z *UserEntry) Clear() {
 	z.ID = 0
 	z.UserID = 0
+	z.EntryID = 0
+	z.Updated = time.Time{}
 	z.Read = false
 	z.Starred = false
 
@@ -53,6 +58,14 @@ func (z *UserEntry) Serialize() map[string]string {
 
 	if z.UserID != 0 {
 		result[userentryUserID] = fmt.Sprintf("%05d", z.UserID)
+	}
+
+	if z.EntryID != 0 {
+		result[userentryEntryID] = fmt.Sprintf("%05d", z.EntryID)
+	}
+
+	if !z.Updated.IsZero() {
+		result[userentryUpdated] = z.Updated.UTC().Format(time.RFC3339)
 	}
 
 	if z.Read {
@@ -88,6 +101,28 @@ func (z *UserEntry) Deserialize(values map[string]string) error {
 		return uint64(result)
 	}(userentryUserID, values, errors)
 
+	z.EntryID = func(fieldName string, values map[string]string, errors []error) uint64 {
+		result, err := strconv.ParseUint(values[fieldName], 10, 64)
+		if err != nil {
+			errors = append(errors, err)
+			return 0
+		}
+		return uint64(result)
+	}(userentryEntryID, values, errors)
+
+	z.Updated = func(fieldName string, values map[string]string, errors []error) time.Time {
+		result := time.Time{}
+		if value, ok := values[fieldName]; ok {
+			t, err := time.Parse(time.RFC3339, value)
+			if err != nil {
+				errors = append(errors, err)
+			} else {
+				result = t
+			}
+		}
+		return result
+	}(userentryUpdated, values, errors)
+
 	z.Read = func(fieldName string, values map[string]string, errors []error) bool {
 		result, err := strconv.ParseBool(values[fieldName])
 		if err != nil {
@@ -119,20 +154,26 @@ func (z *UserEntry) IndexKeys() map[string][]string {
 
 	data := z.Serialize()
 
-	result[UserEntryIndexStarred] = []string{
+	result[UserEntryIndexRead] = []string{
+
+		data[userentryUserID],
+
+		data[userentryRead],
+
+		data[userentryUpdated],
+
+		data[userentryEntryID],
+	}
+
+	result[UserEntryIndexStar] = []string{
 
 		data[userentryUserID],
 
 		data[userentryStarred],
 
-		data[userentryID],
-	}
+		data[userentryUpdated],
 
-	result[UserEntryIndexUser] = []string{
-
-		data[userentryUserID],
-
-		data[userentryID],
+		data[userentryEntryID],
 	}
 
 	return result

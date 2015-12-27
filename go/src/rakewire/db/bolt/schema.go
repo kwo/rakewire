@@ -10,7 +10,7 @@ import (
 
 const (
 	// SchemaVersion of the database
-	SchemaVersion = 1
+	SchemaVersion = 2
 )
 
 func checkSchema(z *Service) error {
@@ -35,11 +35,11 @@ func checkSchema(z *Service) error {
 				if err != nil {
 					break
 				}
-			// case 1:
-			// 	err = upgradeTo2(tx)
-			// 	if err != nil {
-			// 		break
-			// 	}
+			case 1:
+				err = upgradeTo2(tx)
+				if err != nil {
+					break
+				}
 			default:
 				err = fmt.Errorf("Unhandled schema version: %d", schemaVersion)
 			}
@@ -243,35 +243,58 @@ func upgradeTo1(tx *bolt.Tx) error {
 
 }
 
-// func upgradeTo2(tx *bolt.Tx) error {
-//
-// 	bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	bucketIndex, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	b, err := bucketData.CreateBucketIfNotExists([]byte(m.GroupEntity))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	bumpSequence(b)
-//
-// 	group := m.NewGroup(0, "")
-// 	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.GroupEntity))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	for k := range group.IndexKeys() {
-// 		_, err = b.CreateBucketIfNotExists([]byte(k))
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-//
-// 	return setSchemaVersion(tx, 2)
-//
-// }
+func upgradeTo2(tx *bolt.Tx) error {
+
+	var b *bolt.Bucket
+
+	// top level
+	bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
+	if err != nil {
+		return err
+	}
+	bucketIndex, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
+	if err != nil {
+		return err
+	}
+
+	// data
+	b, err = bucketData.CreateBucketIfNotExists([]byte(m.UserEntryEntity))
+	if err != nil {
+		return err
+	}
+	bumpSequence(b)
+
+	b, err = bucketData.CreateBucketIfNotExists([]byte(m.UserFeedEntity))
+	if err != nil {
+		return err
+	}
+	bumpSequence(b)
+
+	// indexes
+	ue := m.UserEntry{}
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.UserEntryEntity))
+	if err != nil {
+		return err
+	}
+	for k := range ue.IndexKeys() {
+		_, err = b.CreateBucketIfNotExists([]byte(k))
+		if err != nil {
+			return err
+		}
+	}
+
+	uf := m.NewUserFeed(0, 0)
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.UserFeedEntity))
+	if err != nil {
+		return err
+	}
+	for k := range uf.IndexKeys() {
+		_, err = b.CreateBucketIfNotExists([]byte(k))
+		if err != nil {
+			return err
+		}
+	}
+
+	return setSchemaVersion(tx, 2)
+
+}

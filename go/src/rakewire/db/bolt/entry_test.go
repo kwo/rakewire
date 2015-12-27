@@ -24,7 +24,7 @@ func TestGetFeedEntriesFromIDs(t *testing.T) {
 		entry.Title = fmt.Sprintf("Post %d", i)
 	}
 
-	if err := db.SaveFeed(feed); err != nil {
+	if _, err := db.FeedSave(feed); err != nil {
 		t.Fatal("error saving feed")
 	}
 

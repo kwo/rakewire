@@ -138,12 +138,14 @@ func (z *Service) GetFeedByURL(url string) (*m.Feed, error) {
 
 }
 
-// SaveFeed save feeds
-func (z *Service) SaveFeed(feed *m.Feed) error {
+// FeedSave save feeds
+func (z *Service) FeedSave(feed *m.Feed) ([]*m.Entry, error) {
 
 	if feed == nil {
-		return fmt.Errorf("Nil feed")
+		return nil, fmt.Errorf("Nil feed")
 	}
+
+	newEntries := []*m.Entry{}
 
 	z.Lock()
 	err := z.db.Update(func(tx *bolt.Tx) error {
@@ -158,10 +160,17 @@ func (z *Service) SaveFeed(feed *m.Feed) error {
 		// save entries
 		if feed.Entries != nil {
 			for _, entry := range feed.Entries {
+				if entry.ID == 0 {
+					newEntries = append(newEntries, entry)
+				}
 				if err := kvSave(m.EntryEntity, entry, tx); err != nil {
 					return err
 				}
 			}
+		}
+
+		if err := z.UserEntryAddNew(newEntries, tx); err != nil {
+			return err
 		}
 
 		// save feed itself
@@ -174,6 +183,6 @@ func (z *Service) SaveFeed(feed *m.Feed) error {
 	})
 	z.Unlock()
 
-	return err
+	return newEntries, err
 
 }

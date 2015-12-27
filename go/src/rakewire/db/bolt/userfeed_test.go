@@ -30,7 +30,7 @@ func TestUserFeed(t *testing.T) {
 	for i := 0; i < 4; i++ {
 		feed := m.NewFeed(fmt.Sprintf("http://localhost%d/", i))
 		feed.Title = fmt.Sprintf("Feed%d", i)
-		if err := db.SaveFeed(feed); err != nil {
+		if _, err := db.FeedSave(feed); err != nil {
 			t.Fatalf("Error saving feed: %s", err.Error())
 		}
 		feeds = append(feeds, feed)
