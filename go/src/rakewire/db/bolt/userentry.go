@@ -3,7 +3,6 @@ package bolt
 import (
 	"bytes"
 	"github.com/boltdb/bolt"
-	"log"
 	m "rakewire/model"
 	"strconv"
 )
@@ -48,14 +47,10 @@ func (z *Service) UserEntryAddNew(allEntries []*m.Entry, tx *bolt.Tx) error {
 		nxt := []byte(kvKeys(nxtKeys))
 		for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
 
-			log.Printf("%-7s %-7s UserEntryAddNew cursor: %s", logTrace, logName, k)
-
 			userID, err := kvKeyElementID(k, 1)
 			if err != nil {
 				return err
 			}
-
-			log.Printf("%-7s %-7s UserEntryAddNew userID: %d", logTrace, logName, userID)
 
 			for _, entry := range entries {
 				userentry := &m.UserEntry{
@@ -63,7 +58,6 @@ func (z *Service) UserEntryAddNew(allEntries []*m.Entry, tx *bolt.Tx) error {
 					EntryID: entry.ID,
 					Updated: entry.Updated,
 				}
-				log.Printf("%-7s %-7s UserEntryAddNew add: %d", logTrace, logName, entry.ID)
 				if err := kvSave(m.UserEntryEntity, userentry, tx); err != nil {
 					return err
 				}
@@ -101,7 +95,7 @@ func (z *Service) UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, erro
 		nxt := []byte(kvKeys(nxtKeys))
 		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 
-			log.Printf("%-7s %-7s user entries get unread: %s: %s", logDebug, logName, k, v)
+			//log.Printf("%-7s %-7s user entries get unread: %s: %s", logDebug, logName, k, v)
 
 			id, err := strconv.ParseUint(string(v), 10, 64)
 			if err != nil {
