@@ -87,6 +87,42 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 					log.Printf("%-7s %-7s error retrieving groups and feed_groups: %s", logWarn, logName, err.Error())
 				}
 				break Loop
+			case "items":
+				if count, err := z.db.UserEntryGetTotalForUser(user.ID); err == nil {
+					rsp.ItemCount = count
+				} else {
+					log.Printf("%-7s %-7s error retrieving item count: %s", logWarn, logName, err.Error())
+				}
+				if id := parseID(req.URL.Query(), "since_id"); id > 0 {
+					items, err := z.getItemsNext(user.ID, id)
+					if err == nil {
+						rsp.Items = items
+					} else {
+						log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
+					}
+				} else if id := parseID(req.URL.Query(), "max_id"); id > 0 {
+					items, err := z.getItemsPrev(user.ID, id)
+					if err == nil {
+						rsp.Items = items
+					} else {
+						log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
+					}
+				} else if ids := parseIDArray(req.URL.Query(), "with_ids"); ids != nil {
+					items, err := z.getItemsByIds(user.ID, ids)
+					if err == nil {
+						rsp.Items = items
+					} else {
+						log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
+					}
+				} else {
+					items, err := z.getItemsAll(user.ID)
+					if err == nil {
+						rsp.Items = items
+					} else {
+						log.Printf("%-7s %-7s error retrieving items all: %s", logWarn, logName, err.Error())
+					}
+				}
+				break Loop
 			}
 		} // loop
 

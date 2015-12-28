@@ -14,6 +14,10 @@ type API struct {
 type Database interface {
 	GroupGetAllByUser(userID uint64) ([]*m.Group, error)
 	UserGetByFeverHash(feverhash string) (*m.User, error)
+	UserEntryGetTotalForUser(userID uint64) (uint, error)
+	UserEntryGet(userID uint64, ids []uint64) ([]*m.UserEntry, error)
+	UserEntryGetNext(userID uint64, minID uint64, count int) ([]*m.UserEntry, error)
+	UserEntryGetPrev(userID uint64, maxID uint64, count int) ([]*m.UserEntry, error)
 	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
 }
 
@@ -25,6 +29,8 @@ type Response struct {
 	Feeds         []*Feed      `json:"feeds,omitempty"`
 	FeedGroups    []*FeedGroup `json:"feed_groups,omitempty"`
 	Groups        []*Group     `json:"groups,omitempty"`
+	Items         []*Item      `json:"items,omitempty"`
+	ItemCount     uint         `json:"total_items,omitempty"`
 }
 
 // Group is the fever group construct
@@ -52,13 +58,13 @@ type Feed struct {
 
 // Item is a fever item construct
 type Item struct {
-	ID      uint64 `json:"id"`
-	FeedID  uint64 `json:"feed_id"`
-	Title   string `json:"title"`
-	Author  string `json:"author"`
-	HTML    string `json:"html"`
-	URL     string `json:"url"`
-	IsSaved uint8  `json:"is_saved"`
-	IsRead  uint8  `json:"is_read"`
-	Created int64  `json:"created_on_time"`
+	ID         uint64 `json:"id"`
+	UserFeedID uint64 `json:"feed_id"`
+	Title      string `json:"title"`
+	Author     string `json:"author"`
+	HTML       string `json:"html"`
+	URL        string `json:"url"`
+	IsSaved    uint8  `json:"is_saved"`
+	IsRead     uint8  `json:"is_read"`
+	Created    int64  `json:"created_on_time"`
 }

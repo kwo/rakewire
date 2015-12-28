@@ -16,6 +16,7 @@ const (
 	UserEntryEntity    = "UserEntry"
 	UserEntryIndexRead = "Read"
 	UserEntryIndexStar = "Star"
+	UserEntryIndexUser = "User"
 )
 
 const (
@@ -174,6 +175,13 @@ func (z *UserEntry) IndexKeys() map[string][]string {
 		data[userentryUpdated],
 
 		data[userentryEntryID],
+	}
+
+	result[UserEntryIndexUser] = []string{
+
+		data[userentryUserID],
+
+		data[userentryID],
 	}
 
 	return result

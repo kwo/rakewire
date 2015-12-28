@@ -18,6 +18,13 @@ type Database interface {
 	UserGetByFeverHash(feverhash string) (*m.User, error)
 	UserSave(user *m.User) error
 
+	UserEntryGetTotalForUser(userID uint64) (uint, error)
+	UserEntryGet(userID uint64, ids []uint64) ([]*m.UserEntry, error)
+	UserEntryGetNext(userID uint64, minID uint64, count int) ([]*m.UserEntry, error)
+	UserEntryGetPrev(userID uint64, maxID uint64, count int) ([]*m.UserEntry, error)
+	//UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, error)
+	//UserEntrySave(userentries []*m.UserEntry) error
+
 	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
 
 	GetFeedByID(feedID uint64) (*m.Feed, error)
