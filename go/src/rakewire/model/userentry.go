@@ -8,11 +8,12 @@ import (
 
 // UserEntry defines an entry's status for a specific user.
 type UserEntry struct {
-	ID      uint64    `kv:"User:2"`
-	UserID  uint64    `kv:"Read:1,Star:1,User:1"`
-	EntryID uint64    `kv:"Read:4,Star:4"`
-	Updated time.Time `kv:"Read:3,Star:3"`
-	Read    bool      `kv:"Read:2"`
-	Starred bool      `kv:"Star:2"`
-	Entry   *Entry    `kv:"-"`
+	ID         uint64 `kv:"User:2"`
+	UserID     uint64 `kv:"Read:1,Star:1,User:1"`
+	EntryID    uint64 `kv:"Read:4,Star:4"`
+	UserFeedID uint64
+	Updated    time.Time `kv:"Read:3,Star:3"`
+	IsRead     bool      `kv:"Read:2"`
+	IsStarred  bool      `kv:"Star:2"`
+	Entry      *Entry    `kv:"-"`
 }

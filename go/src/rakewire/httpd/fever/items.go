@@ -71,13 +71,13 @@ func (z *API) getItemsByIds(userID uint64, ids []uint64) ([]*Item, error) {
 func toItem(entry *m.UserEntry) *Item {
 	return &Item{
 		ID:         entry.ID,
-		UserFeedID: 0,
+		UserFeedID: entry.UserFeedID,
 		Title:      entry.Entry.Title,
 		Author:     entry.Entry.Author,
 		HTML:       entry.Entry.Content,
 		URL:        entry.Entry.URL,
-		IsSaved:    boolToUint8(entry.Starred),
-		IsRead:     boolToUint8(entry.Read),
+		IsSaved:    boolToUint8(entry.IsStarred),
+		IsRead:     boolToUint8(entry.IsRead),
 		Created:    entry.Entry.Created.Unix(),
 	}
 }

@@ -85,9 +85,9 @@ func TestUserEntry(t *testing.T) {
 		t.Fatalf("bad user entries count, expected %d, actual %d", 15, len(userentries))
 	}
 
-	userentries[12].Read = true
-	userentries[13].Read = true
-	userentries[14].Read = true
+	userentries[12].IsRead = true
+	userentries[13].IsRead = true
+	userentries[14].IsRead = true
 	readEntries := []*m.UserEntry{
 		userentries[12], userentries[13], userentries[14],
 	}

@@ -20,12 +20,13 @@ const (
 )
 
 const (
-	userentryID      = "ID"
-	userentryUserID  = "UserID"
-	userentryEntryID = "EntryID"
-	userentryUpdated = "Updated"
-	userentryRead    = "Read"
-	userentryStarred = "Starred"
+	userentryID         = "ID"
+	userentryUserID     = "UserID"
+	userentryEntryID    = "EntryID"
+	userentryUserFeedID = "UserFeedID"
+	userentryUpdated    = "Updated"
+	userentryIsRead     = "IsRead"
+	userentryIsStarred  = "IsStarred"
 )
 
 // GetID return the primary key of the object.
@@ -43,9 +44,10 @@ func (z *UserEntry) Clear() {
 	z.ID = 0
 	z.UserID = 0
 	z.EntryID = 0
+	z.UserFeedID = 0
 	z.Updated = time.Time{}
-	z.Read = false
-	z.Starred = false
+	z.IsRead = false
+	z.IsStarred = false
 
 }
 
@@ -65,16 +67,20 @@ func (z *UserEntry) Serialize() map[string]string {
 		result[userentryEntryID] = fmt.Sprintf("%05d", z.EntryID)
 	}
 
+	if z.UserFeedID != 0 {
+		result[userentryUserFeedID] = fmt.Sprintf("%05d", z.UserFeedID)
+	}
+
 	if !z.Updated.IsZero() {
 		result[userentryUpdated] = z.Updated.UTC().Format(time.RFC3339)
 	}
 
-	if z.Read {
-		result[userentryRead] = fmt.Sprintf("%t", z.Read)
+	if z.IsRead {
+		result[userentryIsRead] = fmt.Sprintf("%t", z.IsRead)
 	}
 
-	if z.Starred {
-		result[userentryStarred] = fmt.Sprintf("%t", z.Starred)
+	if z.IsStarred {
+		result[userentryIsStarred] = fmt.Sprintf("%t", z.IsStarred)
 	}
 
 	return result
@@ -111,6 +117,15 @@ func (z *UserEntry) Deserialize(values map[string]string) error {
 		return uint64(result)
 	}(userentryEntryID, values, errors)
 
+	z.UserFeedID = func(fieldName string, values map[string]string, errors []error) uint64 {
+		result, err := strconv.ParseUint(values[fieldName], 10, 64)
+		if err != nil {
+			errors = append(errors, err)
+			return 0
+		}
+		return uint64(result)
+	}(userentryUserFeedID, values, errors)
+
 	z.Updated = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
@@ -124,23 +139,23 @@ func (z *UserEntry) Deserialize(values map[string]string) error {
 		return result
 	}(userentryUpdated, values, errors)
 
-	z.Read = func(fieldName string, values map[string]string, errors []error) bool {
+	z.IsRead = func(fieldName string, values map[string]string, errors []error) bool {
 		result, err := strconv.ParseBool(values[fieldName])
 		if err != nil {
 			errors = append(errors, err)
 			return false
 		}
 		return result
-	}(userentryRead, values, errors)
+	}(userentryIsRead, values, errors)
 
-	z.Starred = func(fieldName string, values map[string]string, errors []error) bool {
+	z.IsStarred = func(fieldName string, values map[string]string, errors []error) bool {
 		result, err := strconv.ParseBool(values[fieldName])
 		if err != nil {
 			errors = append(errors, err)
 			return false
 		}
 		return result
-	}(userentryStarred, values, errors)
+	}(userentryIsStarred, values, errors)
 
 	if len(errors) > 0 {
 		return errors[0]
@@ -159,7 +174,7 @@ func (z *UserEntry) IndexKeys() map[string][]string {
 
 		data[userentryUserID],
 
-		data[userentryRead],
+		data[userentryIsRead],
 
 		data[userentryUpdated],
 
@@ -170,7 +185,7 @@ func (z *UserEntry) IndexKeys() map[string][]string {
 
 		data[userentryUserID],
 
-		data[userentryStarred],
+		data[userentryIsStarred],
 
 		data[userentryUpdated],
 

@@ -45,18 +45,26 @@ func (z *Service) UserEntryAddNew(allEntries []*m.Entry, tx *bolt.Tx) error {
 		c := bIndex.Cursor()
 		min := []byte(kvKeys(minKeys))
 		nxt := []byte(kvKeys(nxtKeys))
-		for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
+		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 
 			userID, err := kvKeyElementID(k, 1)
 			if err != nil {
 				return err
 			}
 
+			// TODO: get whole userfeed, add option to mark entries as read when new
+
+			userFeedID, err := strconv.ParseUint(string(v), 10, 64)
+			if err != nil {
+				return err
+			}
+
 			for _, entry := range entries {
 				userentry := &m.UserEntry{
-					UserID:  userID,
-					EntryID: entry.ID,
-					Updated: entry.Updated,
+					UserID:     userID,
+					UserFeedID: userFeedID,
+					EntryID:    entry.ID,
+					Updated:    entry.Updated,
 				}
 				if err := kvSave(m.UserEntryEntity, userentry, tx); err != nil {
 					return err
@@ -81,7 +89,7 @@ func (z *Service) UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, erro
 	ue.UserID = userID
 	minKeys := ue.IndexKeys()[m.UserEntryIndexRead]
 	ue.UserID = userID + 1
-	ue.Read = true
+	ue.IsRead = true
 	nxtKeys := ue.IndexKeys()[m.UserEntryIndexRead]
 
 	err := z.db.View(func(tx *bolt.Tx) error {
