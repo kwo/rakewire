@@ -52,12 +52,6 @@ func (z *Service) apiRouter(prefix string) *mux.Router {
 
 	router := mux.NewRouter()
 
-	var prefixAdmin = prefix + "/admin"
-	var prefixAdminRepair = prefixAdmin + "/repairdb"
-	router.Path(prefixAdminRepair).Methods(mPost).HandlerFunc(z.repairDatabase)
-	router.Path(prefixAdminRepair).HandlerFunc(notSupported)
-	router.Path(prefixAdmin).HandlerFunc(notFound)
-
 	var prefixFeeds = prefix + "/feeds"
 	router.Path(prefixFeeds).Methods(mGet).Queries("url", "{url:.+}").HandlerFunc(z.feedsGetFeedByURL)
 	router.Path(prefixFeeds).Methods(mGet).HandlerFunc(z.feedsGet)

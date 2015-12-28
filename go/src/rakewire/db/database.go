@@ -37,8 +37,6 @@ type Database interface {
 	GetFeedLog(feedID uint64, since time.Duration) ([]*m.FeedLog, error)
 	GetFeedEntriesFromIDs(feedID uint64, guIDs []string) (map[string]*m.Entry, error)
 	FeedSave(*m.Feed) ([]*m.Entry, error)
-
-	Repair() error
 }
 
 // DataObject defines the functions necessary for objects to be persisted to the database
