@@ -46,7 +46,7 @@ last_updated_on_time (Unix timestamp/integer)
 
 Response contains favicons.
 
-### items (TODO)
+### items (DONE)
 
 	?api&items [&since_id=] [&max_id=] [&with_ids=id,id]
 

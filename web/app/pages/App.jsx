@@ -2,7 +2,7 @@ import React, {PropTypes} from 'react';
 import AppHeader from '../components/AppHeader';
 
 const Config = {
-	rootURL: '/api'
+	rootURL: '/api0'
 };
 
 class App extends React.Component {
