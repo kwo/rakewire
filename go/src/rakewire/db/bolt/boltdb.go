@@ -60,7 +60,7 @@ func (z *Service) Start() error {
 	}
 	z.db = db
 
-	if err := checkSchema(z); err != nil {
+	if err := z.checkDatabase(); err != nil {
 		log.Printf("%-7s %-7s cannot initialize database: %s", logError, logName, err.Error())
 		return err
 	}
@@ -97,13 +97,4 @@ func (z *Service) IsRunning() bool {
 	z.Lock()
 	defer z.Unlock()
 	return z.running
-}
-
-// Repair the database
-func (z *Service) Repair() error {
-
-	// TODO: reimplement repair database
-
-	return nil
-
 }

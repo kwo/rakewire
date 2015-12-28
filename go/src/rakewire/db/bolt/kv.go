@@ -57,6 +57,27 @@ func kvGetFromIndex(name string, index string, keys []string, tx *bolt.Tx) (map[
 
 }
 
+func kvGetUniqueIDs(b *bolt.Bucket) ([]uint64, error) {
+
+	var result []uint64
+
+	var lastID uint64
+	err := b.ForEach(func(k, v []byte) error {
+		id, err := kvKeyElementID(k, 0)
+		if err != nil {
+			return err
+		}
+		if id != lastID {
+			result = append(result, id)
+			lastID = id
+		}
+		return nil
+	})
+
+	return result, err
+
+}
+
 func kvPut(id uint64, values map[string]string, b *bolt.Bucket) error {
 
 	// remove old records

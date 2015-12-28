@@ -1,9 +1,9 @@
 package bolt
 
 import (
-	"fmt"
 	"github.com/boltdb/bolt"
 	"log"
+	"rakewire/db"
 	m "rakewire/model"
 	"strconv"
 )
@@ -13,38 +13,24 @@ const (
 	SchemaVersion = 2
 )
 
-func checkSchema(z *Service) error {
+func (z *Service) checkDatabase() error {
 
 	// check that buckets exist
 	// z.Lock() - called in z.Open
 	err := z.db.Update(func(tx *bolt.Tx) error {
 
-		var err error
-
-		for {
-
-			schemaVersion := getSchemaVersion(tx)
-			log.Printf("%-7s %-7s schema version: %d", logDebug, logName, schemaVersion)
-			if schemaVersion == SchemaVersion {
-				break
+		schemaVersion := getSchemaVersion(tx)
+		if schemaVersion > 0 && schemaVersion != SchemaVersion {
+			if err := z.rebuildIndexes(tx); err != nil {
+				return err
 			}
-
-			switch schemaVersion {
-			case 0:
-				err = upgradeTo1(tx)
-				if err != nil {
-					break
-				}
-			case 1:
-				err = upgradeTo2(tx)
-				if err != nil {
-					break
-				}
-			default:
-				err = fmt.Errorf("Unhandled schema version: %d", schemaVersion)
+		} else {
+			if err := z.checkSchema(tx); err != nil {
+				return err
 			}
+		}
 
-		} // loop schemaVersion
+		setSchemaVersion(tx, SchemaVersion)
 
 		return nil
 
@@ -55,48 +41,9 @@ func checkSchema(z *Service) error {
 
 }
 
-func getSchemaVersion(tx *bolt.Tx) int {
+func (z *Service) checkSchema(tx *bolt.Tx) error {
 
-	bucketInfo := tx.Bucket([]byte("Info"))
-	if bucketInfo != nil {
-		data := bucketInfo.Get([]byte("schema-version"))
-		if len(data) > 0 {
-			value, err := strconv.ParseInt(string(data), 10, 64)
-			if err == nil && value > 0 {
-				return int(value)
-			}
-		}
-	}
-
-	return 0
-
-}
-
-func setSchemaVersion(tx *bolt.Tx, version int) error {
-	bucketInfo, err := tx.CreateBucketIfNotExists([]byte("Info"))
-	if err != nil {
-		return err
-	}
-	return bucketInfo.Put([]byte("schema-version"), []byte(strconv.FormatInt(int64(version), 10)))
-}
-
-func bumpSequence(b *bolt.Bucket) error {
-
-	for {
-		n, err := b.NextSequence()
-		if err != nil {
-			return err
-		}
-		if n >= 10000 {
-			break
-		}
-	}
-
-	return nil
-
-}
-
-func upgradeTo1(tx *bolt.Tx) error {
+	log.Printf("%-7s %-7s checking schema...", logDebug, logName)
 
 	var b *bolt.Bucket
 
@@ -115,43 +62,36 @@ func upgradeTo1(tx *bolt.Tx) error {
 	if err != nil {
 		return err
 	}
-	bumpSequence(b)
 
 	b, err = bucketData.CreateBucketIfNotExists([]byte(m.GroupEntity))
 	if err != nil {
 		return err
 	}
-	bumpSequence(b)
 
 	b, err = bucketData.CreateBucketIfNotExists([]byte(m.FeedEntity))
 	if err != nil {
 		return err
 	}
-	bumpSequence(b)
 
 	b, err = bucketData.CreateBucketIfNotExists([]byte(m.FeedLogEntity))
 	if err != nil {
 		return err
 	}
-	bumpSequence(b)
 
 	b, err = bucketData.CreateBucketIfNotExists([]byte(m.EntryEntity))
 	if err != nil {
 		return err
 	}
-	bumpSequence(b)
 
 	b, err = bucketData.CreateBucketIfNotExists([]byte(m.UserEntryEntity))
 	if err != nil {
 		return err
 	}
-	bumpSequence(b)
 
 	b, err = bucketData.CreateBucketIfNotExists([]byte(m.UserFeedEntity))
 	if err != nil {
 		return err
 	}
-	bumpSequence(b)
 
 	// indexes
 
@@ -239,62 +179,107 @@ func upgradeTo1(tx *bolt.Tx) error {
 		}
 	}
 
-	return setSchemaVersion(tx, 1)
+	return nil
 
 }
 
-func upgradeTo2(tx *bolt.Tx) error {
+func (z *Service) rebuildIndexes(tx *bolt.Tx) error {
 
-	var b *bolt.Bucket
+	log.Printf("%-7s %-7s rebuilding indexes", logDebug, logName)
 
-	// top level
-	bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
-	if err != nil {
-		return err
-	}
-	bucketIndex, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
+	err := tx.DeleteBucket([]byte(bucketIndex))
 	if err != nil {
 		return err
 	}
 
-	// data
-	b, err = bucketData.CreateBucketIfNotExists([]byte(m.UserEntryEntity))
+	err = z.checkSchema(tx)
 	if err != nil {
 		return err
 	}
-	bumpSequence(b)
 
-	b, err = bucketData.CreateBucketIfNotExists([]byte(m.UserFeedEntity))
+	err = z.rebuildIndexesForEntity(m.UserEntity, &m.User{}, tx)
 	if err != nil {
 		return err
 	}
-	bumpSequence(b)
 
-	// indexes
-	ue := m.UserEntry{}
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.UserEntryEntity))
+	err = z.rebuildIndexesForEntity(m.GroupEntity, &m.Group{}, tx)
 	if err != nil {
 		return err
 	}
-	for k := range ue.IndexKeys() {
-		_, err = b.CreateBucketIfNotExists([]byte(k))
-		if err != nil {
-			return err
+
+	err = z.rebuildIndexesForEntity(m.FeedEntity, &m.Feed{}, tx)
+	if err != nil {
+		return err
+	}
+
+	err = z.rebuildIndexesForEntity(m.FeedLogEntity, &m.FeedLog{}, tx)
+	if err != nil {
+		return err
+	}
+
+	err = z.rebuildIndexesForEntity(m.EntryEntity, &m.Entry{}, tx)
+	if err != nil {
+		return err
+	}
+
+	err = z.rebuildIndexesForEntity(m.UserEntryEntity, &m.UserEntry{}, tx)
+	if err != nil {
+		return err
+	}
+
+	err = z.rebuildIndexesForEntity(m.UserFeedEntity, &m.UserFeed{}, tx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (z *Service) rebuildIndexesForEntity(entityName string, dao db.DataObject, tx *bolt.Tx) error {
+
+	bEntity := tx.Bucket([]byte(bucketData)).Bucket([]byte(entityName))
+	ids, err := kvGetUniqueIDs(bEntity)
+	if err != nil {
+		return err
+	}
+
+	for _, id := range ids {
+		dao.Clear()
+		if data, ok := kvGet(id, bEntity); ok {
+			if err := dao.Deserialize(data); err != nil {
+				return err
+			}
+			if err := kvSaveIndexes(entityName, id, dao.IndexKeys(), nil, tx); err != nil {
+				return err
+			}
 		}
 	}
 
-	uf := m.NewUserFeed(0, 0)
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(m.UserFeedEntity))
-	if err != nil {
-		return err
-	}
-	for k := range uf.IndexKeys() {
-		_, err = b.CreateBucketIfNotExists([]byte(k))
-		if err != nil {
-			return err
+	return nil
+}
+
+func getSchemaVersion(tx *bolt.Tx) int {
+
+	bucketInfo := tx.Bucket([]byte("Info"))
+	if bucketInfo != nil {
+		data := bucketInfo.Get([]byte("schema-version"))
+		if len(data) > 0 {
+			value, err := strconv.ParseInt(string(data), 10, 64)
+			if err == nil && value > 0 {
+				return int(value)
+			}
 		}
 	}
 
-	return setSchemaVersion(tx, 2)
+	return 0
 
+}
+
+func setSchemaVersion(tx *bolt.Tx, version int) error {
+	bucketInfo, err := tx.CreateBucketIfNotExists([]byte("Info"))
+	if err != nil {
+		return err
+	}
+	return bucketInfo.Put([]byte("schema-version"), []byte(strconv.FormatInt(int64(version), 10)))
 }
