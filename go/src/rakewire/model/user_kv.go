@@ -45,22 +45,23 @@ func (z *User) Clear() {
 }
 
 // Serialize serializes an object to a list of key-values.
-func (z *User) Serialize() map[string]string {
+func (z *User) Serialize(flags ...bool) map[string]string {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if z.ID != 0 {
+	if flagNoZeroCheck || z.ID != 0 {
 		result[userID] = fmt.Sprintf("%05d", z.ID)
 	}
 
-	if z.Username != "" {
+	if flagNoZeroCheck || z.Username != "" {
 		result[userUsername] = z.Username
 	}
 
-	if z.PasswordHash != "" {
+	if flagNoZeroCheck || z.PasswordHash != "" {
 		result[userPasswordHash] = z.PasswordHash
 	}
 
-	if z.FeverHash != "" {
+	if flagNoZeroCheck || z.FeverHash != "" {
 		result[userFeverHash] = z.FeverHash
 	}
 
@@ -97,7 +98,7 @@ func (z *User) IndexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize()
+	data := z.Serialize(true)
 
 	result[UserIndexFeverHash] = []string{
 

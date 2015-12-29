@@ -62,54 +62,55 @@ func (z *Feed) Clear() {
 }
 
 // Serialize serializes an object to a list of key-values.
-func (z *Feed) Serialize() map[string]string {
+func (z *Feed) Serialize(flags ...bool) map[string]string {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if z.ID != 0 {
+	if flagNoZeroCheck || z.ID != 0 {
 		result[feedID] = fmt.Sprintf("%05d", z.ID)
 	}
 
-	if z.URL != "" {
+	if flagNoZeroCheck || z.URL != "" {
 		result[feedURL] = z.URL
 	}
 
-	if z.SiteURL != "" {
+	if flagNoZeroCheck || z.SiteURL != "" {
 		result[feedSiteURL] = z.SiteURL
 	}
 
-	if z.ETag != "" {
+	if flagNoZeroCheck || z.ETag != "" {
 		result[feedETag] = z.ETag
 	}
 
-	if !z.LastModified.IsZero() {
+	if flagNoZeroCheck || !z.LastModified.IsZero() {
 		result[feedLastModified] = z.LastModified.UTC().Format(time.RFC3339)
 	}
 
-	if !z.LastUpdated.IsZero() {
+	if flagNoZeroCheck || !z.LastUpdated.IsZero() {
 		result[feedLastUpdated] = z.LastUpdated.UTC().Format(time.RFC3339)
 	}
 
-	if !z.NextFetch.IsZero() {
+	if flagNoZeroCheck || !z.NextFetch.IsZero() {
 		result[feedNextFetch] = z.NextFetch.UTC().Format(time.RFC3339)
 	}
 
-	if z.Notes != "" {
+	if flagNoZeroCheck || z.Notes != "" {
 		result[feedNotes] = z.Notes
 	}
 
-	if z.Title != "" {
+	if flagNoZeroCheck || z.Title != "" {
 		result[feedTitle] = z.Title
 	}
 
-	if z.Status != "" {
+	if flagNoZeroCheck || z.Status != "" {
 		result[feedStatus] = z.Status
 	}
 
-	if z.StatusMessage != "" {
+	if flagNoZeroCheck || z.StatusMessage != "" {
 		result[feedStatusMessage] = z.StatusMessage
 	}
 
-	if !z.StatusSince.IsZero() {
+	if flagNoZeroCheck || !z.StatusSince.IsZero() {
 		result[feedStatusSince] = z.StatusSince.UTC().Format(time.RFC3339)
 	}
 
@@ -206,7 +207,7 @@ func (z *Feed) IndexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize()
+	data := z.Serialize(true)
 
 	result[FeedIndexNextFetch] = []string{
 

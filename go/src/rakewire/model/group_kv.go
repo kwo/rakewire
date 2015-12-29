@@ -41,18 +41,19 @@ func (z *Group) Clear() {
 }
 
 // Serialize serializes an object to a list of key-values.
-func (z *Group) Serialize() map[string]string {
+func (z *Group) Serialize(flags ...bool) map[string]string {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if z.ID != 0 {
+	if flagNoZeroCheck || z.ID != 0 {
 		result[groupID] = fmt.Sprintf("%05d", z.ID)
 	}
 
-	if z.UserID != 0 {
+	if flagNoZeroCheck || z.UserID != 0 {
 		result[groupUserID] = fmt.Sprintf("%05d", z.UserID)
 	}
 
-	if z.Name != "" {
+	if flagNoZeroCheck || z.Name != "" {
 		result[groupName] = z.Name
 	}
 
@@ -94,7 +95,7 @@ func (z *Group) IndexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize()
+	data := z.Serialize(true)
 
 	result[GroupIndexUserGroup] = []string{
 

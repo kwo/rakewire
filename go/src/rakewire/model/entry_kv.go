@@ -54,42 +54,43 @@ func (z *Entry) Clear() {
 }
 
 // Serialize serializes an object to a list of key-values.
-func (z *Entry) Serialize() map[string]string {
+func (z *Entry) Serialize(flags ...bool) map[string]string {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if z.ID != 0 {
+	if flagNoZeroCheck || z.ID != 0 {
 		result[entryID] = fmt.Sprintf("%05d", z.ID)
 	}
 
-	if z.GUID != "" {
+	if flagNoZeroCheck || z.GUID != "" {
 		result[entryGUID] = z.GUID
 	}
 
-	if z.FeedID != 0 {
+	if flagNoZeroCheck || z.FeedID != 0 {
 		result[entryFeedID] = fmt.Sprintf("%05d", z.FeedID)
 	}
 
-	if !z.Created.IsZero() {
+	if flagNoZeroCheck || !z.Created.IsZero() {
 		result[entryCreated] = z.Created.UTC().Format(time.RFC3339)
 	}
 
-	if !z.Updated.IsZero() {
+	if flagNoZeroCheck || !z.Updated.IsZero() {
 		result[entryUpdated] = z.Updated.UTC().Format(time.RFC3339)
 	}
 
-	if z.URL != "" {
+	if flagNoZeroCheck || z.URL != "" {
 		result[entryURL] = z.URL
 	}
 
-	if z.Author != "" {
+	if flagNoZeroCheck || z.Author != "" {
 		result[entryAuthor] = z.Author
 	}
 
-	if z.Title != "" {
+	if flagNoZeroCheck || z.Title != "" {
 		result[entryTitle] = z.Title
 	}
 
-	if z.Content != "" {
+	if flagNoZeroCheck || z.Content != "" {
 		result[entryContent] = z.Content
 	}
 
@@ -165,7 +166,7 @@ func (z *Entry) IndexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize()
+	data := z.Serialize(true)
 
 	result[EntryIndexGUID] = []string{
 

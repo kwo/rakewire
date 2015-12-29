@@ -51,10 +51,11 @@ func (z *{{.Name}}) Clear() {
 }
 
 // Serialize serializes an object to a list of key-values.
-func (z *{{.Name}}) Serialize() map[string]string {
+func (z *{{.Name}}) Serialize(flags ...bool) map[string]string {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 	{{range $index, $field := .Fields}}
-		if {{.ZeroTest}} {
+		if flagNoZeroCheck || {{.ZeroTest}} {
 			result[{{$structure.NameLower}}{{.Name}}] = {{.SerializeCommand}}
 		}
 	{{end}}
@@ -78,7 +79,7 @@ func (z *{{.Name}}) IndexKeys() map[string][]string {
 	{{$struct := .}}
 	result := make(map[string][]string)
 	{{if ne (len .Indexes) 0}}
-	data := z.Serialize()
+	data := z.Serialize(true)
 	{{end}}
 	{{range $name, $fields := .Indexes}}
 	result[{{$structure.Name}}Index{{$name}}] = []string{
@@ -100,12 +101,10 @@ func (z *{{.Name}}) IndexKeys() map[string][]string {
 
 var tplDeserializeDefault = `values[{{.StructNameLower}}{{.Name}}]`
 var tplDeserializeBool = `func (fieldName string, values map[string]string, errors []error) bool {
-	result, err := strconv.ParseBool(values[fieldName])
-	if err != nil {
-		errors = append(errors, err)
-		return false
+	if value, ok := values[fieldName]; ok {
+		return value == "1"
 	}
-	return result
+	return false
 }({{.StructNameLower}}{{.Name}}, values, errors)
 `
 var tplDeserializeFloat = `func (fieldName string, values map[string]string, errors []error) {{.Type}} {
@@ -181,7 +180,12 @@ var tplDeserializeUintArray = `func (fieldName string, values map[string]string,
 `
 
 var tplSerializeDefault = `z.{{.Name}}`
-var tplSerializeBool = `fmt.Sprintf("%t", z.{{.Name}})`
+var tplSerializeBool = `func(value {{.Type}}) string {
+	if value {
+		return "1"
+	}
+	return "0"
+}(z.{{.Name}})`
 var tplSerializeFloat = `fmt.Sprintf("%f", z.{{.Name}})`
 var tplSerializeInt = `fmt.Sprintf("%d", z.{{.Name}})`
 var tplSerializeIntKey = `fmt.Sprintf("%05d", z.{{.Name}})`

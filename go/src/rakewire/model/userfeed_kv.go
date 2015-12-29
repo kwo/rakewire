@@ -50,22 +50,23 @@ func (z *UserFeed) Clear() {
 }
 
 // Serialize serializes an object to a list of key-values.
-func (z *UserFeed) Serialize() map[string]string {
+func (z *UserFeed) Serialize(flags ...bool) map[string]string {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if z.ID != 0 {
+	if flagNoZeroCheck || z.ID != 0 {
 		result[userfeedID] = fmt.Sprintf("%05d", z.ID)
 	}
 
-	if z.UserID != 0 {
+	if flagNoZeroCheck || z.UserID != 0 {
 		result[userfeedUserID] = fmt.Sprintf("%05d", z.UserID)
 	}
 
-	if z.FeedID != 0 {
+	if flagNoZeroCheck || z.FeedID != 0 {
 		result[userfeedFeedID] = fmt.Sprintf("%05d", z.FeedID)
 	}
 
-	if len(z.GroupIDs) > 0 {
+	if flagNoZeroCheck || len(z.GroupIDs) > 0 {
 		result[userfeedGroupIDs] = func(values []uint64) string {
 			var buffer bytes.Buffer
 			for i, value := range values {
@@ -78,11 +79,11 @@ func (z *UserFeed) Serialize() map[string]string {
 		}(z.GroupIDs)
 	}
 
-	if z.Title != "" {
+	if flagNoZeroCheck || z.Title != "" {
 		result[userfeedTitle] = z.Title
 	}
 
-	if z.Notes != "" {
+	if flagNoZeroCheck || z.Notes != "" {
 		result[userfeedNotes] = z.Notes
 	}
 
@@ -151,7 +152,7 @@ func (z *UserFeed) IndexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize()
+	data := z.Serialize(true)
 
 	result[UserFeedIndexFeed] = []string{
 

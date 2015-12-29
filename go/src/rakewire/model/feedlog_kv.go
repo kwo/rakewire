@@ -74,82 +74,88 @@ func (z *FeedLog) Clear() {
 }
 
 // Serialize serializes an object to a list of key-values.
-func (z *FeedLog) Serialize() map[string]string {
+func (z *FeedLog) Serialize(flags ...bool) map[string]string {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if z.ID != 0 {
+	if flagNoZeroCheck || z.ID != 0 {
 		result[feedlogID] = fmt.Sprintf("%05d", z.ID)
 	}
 
-	if z.FeedID != 0 {
+	if flagNoZeroCheck || z.FeedID != 0 {
 		result[feedlogFeedID] = fmt.Sprintf("%05d", z.FeedID)
 	}
 
-	if z.Duration != 0 {
+	if flagNoZeroCheck || z.Duration != 0 {
 		result[feedlogDuration] = z.Duration.String()
 	}
 
-	if z.Result != "" {
+	if flagNoZeroCheck || z.Result != "" {
 		result[feedlogResult] = z.Result
 	}
 
-	if z.ResultMessage != "" {
+	if flagNoZeroCheck || z.ResultMessage != "" {
 		result[feedlogResultMessage] = z.ResultMessage
 	}
 
-	if !z.StartTime.IsZero() {
+	if flagNoZeroCheck || !z.StartTime.IsZero() {
 		result[feedlogStartTime] = z.StartTime.UTC().Format(time.RFC3339)
 	}
 
-	if z.URL != "" {
+	if flagNoZeroCheck || z.URL != "" {
 		result[feedlogURL] = z.URL
 	}
 
-	if z.ContentLength != 0 {
+	if flagNoZeroCheck || z.ContentLength != 0 {
 		result[feedlogContentLength] = fmt.Sprintf("%d", z.ContentLength)
 	}
 
-	if z.ContentType != "" {
+	if flagNoZeroCheck || z.ContentType != "" {
 		result[feedlogContentType] = z.ContentType
 	}
 
-	if z.ETag != "" {
+	if flagNoZeroCheck || z.ETag != "" {
 		result[feedlogETag] = z.ETag
 	}
 
-	if !z.LastModified.IsZero() {
+	if flagNoZeroCheck || !z.LastModified.IsZero() {
 		result[feedlogLastModified] = z.LastModified.UTC().Format(time.RFC3339)
 	}
 
-	if z.StatusCode != 0 {
+	if flagNoZeroCheck || z.StatusCode != 0 {
 		result[feedlogStatusCode] = fmt.Sprintf("%d", z.StatusCode)
 	}
 
-	if z.UsesGzip {
-		result[feedlogUsesGzip] = fmt.Sprintf("%t", z.UsesGzip)
+	if flagNoZeroCheck || z.UsesGzip {
+		result[feedlogUsesGzip] = func(value bool) string {
+			if value {
+				return "1"
+			}
+			return "0"
+		}(z.UsesGzip)
 	}
 
-	if z.Flavor != "" {
+	if flagNoZeroCheck || z.Flavor != "" {
 		result[feedlogFlavor] = z.Flavor
 	}
 
-	if z.Generator != "" {
+	if flagNoZeroCheck || z.Generator != "" {
 		result[feedlogGenerator] = z.Generator
 	}
 
-	if z.Title != "" {
+	if flagNoZeroCheck || z.Title != "" {
 		result[feedlogTitle] = z.Title
 	}
 
-	if !z.LastUpdated.IsZero() {
+	if flagNoZeroCheck || !z.LastUpdated.IsZero() {
 		result[feedlogLastUpdated] = z.LastUpdated.UTC().Format(time.RFC3339)
 	}
 
-	if z.EntryCount != 0 {
+	if flagNoZeroCheck || z.EntryCount != 0 {
 		result[feedlogEntryCount] = fmt.Sprintf("%d", z.EntryCount)
 	}
 
-	if z.NewEntries != 0 {
+	if flagNoZeroCheck || z.NewEntries != 0 {
 		result[feedlogNewEntries] = fmt.Sprintf("%d", z.NewEntries)
 	}
 
@@ -246,12 +252,10 @@ func (z *FeedLog) Deserialize(values map[string]string) error {
 	}(feedlogStatusCode, values, errors)
 
 	z.UsesGzip = func(fieldName string, values map[string]string, errors []error) bool {
-		result, err := strconv.ParseBool(values[fieldName])
-		if err != nil {
-			errors = append(errors, err)
-			return false
+		if value, ok := values[fieldName]; ok {
+			return value == "1"
 		}
-		return result
+		return false
 	}(feedlogUsesGzip, values, errors)
 
 	z.Flavor = values[feedlogFlavor]
@@ -302,7 +306,7 @@ func (z *FeedLog) IndexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize()
+	data := z.Serialize(true)
 
 	result[FeedLogIndexFeedTime] = []string{
 
