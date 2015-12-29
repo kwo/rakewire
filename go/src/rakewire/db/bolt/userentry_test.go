@@ -5,6 +5,7 @@ import (
 	"github.com/boltdb/bolt"
 	m "rakewire/model"
 	"testing"
+	"time"
 )
 
 func TestUserEntry(t *testing.T) {
@@ -48,13 +49,19 @@ func TestUserEntry(t *testing.T) {
 		t.Fatalf("Error saving userfeed: %s", err.Error())
 	}
 
+	// add entries
+	now := time.Now().Truncate(time.Second)
 	entries := []*m.Entry{}
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 50; i++ {
 		entry := m.NewEntry(feeds[0].ID, fmt.Sprintf("Entry%d", i))
+		entry.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
+		entry.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
 		entries = append(entries, entry)
 	}
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		entry := m.NewEntry(feeds[1].ID, fmt.Sprintf("Entry%d", i))
+		entry.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
+		entry.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
 		entries = append(entries, entry)
 	}
 	err := db.db.Update(func(tx *bolt.Tx) error {
@@ -69,20 +76,38 @@ func TestUserEntry(t *testing.T) {
 		t.Errorf("Error saving user entries: %s", err.Error())
 	}
 
+	// test counts
+	count, err := db.UserEntryGetTotalForUser(users[0].ID)
+	if err != nil {
+		t.Errorf("Error retrieving user count: %s", err.Error())
+	}
+	if count != 50 {
+		t.Errorf("user total mismatch, expected %d, actual %d", 50, count)
+	}
+
+	count, err = db.UserEntryGetTotalForUser(users[1].ID)
+	if err != nil {
+		t.Errorf("Error retrieving user count: %s", err.Error())
+	}
+	if count != 150 {
+		t.Errorf("user total mismatch, expected %d, actual %d", 150, count)
+	}
+
+	// test unread
 	userentries, err := db.UserEntryGetUnreadForUser(users[0].ID)
 	if err != nil {
-		t.Fatalf("Error retrieving user entries: %s", err.Error())
+		t.Errorf("Error retrieving user entries: %s", err.Error())
 	}
-	if len(userentries) != 5 {
-		t.Errorf("bad user entries count, expected %d, actual %d", 5, len(userentries))
+	if len(userentries) != 50 {
+		t.Errorf("bad user entries count, expected %d, actual %d", 50, len(userentries))
 	}
 
 	userentries, err = db.UserEntryGetUnreadForUser(users[1].ID)
 	if err != nil {
-		t.Fatalf("Error retrieving user entries: %s", err.Error())
+		t.Errorf("Error retrieving user entries: %s", err.Error())
 	}
-	if len(userentries) != 15 {
-		t.Fatalf("bad user entries count, expected %d, actual %d", 15, len(userentries))
+	if len(userentries) != 150 {
+		t.Fatalf("bad user entries count, expected %d, actual %d", 150, len(userentries))
 	}
 
 	userentries[12].IsRead = true
@@ -93,15 +118,24 @@ func TestUserEntry(t *testing.T) {
 	}
 
 	if err := db.UserEntrySave(readEntries); err != nil {
-		t.Fatalf("err saving user entries: %s", err.Error())
+		t.Errorf("err saving user entries: %s", err.Error())
 	}
 
 	userentries, err = db.UserEntryGetUnreadForUser(users[1].ID)
 	if err != nil {
-		t.Fatalf("Error retrieving user entries: %s", err.Error())
+		t.Errorf("Error retrieving user entries: %s", err.Error())
 	}
-	if len(userentries) != 12 {
-		t.Fatalf("bad user entries count, expected %d, actual %d", 12, len(userentries))
+	if len(userentries) != 147 {
+		t.Errorf("bad user entries count, expected %d, actual %d", 1497, len(userentries))
+	}
+
+	// test get all
+	userentries, err = db.UserEntryGetNext(users[1].ID, 0, 100)
+	if err != nil {
+		t.Errorf("Error retrieving user entries next: %s", err.Error())
+	}
+	if len(userentries) != 100 {
+		t.Errorf("bad user entries count, expected %d, actual %d", 100, len(userentries))
 	}
 
 }

@@ -54,7 +54,7 @@ func (z *API) getItemsPrev(userID uint64, maxID uint64) ([]*Item, error) {
 
 func (z *API) getItemsByIds(userID uint64, ids []uint64) ([]*Item, error) {
 
-	entries, err := z.db.UserEntryGet(userID, ids)
+	entries, err := z.db.UserEntryGetByID(userID, ids)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func toItem(entry *m.UserEntry) *Item {
 		Author:     entry.Entry.Author,
 		HTML:       entry.Entry.Content,
 		URL:        entry.Entry.URL,
-		IsSaved:    boolToUint8(entry.IsStarred),
+		IsSaved:    boolToUint8(entry.IsStar),
 		IsRead:     boolToUint8(entry.IsRead),
 		Created:    entry.Entry.Created.Unix(),
 	}

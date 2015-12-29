@@ -79,6 +79,37 @@ func (z *Service) UserEntryAddNew(allEntries []*m.Entry, tx *bolt.Tx) error {
 
 }
 
+// UserEntryGetTotalForUser retrieves the total count of entries for the user.
+func (z *Service) UserEntryGetTotalForUser(userID uint64) (uint, error) {
+
+	var result uint
+
+	// define index keys
+	ue := &m.UserEntry{}
+	ue.UserID = userID
+	minKeys := ue.IndexKeys()[m.UserEntryIndexUser]
+	ue.UserID = userID + 1
+	nxtKeys := ue.IndexKeys()[m.UserEntryIndexUser]
+
+	err := z.db.View(func(tx *bolt.Tx) error {
+
+		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.UserEntryEntity)).Bucket([]byte(m.UserEntryIndexUser))
+
+		c := bIndex.Cursor()
+		min := []byte(kvKeys(minKeys))
+		nxt := []byte(kvKeys(nxtKeys))
+		for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
+			result++
+		} // loop
+
+		return nil
+
+	})
+
+	return result, err
+
+}
+
 // UserEntryGetUnreadForUser retrieves unread user entries for a user.
 func (z *Service) UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, error) {
 
@@ -88,7 +119,6 @@ func (z *Service) UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, erro
 	ue := &m.UserEntry{}
 	ue.UserID = userID
 	minKeys := ue.IndexKeys()[m.UserEntryIndexRead]
-	ue.UserID = userID + 1
 	ue.IsRead = true
 	nxtKeys := ue.IndexKeys()[m.UserEntryIndexRead]
 
@@ -101,6 +131,10 @@ func (z *Service) UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, erro
 		c := bIndex.Cursor()
 		min := []byte(kvKeys(minKeys))
 		nxt := []byte(kvKeys(nxtKeys))
+		// log.Printf("%-7s %-7s user entries get unread min: %s", logDebug, logName, min)
+		// log.Printf("%-7s %-7s user entries get unread max: %s", logDebug, logName, nxt)
+		//dumpCursor(c)
+
 		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 
 			//log.Printf("%-7s %-7s user entries get unread: %s: %s", logDebug, logName, k, v)
@@ -135,39 +169,8 @@ func (z *Service) UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, erro
 
 }
 
-// UserEntryGetTotalForUser retrieves the total count of entries for the user.
-func (z *Service) UserEntryGetTotalForUser(userID uint64) (uint, error) {
-
-	var result uint
-
-	// define index keys
-	ue := &m.UserEntry{}
-	ue.UserID = userID
-	minKeys := ue.IndexKeys()[m.UserEntryIndexUser]
-	ue.UserID = userID + 1
-	nxtKeys := ue.IndexKeys()[m.UserEntryIndexUser]
-
-	err := z.db.View(func(tx *bolt.Tx) error {
-
-		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.UserEntryEntity)).Bucket([]byte(m.UserEntryIndexUser))
-
-		c := bIndex.Cursor()
-		min := []byte(kvKeys(minKeys))
-		nxt := []byte(kvKeys(nxtKeys))
-		for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
-			result++
-		} // loop
-
-		return nil
-
-	})
-
-	return result, err
-
-}
-
-// UserEntryGet retrieves the specific user entries for a user.
-func (z *Service) UserEntryGet(userID uint64, ids []uint64) ([]*m.UserEntry, error) {
+// UserEntryGetByID retrieves the specific user entries for a user.
+func (z *Service) UserEntryGetByID(userID uint64, ids []uint64) ([]*m.UserEntry, error) {
 
 	var result []*m.UserEntry
 
