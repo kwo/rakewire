@@ -10,7 +10,7 @@ import (
 
 const (
 	// SchemaVersion of the database
-	SchemaVersion = 2
+	SchemaVersion = 3
 )
 
 func (z *Service) checkDatabase() error {
