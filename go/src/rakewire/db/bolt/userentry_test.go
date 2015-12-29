@@ -118,24 +118,70 @@ func TestUserEntry(t *testing.T) {
 	}
 
 	if err := db.UserEntrySave(readEntries); err != nil {
-		t.Errorf("err saving user entries: %s", err.Error())
+		t.Fatalf("err saving user entries: %s", err.Error())
 	}
 
 	userentries, err = db.UserEntryGetUnreadForUser(users[1].ID)
 	if err != nil {
-		t.Errorf("Error retrieving user entries: %s", err.Error())
+		t.Fatalf("Error retrieving user entries: %s", err.Error())
 	}
 	if len(userentries) != 147 {
 		t.Errorf("bad user entries count, expected %d, actual %d", 1497, len(userentries))
 	}
 
-	// test get all
+	// test get next
 	userentries, err = db.UserEntryGetNext(users[1].ID, 0, 100)
 	if err != nil {
-		t.Errorf("Error retrieving user entries next: %s", err.Error())
+		t.Fatalf("Error retrieving user entries next: %s", err.Error())
 	}
 	if len(userentries) != 100 {
-		t.Errorf("bad user entries count, expected %d, actual %d", 100, len(userentries))
+		t.Fatalf("bad user entries count, expected %d, actual %d", 100, len(userentries))
+	}
+	if userentries[0].ID > userentries[99].ID {
+		t.Errorf("expected userentries in ascending order")
+	}
+
+	userentries, err = db.UserEntryGetNext(users[1].ID, userentries[99].ID+1, 100)
+	if err != nil {
+		t.Fatalf("Error retrieving user entries next: %s", err.Error())
+	}
+	if len(userentries) != 50 {
+		t.Errorf("bad user entries count, expected %d, actual %d", 50, len(userentries))
+	}
+
+	// test get prev
+	userentries, err = db.UserEntryGetPrev(users[1].ID, 99999, 100)
+	if err != nil {
+		t.Fatalf("Error retrieving user entries prev: %s", err.Error())
+	}
+	if len(userentries) != 100 {
+		t.Fatalf("bad user entries count, expected %d, actual %d", 100, len(userentries))
+	}
+	if userentries[0].ID < userentries[99].ID {
+		t.Errorf("expected userentries in descending order")
+	}
+
+	userentries, err = db.UserEntryGetPrev(users[1].ID, userentries[99].ID-1, 100)
+	if err != nil {
+		t.Fatalf("Error retrieving user entries next: %s", err.Error())
+	}
+	if len(userentries) != 50 {
+		t.Errorf("bad user entries count, expected %d, actual %d", 50, len(userentries))
+	}
+
+	// test get by ID
+	userentries, err = db.UserEntryGetByID(users[1].ID, []uint64{0, 1, 2})
+	if err != nil {
+		t.Fatalf("Error retrieving user entries by ID: %s", err.Error())
+	}
+	if len(userentries) != 2 {
+		t.Fatalf("bad user entries count, expected %d, actual %d", 2, len(userentries))
+	}
+	if userentries[0].ID != 1 {
+		t.Fatalf("bad user entries ID, expected %d, actual %d", 1, userentries[0].ID)
+	}
+	if userentries[1].ID != 2 {
+		t.Fatalf("bad user entries ID, expected %d, actual %d", 2, userentries[1].ID)
 	}
 
 }

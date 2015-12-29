@@ -133,7 +133,6 @@ func (z *Service) UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, erro
 		nxt := []byte(kvKeys(nxtKeys))
 		// log.Printf("%-7s %-7s user entries get unread min: %s", logDebug, logName, min)
 		// log.Printf("%-7s %-7s user entries get unread max: %s", logDebug, logName, nxt)
-		//dumpCursor(c)
 
 		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 
@@ -286,11 +285,26 @@ func (z *Service) UserEntryGetPrev(userID uint64, maxID uint64, count int) ([]*m
 		bEntry := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.EntryEntity))
 
 		c := bIndex.Cursor()
+		// for k, v := c.First(); k != nil; k, v = c.Next() {
+		// 	log.Printf("%-7s %-7s user entries get prev: %s: %s", logDebug, logName, k, v)
+		// }
+
 		min := []byte(kvKeys(minKeys))
 		max := []byte(kvKeys(maxKeys))
-		for k, v := c.Seek(max); k != nil && bytes.Compare(k, min) >= 0; k, v = c.Prev() {
+		// log.Printf("%-7s %-7s user entries get prev min: %s", logDebug, logName, min)
+		// log.Printf("%-7s %-7s user entries get prev max: %s", logDebug, logName, max)
 
-			//log.Printf("%-7s %-7s user entries get unread: %s: %s", logDebug, logName, k, v)
+		seekBack := func(key []byte) ([]byte, []byte) {
+			k, v := c.Seek(key)
+			if k == nil {
+				k, v = c.Prev()
+			}
+			return k, v
+		}
+
+		for k, v := seekBack(max); k != nil && bytes.Compare(k, min) >= 0; k, v = c.Prev() {
+
+			//log.Printf("%-7s %-7s user entries get prev: %s: %s", logDebug, logName, k, v)
 
 			id, err := strconv.ParseUint(string(v), 10, 64)
 			if err != nil {
