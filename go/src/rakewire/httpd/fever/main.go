@@ -66,7 +66,6 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 
 	if rsp.Authorized == 1 {
 
-	Loop:
 		for k := range req.URL.Query() {
 			switch k {
 			case "api":
@@ -78,7 +77,6 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 				} else {
 					log.Printf("%-7s %-7s error retrieving feeds and feed_groups: %s", logWarn, logName, err.Error())
 				}
-				break Loop
 			case "groups":
 				if groups, feedGroups, err := z.getGroups(user.ID); err == nil {
 					rsp.Groups = groups
@@ -86,7 +84,6 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 				} else {
 					log.Printf("%-7s %-7s error retrieving groups and feed_groups: %s", logWarn, logName, err.Error())
 				}
-				break Loop
 			case "items":
 				if count, err := z.db.UserEntryGetTotalForUser(user.ID); err == nil {
 					rsp.ItemCount = count
@@ -122,9 +119,21 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 						log.Printf("%-7s %-7s error retrieving items all: %s", logWarn, logName, err.Error())
 					}
 				}
-				break Loop
+			case "unread_item_ids":
+				if itemIDs, err := z.getUnreadItemIDs(user.ID); err == nil {
+					rsp.UnreadItemIDs = itemIDs
+				} else {
+					log.Printf("%-7s %-7s error retrieving unread item IDs: %s", logWarn, logName, err.Error())
+				}
+			case "saved_item_ids":
+				if itemIDs, err := z.getSavedItemIDs(user.ID); err == nil {
+					rsp.SavedItemIDs = itemIDs
+				} else {
+					log.Printf("%-7s %-7s error retrieving saved item IDs: %s", logWarn, logName, err.Error())
+				}
+
 			}
-		} // loop
+		}
 
 	} // authorized
 

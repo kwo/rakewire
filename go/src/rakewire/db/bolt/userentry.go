@@ -110,6 +110,66 @@ func (z *Service) UserEntryGetTotalForUser(userID uint64) (uint, error) {
 
 }
 
+// UserEntryGetStarredForUser retrieves starred user entries for a user.
+func (z *Service) UserEntryGetStarredForUser(userID uint64) ([]*m.UserEntry, error) {
+
+	var result []*m.UserEntry
+
+	// define index keys
+	ue := &m.UserEntry{}
+	ue.UserID = userID
+	ue.IsStar = true
+	minKeys := ue.IndexKeys()[m.UserEntryIndexStar]
+	ue.UserID = userID + 1
+	ue.IsStar = false
+	nxtKeys := ue.IndexKeys()[m.UserEntryIndexStar]
+
+	err := z.db.View(func(tx *bolt.Tx) error {
+
+		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.UserEntryEntity)).Bucket([]byte(m.UserEntryIndexStar))
+		bUserEntry := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.UserEntryEntity))
+		bEntry := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.EntryEntity))
+
+		c := bIndex.Cursor()
+		min := []byte(kvKeys(minKeys))
+		nxt := []byte(kvKeys(nxtKeys))
+		// log.Printf("%-7s %-7s user entries get unread min: %s", logDebug, logName, min)
+		// log.Printf("%-7s %-7s user entries get unread max: %s", logDebug, logName, nxt)
+
+		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+
+			//log.Printf("%-7s %-7s user entries get unread: %s: %s", logDebug, logName, k, v)
+
+			id, err := strconv.ParseUint(string(v), 10, 64)
+			if err != nil {
+				return err
+			}
+
+			if data, ok := kvGet(id, bUserEntry); ok {
+				ue := &m.UserEntry{}
+				if err := ue.Deserialize(data); err != nil {
+					return err
+				}
+				if data, ok := kvGet(ue.EntryID, bEntry); ok {
+					e := &m.Entry{}
+					if err := e.Deserialize(data); err != nil {
+						return err
+					}
+					ue.Entry = e
+					result = append(result, ue)
+				}
+			}
+
+		}
+
+		return nil
+
+	})
+
+	return result, err
+
+}
+
 // UserEntryGetUnreadForUser retrieves unread user entries for a user.
 func (z *Service) UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, error) {
 

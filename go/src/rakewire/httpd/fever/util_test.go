@@ -130,6 +130,22 @@ func populateDatabase(database *bolt.Service) error {
 		}
 	}
 
+	// mark entries read
+	userEntries, err := database.UserEntryGetNext(user.ID, 0, 0)
+	if err != nil {
+		return err
+	}
+	now := time.Now().Truncate(time.Second)
+	tRead := now.Add(-6 * 24 * time.Hour).Add(1 * time.Second)
+	tStar := now.Add(-8 * 24 * time.Hour).Add(1 * time.Second)
+	for _, ue := range userEntries {
+		ue.IsRead = ue.Updated.Before(tRead)
+		ue.IsStar = ue.Updated.Before(tStar)
+	}
+	if err := database.UserEntrySave(userEntries); err != nil {
+		return err
+	}
+
 	return nil
 
 }

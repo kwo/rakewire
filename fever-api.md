@@ -80,7 +80,7 @@ created_on_time (Unix timestamp/integer)
 
 Response contains links.
 
-### sync (TODO)
+### sync (DONE)
 
 	?api&unread_item_ids
 	?api&saved_item_ids
