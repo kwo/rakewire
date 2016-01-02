@@ -171,6 +171,7 @@ func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds []*m.Feed) {
 
 }
 
+// feedsGetFeedLogByID get feed logs for the last 90 days
 func (z *Service) feedsGetFeedLogByID(w http.ResponseWriter, req *http.Request) {
 
 	vars := mux.Vars(req)
@@ -180,7 +181,7 @@ func (z *Service) feedsGetFeedLogByID(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	entries, err := z.database.GetFeedLog(feedID, 7*24*time.Hour)
+	entries, err := z.database.GetFeedLog(feedID, 90*24*time.Hour)
 	if err != nil {
 		log.Printf("%-7s %-7s Error in db.GetFeedLog: %s", logWarn, logName, err.Error())
 		http.Error(w, "Cannot retrieve feed logs from database.", http.StatusInternalServerError)
