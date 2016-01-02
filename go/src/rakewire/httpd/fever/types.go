@@ -18,6 +18,7 @@ type Database interface {
 	UserEntryGetByID(userID uint64, ids []uint64) ([]*m.UserEntry, error)
 	UserEntryGetNext(userID uint64, minID uint64, count int) ([]*m.UserEntry, error)
 	UserEntryGetPrev(userID uint64, maxID uint64, count int) ([]*m.UserEntry, error)
+	//UserEntrySave(userentries []*m.UserEntry) error
 	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
 }
 

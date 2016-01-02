@@ -3,12 +3,7 @@ package fever
 import (
 	"fmt"
 	"github.com/antonholmquist/jason"
-	"io/ioutil"
-	"log"
-	"net/http"
 	"net/http/httptest"
-	"net/url"
-	m "rakewire/model"
 	"strconv"
 	"strings"
 	"testing"
@@ -21,56 +16,27 @@ func TestGroups(t *testing.T) {
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
 
-	// add test user
-	user := m.NewUser("testuser@localhost")
-	user.SetPassword("abcdefg")
-	if err := database.UserSave(user); err != nil {
-		t.Fatalf("Cannot save user: %s", err.Error())
+	user, err := database.UserGetByUsername(testUsername)
+	if err != nil {
+		t.Fatalf("Cannot get user: %s", err.Error())
 	}
 
-	// add test groups
-	mGroups := []*m.Group{}
-	for i := 0; i < 2; i++ {
-		g := m.NewGroup(user.ID, fmt.Sprintf("Group%d", i))
-		mGroups = append(mGroups, g)
-		if err := database.GroupSave(g); err != nil {
-			t.Fatalf("Cannot add group: %s", err.Error())
-		}
-	}
-
-	// add test feeds
-	mUserFeeds := []*m.UserFeed{}
-	for i := 0; i < 4; i++ {
-		f := m.NewFeed(fmt.Sprintf("http://localhost%d", i))
-		if _, err := database.FeedSave(f); err != nil {
-			t.Fatalf("Cannot add feed: %s", err.Error())
-		}
-		uf := m.NewUserFeed(user.ID, f.ID)
-		uf.GroupIDs = append(uf.GroupIDs, mGroups[i%2].ID)
-		database.UserFeedSave(uf)
-		mUserFeeds = append(mUserFeeds, uf)
+	mUserFeeds, err := database.UserFeedGetAllByUser(user.ID)
+	if err != nil {
+		t.Fatalf("Cannot get user feeds: %s", err.Error())
 	}
 
 	// run server
 	apiFever := NewAPI("/fever", database)
 	server := httptest.NewServer(apiFever.Router())
 	defer server.Close()
-	u := server.URL + "/fever?api&groups"
 
-	values := url.Values{}
-	values.Set(AuthParam, user.FeverHash)
-	rsp, err := http.PostForm(u, values)
+	// make request
+	target := server.URL + "/fever?api&groups"
+	data, err := makeRequest(user, target)
 	if err != nil {
-		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())
-	} else if rsp.StatusCode != http.StatusOK {
-		t.Fatalf("Bad error code, expected %d, actual %d", http.StatusOK, rsp.StatusCode)
+		t.Fatalf("Cannot make request: %s", err.Error())
 	}
-
-	data, err := ioutil.ReadAll(rsp.Body)
-	if err != nil {
-		t.Fatalf("Error reading response body: %s", err.Error())
-	}
-
 	t.Logf("raw response: %s", string(data))
 
 	response, err := jason.NewObjectFromBytes(data)
@@ -140,57 +106,26 @@ func TestFeeds(t *testing.T) {
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
 
-	// add test user
-	user := m.NewUser("testuser@localhost")
-	user.SetPassword("abcdefg")
-	if err := database.UserSave(user); err != nil {
-		t.Fatalf("Cannot save user: %s", err.Error())
+	user, err := database.UserGetByUsername(testUsername)
+	if err != nil {
+		t.Fatalf("Cannot get user: %s", err.Error())
 	}
 
-	// add test groups
-	mGroups := []*m.Group{}
-	for i := 0; i < 2; i++ {
-		g := m.NewGroup(user.ID, fmt.Sprintf("Group%d", i))
-		mGroups = append(mGroups, g)
-		if err := database.GroupSave(g); err != nil {
-			t.Fatalf("Cannot add group: %s", err.Error())
-		}
-	}
-
-	// add test feeds
-	mUserFeeds := []*m.UserFeed{}
-	for i := 0; i < 4; i++ {
-		f := m.NewFeed(fmt.Sprintf("http://localhost%d", i))
-		if _, err := database.FeedSave(f); err != nil {
-			t.Fatalf("Cannot add feed: %s", err.Error())
-		}
-		uf := m.NewUserFeed(user.ID, f.ID)
-		uf.Title = fmt.Sprintf("UserFeed%d", i)
-		uf.GroupIDs = append(uf.GroupIDs, mGroups[i%2].ID)
-		database.UserFeedSave(uf)
-		mUserFeeds = append(mUserFeeds, uf)
+	mUserFeeds, err := database.UserFeedGetAllByUser(user.ID)
+	if err != nil {
+		t.Fatalf("Cannot get user feeds: %s", err.Error())
 	}
 
 	// run server
 	apiFever := NewAPI("/fever", database)
 	server := httptest.NewServer(apiFever.Router())
 	defer server.Close()
-	u := server.URL + "/fever?api&feeds"
 
-	values := url.Values{}
-	values.Set(AuthParam, user.FeverHash)
-	rsp, err := http.PostForm(u, values)
+	target := server.URL + "/fever?api&feeds"
+	data, err := makeRequest(user, target)
 	if err != nil {
-		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())
-	} else if rsp.StatusCode != http.StatusOK {
-		t.Fatalf("Bad error code, expected %d, actual %d", http.StatusOK, rsp.StatusCode)
+		t.Fatalf("Cannot make request: %s", err.Error())
 	}
-
-	data, err := ioutil.ReadAll(rsp.Body)
-	if err != nil {
-		t.Fatalf("Error reading response body: %s", err.Error())
-	}
-
 	t.Logf("raw response: %s", string(data))
 
 	response, err := jason.NewObjectFromBytes(data)

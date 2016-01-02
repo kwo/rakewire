@@ -2,12 +2,7 @@ package fever
 
 import (
 	"github.com/antonholmquist/jason"
-	"io/ioutil"
-	"log"
-	"net/http"
 	"net/http/httptest"
-	"net/url"
-	m "rakewire/model"
 	"strconv"
 	"testing"
 	"time"
@@ -20,34 +15,20 @@ func TestAuth(t *testing.T) {
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
 
-	// add test user
-	user := m.NewUser("testuser@localhost")
-	user.SetPassword("abcdefg")
-	if err := database.UserSave(user); err != nil {
-		t.Fatalf("Cannot save user: %s", err.Error())
+	user, err := database.UserGetByUsername(testUsername)
+	if err != nil {
+		t.Fatalf("Cannot get user: %s", err.Error())
 	}
 
 	apiFever := NewAPI("/fever", database)
-
 	server := httptest.NewServer(apiFever.Router())
 	defer server.Close()
 
-	u := server.URL + "/fever?api"
-
-	values := url.Values{}
-	values.Set(AuthParam, user.FeverHash)
-	rsp, err := http.PostForm(u, values)
+	target := server.URL + "/fever?api"
+	data, err := makeRequest(user, target)
 	if err != nil {
-		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())
-	} else if rsp.StatusCode != http.StatusOK {
-		t.Fatalf("Bad error code, expected %d, actual %d", http.StatusOK, rsp.StatusCode)
+		t.Fatalf("Cannot make request: %s", err.Error())
 	}
-
-	data, err := ioutil.ReadAll(rsp.Body)
-	if err != nil {
-		t.Fatalf("Error reading response body: %s", err.Error())
-	}
-
 	t.Logf("raw response: %s", string(data))
 
 	response, err := jason.NewObjectFromBytes(data)
@@ -97,24 +78,14 @@ func TestBadAuth(t *testing.T) {
 	defer closeDatabase(t, database, databaseFile)
 
 	apiFever := NewAPI("/fever", database)
-
 	server := httptest.NewServer(apiFever.Router())
 	defer server.Close()
 
-	u := server.URL + "/fever?api"
-
-	rsp, err := http.PostForm(u, nil)
+	target := server.URL + "/fever?api"
+	data, err := makeRequest(nil, target)
 	if err != nil {
-		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())
-	} else if rsp.StatusCode != http.StatusOK {
-		t.Fatalf("Bad error code, expected %d, actual %d", http.StatusOK, rsp.StatusCode)
+		t.Fatalf("Cannot make request: %s", err.Error())
 	}
-
-	data, err := ioutil.ReadAll(rsp.Body)
-	if err != nil {
-		t.Fatalf("Error reading response body: %s", err.Error())
-	}
-
 	t.Logf("raw response: %s", string(data))
 
 	response, err := jason.NewObjectFromBytes(data)
@@ -147,18 +118,20 @@ func TestXmlUnsupported(t *testing.T) {
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
 
-	apiFever := NewAPI("/fever", database)
+	user, err := database.UserGetByUsername(testUsername)
+	if err != nil {
+		t.Fatalf("Cannot get user: %s", err.Error())
+	}
 
+	apiFever := NewAPI("/fever", database)
 	server := httptest.NewServer(apiFever.Router())
 	defer server.Close()
 
-	u := server.URL + "/fever?api=xml"
-
-	rsp, err := http.PostForm(u, nil)
-	if err != nil {
-		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())
-	} else if rsp.StatusCode != http.StatusBadRequest {
-		t.Fatalf("Bad error code, expected %d, actual %d", http.StatusBadRequest, rsp.StatusCode)
+	target := server.URL + "/fever?api=xml"
+	data, err := makeRequest(user, target)
+	if err == nil {
+		t.Fatal("Expected error but none")
 	}
+	t.Logf("raw response: %s", string(data))
 
 }

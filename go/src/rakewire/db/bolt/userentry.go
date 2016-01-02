@@ -213,7 +213,7 @@ func (z *Service) UserEntryGetNext(userID uint64, minID uint64, count int) ([]*m
 	// define index keys
 	ue := &m.UserEntry{}
 	ue.UserID = userID
-	ue.ID = minID
+	ue.ID = minID + 1 // minID is exclusive, cursor, inclusive
 	minKeys := ue.IndexKeys()[m.UserEntryIndexUser]
 	ue.UserID = userID + 1
 	nxtKeys := ue.IndexKeys()[m.UserEntryIndexUser]
@@ -273,7 +273,7 @@ func (z *Service) UserEntryGetPrev(userID uint64, maxID uint64, count int) ([]*m
 	// define index keys
 	ue := &m.UserEntry{}
 	ue.UserID = userID
-	ue.ID = maxID
+	ue.ID = maxID - 1 // maxID is exclusive, cursor, inclusive
 	maxKeys := ue.IndexKeys()[m.UserEntryIndexUser]
 	ue.ID = 0
 	minKeys := ue.IndexKeys()[m.UserEntryIndexUser]
