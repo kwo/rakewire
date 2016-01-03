@@ -25,12 +25,25 @@ func TestMain(m *testing.M) {
 	os.Exit(status)
 }
 
-func makeRequest(user *m.User, target string) ([]byte, error) {
+func makeRequest(user *m.User, target string, formValues ...string) ([]byte, error) {
 
 	values := url.Values{}
 	if user != nil {
 		values.Set(AuthParam, user.FeverHash)
 	}
+
+	if len(formValues) != 0 {
+		if len(formValues)%2 != 0 {
+			return nil, fmt.Errorf("form values must be pairs, %d elements found", len(formValues))
+		}
+		for i, formValue := range formValues {
+			if i%2 != 0 {
+				continue
+			}
+			values.Set(formValue, formValues[i+1])
+		}
+	}
+
 	rsp, err := http.PostForm(target, values)
 	if err != nil {
 		return nil, err

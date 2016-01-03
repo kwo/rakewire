@@ -36,6 +36,7 @@ type Response struct {
 	ItemCount     uint         `json:"total_items,omitempty"`
 	UnreadItemIDs string       `json:"unread_item_ids,omitempty"`
 	SavedItemIDs  string       `json:"saved_item_ids,omitempty"`
+	Mark          string       `json:"mark"`
 }
 
 // Group is the fever group construct

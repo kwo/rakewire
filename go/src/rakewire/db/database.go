@@ -24,7 +24,7 @@ type Database interface {
 	UserEntryGetPrev(userID uint64, maxID uint64, count int) ([]*m.UserEntry, error)
 	UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, error)
 	UserEntryGetStarredForUser(userID uint64) ([]*m.UserEntry, error)
-	//UserEntrySave(userentries []*m.UserEntry) error
+	UserEntrySave(userentries []*m.UserEntry) error
 
 	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
 

@@ -68,8 +68,14 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 
 		for k := range req.URL.Query() {
 			switch k {
+
 			case "api":
-				rsp.LastRefreshed = time.Now().Unix() // TODO: get last refreshed feed for user; need groups first
+				rsp.LastRefreshed = time.Now().Unix() // TODO: get last refreshed (not updated) feed for user
+
+				// write parameters
+				// req.PostForm
+				rsp.Mark = req.PostFormValue("mark")
+
 			case "feeds":
 				if feeds, feedGroups, err := z.getFeeds(user.ID); err == nil {
 					rsp.Feeds = feeds
@@ -77,6 +83,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 				} else {
 					log.Printf("%-7s %-7s error retrieving feeds and feed_groups: %s", logWarn, logName, err.Error())
 				}
+
 			case "groups":
 				if groups, feedGroups, err := z.getGroups(user.ID); err == nil {
 					rsp.Groups = groups
@@ -84,6 +91,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 				} else {
 					log.Printf("%-7s %-7s error retrieving groups and feed_groups: %s", logWarn, logName, err.Error())
 				}
+
 			case "items":
 				if count, err := z.db.UserEntryGetTotalForUser(user.ID); err == nil {
 					rsp.ItemCount = count
@@ -119,12 +127,14 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 						log.Printf("%-7s %-7s error retrieving items all: %s", logWarn, logName, err.Error())
 					}
 				}
+
 			case "unread_item_ids":
 				if itemIDs, err := z.getUnreadItemIDs(user.ID); err == nil {
 					rsp.UnreadItemIDs = itemIDs
 				} else {
 					log.Printf("%-7s %-7s error retrieving unread item IDs: %s", logWarn, logName, err.Error())
 				}
+
 			case "saved_item_ids":
 				if itemIDs, err := z.getSavedItemIDs(user.ID); err == nil {
 					rsp.SavedItemIDs = itemIDs
