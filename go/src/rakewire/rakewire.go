@@ -16,8 +16,6 @@ import (
 	"syscall"
 )
 
-// TODO: replace yaml config with key value package - give each package only subset of all KVs.
-
 const (
 	logName  = "[main]"
 	logTrace = "[TRACE]"
