@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	m "rakewire/model"
-	"time"
 )
 
 // http://feedafever.com/api
@@ -70,7 +69,11 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 			switch k {
 
 			case "api":
-				rsp.LastRefreshed = time.Now().Unix() // TODO: get last refreshed (not updated) feed for user
+				startTime, err := z.db.FeedLogGetLastestTime()
+				if err != nil {
+					log.Printf("%-7s %-7s error retrieving latest feedlog time: %s", logWarn, logName, err.Error())
+				}
+				rsp.LastRefreshed = startTime.Unix()
 
 				// write parameters
 				// req.PostForm

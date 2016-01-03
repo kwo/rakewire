@@ -60,3 +60,29 @@ func (z *Service) GetFeedLog(feedID uint64, since time.Duration) ([]*m.FeedLog, 
 	return result, err
 
 }
+
+// FeedLogGetLastestTime retrieves the most recent fetch activity
+func (z *Service) FeedLogGetLastestTime() (time.Time, error) {
+
+	startTime := time.Now().Truncate(time.Second)
+	err := z.db.View(func(tx *bolt.Tx) error {
+
+		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.FeedLogEntity)).Bucket([]byte(m.FeedLogIndexTime))
+		c := bIndex.Cursor()
+		k, _ := c.Last()
+		if k != nil {
+			startTimeStr := kvKeyElement(k, 0)
+			t, err := time.Parse(time.RFC3339, startTimeStr)
+			if err != nil {
+				return err
+			}
+			startTime = t
+		}
+
+		return nil
+
+	})
+
+	return startTime, err
+
+}

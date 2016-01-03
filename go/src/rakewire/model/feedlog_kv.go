@@ -15,6 +15,7 @@ import (
 const (
 	FeedLogEntity        = "FeedLog"
 	FeedLogIndexFeedTime = "FeedTime"
+	FeedLogIndexTime     = "Time"
 )
 
 const (
@@ -313,6 +314,13 @@ func (z *FeedLog) IndexKeys() map[string][]string {
 		data[feedlogFeedID],
 
 		data[feedlogStartTime],
+	}
+
+	result[FeedLogIndexTime] = []string{
+
+		data[feedlogStartTime],
+
+		data[feedlogID],
 	}
 
 	return result

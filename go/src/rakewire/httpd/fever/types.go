@@ -2,6 +2,7 @@ package fever
 
 import (
 	m "rakewire/model"
+	"time"
 )
 
 // API top level struct
@@ -22,6 +23,7 @@ type Database interface {
 	UserEntryGetStarredForUser(userID uint64) ([]*m.UserEntry, error)
 	UserEntrySave(userentries []*m.UserEntry) error
 	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
+	FeedLogGetLastestTime() (time.Time, error)
 }
 
 // Response defines the json/xml response return by requests.

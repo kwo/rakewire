@@ -138,6 +138,8 @@ func populateDatabase(database *bolt.Service) error {
 			entry.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
 			f.Entries = append(f.Entries, entry)
 		}
+		f.Attempt = m.NewFeedLog(f.ID)
+		f.Attempt.StartTime = now
 		if _, err := database.FeedSave(f); err != nil {
 			return err
 		}
