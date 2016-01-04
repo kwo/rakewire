@@ -141,7 +141,7 @@ func TestUserEntry(t *testing.T) {
 		t.Errorf("expected userentries in ascending order")
 	}
 
-	userentries, err = db.UserEntryGetNext(users[1].ID, userentries[99].ID+1, 100)
+	userentries, err = db.UserEntryGetNext(users[1].ID, userentries[99].ID, 100)
 	if err != nil {
 		t.Fatalf("Error retrieving user entries next: %s", err.Error())
 	}
@@ -161,7 +161,7 @@ func TestUserEntry(t *testing.T) {
 		t.Errorf("expected userentries in descending order")
 	}
 
-	userentries, err = db.UserEntryGetPrev(users[1].ID, userentries[99].ID-1, 100)
+	userentries, err = db.UserEntryGetPrev(users[1].ID, userentries[99].ID, 100)
 	if err != nil {
 		t.Fatalf("Error retrieving user entries next: %s", err.Error())
 	}
