@@ -9,6 +9,7 @@ import (
 
 const (
 	logName  = "[fever]"
+	logTrace = "[TRACE]"
 	logDebug = "[DEBUG]"
 	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"

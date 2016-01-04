@@ -61,7 +61,8 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	log.Printf("%-7s %-7s response: %v", logDebug, logName, rsp)
+	log.Printf("%-7s %-7s request query: %v", logDebug, logName, req.URL.Query())
+	log.Printf("%-7s %-7s request form:  %v", logDebug, logName, req.PostForm)
 
 	if rsp.Authorized == 1 {
 
