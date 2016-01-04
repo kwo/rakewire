@@ -61,8 +61,8 @@ func (z *Service) GetFeedLog(feedID uint64, since time.Duration) ([]*m.FeedLog, 
 
 }
 
-// FeedLogGetLastestTime retrieves the most recent fetch activity
-func (z *Service) FeedLogGetLastestTime() (time.Time, error) {
+// FeedLogGetLastFetchTime retrieves the most recent fetch activity
+func (z *Service) FeedLogGetLastFetchTime() (time.Time, error) {
 
 	startTime := time.Now().Truncate(time.Second)
 	err := z.db.View(func(tx *bolt.Tx) error {

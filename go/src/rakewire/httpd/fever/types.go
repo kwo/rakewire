@@ -23,7 +23,7 @@ type Database interface {
 	UserEntryGetStarredForUser(userID uint64) ([]*m.UserEntry, error)
 	UserEntrySave(userentries []*m.UserEntry) error
 	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
-	FeedLogGetLastestTime() (time.Time, error)
+	FeedLogGetLastFetchTime() (time.Time, error)
 }
 
 // Response defines the json/xml response return by requests.
@@ -38,7 +38,6 @@ type Response struct {
 	ItemCount     uint         `json:"total_items,omitempty"`
 	UnreadItemIDs string       `json:"unread_item_ids,omitempty"`
 	SavedItemIDs  string       `json:"saved_item_ids,omitempty"`
-	Mark          string       `json:"mark"`
 }
 
 // Group is the fever group construct

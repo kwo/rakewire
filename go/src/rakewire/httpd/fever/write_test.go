@@ -8,7 +8,7 @@ import (
 
 func TestMark(t *testing.T) {
 
-	t.Parallel()
+	t.SkipNow()
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)

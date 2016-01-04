@@ -69,15 +69,12 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 			switch k {
 
 			case "api":
-				startTime, err := z.db.FeedLogGetLastestTime()
-				if err != nil {
+				startTime, err := z.db.FeedLogGetLastFetchTime()
+				if err == nil {
+					rsp.LastRefreshed = startTime.Unix()
+				} else {
 					log.Printf("%-7s %-7s error retrieving latest feedlog time: %s", logWarn, logName, err.Error())
 				}
-				rsp.LastRefreshed = startTime.Unix()
-
-				// write parameters
-				// req.PostForm
-				rsp.Mark = req.PostFormValue("mark")
 
 			case "feeds":
 				if feeds, feedGroups, err := z.getFeeds(user.ID); err == nil {
@@ -150,6 +147,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 
 	} // authorized
 
+	w.WriteHeader(http.StatusOK)
 	w.Header().Set(hContentType, mimeJSON)
 	if err := json.NewEncoder(w).Encode(&rsp); err != nil {
 		log.Printf("%-7s %-7s cannot serialize fever JSON response: %s", logWarn, logName, err.Error())

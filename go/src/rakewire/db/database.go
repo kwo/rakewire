@@ -36,7 +36,7 @@ type Database interface {
 	// GetFeedLog retrieves the past fetch attempts for the feed in reverse chronological order.
 	// If since is equal to 0, return all.
 	GetFeedLog(feedID uint64, since time.Duration) ([]*m.FeedLog, error)
-	FeedLogGetLastestTime() (time.Time, error)
+	FeedLogGetLastFetchTime() (time.Time, error)
 	GetFeedEntriesFromIDs(feedID uint64, guIDs []string) (map[string]*m.Entry, error)
 	FeedSave(*m.Feed) ([]*m.Entry, error)
 }
