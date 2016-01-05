@@ -31,7 +31,7 @@ func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
 	)
 
 	// fever api router
-	feverPrefix := "/fever"
+	feverPrefix := "/fever/"
 	feverAPI := fever.NewAPI(feverPrefix, z.database)
 	router.PathPrefix(feverPrefix).Handler(
 		Adapt(feverAPI.Router(), NoCache()),
