@@ -531,7 +531,7 @@ func (z *Service) UserEntryUpdateReadByGroup(userID, groupID uint64, maxTime tim
 		return err
 	}
 	for _, uf := range userfeeds {
-		if uf.HasGroup(groupID) {
+		if groupID == 0 || uf.HasGroup(groupID) {
 			if err := z.UserEntryUpdateReadByFeed(userID, uf.ID, maxTime, read); err != nil {
 				return err
 			}
@@ -550,7 +550,7 @@ func (z *Service) UserEntryUpdateStarByGroup(userID, groupID uint64, maxTime tim
 		return err
 	}
 	for _, uf := range userfeeds {
-		if uf.HasGroup(groupID) {
+		if groupID == 0 || uf.HasGroup(groupID) {
 			if err := z.UserEntryUpdateStarByFeed(userID, uf.ID, maxTime, star); err != nil {
 				return err
 			}
