@@ -10,7 +10,7 @@ import (
 
 const (
 	// SchemaVersion of the database
-	SchemaVersion = 3
+	SchemaVersion = 2
 )
 
 func (z *Service) checkDatabase() error {
@@ -185,7 +185,7 @@ func (z *Service) checkSchema(tx *bolt.Tx) error {
 
 func (z *Service) rebuildIndexes(tx *bolt.Tx) error {
 
-	log.Printf("%-7s %-7s rebuilding indexes", logDebug, logName)
+	log.Printf("%-7s %-7s rebuilding indexes...", logInfo, logName)
 
 	err := tx.DeleteBucket([]byte(bucketIndex))
 	if err != nil {
@@ -231,6 +231,8 @@ func (z *Service) rebuildIndexes(tx *bolt.Tx) error {
 	if err != nil {
 		return err
 	}
+
+	log.Printf("%-7s %-7s rebuilding indexes complete", logInfo, logName)
 
 	return nil
 
