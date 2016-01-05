@@ -20,3 +20,30 @@ func NewUserFeed(userID, feedID uint64) *UserFeed {
 		FeedID: feedID,
 	}
 }
+
+// AddGroup adds the userfeed to the given group.
+func (z *UserFeed) AddGroup(groupID uint64) {
+	if !z.HasGroup(groupID) {
+		z.GroupIDs = append(z.GroupIDs, groupID)
+	}
+}
+
+// RemoveGroup removes the UserFeed from the given group.
+func (z *UserFeed) RemoveGroup(groupID uint64) {
+	for i, value := range z.GroupIDs {
+		if value == groupID {
+			z.GroupIDs = append(z.GroupIDs[:i], z.GroupIDs[i+1:]...)
+		}
+	}
+}
+
+// HasGroup tests if the UserFeed belongs to the given group
+func (z *UserFeed) HasGroup(groupID uint64) bool {
+	result := false
+	for _, value := range z.GroupIDs {
+		if value == groupID {
+			return true
+		}
+	}
+	return result
+}
