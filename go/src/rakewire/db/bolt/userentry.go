@@ -27,6 +27,15 @@ func (z *Service) UserEntrySave(userentries []*m.UserEntry) error {
 
 }
 
+// UserEntryAdd saves userentries to the database.
+func (z *Service) UserEntryAdd(allEntries []*m.Entry) error {
+	z.Lock()
+	defer z.Unlock()
+	return z.db.Update(func(tx *bolt.Tx) error {
+		return z.UserEntryAddNew(allEntries, tx)
+	})
+}
+
 // UserEntryAddNew saves userentries to the database.
 func (z *Service) UserEntryAddNew(allEntries []*m.Entry, tx *bolt.Tx) error {
 
