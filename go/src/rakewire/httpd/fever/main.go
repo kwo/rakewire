@@ -74,7 +74,17 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 				if err == nil {
 					rsp.LastRefreshed = startTime.Unix()
 				} else {
-					log.Printf("%-7s %-7s error retrieving latest feedlog time: %s", logWarn, logName, err.Error())
+					log.Printf("%-7s %-7s error retrieving last feedlog fetch time: %s", logWarn, logName, err.Error())
+				}
+
+				uMark := req.PostFormValue("mark")
+				uAs := req.PostFormValue("as")
+				uID := req.PostFormValue("id")
+				uBefore := req.PostFormValue("before")
+				if uMark != "" {
+					if err := z.updateItems(user.ID, uMark, uAs, uID, uBefore); err != nil {
+						log.Printf("%-7s %-7s error updating items: %s", logWarn, logName, err.Error())
+					}
 				}
 
 			case "feeds":

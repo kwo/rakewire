@@ -12,11 +12,12 @@ type Configuration struct {
 
 // Database interface
 type Database interface {
-	GroupGetAllByUser(userID uint64) ([]*m.Group, error)
-
 	UserGetByUsername(username string) (*m.User, error)
 	UserGetByFeverHash(feverhash string) (*m.User, error)
 	UserSave(user *m.User) error
+
+	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
+	GroupGetAllByUser(userID uint64) ([]*m.Group, error)
 
 	UserEntryGetTotalForUser(userID uint64) (uint, error)
 	UserEntryGetByID(userID uint64, ids []uint64) ([]*m.UserEntry, error)
@@ -25,8 +26,10 @@ type Database interface {
 	UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, error)
 	UserEntryGetStarredForUser(userID uint64) ([]*m.UserEntry, error)
 	UserEntrySave(userentries []*m.UserEntry) error
-
-	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
+	UserEntryUpdateReadByFeed(userID, userFeedID uint64, maxTime time.Time, read bool) error
+	UserEntryUpdateStarByFeed(userID, userFeedID uint64, maxTime time.Time, star bool) error
+	UserEntryUpdateReadByGroup(userID, groupID uint64, maxTime time.Time, read bool) error
+	UserEntryUpdateStarByGroup(userID, groupID uint64, maxTime time.Time, star bool) error
 
 	GetFeedByID(feedID uint64) (*m.Feed, error)
 	GetFeedByURL(url string) (*m.Feed, error)

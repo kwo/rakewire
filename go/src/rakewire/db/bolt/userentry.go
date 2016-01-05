@@ -5,6 +5,7 @@ import (
 	"github.com/boltdb/bolt"
 	m "rakewire/model"
 	"strconv"
+	"time"
 )
 
 // UserEntrySave saves userentries to the database.
@@ -191,8 +192,8 @@ func (z *Service) UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, erro
 		c := bIndex.Cursor()
 		min := []byte(kvKeys(minKeys))
 		nxt := []byte(kvKeys(nxtKeys))
-		// log.Printf("%-7s %-7s user entries get unread min: %s", logDebug, logName, min)
-		// log.Printf("%-7s %-7s user entries get unread max: %s", logDebug, logName, nxt)
+		//log.Printf("%-7s %-7s user entries get unread min: %s", logDebug, logName, min)
+		//log.Printf("%-7s %-7s user entries get unread max: %s", logDebug, logName, nxt)
 
 		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 
@@ -397,6 +398,166 @@ func (z *Service) UserEntryGetPrev(userID uint64, maxID uint64, count int) ([]*m
 	})
 
 	return result, err
+
+}
+
+// UserEntryUpdateReadByFeed updated the read flag of user entries
+func (z *Service) UserEntryUpdateReadByFeed(userID, userFeedID uint64, maxTime time.Time, read bool) error {
+
+	z.Lock()
+	defer z.Unlock()
+	return z.db.Update(func(tx *bolt.Tx) error {
+
+		var idCache []uint64
+
+		// define index keys
+		ue := &m.UserEntry{}
+		ue.UserID = userID
+		ue.IsRead = !read
+		minKeys := ue.IndexKeys()[m.UserEntryIndexRead]
+		ue.Updated = maxTime.Add(1 * time.Second).Truncate(time.Second)
+		nxtKeys := ue.IndexKeys()[m.UserEntryIndexRead]
+
+		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.UserEntryEntity)).Bucket([]byte(m.UserEntryIndexRead))
+		bUserEntry := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.UserEntryEntity))
+
+		c := bIndex.Cursor()
+		min := []byte(kvKeys(minKeys))
+		nxt := []byte(kvKeys(nxtKeys))
+		//log.Printf("%-7s %-7s UserEntryUpdateReadByFeed min: %s", logDebug, logName, min)
+		//log.Printf("%-7s %-7s UserEntryUpdateReadByFeed max: %s", logDebug, logName, nxt)
+		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+			//log.Printf("%-7s %-7s UserEntryUpdateReadByFeed %s: %s", logTrace, logName, k, v)
+
+			id, err := strconv.ParseUint(string(v), 10, 64)
+			if err != nil {
+				return err
+			}
+
+			idCache = append(idCache, id)
+
+		} // cursor
+
+		for _, id := range idCache {
+			if data, ok := kvGet(id, bUserEntry); ok {
+
+				ue := &m.UserEntry{}
+				if err := ue.Deserialize(data); err != nil {
+					return err
+				}
+
+				if userFeedID == 0 || ue.UserFeedID == userFeedID { // additional filter not in index
+					ue.IsRead = read
+					if err := kvSave(m.UserEntryEntity, ue, tx); err != nil {
+						return err
+					}
+				}
+
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
+// UserEntryUpdateStarByFeed updated the star flag of user entries
+func (z *Service) UserEntryUpdateStarByFeed(userID, userFeedID uint64, maxTime time.Time, star bool) error {
+
+	z.Lock()
+	defer z.Unlock()
+	return z.db.Update(func(tx *bolt.Tx) error {
+
+		var idCache []uint64
+
+		// define index keys
+		ue := &m.UserEntry{}
+		ue.UserID = userID
+		ue.IsStar = !star
+		minKeys := ue.IndexKeys()[m.UserEntryIndexStar]
+		ue.Updated = maxTime.Add(1 * time.Second).Truncate(time.Second)
+		nxtKeys := ue.IndexKeys()[m.UserEntryIndexStar]
+
+		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.UserEntryEntity)).Bucket([]byte(m.UserEntryIndexStar))
+		bUserEntry := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.UserEntryEntity))
+
+		c := bIndex.Cursor()
+		min := []byte(kvKeys(minKeys))
+		nxt := []byte(kvKeys(nxtKeys))
+		//log.Printf("%-7s %-7s UserEntryUpdateReadByFeed min: %s", logDebug, logName, min)
+		//log.Printf("%-7s %-7s UserEntryUpdateReadByFeed max: %s", logDebug, logName, nxt)
+		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+			//log.Printf("%-7s %-7s UserEntryUpdateReadByFeed %s: %s", logTrace, logName, k, v)
+
+			id, err := strconv.ParseUint(string(v), 10, 64)
+			if err != nil {
+				return err
+			}
+
+			idCache = append(idCache, id)
+
+		} // cursor
+
+		for _, id := range idCache {
+			if data, ok := kvGet(id, bUserEntry); ok {
+
+				ue := &m.UserEntry{}
+				if err := ue.Deserialize(data); err != nil {
+					return err
+				}
+
+				if userFeedID == 0 || ue.UserFeedID == userFeedID { // additional filter not in index
+					ue.IsStar = star
+					if err := kvSave(m.UserEntryEntity, ue, tx); err != nil {
+						return err
+					}
+				}
+
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
+// UserEntryUpdateReadByGroup updated the read flag of user entries
+func (z *Service) UserEntryUpdateReadByGroup(userID, groupID uint64, maxTime time.Time, read bool) error {
+
+	userfeeds, err := z.UserFeedGetAllByUser(userID)
+	if err != nil {
+		return err
+	}
+	for _, uf := range userfeeds {
+		if uf.HasGroup(groupID) {
+			if err := z.UserEntryUpdateReadByFeed(userID, uf.ID, maxTime, read); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+
+}
+
+// UserEntryUpdateStarByGroup updated the star flag of user entries
+func (z *Service) UserEntryUpdateStarByGroup(userID, groupID uint64, maxTime time.Time, star bool) error {
+
+	userfeeds, err := z.UserFeedGetAllByUser(userID)
+	if err != nil {
+		return err
+	}
+	for _, uf := range userfeeds {
+		if uf.HasGroup(groupID) {
+			if err := z.UserEntryUpdateStarByFeed(userID, uf.ID, maxTime, star); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 
 }
 

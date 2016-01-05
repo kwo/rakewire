@@ -22,6 +22,10 @@ type Database interface {
 	UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, error)
 	UserEntryGetStarredForUser(userID uint64) ([]*m.UserEntry, error)
 	UserEntrySave(userentries []*m.UserEntry) error
+	UserEntryUpdateReadByFeed(userID, userFeedID uint64, maxTime time.Time, read bool) error
+	UserEntryUpdateStarByFeed(userID, userFeedID uint64, maxTime time.Time, star bool) error
+	UserEntryUpdateReadByGroup(userID, groupID uint64, maxTime time.Time, read bool) error
+	UserEntryUpdateStarByGroup(userID, groupID uint64, maxTime time.Time, star bool) error
 	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
 	FeedLogGetLastFetchTime() (time.Time, error)
 }

@@ -40,7 +40,7 @@ site_url (utf-8 string)
 is_spark (boolean integer)
 last_updated_on_time (Unix timestamp/integer)
 
-### favicons
+### favicons (TODO)
 
 	?api&favicons
 
@@ -74,7 +74,7 @@ is_read (boolean integer)
 created_on_time (Unix timestamp/integer)
 
 
-### hot links
+### hot links (TODO)
 
 	?api&links
 
@@ -88,7 +88,7 @@ Response contains links.
 
 ## Write
 
-### unread
+### unread (TODO)
 
 I don't understand this yet.
 
@@ -97,7 +97,7 @@ I don't understand this yet.
 	unread_recently_read=1
 
 
-### items (TODO)
+### items (DONE)
 
 	?api
 
@@ -106,7 +106,7 @@ I don't understand this yet.
 	id=? where ? is replaced with the id of the item to modify
 
 
-### feed or group (TODO)
+### feed or group (DONE)
 
 	?api
 
@@ -116,7 +116,7 @@ I don't understand this yet.
 	before=? where ? is replaced with the Unix timestamp of the the local client’s most recent items API request
 
 
-### kindling
+### kindling (DONE)
 
 	?api
 
@@ -126,7 +126,7 @@ I don't understand this yet.
 	before=? where ? is replaced with the Unix timestamp of the the local client’s last items API request
 
 
-### sparks
+### sparks (WONT DO)
 
 	?api
 

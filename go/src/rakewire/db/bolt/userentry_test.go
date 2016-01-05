@@ -29,7 +29,7 @@ func TestUserEntry(t *testing.T) {
 	}
 
 	var feeds []*m.Feed
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 4; i++ {
 		feed := m.NewFeed(fmt.Sprintf("http://localhost%d/", i))
 		feed.Title = fmt.Sprintf("Feed%d", i)
 		if _, err := db.FeedSave(feed); err != nil {
@@ -38,14 +38,38 @@ func TestUserEntry(t *testing.T) {
 		feeds = append(feeds, feed)
 	}
 
+	// create user groups
+	g1 := m.NewGroup(users[0].ID, "group1")
+	if err := db.GroupSave(g1); err != nil {
+		t.Fatalf("Error creating group: %s", err.Error())
+	}
+	g2 := m.NewGroup(users[0].ID, "group2")
+	if err := db.GroupSave(g2); err != nil {
+		t.Fatalf("Error creating group: %s", err.Error())
+	}
+
 	// save userfeeds
-	if err := db.UserFeedSave(m.NewUserFeed(users[0].ID, feeds[0].ID)); err != nil {
+	uf := m.NewUserFeed(users[0].ID, feeds[0].ID)
+	uf.AddGroup(g1.ID)
+	if err := db.UserFeedSave(uf); err != nil {
 		t.Fatalf("Error saving userfeed: %s", err.Error())
 	}
-	if err := db.UserFeedSave(m.NewUserFeed(users[1].ID, feeds[0].ID)); err != nil {
+	uf = m.NewUserFeed(users[1].ID, feeds[0].ID)
+	if err := db.UserFeedSave(uf); err != nil {
 		t.Fatalf("Error saving userfeed: %s", err.Error())
 	}
-	if err := db.UserFeedSave(m.NewUserFeed(users[1].ID, feeds[1].ID)); err != nil {
+	uf = m.NewUserFeed(users[1].ID, feeds[1].ID)
+	if err := db.UserFeedSave(uf); err != nil {
+		t.Fatalf("Error saving userfeed: %s", err.Error())
+	}
+	uf = m.NewUserFeed(users[0].ID, feeds[2].ID)
+	uf.AddGroup(g2.ID)
+	if err := db.UserFeedSave(uf); err != nil {
+		t.Fatalf("Error saving userfeed: %s", err.Error())
+	}
+	uf = m.NewUserFeed(users[0].ID, feeds[3].ID)
+	uf.AddGroup(g1.ID)
+	if err := db.UserFeedSave(uf); err != nil {
 		t.Fatalf("Error saving userfeed: %s", err.Error())
 	}
 
@@ -58,8 +82,20 @@ func TestUserEntry(t *testing.T) {
 		entry.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
 		entries = append(entries, entry)
 	}
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 101; i++ {
 		entry := m.NewEntry(feeds[1].ID, fmt.Sprintf("Entry%d", i))
+		entry.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
+		entry.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
+		entries = append(entries, entry)
+	}
+	for i := 0; i < 102; i++ {
+		entry := m.NewEntry(feeds[2].ID, fmt.Sprintf("Entry%d", i))
+		entry.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
+		entry.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
+		entries = append(entries, entry)
+	}
+	for i := 0; i < 103; i++ {
+		entry := m.NewEntry(feeds[3].ID, fmt.Sprintf("Entry%d", i))
 		entry.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
 		entry.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
 		entries = append(entries, entry)
@@ -81,16 +117,16 @@ func TestUserEntry(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error retrieving user count: %s", err.Error())
 	}
-	if count != 50 {
-		t.Errorf("user total mismatch, expected %d, actual %d", 50, count)
+	if count != 255 {
+		t.Errorf("user total mismatch, expected %d, actual %d", 255, count)
 	}
 
 	count, err = db.UserEntryGetTotalForUser(users[1].ID)
 	if err != nil {
 		t.Errorf("Error retrieving user count: %s", err.Error())
 	}
-	if count != 150 {
-		t.Errorf("user total mismatch, expected %d, actual %d", 150, count)
+	if count != 151 {
+		t.Errorf("user total mismatch, expected %d, actual %d", 151, count)
 	}
 
 	// test unread
@@ -98,16 +134,16 @@ func TestUserEntry(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error retrieving user entries: %s", err.Error())
 	}
-	if len(userentries) != 50 {
-		t.Errorf("bad user entries count, expected %d, actual %d", 50, len(userentries))
+	if len(userentries) != 255 {
+		t.Errorf("bad user entries count, expected %d, actual %d", 255, len(userentries))
 	}
 
 	userentries, err = db.UserEntryGetUnreadForUser(users[1].ID)
 	if err != nil {
 		t.Errorf("Error retrieving user entries: %s", err.Error())
 	}
-	if len(userentries) != 150 {
-		t.Fatalf("bad user entries count, expected %d, actual %d", 150, len(userentries))
+	if len(userentries) != 151 {
+		t.Fatalf("bad user entries count, expected %d, actual %d", 151, len(userentries))
 	}
 
 	userentries[12].IsRead = true
@@ -125,8 +161,8 @@ func TestUserEntry(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error retrieving user entries: %s", err.Error())
 	}
-	if len(userentries) != 147 {
-		t.Errorf("bad user entries count, expected %d, actual %d", 1497, len(userentries))
+	if len(userentries) != 148 {
+		t.Errorf("bad user entries count, expected %d, actual %d", 148, len(userentries))
 	}
 
 	// test get next
@@ -145,8 +181,8 @@ func TestUserEntry(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error retrieving user entries next: %s", err.Error())
 	}
-	if len(userentries) != 50 {
-		t.Errorf("bad user entries count, expected %d, actual %d", 50, len(userentries))
+	if len(userentries) != 51 {
+		t.Errorf("bad user entries count, expected %d, actual %d", 51, len(userentries))
 	}
 
 	// test get prev
@@ -165,8 +201,8 @@ func TestUserEntry(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error retrieving user entries next: %s", err.Error())
 	}
-	if len(userentries) != 50 {
-		t.Errorf("bad user entries count, expected %d, actual %d", 50, len(userentries))
+	if len(userentries) != 51 {
+		t.Errorf("bad user entries count, expected %d, actual %d", 51, len(userentries))
 	}
 
 	// test get by ID
@@ -184,4 +220,62 @@ func TestUserEntry(t *testing.T) {
 		t.Fatalf("bad user entries ID, expected %d, actual %d", 2, userentries[1].ID)
 	}
 
+	// test by feed
+	userfeeds, err := db.UserFeedGetAllByUser(users[1].ID)
+	if err != nil {
+		t.Fatalf("Cannot retrieve user feeds: %s", err.Error())
+	} else if len(userfeeds) != 2 {
+		t.Fatalf("Bad userfeed count: expected %d, actual %d", 2, len(userfeeds))
+	}
+
+	// unread test feed
+
+	if count, err := countUnreadEntries(db, users[1].ID, userfeeds[0].ID); err != nil {
+		t.Fatalf("Cannot count unread entries: %s", err.Error())
+	} else if count != 50 {
+		t.Errorf("Bad userentry count: expected %d, actual %d", 50, count)
+	}
+
+	if err = db.UserEntryUpdateReadByFeed(users[1].ID, userfeeds[0].ID, time.Now(), true); err != nil {
+		t.Errorf("Cannot update user entries for feed: %s", err.Error())
+	}
+
+	if count, err := countUnreadEntries(db, users[1].ID, userfeeds[0].ID); err != nil {
+		t.Fatalf("Cannot count unread entries: %s", err.Error())
+	} else if count != 0 {
+		t.Errorf("Bad userentry count: expected %d, actual %d", 0, count)
+	}
+
+	// unread test all
+
+	if count, err := countUnreadEntries(db, users[1].ID, 0); err != nil {
+		t.Fatalf("Cannot count unread entries: %s", err.Error())
+	} else if count != 98 {
+		t.Errorf("Bad userentry count: expected %d, actual %d", 98, count)
+	}
+
+	if err = db.UserEntryUpdateReadByFeed(users[1].ID, 0, time.Now(), true); err != nil {
+		t.Errorf("Cannot update user entries for feed: %s", err.Error())
+	}
+
+	if count, err := countUnreadEntries(db, users[1].ID, 0); err != nil {
+		t.Fatalf("Cannot count unread entries: %s", err.Error())
+	} else if count != 0 {
+		t.Errorf("Bad userentry count: expected %d, actual %d", 0, count)
+	}
+
+}
+
+func countUnreadEntries(db *Service, userID, userfeedID uint64) (int, error) {
+	userentries, err := db.UserEntryGetUnreadForUser(userID)
+	if err != nil {
+		return 0, err
+	}
+	count := 0
+	for _, userentry := range userentries {
+		if userfeedID == 0 || userentry.UserFeedID == userfeedID {
+			count++
+		}
+	}
+	return count, nil
 }
