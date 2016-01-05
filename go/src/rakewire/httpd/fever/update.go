@@ -18,11 +18,14 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string) err
 		return err
 	}
 
-	before, err := strconv.ParseInt(beforeStr, 10, 64)
-	if err != nil {
-		return err
+	maxTime := time.Time{}
+	if beforeStr != "" {
+		before, err := strconv.ParseInt(beforeStr, 10, 64)
+		if err != nil {
+			return err
+		}
+		maxTime = time.Unix(before, 0)
 	}
-	maxTime := time.Unix(before, 0)
 
 	switch mark {
 	case "item":
