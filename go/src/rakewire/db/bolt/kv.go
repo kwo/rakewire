@@ -80,13 +80,15 @@ func kvGetUniqueIDs(b *bolt.Bucket) ([]uint64, error) {
 
 func kvPut(id uint64, values map[string]string, b *bolt.Bucket) error {
 
-	// remove old records
+	// remove record keys not in new set
 	c := b.Cursor()
 	min := []byte(kvMinKey(id))
 	nxt := []byte(kvNxtKey(id))
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
-		if err := c.Delete(); err != nil {
-			return err
+		if _, ok := values[kvKeyElement(k, 1)]; !ok {
+			if err := c.Delete(); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -151,23 +153,31 @@ func kvSaveIndexes(name string, id uint64, newIndexes map[string][]string, oldIn
 	pkey := strconv.FormatUint(id, 10)
 	indexBucket := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(name))
 
-	// delete old indexes
+	// delete outdated indexes
 	for indexName := range oldIndexes {
-		b := indexBucket.Bucket([]byte(indexName))
-		indexElements := oldIndexes[indexName]
-		keyStr := kvKeys(indexElements)
-		if err := b.Delete([]byte(keyStr)); err != nil {
-			return err
+		oldIndexElements := oldIndexes[indexName]
+		newIndexElements := newIndexes[indexName]
+		oldKeyStr := kvKeys(oldIndexElements)
+		newKeyStr := kvKeys(newIndexElements)
+		if oldKeyStr != newKeyStr {
+			b := indexBucket.Bucket([]byte(indexName))
+			if err := b.Delete([]byte(oldKeyStr)); err != nil {
+				return err
+			}
 		}
 	}
 
-	// add new indexes
+	// add updated indexes
 	for indexName := range newIndexes {
-		b := indexBucket.Bucket([]byte(indexName))
-		indexElements := newIndexes[indexName]
-		keyStr := kvKeys(indexElements)
-		if err := b.Put([]byte(keyStr), []byte(pkey)); err != nil {
-			return err
+		newIndexElements := newIndexes[indexName]
+		oldIndexElements := oldIndexes[indexName]
+		newKeyStr := kvKeys(newIndexElements)
+		oldKeyStr := kvKeys(oldIndexElements)
+		if newKeyStr != oldKeyStr {
+			b := indexBucket.Bucket([]byte(indexName))
+			if err := b.Put([]byte(newKeyStr), []byte(pkey)); err != nil {
+				return err
+			}
 		}
 	}
 
