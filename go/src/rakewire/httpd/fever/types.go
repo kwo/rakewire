@@ -35,9 +35,9 @@ type Response struct {
 	Version       int          `json:"api_version"`
 	Authorized    uint8        `json:"auth"`
 	LastRefreshed int64        `json:"last_refreshed_on_time,string,omitempty"`
-	Feeds         []*Feed      `json:"feeds,omitempty"`
-	FeedGroups    []*FeedGroup `json:"feed_groups,omitempty"`
 	Groups        []*Group     `json:"groups,omitempty"`
+	FeedGroups    []*FeedGroup `json:"feeds_groups,omitempty"`
+	Feeds         []*Feed      `json:"feeds,omitempty"`
 	Items         []*Item      `json:"items,omitempty"`
 	ItemCount     uint         `json:"total_items,omitempty"`
 	UnreadItemIDs string       `json:"unread_item_ids,omitempty"`
