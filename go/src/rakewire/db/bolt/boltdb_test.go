@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"rakewire/db"
+	"rakewire/logging"
 	m "rakewire/model"
 	"testing"
 )
@@ -12,6 +13,13 @@ const (
 	feedFile              = "../../../../test/feedlist.txt"
 	databaseTempDirectory = "../../../../test"
 )
+
+func TestMain(m *testing.M) {
+	cfg := &logging.Configuration{Level: logging.LogTrace}
+	cfg.Init()
+	status := m.Run()
+	os.Exit(status)
+}
 
 func TestInterfaceDatabase(t *testing.T) {
 
