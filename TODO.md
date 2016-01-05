@@ -2,9 +2,20 @@
 
 ## Roadmap
 
+### Immediate
+
+ - optimize user-entries
+ - opml import for user
+ - native api to manage users
+   - add
+   - remove
+   - change password
+ - favicon and hotlinks
+ - add maintenance routine to remove feeds with no user feed
+
 ### Goals
-  - Save Feed Entries
-  - implememt Fever API
+  x Save Feed Entries
+  x implememt Fever API
   - add support for Hot Links to Fever API support
 
 ### Unsorted
