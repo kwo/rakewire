@@ -63,7 +63,7 @@ func TestGroups(t *testing.T) {
 		}
 	}
 
-	if feedGroups, err := response.GetObjectArray("feed_groups"); err != nil {
+	if feedGroups, err := response.GetObjectArray("feeds_groups"); err != nil {
 		t.Fatalf("Error getting json feed_groups: %s", err.Error())
 	} else if len(feedGroups) != 2 {
 		t.Errorf("bad feed_group count, expected %d, actual %d", 2, len(feedGroups))
@@ -152,7 +152,7 @@ func TestFeeds(t *testing.T) {
 		}
 	}
 
-	if feedGroups, err := response.GetObjectArray("feed_groups"); err != nil {
+	if feedGroups, err := response.GetObjectArray("feeds_groups"); err != nil {
 		t.Fatalf("Error getting json feed_groups: %s", err.Error())
 	} else if len(feedGroups) != 2 {
 		t.Errorf("bad feed_group count, expected %d, actual %d", 2, len(feedGroups))
