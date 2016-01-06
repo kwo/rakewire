@@ -1,10 +1,10 @@
-package native
+package rest
 
 import (
 	"github.com/gorilla/mux"
 )
 
-// NewAPI creates a new Native API instance
+// NewAPI creates a new REST API instance
 func NewAPI(prefix string, db Database) *API {
 	return &API{
 		prefix: prefix,

@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"rakewire/httpd/fever"
-	"rakewire/httpd/native"
+	"rakewire/httpd/rest"
 )
 
 func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
@@ -23,11 +23,11 @@ func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
 		Adapt(z.apiRouter(apiPrefix), NoCache()),
 	)
 
-	// native api router
-	nativePrefix := "/api"
-	nativeAPI := native.NewAPI(nativePrefix, z.database)
-	router.PathPrefix(nativePrefix).Handler(
-		Adapt(nativeAPI.Router(), NoCache()),
+	// rest api router
+	restPrefix := "/api"
+	restAPI := rest.NewAPI(restPrefix, z.database)
+	router.PathPrefix(restPrefix).Handler(
+		Adapt(restAPI.Router(), NoCache()),
 	)
 
 	// fever api router

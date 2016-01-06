@@ -1,4 +1,4 @@
-package native
+package rest
 
 import (
 	"log"
@@ -22,8 +22,8 @@ func TestUserGet(t *testing.T) {
 		t.Fatalf("Cannot save user: %s", err.Error())
 	}
 
-	apiNative := NewAPI("/api", database)
-	server := httptest.NewServer(apiNative.Router())
+	apiRest := NewAPI("/api", database)
+	server := httptest.NewServer(apiRest.Router())
 	defer server.Close()
 
 	u := server.URL + "/api/users/" + user.Username

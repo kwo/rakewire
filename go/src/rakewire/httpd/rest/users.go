@@ -1,4 +1,4 @@
-package native
+package rest
 
 import (
 	"encoding/json"

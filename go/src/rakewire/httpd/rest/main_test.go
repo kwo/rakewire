@@ -1,4 +1,4 @@
-package native
+package rest
 
 import (
 	"log"
@@ -14,8 +14,8 @@ func TestRootNotFound(t *testing.T) {
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
 
-	apiNative := NewAPI("/api", database)
-	server := httptest.NewServer(apiNative.Router())
+	apiRest := NewAPI("/api", database)
+	server := httptest.NewServer(apiRest.Router())
 	defer server.Close()
 
 	u := server.URL + "/api"

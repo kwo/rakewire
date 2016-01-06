@@ -1,4 +1,4 @@
-package native
+package rest
 
 // API top level struct
 type API struct {
