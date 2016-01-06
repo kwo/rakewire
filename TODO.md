@@ -10,8 +10,8 @@
    - add
    - remove
    - change password
- - favicon and hotlinks
  - add maintenance routine to remove feeds with no user feed
+ - favicon and hotlinks
 
 ### Goals
   x Save Feed Entries
