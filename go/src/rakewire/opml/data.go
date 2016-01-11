@@ -18,6 +18,8 @@ const (
 	logError = "[ERROR]"
 )
 
+// TODO: sort entries on export
+
 // Export OPML document
 func Export(user *model.User, database db.Database) (*OPML, error) {
 
@@ -45,6 +47,9 @@ func Export(user *model.User, database db.Database) (*OPML, error) {
 			categories[group.Name] = category
 		}
 		category := categories[group.Name]
+
+		// TODO: if all outlines in a group are autoread/autostar assign to group and remove from outlines
+
 		for _, userfeed := range userfeeds1 {
 
 			flags := ""
@@ -152,7 +157,6 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 				}
 
 				uf = model.NewUserFeed(userID, f.ID)
-				uf.DateAdded = time.Now().Truncate(time.Second)
 				uf.Feed = f
 				log.Printf("%-7s %-7s adding userfeed: %s", logDebug, logName, uf.Feed.URL)
 
@@ -163,6 +167,9 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 			uf.AutoRead = branch.AutoRead || strings.Contains(outline.Category, "autoread")
 			uf.AutoStar = branch.AutoStar || strings.Contains(outline.Category, "autostar")
 			uf.AddGroup(group.ID)
+			if outline.Created != nil && !outline.Created.IsZero() {
+				uf.DateAdded = *outline.Created
+			}
 			if uf.DateAdded.IsZero() {
 				uf.DateAdded = time.Now().Truncate(time.Second)
 			}
