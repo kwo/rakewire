@@ -24,7 +24,7 @@ func TestOPML(t *testing.T) {
 		<outline type="rss" text="37 Signals" title="37 Signals" xmlUrl="https://feeds.feedburner.com/37signals/beMH" htmlUrl="http://37signals.com/svn/posts"/>
 		<outline type="rss" text="Andyet" title="Andyet" xmlUrl="https://blog.andyet.com/feeds/all.atom.xml" htmlUrl="http://blog.andyet.com"/>
 		<outline type="rss" text="AngularJS" title="AngularJS" xmlUrl="https://blog.angularjs.org/feeds/posts/default" htmlUrl="http://blog.angularjs.org/"/>
-		<outline text="GroupC">
+		<outline text="GroupC" category="autoread">
 			<outline type="rss" text="2ality" title="2ality" xmlUrl="https://feeds.feedburner.com/2ality?format=xml" htmlUrl="http://www.2ality.com/"/>
 			<outline type="rss" text="37 Signals" title="37 Signals" xmlUrl="https://feeds.feedburner.com/37signals/beMH" htmlUrl="http://37signals.com/svn/posts"/>
 			<outline type="rss" text="Andyet" title="Andyet" xmlUrl="https://blog.andyet.com/feeds/all.atom.xml" htmlUrl="http://blog.andyet.com"/>
@@ -49,7 +49,7 @@ func TestOPML(t *testing.T) {
 
 	for k, v := range result {
 		for _, outline := range v {
-			t.Logf("%s - %s", k, outline.Title)
+			t.Logf("%s - %t %t %s", k.Name, k.AutoRead, k.AutoStar, outline.Title)
 		}
 	}
 

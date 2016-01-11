@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // index names
@@ -20,12 +21,15 @@ const (
 )
 
 const (
-	userfeedID       = "ID"
-	userfeedUserID   = "UserID"
-	userfeedFeedID   = "FeedID"
-	userfeedGroupIDs = "GroupIDs"
-	userfeedTitle    = "Title"
-	userfeedNotes    = "Notes"
+	userfeedID        = "ID"
+	userfeedUserID    = "UserID"
+	userfeedFeedID    = "FeedID"
+	userfeedGroupIDs  = "GroupIDs"
+	userfeedDateAdded = "DateAdded"
+	userfeedTitle     = "Title"
+	userfeedNotes     = "Notes"
+	userfeedAutoRead  = "AutoRead"
+	userfeedAutoStar  = "AutoStar"
 )
 
 // GetID return the primary key of the object.
@@ -44,8 +48,11 @@ func (z *UserFeed) Clear() {
 	z.UserID = 0
 	z.FeedID = 0
 	z.GroupIDs = []uint64{}
+	z.DateAdded = time.Time{}
 	z.Title = ""
 	z.Notes = ""
+	z.AutoRead = false
+	z.AutoStar = false
 
 }
 
@@ -79,12 +86,34 @@ func (z *UserFeed) Serialize(flags ...bool) map[string]string {
 		}(z.GroupIDs)
 	}
 
+	if flagNoZeroCheck || !z.DateAdded.IsZero() {
+		result[userfeedDateAdded] = z.DateAdded.UTC().Format(time.RFC3339)
+	}
+
 	if flagNoZeroCheck || z.Title != "" {
 		result[userfeedTitle] = z.Title
 	}
 
 	if flagNoZeroCheck || z.Notes != "" {
 		result[userfeedNotes] = z.Notes
+	}
+
+	if flagNoZeroCheck || z.AutoRead {
+		result[userfeedAutoRead] = func(value bool) string {
+			if value {
+				return "1"
+			}
+			return "0"
+		}(z.AutoRead)
+	}
+
+	if flagNoZeroCheck || z.AutoStar {
+		result[userfeedAutoStar] = func(value bool) string {
+			if value {
+				return "1"
+			}
+			return "0"
+		}(z.AutoStar)
 	}
 
 	return result
@@ -137,9 +166,36 @@ func (z *UserFeed) Deserialize(values map[string]string) error {
 		return result
 	}(userfeedGroupIDs, values, errors)
 
+	z.DateAdded = func(fieldName string, values map[string]string, errors []error) time.Time {
+		result := time.Time{}
+		if value, ok := values[fieldName]; ok {
+			t, err := time.Parse(time.RFC3339, value)
+			if err != nil {
+				errors = append(errors, err)
+			} else {
+				result = t
+			}
+		}
+		return result
+	}(userfeedDateAdded, values, errors)
+
 	z.Title = values[userfeedTitle]
 
 	z.Notes = values[userfeedNotes]
+
+	z.AutoRead = func(fieldName string, values map[string]string, errors []error) bool {
+		if value, ok := values[fieldName]; ok {
+			return value == "1"
+		}
+		return false
+	}(userfeedAutoRead, values, errors)
+
+	z.AutoStar = func(fieldName string, values map[string]string, errors []error) bool {
+		if value, ok := values[fieldName]; ok {
+			return value == "1"
+		}
+		return false
+	}(userfeedAutoStar, values, errors)
 
 	if len(errors) > 0 {
 		return errors[0]

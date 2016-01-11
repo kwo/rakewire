@@ -5,6 +5,8 @@ import (
 	"log"
 	"rakewire/db"
 	"rakewire/model"
+	"strings"
+	"time"
 )
 
 const (
@@ -17,14 +19,14 @@ const (
 )
 
 // Export OPML document
-func Export(userID uint64, database db.Database) (*OPML, error) {
+func Export(user *model.User, database db.Database) (*OPML, error) {
 
-	groups, err := database.GroupGetAllByUser(userID)
+	groups, err := database.GroupGetAllByUser(user.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	userfeeds, err := database.UserFeedGetAllByUser(userID)
+	userfeeds, err := database.UserFeedGetAllByUser(user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -37,18 +39,37 @@ func Export(userID uint64, database db.Database) (*OPML, error) {
 		log.Printf("%-7s %-7s category: %s", logDebug, logName, group.Name)
 		if _, ok := categories[group.Name]; !ok {
 			category := &Outline{
-				Text: group.Name,
+				Text:  group.Name,
+				Title: group.Name,
 			}
 			categories[group.Name] = category
 		}
 		category := categories[group.Name]
 		for _, userfeed := range userfeeds1 {
+
+			flags := ""
+			if userfeed.AutoRead {
+				flags += "autoread"
+			}
+			if userfeed.AutoStar {
+				flags += ",autostar"
+			}
+
+			var created *time.Time
+			if !userfeed.DateAdded.IsZero() {
+				x := userfeed.DateAdded.UTC()
+				created = &x
+			}
+
 			outline := &Outline{
-				Type:    "rss",
-				Text:    userfeed.Title,
-				Title:   userfeed.Title,
-				XMLURL:  userfeed.Feed.URL,
-				HTMLURL: userfeed.Feed.SiteURL,
+				Type:        "rss",
+				Text:        userfeed.Title,
+				Title:       userfeed.Title,
+				Created:     created,
+				Description: userfeed.Notes,
+				Category:    flags,
+				XMLURL:      userfeed.Feed.URL,
+				HTMLURL:     userfeed.Feed.SiteURL,
 			}
 			log.Printf("%-7s %-7s feed: %s", logDebug, logName, outline.Text)
 			category.Outlines = append(category.Outlines, outline)
@@ -62,6 +83,11 @@ func Export(userID uint64, database db.Database) (*OPML, error) {
 	}
 
 	opml := &OPML{
+		Head: &Head{
+			Title:       "Rakewire OPML",
+			DateCreated: time.Now().UTC().Truncate(time.Second),
+			OwnerName:   user.Username,
+		},
 		Body: &Body{
 			Outlines: outlines,
 		},
@@ -81,14 +107,14 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 	if err != nil {
 		return err
 	}
-	for groupName := range flatOPML {
-		group := groups[groupName]
+	for branch := range flatOPML {
+		group := groups[branch.Name]
 		if group == nil {
-			group = model.NewGroup(userID, groupName)
+			group = model.NewGroup(userID, branch.Name)
 			if err := database.GroupSave(group); err != nil {
 				return err
 			}
-			groups[groupName] = group
+			groups[branch.Name] = group
 		}
 	}
 
@@ -101,17 +127,18 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 	}
 	userfeedsByURL, _ := groupUserFeedsByURL(userfeeds)
 
-	for groupName, outlines := range flatOPML {
+	for branch, outlines := range flatOPML {
 
-		group := groups[groupName]
+		group := groups[branch.Name]
 		if group == nil {
-			return fmt.Errorf("Group not found: %s", groupName)
+			return fmt.Errorf("Group not found: %s", branch.Name)
 		}
 
 		for _, outline := range outlines {
 
 			uf := userfeedsByURL[outline.XMLURL]
 			if uf == nil {
+
 				f, err := database.GetFeedByURL(outline.XMLURL)
 				if err != nil {
 					return err
@@ -123,16 +150,22 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 						return err
 					}
 				}
+
 				uf = model.NewUserFeed(userID, f.ID)
-				uf.Title = outline.Text
+				uf.DateAdded = time.Now().Truncate(time.Second)
 				uf.Feed = f
 				log.Printf("%-7s %-7s adding userfeed: %s", logDebug, logName, uf.Feed.URL)
-				if err := database.UserFeedSave(uf); err != nil {
-					return err
-				}
+
 			}
 
+			uf.Title = outline.Title
+			uf.Notes = outline.Description
+			uf.AutoRead = branch.AutoRead || strings.Contains(outline.Category, "autoread")
+			uf.AutoStar = branch.AutoStar || strings.Contains(outline.Category, "autostar")
 			uf.AddGroup(group.ID)
+			if uf.DateAdded.IsZero() {
+				uf.DateAdded = time.Now().Truncate(time.Second)
+			}
 			if err := database.UserFeedSave(uf); err != nil {
 				return err
 			}
@@ -239,7 +272,7 @@ func collectGroups(userfeeds []*model.UserFeed) map[uint64]int {
 	return result
 }
 
-func groupOutlinesByURL(flatOPML map[string][]*Outline) map[string]*Outline {
+func groupOutlinesByURL(flatOPML map[*Branch][]*Outline) map[string]*Outline {
 	result := make(map[string]*Outline)
 	for _, outlines := range flatOPML {
 		for _, outline := range outlines {

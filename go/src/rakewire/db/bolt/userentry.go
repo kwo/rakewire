@@ -51,6 +51,7 @@ func (z *Service) UserEntryAddNew(allEntries []*m.Entry, tx *bolt.Tx) error {
 		nxtKeys := uf.IndexKeys()[m.UserFeedIndexFeed]
 
 		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.UserFeedEntity)).Bucket([]byte(m.UserFeedIndexFeed))
+		bUserFeed := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.UserFeedEntity))
 
 		c := bIndex.Cursor()
 		min := []byte(kvKeys(minKeys))
@@ -62,11 +63,16 @@ func (z *Service) UserEntryAddNew(allEntries []*m.Entry, tx *bolt.Tx) error {
 				return err
 			}
 
-			// TODO: get whole userfeed, add option to mark entries as read when new
-
 			userFeedID, err := strconv.ParseUint(string(v), 10, 64)
 			if err != nil {
 				return err
+			}
+
+			userfeed := &m.UserFeed{}
+			if data, ok := kvGet(userFeedID, bUserFeed); ok {
+				if err := userfeed.Deserialize(data); err != nil {
+					return err
+				}
 			}
 
 			for _, entry := range entries {
@@ -75,6 +81,8 @@ func (z *Service) UserEntryAddNew(allEntries []*m.Entry, tx *bolt.Tx) error {
 					UserFeedID: userFeedID,
 					EntryID:    entry.ID,
 					Updated:    entry.Updated,
+					IsRead:     userfeed.AutoRead,
+					IsStar:     userfeed.AutoStar,
 				}
 				if err := kvSave(m.UserEntryEntity, userentry, tx); err != nil {
 					return err

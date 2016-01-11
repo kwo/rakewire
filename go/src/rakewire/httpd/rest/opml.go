@@ -14,7 +14,7 @@ func (z *API) opmlExport(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	doc, err := opml.Export(user.ID, z.db)
+	doc, err := opml.Export(user, z.db)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
