@@ -1,5 +1,10 @@
 # Rakewire
 
+curl http://localhost:4444/api/rakewire.opml > rakewire.opml
+curl -D - -X PUT -H "Content-Type: application/xml" --data-binary @rakewire.opml http://localhost:4444/api/rakewire.opml
+curl -D - -X POST http://localhost:4444/api/cleanup
+
+
 Welcome to the Rakewire source code, developer!
 
 This source code is divided into two projects: the backend, written in go, and the UI, an SPA, written using React.

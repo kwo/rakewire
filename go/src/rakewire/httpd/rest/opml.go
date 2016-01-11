@@ -6,6 +6,29 @@ import (
 	"rakewire/opml"
 )
 
+func (z *API) opmlExport(w http.ResponseWriter, req *http.Request) {
+
+	user, err := z.db.UserGetByUsername("karl@ostendorf.com")
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	doc, err := opml.Export(user.ID, z.db)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	err = opml.Format(doc, w)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+}
+
 func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
 
 	err := func() error {

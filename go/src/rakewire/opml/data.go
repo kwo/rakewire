@@ -16,6 +16,61 @@ const (
 	logError = "[ERROR]"
 )
 
+// Export OPML document
+func Export(userID uint64, database db.Database) (*OPML, error) {
+
+	groups, err := database.GroupGetAllByUser(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	userfeeds, err := database.UserFeedGetAllByUser(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	groupsByID := groupGroupsByID(groups)
+	userfeedsByGroup := groupUserFeedsByGroup(userfeeds, groupsByID)
+
+	categories := make(map[string]*Outline)
+	for group, userfeeds1 := range userfeedsByGroup {
+		log.Printf("%-7s %-7s category: %s", logDebug, logName, group.Name)
+		if _, ok := categories[group.Name]; !ok {
+			category := &Outline{
+				Text: group.Name,
+			}
+			categories[group.Name] = category
+		}
+		category := categories[group.Name]
+		for _, userfeed := range userfeeds1 {
+			outline := &Outline{
+				Type:    "rss",
+				Text:    userfeed.Title,
+				Title:   userfeed.Title,
+				XMLURL:  userfeed.Feed.URL,
+				HTMLURL: userfeed.Feed.SiteURL,
+			}
+			log.Printf("%-7s %-7s feed: %s", logDebug, logName, outline.Text)
+			category.Outlines = append(category.Outlines, outline)
+		}
+	}
+
+	outlines := []*Outline{}
+	for _, category := range categories {
+		log.Printf("%-7s %-7s outline %s: %d", logDebug, logName, category.Text, len(category.Outlines))
+		outlines = append(outlines, category)
+	}
+
+	opml := &OPML{
+		Body: &Body{
+			Outlines: outlines,
+		},
+	}
+
+	return opml, nil
+
+}
+
 // Import OPML document into database
 func Import(userID uint64, opml *OPML, replace bool, database db.Database) error {
 
@@ -128,6 +183,26 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 
 }
 
+func groupGroupsByID(groups map[string]*model.Group) map[uint64]*model.Group {
+	result := make(map[uint64]*model.Group)
+	for _, group := range groups {
+		result[group.ID] = group
+	}
+	return result
+}
+
+func groupUserFeedsByGroup(userfeeds []*model.UserFeed, groups map[uint64]*model.Group) map[*model.Group][]*model.UserFeed {
+
+	result := make(map[*model.Group][]*model.UserFeed)
+	for _, userfeed := range userfeeds {
+		for _, groupID := range userfeed.GroupIDs {
+			result[groups[groupID]] = append(result[groups[groupID]], userfeed)
+		}
+	}
+	return result
+
+}
+
 func groupUserFeedsByURL(userfeeds []*model.UserFeed) (map[string]*model.UserFeed, []*model.UserFeed) {
 	result := make(map[string]*model.UserFeed)
 	duplicates := []*model.UserFeed{}
@@ -164,8 +239,8 @@ func collectGroups(userfeeds []*model.UserFeed) map[uint64]int {
 	return result
 }
 
-func groupOutlinesByURL(flatOPML map[string][]Outline) map[string]Outline {
-	result := make(map[string]Outline)
+func groupOutlinesByURL(flatOPML map[string][]*Outline) map[string]*Outline {
+	result := make(map[string]*Outline)
 	for _, outlines := range flatOPML {
 		for _, outline := range outlines {
 			if _, ok := result[outline.XMLURL]; !ok {

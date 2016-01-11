@@ -4,17 +4,23 @@
 
 ### Immediate
 
+ - add header data to opml document
+ - autoexpire entries per feed, add option in opml import
  - shut off static pages and old api
  - jwt authentication
+ - protect opml
+
+ - add hotlinks
+
+ - REPLACE fever!
+
  - use manually managed transactions in database
  - optimize user-entries
- - opml import for user
  - native api to manage users
    - add
    - remove
    - change password
  - add maintenance routine to remove feeds with no user feed
- - favicon and hotlinks
 
 ### Goals
   x Save Feed Entries
