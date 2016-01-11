@@ -1,33 +1,13 @@
 package fever
 
 import (
-	m "rakewire/model"
-	"time"
+	"rakewire/db"
 )
 
 // API top level struct
 type API struct {
 	prefix string
-	db     Database
-}
-
-// Database defines the interface to the database
-type Database interface {
-	GroupGetAllByUser(userID uint64) ([]*m.Group, error)
-	UserGetByFeverHash(feverhash string) (*m.User, error)
-	UserEntryGetTotalForUser(userID uint64) (uint, error)
-	UserEntryGetByID(userID uint64, ids []uint64) ([]*m.UserEntry, error)
-	UserEntryGetNext(userID uint64, minID uint64, count int) ([]*m.UserEntry, error)
-	UserEntryGetPrev(userID uint64, maxID uint64, count int) ([]*m.UserEntry, error)
-	UserEntryGetUnreadForUser(userID uint64) ([]*m.UserEntry, error)
-	UserEntryGetStarredForUser(userID uint64) ([]*m.UserEntry, error)
-	UserEntrySave(userentries []*m.UserEntry) error
-	UserEntryUpdateReadByFeed(userID, userFeedID uint64, maxTime time.Time, read bool) error
-	UserEntryUpdateStarByFeed(userID, userFeedID uint64, maxTime time.Time, star bool) error
-	UserEntryUpdateReadByGroup(userID, groupID uint64, maxTime time.Time, read bool) error
-	UserEntryUpdateStarByGroup(userID, groupID uint64, maxTime time.Time, star bool) error
-	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
-	FeedLogGetLastFetchTime() (time.Time, error)
+	db     db.Database
 }
 
 // Response defines the json/xml response return by requests.

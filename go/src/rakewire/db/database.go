@@ -15,12 +15,14 @@ type Database interface {
 
 	// Feed
 
+	FeedDelete(feed *m.Feed) error
 	FeedSave(*m.Feed) ([]*m.Entry, error)
 	GetFeedByID(feedID uint64) (*m.Feed, error)
 	GetFeedByURL(url string) (*m.Feed, error)
 	GetFeeds() ([]*m.Feed, error)
 	// GetFetchFeeds get feeds to be fetched within the given max time parameter.
 	GetFetchFeeds(max time.Time) ([]*m.Feed, error)
+	FeedDuplicates() (map[string][]uint64, error)
 
 	// FeedLog
 
@@ -42,13 +44,16 @@ type Database interface {
 
 	// Group
 
+	GroupDelete(group *m.Group) error
 	GroupSave(group *m.Group) error
-	GroupGetAllByUser(userID uint64) ([]*m.Group, error)
+	GroupGetAllByUser(userID uint64) (map[string]*m.Group, error)
 
 	// UserFeed
 
+	UserFeedDelete(userfeed *m.UserFeed) error
 	UserFeedSave(userfeed *m.UserFeed) error
 	UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error)
+	UserFeedGetByFeed(feedID uint64) ([]*m.UserFeed, error)
 
 	// UserEntry
 

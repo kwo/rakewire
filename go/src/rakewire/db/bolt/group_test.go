@@ -78,22 +78,22 @@ func TestGroup(t *testing.T) {
 			continue
 		}
 
-		if err := db.GroupDelete(groups1[i]); err != nil {
+		if err := db.GroupDelete(groups1[fmt.Sprintf("User%d-Group%d", 1, i)]); err != nil {
 			t.Errorf("Cannot delete from group1: %s", err.Error())
 		}
-		if g, err := db.GroupGet(groups1[i].ID); err != nil {
+		if g, err := db.GroupGet(groups1[fmt.Sprintf("User%d-Group%d", 1, i)].ID); err != nil {
 			t.Errorf("Error retrieving group1: %s", err.Error())
 		} else if g != nil {
-			t.Errorf("Group not deleted: %d", groups1[i].ID)
+			t.Errorf("Group not deleted: %d", groups1[fmt.Sprintf("User%d-Group%d", 1, i)].ID)
 		}
 
-		if err := db.GroupDelete(groups2[i]); err != nil {
+		if err := db.GroupDelete(groups2[fmt.Sprintf("User%d-Group%d", 2, i)]); err != nil {
 			t.Errorf("Cannot delete from group2: %s", err.Error())
 		}
-		if g, err := db.GroupGet(groups2[i].ID); err != nil {
+		if g, err := db.GroupGet(groups2[fmt.Sprintf("User%d-Group%d", 2, i)].ID); err != nil {
 			t.Errorf("Error retrieving group2: %s", err.Error())
 		} else if g != nil {
-			t.Errorf("Group not deleted: %d", groups2[i].ID)
+			t.Errorf("Group not deleted: %d", groups2[fmt.Sprintf("User%d-Group%d", 2, i)].ID)
 		}
 
 	}
@@ -119,13 +119,13 @@ func TestGroup(t *testing.T) {
 	for i := 0; i < 5; i++ {
 
 		name1 := fmt.Sprintf("User%d-Group%d", 1, i*2)
-		if groups1[i].Name != name1 {
-			t.Errorf("Bad group name, expected %s, actual %s", name1, groups1[i].Name)
+		if groups1[fmt.Sprintf("User%d-Group%d", 1, i*2)].Name != name1 {
+			t.Errorf("Bad group name, expected %s, actual %s", name1, groups1[fmt.Sprintf("User%d-Group%d", 1, i)].Name)
 		}
 
 		name2 := fmt.Sprintf("User%d-Group%d", 2, i*2)
-		if groups2[i].Name != name2 {
-			t.Errorf("Bad group name, expected %s, actual %s", name2, groups2[i].Name)
+		if groups2[fmt.Sprintf("User%d-Group%d", 2, i*2)].Name != name2 {
+			t.Errorf("Bad group name, expected %s, actual %s", name2, groups2[fmt.Sprintf("User%d-Group%d", 2, i)].Name)
 		}
 
 	}

@@ -1,13 +1,13 @@
 package rest
 
+import (
+	"rakewire/db"
+)
+
 // API top level struct
 type API struct {
 	prefix string
-	db     Database
-}
-
-// Database defines the interface to the database
-type Database interface {
+	db     db.Database
 }
 
 // User represents a user

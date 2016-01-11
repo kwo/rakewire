@@ -87,3 +87,12 @@ func (z *Service) EntriesGet(feedID uint64) ([]*m.Entry, error) {
 	return result, err
 
 }
+
+// EntryDelete removes an entry from the database.
+func (z *Service) EntryDelete(entry *m.Entry) error {
+	z.Lock()
+	defer z.Unlock()
+	return z.db.Update(func(tx *bolt.Tx) error {
+		return kvSave(m.EntryEntity, entry, tx)
+	})
+}

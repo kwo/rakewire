@@ -60,15 +60,73 @@ func (z *Service) UserFeedGetAllByUser(userID uint64) ([]*m.UserFeed, error) {
 
 }
 
-// UserFeedSave saves a user to the database.
-func (z *Service) UserFeedSave(userfeed *m.UserFeed) error {
+// UserFeedGetByFeed retrieves the userfeeds associated with the feed.
+func (z *Service) UserFeedGetByFeed(feedID uint64) ([]*m.UserFeed, error) {
 
-	z.Lock()
-	defer z.Unlock()
-	err := z.db.Update(func(tx *bolt.Tx) error {
-		return kvSave(m.UserFeedEntity, userfeed, tx)
+	var result []*m.UserFeed
+
+	// define index keys
+	uf := &m.UserFeed{}
+	uf.FeedID = feedID
+	minKeys := uf.IndexKeys()[m.UserFeedIndexFeed]
+	uf.FeedID = feedID + 1
+	nxtKeys := uf.IndexKeys()[m.UserFeedIndexFeed]
+
+	err := z.db.View(func(tx *bolt.Tx) error {
+
+		bIndex := tx.Bucket([]byte(bucketIndex)).Bucket([]byte(m.UserFeedEntity)).Bucket([]byte(m.UserFeedIndexFeed))
+		bUserFeed := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.UserFeedEntity))
+		bFeed := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.FeedEntity))
+
+		c := bIndex.Cursor()
+		min := []byte(kvKeys(minKeys))
+		nxt := []byte(kvKeys(nxtKeys))
+		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+
+			id, err := strconv.ParseUint(string(v), 10, 64)
+			if err != nil {
+				return err
+			}
+
+			if data, ok := kvGet(id, bUserFeed); ok {
+				uf := &m.UserFeed{}
+				if err := uf.Deserialize(data); err != nil {
+					return err
+				}
+				if data, ok := kvGet(uf.FeedID, bFeed); ok {
+					f := &m.Feed{}
+					if err := f.Deserialize(data); err != nil {
+						return err
+					}
+					uf.Feed = f
+					result = append(result, uf)
+				}
+			}
+
+		}
+
+		return nil
+
 	})
 
-	return err
+	return result, err
 
+}
+
+// UserFeedDelete removes a userfeed from the database.
+func (z *Service) UserFeedDelete(userfeed *m.UserFeed) error {
+	z.Lock()
+	defer z.Unlock()
+	return z.db.Update(func(tx *bolt.Tx) error {
+		return kvDelete(m.UserFeedEntity, userfeed, tx)
+	})
+}
+
+// UserFeedSave saves a user to the database.
+func (z *Service) UserFeedSave(userfeed *m.UserFeed) error {
+	z.Lock()
+	defer z.Unlock()
+	return z.db.Update(func(tx *bolt.Tx) error {
+		return kvSave(m.UserFeedEntity, userfeed, tx)
+	})
 }

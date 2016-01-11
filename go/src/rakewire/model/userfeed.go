@@ -16,8 +16,9 @@ type UserFeed struct {
 // NewUserFeed associates a feed with a user.
 func NewUserFeed(userID, feedID uint64) *UserFeed {
 	return &UserFeed{
-		UserID: userID,
-		FeedID: feedID,
+		UserID:   userID,
+		FeedID:   feedID,
+		GroupIDs: []uint64{},
 	}
 }
 
@@ -40,9 +41,11 @@ func (z *UserFeed) RemoveGroup(groupID uint64) {
 // HasGroup tests if the UserFeed belongs to the given group
 func (z *UserFeed) HasGroup(groupID uint64) bool {
 	result := false
-	for _, value := range z.GroupIDs {
-		if value == groupID {
-			return true
+	if len(z.GroupIDs) > 0 {
+		for _, value := range z.GroupIDs {
+			if value == groupID {
+				return true
+			}
 		}
 	}
 	return result

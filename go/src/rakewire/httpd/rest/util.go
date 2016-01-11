@@ -16,6 +16,7 @@ const (
 	hContentType = "Content-Type"
 	mGet         = "GET"
 	mPost        = "POST"
+	mPut         = "PUT"
 	mimeJSON     = "text/json; charset=utf-8"
 )
 

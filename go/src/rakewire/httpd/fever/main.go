@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
+	"rakewire/db"
 	m "rakewire/model"
 )
 
@@ -16,7 +17,7 @@ const (
 )
 
 // NewAPI creates a new Fever API instance
-func NewAPI(prefix string, db Database) *API {
+func NewAPI(prefix string, db db.Database) *API {
 	return &API{
 		prefix: prefix,
 		db:     db,

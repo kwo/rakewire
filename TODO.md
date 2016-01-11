@@ -4,6 +4,9 @@
 
 ### Immediate
 
+ - shut off static pages and old api
+ - jwt authentication
+ - use manually managed transactions in database
  - optimize user-entries
  - opml import for user
  - native api to manage users

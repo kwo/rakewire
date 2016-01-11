@@ -27,9 +27,9 @@ func (z *Service) GroupGet(groupID uint64) (*m.Group, error) {
 }
 
 // GroupGetAllByUser retrieves the groups belonging to the user.
-func (z *Service) GroupGetAllByUser(userID uint64) ([]*m.Group, error) {
+func (z *Service) GroupGetAllByUser(userID uint64) (map[string]*m.Group, error) {
 
-	var result []*m.Group
+	result := make(map[string]*m.Group)
 
 	// define index keys
 	g := &m.Group{}
@@ -58,7 +58,7 @@ func (z *Service) GroupGetAllByUser(userID uint64) ([]*m.Group, error) {
 				if err := g.Deserialize(data); err != nil {
 					return err
 				}
-				result = append(result, g)
+				result[g.Name] = g
 			}
 
 		}
@@ -97,8 +97,7 @@ func (z *Service) GroupSave(group *m.Group) error {
 func (z *Service) GroupDelete(group *m.Group) error {
 	z.Lock()
 	defer z.Unlock()
-	err := z.db.Update(func(tx *bolt.Tx) error {
+	return z.db.Update(func(tx *bolt.Tx) error {
 		return kvDelete(m.GroupEntity, group, tx)
 	})
-	return err
 }

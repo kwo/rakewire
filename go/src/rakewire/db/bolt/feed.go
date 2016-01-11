@@ -186,3 +186,52 @@ func (z *Service) FeedSave(feed *m.Feed) ([]*m.Entry, error) {
 	return newEntries, err
 
 }
+
+// FeedDelete removes a feed and associated entries from the database.
+func (z *Service) FeedDelete(feed *m.Feed) error {
+
+	entries, err := z.EntriesGet(feed.ID)
+	if err != nil {
+		return err
+	}
+
+	z.Lock()
+	defer z.Unlock()
+	return z.db.Update(func(tx *bolt.Tx) error {
+		for _, entry := range entries {
+			if err := kvDelete(m.EntryEntity, entry, tx); err != nil {
+				return err
+			}
+		}
+		return kvDelete(m.FeedEntity, feed, tx)
+	})
+
+}
+
+// FeedDuplicates finds duplicate feeds keyed by original feed.
+func (z *Service) FeedDuplicates() (map[string][]uint64, error) {
+
+	result := make(map[string][]uint64)
+
+	err := z.db.View(func(tx *bolt.Tx) error {
+
+		b := tx.Bucket([]byte(bucketData)).Bucket([]byte(m.FeedEntity))
+		b.ForEach(func(k, v []byte) error {
+			if fieldName := kvKeyElement(k, 1); fieldName == "URL" {
+				id, err := kvKeyElementID(k, 0)
+				if err != nil {
+					return err
+				}
+				url := string(v)
+				result[url] = append(result[url], id)
+			}
+			return nil
+		})
+
+		return nil
+
+	})
+
+	return result, err
+
+}

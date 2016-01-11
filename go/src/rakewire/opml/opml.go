@@ -22,15 +22,22 @@ func (z Body) GetOutlines() []Outline {
 	return z.Outlines
 }
 
-// Outline represrnts a link or a group of links
+// Outline holds all information about an outline.
 type Outline struct {
-	XMLName  xml.Name  `xml:"outline"`
-	Text     string    `xml:"text,attr,omitempty"`
-	Title    string    `xml:"title,attr,omitempty"`
-	Type     string    `xml:"type,attr,omitempty"`
-	XMLURL   string    `xml:"xmlUrl,attr,omitempty"`
-	HTMLURL  string    `xml:"htmlUrl,attr,omitempty"`
-	Outlines []Outline `xml:"outline"`
+	Outlines     []Outline `xml:"outline"`
+	Text         string    `xml:"text,attr"`
+	Type         string    `xml:"type,attr,omitempty"`
+	IsComment    string    `xml:"isComment,attr,omitempty"`
+	IsBreakpoint string    `xml:"isBreakpoint,attr,omitempty"`
+	Created      string    `xml:"created,attr,omitempty"`
+	Category     string    `xml:"category,attr,omitempty"`
+	XMLURL       string    `xml:"xmlUrl,attr,omitempty"`
+	HTMLURL      string    `xml:"htmlUrl,attr,omitempty"`
+	URL          string    `xml:"url,attr,omitempty"`
+	Language     string    `xml:"language,attr,omitempty"`
+	Title        string    `xml:"title,attr,omitempty"`
+	Version      string    `xml:"version,attr,omitempty"`
+	Description  string    `xml:"description,attr,omitempty"`
 }
 
 // GetOutlines returns nested outlines in the outline
