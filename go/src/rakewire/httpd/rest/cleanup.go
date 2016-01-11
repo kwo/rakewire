@@ -60,6 +60,37 @@ func (z *API) cleanup(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	err = func() error {
+
+		feeds, err := z.db.GetFeeds()
+		if err != nil {
+			return err
+		}
+
+		for _, feed := range feeds {
+
+			userfeeds, err := z.db.UserFeedGetByFeed(feed.ID)
+			if err != nil {
+				return err
+			}
+
+			if len(userfeeds) == 0 {
+				log.Printf("%-7s %-7s Remove unused feed %d: %s", logDebug, logName, feed.ID, feed.URL)
+				if err := z.db.FeedDelete(feed); err != nil {
+					return err
+				}
+			}
+
+		}
+
+		return nil
+	}()
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	w.WriteHeader(http.StatusOK)
 
 }
