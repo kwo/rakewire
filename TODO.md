@@ -4,16 +4,17 @@
 
 ### Immediate
 
- - add header data to opml document
- - autoexpire entries per feed, add option in opml import
+ - protect opml - with basic auth temporairly
  - shut off static pages and old api
- - jwt authentication
- - protect opml
-
- - add hotlinks
+ - docker container
 
  - REPLACE fever!
 
+ - add hotlinks
+ - code restructure
+   - create collection classes with groupby and sort functions
+   - rename model elements: Feed/Item, Subscription/Entry
+ - jwt authentication
  - use manually managed transactions in database
  - optimize user-entries
  - native api to manage users
@@ -21,6 +22,12 @@
    - remove
    - change password
  - add maintenance routine to remove feeds with no user feed
+ - turn off logging to console, store in database, call via api
+   - save to buffer, write to db every 5? seconds, api to filter entries by level and category
+   - expire entries by level (TRACE/DEBUG after 10min, other after X days)
+
+ - create feed item frequency graph per feed for one week
+   - allow assigning polling frequency per hour/day for feed
 
 ### Goals
   x Save Feed Entries

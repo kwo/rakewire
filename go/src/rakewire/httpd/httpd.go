@@ -1,6 +1,7 @@
 package httpd
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"log"
@@ -38,6 +39,10 @@ type Configuration struct {
 	Address     string
 	Port        int
 	UseLocal    bool
+	Hostname    string
+	UseTLS      bool
+	TLSPublic   string
+	TLSPrivate  string
 }
 
 const (
@@ -84,10 +89,28 @@ func (z *Service) Start() error {
 	}
 	mainHandler := Adapt(router, LogAdapter(z.cfg.AccessLevel))
 
-	z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.cfg.Address, z.cfg.Port))
-	if err != nil {
-		log.Printf("%-7s %-7s cannot start listener: %s", logError, logName, err.Error())
-		return err
+	// start http config
+
+	if z.cfg.UseTLS {
+		cert, err := tls.LoadX509KeyPair(z.cfg.TLSPublic, z.cfg.TLSPrivate)
+		if err != nil {
+			log.Printf("%-7s %-7s cannot start tls listener: %s", logError, logName, err.Error())
+			return err
+		}
+		tlsConfig := &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		}
+		z.listener, err = tls.Listen("tcp", fmt.Sprintf("%s:%d", z.cfg.Address, z.cfg.Port), tlsConfig)
+		if err != nil {
+			log.Printf("%-7s %-7s cannot start tls listener: %s", logError, logName, err.Error())
+			return err
+		}
+	} else {
+		z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.cfg.Address, z.cfg.Port))
+		if err != nil {
+			log.Printf("%-7s %-7s cannot start listener: %s", logError, logName, err.Error())
+			return err
+		}
 	}
 
 	server := http.Server{
@@ -97,7 +120,11 @@ func (z *Service) Start() error {
 	go server.Serve(z.listener)
 
 	z.running = true
-	log.Printf("%-7s %-7s service started on http://%s:%d", logInfo, logName, z.cfg.Address, z.cfg.Port)
+	if z.cfg.UseTLS {
+		log.Printf("%-7s %-7s service started on https://%s:%d", logInfo, logName, z.cfg.Hostname, z.cfg.Port)
+	} else {
+		log.Printf("%-7s %-7s service started on http://%s:%d", logInfo, logName, z.cfg.Address, z.cfg.Port)
+	}
 	return nil
 
 }
