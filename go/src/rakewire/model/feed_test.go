@@ -200,7 +200,7 @@ func TestUpdateFetchTime4(t *testing.T) {
 	f.LastUpdated = now.Add(-4 * 24 * time.Hour)
 	f.UpdateFetchTime(f.LastUpdated)
 
-	expectedTime := f.LastUpdated.Add(5 * 24 * time.Hour)
+	expectedTime := f.LastUpdated.Add(((4 * 24) + 1) * time.Hour)
 	t.Logf("now:         %v", now)
 	t.Logf("lastUpdated: %v", f.LastUpdated)
 	t.Logf("nextFetch:   %v", f.NextFetch)
