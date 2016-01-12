@@ -51,7 +51,7 @@ func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
 	bumpFetchTime :=
 		func(interval time.Duration) {
-			min := now.Add(1 * time.Minute)
+			min := now.Add(5 * time.Minute)
 			result := lastUpdated
 			for result.Before(min) {
 				result = result.Add(interval)
@@ -63,9 +63,7 @@ func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 
 	switch {
 	case d < 1*time.Hour:
-		bumpFetchTime(15 * time.Minute)
-	case d > 10*24*time.Hour:
-		bumpFetchTime(24 * time.Hour)
+		bumpFetchTime(10 * time.Minute)
 	case true:
 		bumpFetchTime(1 * time.Hour)
 	}
