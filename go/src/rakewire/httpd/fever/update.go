@@ -42,6 +42,8 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string) err
 		switch pAs {
 		case "read":
 			item.IsRead = true
+		case "unread":
+			item.IsRead = false
 		case "saved":
 			item.IsStar = true
 		case "unsaved":
