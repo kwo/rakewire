@@ -38,14 +38,18 @@ func Export(user *model.User, database db.Database) (*OPML, error) {
 
 	categories := make(map[string]*Outline)
 	for group, userfeeds1 := range userfeedsByGroup {
+
 		log.Printf("%-7s %-7s category: %s", logDebug, logName, group.Name)
+
 		if _, ok := categories[group.Name]; !ok {
 			category := &Outline{
 				Text:  group.Name,
 				Title: group.Name,
 			}
 			categories[group.Name] = category
+
 		}
+
 		category := categories[group.Name]
 
 		// TODO: if all outlines in a group are autoread/autostar assign to group and remove from outlines
@@ -54,11 +58,12 @@ func Export(user *model.User, database db.Database) (*OPML, error) {
 
 			flags := ""
 			if userfeed.AutoRead {
-				flags += "autoread"
+				flags += " +autoread"
 			}
 			if userfeed.AutoStar {
-				flags += ",autostar"
+				flags += " +autostar"
 			}
+			flags = strings.TrimSpace(flags)
 
 			var created *time.Time
 			if !userfeed.DateAdded.IsZero() {
@@ -89,7 +94,7 @@ func Export(user *model.User, database db.Database) (*OPML, error) {
 
 	opml := &OPML{
 		Head: &Head{
-			Title:       "Rakewire OPML",
+			Title:       "Rakewire Subscriptions",
 			DateCreated: time.Now().UTC().Truncate(time.Second),
 			OwnerName:   user.Username,
 		},
@@ -112,14 +117,15 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 	if err != nil {
 		return err
 	}
+
 	for branch := range flatOPML {
 		group := groups[branch.Name]
 		if group == nil {
 			group = model.NewGroup(userID, branch.Name)
-			if err := database.GroupSave(group); err != nil {
-				return err
-			}
 			groups[branch.Name] = group
+		}
+		if err := database.GroupSave(group); err != nil {
+			return err
 		}
 	}
 
@@ -129,6 +135,8 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 	}
 	for _, userfeed := range userfeeds {
 		userfeed.GroupIDs = []uint64{}
+		userfeed.AutoRead = false
+		userfeed.AutoStar = false
 	}
 	userfeedsByURL, _ := groupUserFeedsByURL(userfeeds)
 
@@ -164,8 +172,8 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 
 			uf.Title = outline.Title
 			uf.Notes = outline.Description
-			uf.AutoRead = branch.AutoRead || strings.Contains(outline.Category, "autoread")
-			uf.AutoStar = branch.AutoStar || strings.Contains(outline.Category, "autostar")
+			uf.AutoRead = uf.AutoRead || branch.AutoRead || strings.Contains(outline.Category, "+autoread")
+			uf.AutoStar = uf.AutoStar || branch.AutoStar || strings.Contains(outline.Category, "+autostar")
 			uf.AddGroup(group.ID)
 			if outline.Created != nil && !outline.Created.IsZero() {
 				uf.DateAdded = *outline.Created

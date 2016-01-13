@@ -95,8 +95,8 @@ func flattenContainer(container container, branch *Branch, result map[*Branch][]
 		} else {
 			// inherited from parent branch
 			b := &Branch{
-				AutoRead: branch.AutoRead || strings.Contains(outline.Category, "autoread"),
-				AutoStar: branch.AutoStar || strings.Contains(outline.Category, "autostar"),
+				AutoRead: branch.AutoRead || strings.Contains(outline.Category, "+autoread"),
+				AutoStar: branch.AutoStar || strings.Contains(outline.Category, "+autostar"),
 			}
 			if branch.Name == "" {
 				b.Name = outline.Text
