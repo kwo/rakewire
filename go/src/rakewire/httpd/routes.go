@@ -24,21 +24,21 @@ func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
 
 	}
 
+	// rest api router
+	restPrefix := "/api"
+	restAPI := rest.NewAPI(restPrefix, z.database)
+	router.PathPrefix(restPrefix).Handler(
+		Adapt(restAPI.Router(), NoCache()),
+	)
+
+	// fever api router
+	feverPrefix := "/fever/"
+	feverAPI := fever.NewAPI(feverPrefix, z.database)
+	router.PathPrefix(feverPrefix).Handler(
+		Adapt(feverAPI.Router(), NoCache()),
+	)
+
 	if useLegacy {
-
-		// rest api router
-		restPrefix := "/api"
-		restAPI := rest.NewAPI(restPrefix, z.database)
-		router.PathPrefix(restPrefix).Handler(
-			Adapt(restAPI.Router(), NoCache()),
-		)
-
-		// fever api router
-		feverPrefix := "/fever/"
-		feverAPI := fever.NewAPI(feverPrefix, z.database)
-		router.PathPrefix(feverPrefix).Handler(
-			Adapt(feverAPI.Router(), NoCache()),
-		)
 
 		fs := Dir(useLocal, "/public")
 		ofs := oneFS{name: "/index.html", root: fs}
