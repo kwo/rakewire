@@ -35,7 +35,7 @@ func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
 	feverPrefix := "/fever/"
 	feverAPI := fever.NewAPI(feverPrefix, z.database)
 	router.PathPrefix(feverPrefix).Handler(
-		Adapt(feverAPI.Router(), NoCache()),
+		Adapt(feverAPI.Router(), NoCache(), gorillaHandlers.CompressHandler),
 	)
 
 	if useLegacy {
