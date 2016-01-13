@@ -1,11 +1,14 @@
 g.tools
 cd $PROJECT_HOME/go
-. $PROJECT_HOME/bin/b.vars
 go generate ./src/rakewire/...
+
+read -p "Commit changes (or not) and press [Enter] to continue"
 
 if [ "$1" = "linux" ]; then
 	export GOOS=linux
 	export GOARCH=amd64
 fi
+
+. $PROJECT_HOME/bin/b.vars
 
 go build -ldflags "$LDFLAGS" -o ../rakewire ./src/rakewire/rakewire.go
