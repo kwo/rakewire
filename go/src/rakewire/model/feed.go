@@ -62,8 +62,8 @@ func (z *Feed) UpdateFetchTime(lastUpdated time.Time) {
 	d := now.Sub(lastUpdated) // how long since the last update?
 
 	switch {
-	case d < 1*time.Hour:
-		bumpFetchTime(10 * time.Minute)
+	case d < 2*time.Hour:
+		bumpFetchTime(15 * time.Minute)
 	case true:
 		bumpFetchTime(1 * time.Hour)
 	}
