@@ -48,6 +48,10 @@ func (z *Service) checkSchema(tx *bolt.Tx) error {
 	var b *bolt.Bucket
 
 	// top level
+	_, err := tx.CreateBucketIfNotExists([]byte(bucketConfig))
+	if err != nil {
+		return err
+	}
 	bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
 	if err != nil {
 		return err
@@ -263,9 +267,8 @@ func (z *Service) rebuildIndexesForEntity(entityName string, dao db.DataObject, 
 
 func getSchemaVersion(tx *bolt.Tx) int {
 
-	bucketInfo := tx.Bucket([]byte("Info"))
-	if bucketInfo != nil {
-		data := bucketInfo.Get([]byte("schema-version"))
+	if b := tx.Bucket([]byte(bucketConfig)); b != nil {
+		data := b.Get([]byte("schema-version"))
 		if len(data) > 0 {
 			value, err := strconv.ParseInt(string(data), 10, 64)
 			if err == nil && value > 0 {
@@ -279,9 +282,6 @@ func getSchemaVersion(tx *bolt.Tx) int {
 }
 
 func setSchemaVersion(tx *bolt.Tx, version int) error {
-	bucketInfo, err := tx.CreateBucketIfNotExists([]byte("Info"))
-	if err != nil {
-		return err
-	}
-	return bucketInfo.Put([]byte("schema-version"), []byte(strconv.FormatInt(int64(version), 10)))
+	b := tx.Bucket([]byte(bucketConfig))
+	return b.Put([]byte("schema-version"), []byte(strconv.FormatInt(int64(version), 10)))
 }

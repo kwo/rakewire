@@ -10,8 +10,9 @@ import (
 )
 
 const (
-	bucketData  = "Data"
-	bucketIndex = "Index"
+	bucketConfig = "Config"
+	bucketData   = "Data"
+	bucketIndex  = "Index"
 )
 
 const (
