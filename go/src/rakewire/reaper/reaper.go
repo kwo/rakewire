@@ -109,10 +109,13 @@ func (z *Service) processResponse(feed *m.Feed) {
 
 			// new entry
 			newEntryCount++
-			if entry.Created.IsZero() {
-				entry.Created = time.Now()
+			now := time.Now()
+
+			// prevent entries marks with a future date
+			if entry.Created.IsZero() || entry.Created.After(now) {
+				entry.Created = now
 			}
-			if entry.Updated.IsZero() {
+			if entry.Updated.IsZero() || entry.Updated.After(now) {
 				entry.Updated = entry.Created
 			}
 
