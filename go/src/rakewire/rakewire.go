@@ -49,6 +49,7 @@ func main() {
 	if *debug {
 		cfg.Logging.Level = "DEBUG"
 		cfg.Httpd.UseLocal = true
+		cfg.Httpd.UseLegacy = true
 	}
 	if *trace {
 		cfg.Logging.Level = "TRACE"

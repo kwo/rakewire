@@ -39,6 +39,7 @@ type Configuration struct {
 	Address     string
 	Port        int
 	UseLocal    bool
+	UseLegacy   bool
 	Hostname    string
 	UseTLS      bool
 	TLSPublic   string
@@ -82,7 +83,7 @@ func (z *Service) Start() error {
 		return errors.New("No database")
 	}
 
-	router, err := z.mainRouter(z.cfg.UseLocal)
+	router, err := z.mainRouter(z.cfg.UseLocal, z.cfg.UseLegacy)
 	if err != nil {
 		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
 		return err

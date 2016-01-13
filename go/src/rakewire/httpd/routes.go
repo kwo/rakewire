@@ -3,54 +3,62 @@ package httpd
 //go:generate esc -o static.go -pkg httpd -prefix $PROJECT_HOME/web $PROJECT_HOME/web/public
 
 import (
-	// gorillaHandlers "github.com/gorilla/handlers"
+	gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"net/http"
 	"rakewire/httpd/fever"
 	"rakewire/httpd/rest"
 )
 
-func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
+func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
 
 	router := mux.NewRouter()
 
-	// // api router
-	// apiPrefix := "/api0"
-	// router.PathPrefix(apiPrefix).Handler(
-	// 	Adapt(z.apiRouter(apiPrefix), NoCache()),
-	// )
+	if useLegacy {
 
-	// rest api router
-	restPrefix := "/api"
-	restAPI := rest.NewAPI(restPrefix, z.database)
-	router.PathPrefix(restPrefix).Handler(
-		Adapt(restAPI.Router(), NoCache()),
-	)
+		// api router
+		apiPrefix := "/api0"
+		router.PathPrefix(apiPrefix).Handler(
+			Adapt(z.apiRouter(apiPrefix), NoCache()),
+		)
 
-	// fever api router
-	feverPrefix := "/fever/"
-	feverAPI := fever.NewAPI(feverPrefix, z.database)
-	router.PathPrefix(feverPrefix).Handler(
-		Adapt(feverAPI.Router(), NoCache()),
-	)
+	}
 
-	// fs := Dir(useLocal, "/public")
-	// ofs := oneFS{name: "/index.html", root: fs}
+	if useLegacy {
 
-	// HTML5 routes: any path without a dot (thus an extension)
-	// router.Path("/{route:[a-z0-9/-]+}").Handler(
-	// 	Adapt(http.FileServer(ofs), NoCache(), gorillaHandlers.CompressHandler),
-	// )
+		// rest api router
+		restPrefix := "/api"
+		restAPI := rest.NewAPI(restPrefix, z.database)
+		router.PathPrefix(restPrefix).Handler(
+			Adapt(restAPI.Router(), NoCache()),
+		)
 
-	// always redirect /index.html to /
-	// router.Path("/index.html").Handler(
-	// 	RedirectHandler("/"),
-	// )
+		// fever api router
+		feverPrefix := "/fever/"
+		feverAPI := fever.NewAPI(feverPrefix, z.database)
+		router.PathPrefix(feverPrefix).Handler(
+			Adapt(feverAPI.Router(), NoCache()),
+		)
 
-	// static web site
-	// router.PathPrefix("/").Handler(
-	// 	Adapt(http.FileServer(fs), NoCache(), gorillaHandlers.CompressHandler),
-	// )
+		fs := Dir(useLocal, "/public")
+		ofs := oneFS{name: "/index.html", root: fs}
+
+		// HTML5 routes: any path without a dot (thus an extension)
+		router.Path("/{route:[a-z0-9/-]+}").Handler(
+			Adapt(http.FileServer(ofs), NoCache(), gorillaHandlers.CompressHandler),
+		)
+
+		// always redirect /index.html to /
+		router.Path("/index.html").Handler(
+			RedirectHandler("/"),
+		)
+
+		// static web site
+		router.PathPrefix("/").Handler(
+			Adapt(http.FileServer(fs), NoCache(), gorillaHandlers.CompressHandler),
+		)
+
+	}
 
 	return router, nil
 
