@@ -4,13 +4,10 @@
 
 ### Immediate
 
- - store config in data file
- - docker container
- - protect opml - with basic auth temporairly
  - shut off static pages and old api
-
- - REPLACE fever!
-
+ - protect opml - with basic auth temporairly
+ - update password
+ - store config in data file
  - add hotlinks
  - code restructure
    - create collection classes with groupby and sort functions

@@ -1,2 +1,2 @@
-w.build
-g.build
+w.build $*
+g.build $*
