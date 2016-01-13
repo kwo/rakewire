@@ -1,7 +1,11 @@
 package model
 
 import (
+	"github.com/boltdb/bolt"
+	"io/ioutil"
+	"os"
 	"testing"
+	"time"
 )
 
 func TestParseFeedsFromFile(t *testing.T) {
@@ -22,5 +26,36 @@ func TestParseFeedsFromFileError(t *testing.T) {
 
 	_, err := ParseFeedsFromFile("../../../test/feedlistmini2.txt")
 	assertNotNil(t, err)
+
+}
+
+func openDatabase() (*bolt.DB, error) {
+
+	f, err := ioutil.TempFile("", "bolt-")
+	if err != nil {
+		return nil, err
+	}
+	f.Close()
+
+	db, err := bolt.Open(f.Name(), 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+
+}
+
+func closeDatabase(db *bolt.DB) error {
+
+	if err := db.Close(); err != nil {
+		return err
+	}
+
+	if err := os.Remove(db.Path()); err != nil {
+		return err
+	}
+
+	return nil
 
 }

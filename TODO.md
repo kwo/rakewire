@@ -4,9 +4,10 @@
 
 ### Immediate
 
+ - store config in data file
+ - docker container
  - protect opml - with basic auth temporairly
  - shut off static pages and old api
- - docker container
 
  - REPLACE fever!
 
