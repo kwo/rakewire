@@ -4,7 +4,7 @@
 
 ### Immediate
 
- - shut off static pages and old api
+ - allow groups not to be synced via fever api
  - protect opml - with basic auth temporairly
  - update password
  - store config in data file
@@ -23,6 +23,7 @@
  - turn off logging to console, store in database, call via api
    - save to buffer, write to db every 5? seconds, api to filter entries by level and category
    - expire entries by level (TRACE/DEBUG after 10min, other after X days)
+   - remove command-line flags
 
  - create feed item frequency graph per feed for one week
    - allow assigning polling frequency per hour/day for feed

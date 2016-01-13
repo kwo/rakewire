@@ -3,7 +3,7 @@ package httpd
 //go:generate esc -o static.go -pkg httpd -prefix $PROJECT_HOME/web $PROJECT_HOME/web/public
 
 import (
-	gorillaHandlers "github.com/gorilla/handlers"
+	// gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"net/http"
 	"rakewire/httpd/fever"
@@ -12,16 +12,13 @@ import (
 
 func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
 
-	fs := Dir(useLocal, "/public")
-	ofs := oneFS{name: "/index.html", root: fs}
-
 	router := mux.NewRouter()
 
-	// api router
-	apiPrefix := "/api0"
-	router.PathPrefix(apiPrefix).Handler(
-		Adapt(z.apiRouter(apiPrefix), NoCache()),
-	)
+	// // api router
+	// apiPrefix := "/api0"
+	// router.PathPrefix(apiPrefix).Handler(
+	// 	Adapt(z.apiRouter(apiPrefix), NoCache()),
+	// )
 
 	// rest api router
 	restPrefix := "/api"
@@ -37,20 +34,23 @@ func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
 		Adapt(feverAPI.Router(), NoCache()),
 	)
 
+	// fs := Dir(useLocal, "/public")
+	// ofs := oneFS{name: "/index.html", root: fs}
+
 	// HTML5 routes: any path without a dot (thus an extension)
-	router.Path("/{route:[a-z0-9/-]+}").Handler(
-		Adapt(http.FileServer(ofs), NoCache(), gorillaHandlers.CompressHandler),
-	)
+	// router.Path("/{route:[a-z0-9/-]+}").Handler(
+	// 	Adapt(http.FileServer(ofs), NoCache(), gorillaHandlers.CompressHandler),
+	// )
 
 	// always redirect /index.html to /
-	router.Path("/index.html").Handler(
-		RedirectHandler("/"),
-	)
+	// router.Path("/index.html").Handler(
+	// 	RedirectHandler("/"),
+	// )
 
 	// static web site
-	router.PathPrefix("/").Handler(
-		Adapt(http.FileServer(fs), NoCache(), gorillaHandlers.CompressHandler),
-	)
+	// router.PathPrefix("/").Handler(
+	// 	Adapt(http.FileServer(fs), NoCache(), gorillaHandlers.CompressHandler),
+	// )
 
 	return router, nil
 
