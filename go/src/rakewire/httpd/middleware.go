@@ -6,15 +6,6 @@ import (
 	"net/http"
 )
 
-const (
-	hCacheControl = "Cache-Control"
-	vNoCache      = "no-cache"
-)
-
-const (
-	optionNone = 0
-)
-
 // Adapter creates middleware.
 type Adapter func(http.Handler) http.Handler
 
@@ -66,16 +57,9 @@ func RedirectHandler(location string) http.Handler {
 
 // NoCache adds cache-control headers so that the content is not cached
 func NoCache() Adapter {
-	return cacheControl(optionNone)
-}
-
-func cacheControl(option int) Adapter {
 	return func(h http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			switch option {
-			case optionNone:
-				w.Header().Set(hCacheControl, vNoCache)
-			}
+			w.Header().Set("Cache-Control", "no-cache")
 			h.ServeHTTP(w, r)
 		})
 	}
