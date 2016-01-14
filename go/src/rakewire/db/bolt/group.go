@@ -27,9 +27,9 @@ func (z *Service) GroupGet(groupID uint64) (*m.Group, error) {
 }
 
 // GroupGetAllByUser retrieves the groups belonging to the user.
-func (z *Service) GroupGetAllByUser(userID uint64) (map[string]*m.Group, error) {
+func (z *Service) GroupGetAllByUser(userID uint64) ([]*m.Group, error) {
 
-	result := make(map[string]*m.Group)
+	result := []*m.Group{}
 
 	// define index keys
 	g := &m.Group{}
@@ -58,7 +58,7 @@ func (z *Service) GroupGetAllByUser(userID uint64) (map[string]*m.Group, error) 
 				if err := g.Deserialize(data); err != nil {
 					return err
 				}
-				result[g.Name] = g
+				result = append(result, g)
 			}
 
 		}

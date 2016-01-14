@@ -46,7 +46,7 @@ type Database interface {
 
 	GroupDelete(group *m.Group) error
 	GroupSave(group *m.Group) error
-	GroupGetAllByUser(userID uint64) (map[string]*m.Group, error)
+	GroupGetAllByUser(userID uint64) ([]*m.Group, error)
 
 	// UserFeed
 

@@ -117,12 +117,13 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 	if err != nil {
 		return err
 	}
+	groupsByName := groupGroupsByName(groups)
 
 	for branch := range flatOPML {
-		group := groups[branch.Name]
+		group := groupsByName[branch.Name]
 		if group == nil {
 			group = model.NewGroup(userID, branch.Name)
-			groups[branch.Name] = group
+			groupsByName[branch.Name] = group
 		}
 		if err := database.GroupSave(group); err != nil {
 			return err
@@ -142,7 +143,7 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 
 	for branch, outlines := range flatOPML {
 
-		group := groups[branch.Name]
+		group := groupsByName[branch.Name]
 		if group == nil {
 			return fmt.Errorf("Group not found: %s", branch.Name)
 		}
@@ -216,7 +217,7 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 
 		// remove unused groups
 		uniqueGroups := collectGroups(userfeeds)
-		for _, group := range groups {
+		for _, group := range groupsByName {
 			if _, ok := uniqueGroups[group.ID]; !ok {
 				log.Printf("%-7s %-7s removing group: %s", logDebug, logName, group.Name)
 				if err := database.GroupDelete(group); err != nil {
@@ -231,10 +232,18 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 
 }
 
-func groupGroupsByID(groups map[string]*model.Group) map[uint64]*model.Group {
+func groupGroupsByID(groups []*model.Group) map[uint64]*model.Group {
 	result := make(map[uint64]*model.Group)
 	for _, group := range groups {
 		result[group.ID] = group
+	}
+	return result
+}
+
+func groupGroupsByName(groups []*model.Group) map[string]*model.Group {
+	result := make(map[string]*model.Group)
+	for _, group := range groups {
+		result[group.Name] = group
 	}
 	return result
 }

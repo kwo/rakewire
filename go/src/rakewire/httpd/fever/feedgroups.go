@@ -65,7 +65,7 @@ func (z *API) getGroups(userID uint64) ([]*Group, []*FeedGroup, error) {
 
 }
 
-func makeFeedGroups(mGroups map[string]*m.Group, mFeeds []*m.UserFeed) []*FeedGroup {
+func makeFeedGroups(mGroups []*m.Group, mFeeds []*m.UserFeed) []*FeedGroup {
 
 	contains := func(i uint64, a []uint64) bool {
 		for _, x := range a {
