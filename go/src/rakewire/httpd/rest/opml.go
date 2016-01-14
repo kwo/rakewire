@@ -20,6 +20,7 @@ func (z *API) opmlExport(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	w.Header().Set(hContentType, "application/xml")
 	w.WriteHeader(http.StatusOK)
 	err = opml.Format(doc, w)
 	if err != nil {
