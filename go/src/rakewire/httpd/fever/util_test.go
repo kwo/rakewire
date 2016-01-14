@@ -1,15 +1,19 @@
 package fever
 
 import (
+	"compress/gzip"
 	"fmt"
+	gorillaHandlers "github.com/gorilla/handlers"
 	"io/ioutil"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"os"
 	"rakewire/db"
 	"rakewire/db/bolt"
 	"rakewire/logging"
 	m "rakewire/model"
+	"strings"
 	"testing"
 	"time"
 )
@@ -18,11 +22,37 @@ const (
 	testUsername = "jeff"
 )
 
+// Adapter creates middleware.
+type Adapter func(http.Handler) http.Handler
+
+// Adapt calls adapters for http handler
+func Adapt(h http.Handler, adapters ...Adapter) http.Handler {
+	for i := len(adapters) - 1; i >= 0; i-- {
+		h = adapters[i](h)
+	}
+	return h
+}
+
+// NoCache adds cache-control headers so that the content is not cached
+func NoCache() Adapter {
+	return func(h http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Cache-Control", "no-cache")
+			h.ServeHTTP(w, r)
+		})
+	}
+}
+
 func TestMain(m *testing.M) {
 	cfg := &logging.Configuration{Level: logging.LogWarn}
 	cfg.Init()
 	status := m.Run()
 	os.Exit(status)
+}
+
+func newServer(database *bolt.Service) *httptest.Server {
+	apiFever := NewAPI("/fever", database)
+	return httptest.NewServer(Adapt(apiFever.Router(), NoCache(), gorillaHandlers.CompressHandler))
 }
 
 func makeRequest(user *m.User, target string, formValues ...string) ([]byte, error) {
@@ -44,14 +74,30 @@ func makeRequest(user *m.User, target string, formValues ...string) ([]byte, err
 		}
 	}
 
-	rsp, err := http.PostForm(target, values)
+	client := http.Client{}
+	req, err := http.NewRequest(mPost, target, strings.NewReader(values.Encode()))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set(hContentType, "application/x-www-form-urlencoded")
+	req.Header.Set(hAcceptEncoding, "gzip")
+
+	rsp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	} else if rsp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Bad error code, expected %d, actual %d", http.StatusOK, rsp.StatusCode)
+	} else if rsp.Header.Get(hContentType) != mimeJSON {
+		return nil, fmt.Errorf("Bad content type, expected %d, actual %d", mimeJSON, rsp.Header.Get(hContentType))
+	} else if rsp.Header.Get(hContentEncoding) != "gzip" {
+		return nil, fmt.Errorf("Bad content encoding, expected %s, actual %s", "gzip", rsp.Header.Get(hContentEncoding))
 	}
 
-	data, err := ioutil.ReadAll(rsp.Body)
+	gzipReader, err := gzip.NewReader(rsp.Body)
+	if err != nil {
+		return nil, err
+	}
+	data, err := ioutil.ReadAll(gzipReader)
 	if err != nil {
 		return nil, err
 	}

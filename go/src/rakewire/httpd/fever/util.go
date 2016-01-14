@@ -17,9 +17,11 @@ const (
 )
 
 const (
-	hContentType = "Content-Type"
-	mPost        = "POST"
-	mimeJSON     = "text/json; charset=utf-8"
+	hAcceptEncoding  = "Accept-Encoding"
+	hContentEncoding = "Content-Encoding"
+	hContentType     = "Content-Type"
+	mPost            = "POST"
+	mimeJSON         = "text/json; charset=utf-8"
 )
 
 func boolToUint8(value bool) uint8 {

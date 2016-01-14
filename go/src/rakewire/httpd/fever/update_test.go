@@ -2,7 +2,6 @@ package fever
 
 import (
 	"github.com/antonholmquist/jason"
-	"net/http/httptest"
 	"testing"
 )
 
@@ -12,16 +11,13 @@ func TestMark(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
 		t.Fatalf("Cannot get user: %s", err.Error())
 	}
-
-	// run server
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	// make request
 	target := server.URL + "/fever?api"

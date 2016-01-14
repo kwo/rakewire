@@ -2,7 +2,6 @@ package fever
 
 import (
 	"github.com/antonholmquist/jason"
-	"net/http/httptest"
 	"strconv"
 	"strings"
 	"testing"
@@ -14,6 +13,8 @@ func TestUnreadIDs(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
@@ -23,11 +24,6 @@ func TestUnreadIDs(t *testing.T) {
 	var expectedNumberItems = 24
 	// var expectedFirstID uint64 = 1
 	// var expectedLastID uint64 = 40
-
-	// run server
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	// make request
 	target := server.URL + "/fever?api&unread_item_ids"
@@ -89,6 +85,8 @@ func TestSavedIDs(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
@@ -98,11 +96,6 @@ func TestSavedIDs(t *testing.T) {
 	var expectedNumberItems = 8
 	// var expectedFirstID uint64 = 1
 	// var expectedLastID uint64 = 40
-
-	// run server
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	// make request
 	target := server.URL + "/fever?api&saved_item_ids"

@@ -3,7 +3,6 @@ package fever
 import (
 	"fmt"
 	"github.com/antonholmquist/jason"
-	"net/http/httptest"
 	"strconv"
 	"strings"
 	"testing"
@@ -15,6 +14,8 @@ func TestGroups(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
@@ -25,11 +26,6 @@ func TestGroups(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Cannot get user feeds: %s", err.Error())
 	}
-
-	// run server
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	// make request
 	target := server.URL + "/fever?api&groups"
@@ -105,6 +101,8 @@ func TestFeeds(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
@@ -115,11 +113,6 @@ func TestFeeds(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Cannot get user feeds: %s", err.Error())
 	}
-
-	// run server
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	target := server.URL + "/fever?api&feeds"
 	data, err := makeRequest(user, target)

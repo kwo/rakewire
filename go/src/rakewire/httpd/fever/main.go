@@ -159,8 +159,8 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 
 	} // authorized
 
-	w.WriteHeader(http.StatusOK)
 	w.Header().Set(hContentType, mimeJSON)
+	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&rsp); err != nil {
 		log.Printf("%-7s %-7s cannot serialize fever JSON response: %s", logWarn, logName, err.Error())
 	}

@@ -2,7 +2,6 @@ package fever
 
 import (
 	"github.com/antonholmquist/jason"
-	"net/http/httptest"
 	"testing"
 )
 
@@ -12,6 +11,8 @@ func TestItemsAll(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
@@ -22,11 +23,6 @@ func TestItemsAll(t *testing.T) {
 	var expectedNumberItems = 40
 	var expectedFirstID int64 = 1
 	var expectedLastID int64 = 40
-
-	// run server
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	// make request
 	target := server.URL + "/fever?api&items"
@@ -74,6 +70,8 @@ func TestItemsNext(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
@@ -85,11 +83,6 @@ func TestItemsNext(t *testing.T) {
 	var expectedNumberItems = 20
 	var expectedFirstID int64 = 21
 	var expectedLastID int64 = 40
-
-	// run server
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	// make request
 	target := server.URL + "/fever?api&items&since_id=" + sinceID
@@ -137,6 +130,8 @@ func TestItemsPrev(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
@@ -148,11 +143,6 @@ func TestItemsPrev(t *testing.T) {
 	var expectedNumberItems = 19
 	var expectedFirstID int64 = 19
 	var expectedLastID int64 = 1
-
-	// run server
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	// make request
 	target := server.URL + "/fever?api&items&max_id=" + maxID
@@ -200,6 +190,8 @@ func TestItemsByID(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
@@ -210,11 +202,6 @@ func TestItemsByID(t *testing.T) {
 	var totalItems int64 = 40
 	var expectedNumberItems = 3
 	var expectedIDs = []int64{15, 37, 8}
-
-	// run server
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	// make request
 	target := server.URL + "/fever?api&items&with_ids=" + withIDs

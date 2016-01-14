@@ -2,7 +2,6 @@ package fever
 
 import (
 	"github.com/antonholmquist/jason"
-	"net/http/httptest"
 	"strconv"
 	"testing"
 	"time"
@@ -14,15 +13,13 @@ func TestAuth(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
 		t.Fatalf("Cannot get user: %s", err.Error())
 	}
-
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	target := server.URL + "/fever?api"
 	data, err := makeRequest(user, target)
@@ -76,9 +73,7 @@ func TestBadAuth(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
-
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
+	server := newServer(database)
 	defer server.Close()
 
 	target := server.URL + "/fever?api"
@@ -117,15 +112,13 @@ func TestXmlUnsupported(t *testing.T) {
 
 	database, databaseFile := openDatabase(t)
 	defer closeDatabase(t, database, databaseFile)
+	server := newServer(database)
+	defer server.Close()
 
 	user, err := database.UserGetByUsername(testUsername)
 	if err != nil {
 		t.Fatalf("Cannot get user: %s", err.Error())
 	}
-
-	apiFever := NewAPI("/fever", database)
-	server := httptest.NewServer(apiFever.Router())
-	defer server.Close()
 
 	target := server.URL + "/fever?api=xml"
 	data, err := makeRequest(user, target)
