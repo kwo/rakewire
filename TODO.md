@@ -4,16 +4,19 @@
 
 ### Immediate
 
- - allow groups not to be synced via fever api
- - protect opml - with basic auth temporairly
+ - gzip fever api responses
+ - do not overwrite content-type with application/x-gzip
+ - run docker container as rakewire user
+ - need incremental opml import as default (replace=true)
+ - opml sort
+ - protect opml - with basic auth
  - update password
- - store config in data file
- - add hotlinks
+ - store config, tls keys in data file
  - code restructure
    - create collection classes with groupby and sort functions
    - rename model elements: Feed/Item, Subscription/Entry
- - jwt authentication
- - use manually managed transactions in database
+   - use manually managed transactions in database
+ - jwt authentication and basic auth
  - optimize user-entries
  - native api to manage users
    - add
@@ -27,6 +30,8 @@
 
  - create feed item frequency graph per feed for one week
    - allow assigning polling frequency per hour/day for feed
+
+ - expire entries/items by date/feed size
 
 ### Goals
   x Save Feed Entries
