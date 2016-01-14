@@ -3,7 +3,6 @@ package httpd
 //go:generate esc -o static.go -pkg httpd -prefix $PROJECT_HOME/web $PROJECT_HOME/web/public
 
 import (
-	gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"net/http"
 	"rakewire/httpd/fever"
@@ -28,14 +27,14 @@ func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
 	restPrefix := "/api"
 	restAPI := rest.NewAPI(restPrefix, z.database)
 	router.PathPrefix(restPrefix).Handler(
-		Adapt(restAPI.Router(), NoCache()),
+		restAPI.Router(),
 	)
 
 	// fever api router
 	feverPrefix := "/fever/"
 	feverAPI := fever.NewAPI(feverPrefix, z.database)
 	router.PathPrefix(feverPrefix).Handler(
-		Adapt(feverAPI.Router(), NoCache(), gorillaHandlers.CompressHandler),
+		feverAPI.Router(),
 	)
 
 	if useLegacy {
@@ -45,7 +44,7 @@ func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
 
 		// HTML5 routes: any path without a dot (thus an extension)
 		router.Path("/{route:[a-z0-9/-]+}").Handler(
-			Adapt(http.FileServer(ofs), NoCache(), gorillaHandlers.CompressHandler),
+			http.FileServer(ofs),
 		)
 
 		// always redirect /index.html to /
@@ -55,7 +54,7 @@ func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
 
 		// static web site
 		router.PathPrefix("/").Handler(
-			Adapt(http.FileServer(fs), NoCache(), gorillaHandlers.CompressHandler),
+			http.FileServer(fs),
 		)
 
 	}

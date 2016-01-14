@@ -4,11 +4,9 @@
 
 ### Immediate
 
- - gzip fever api responses
- - do not overwrite content-type with application/x-gzip
- - run docker container as rakewire user
- - need incremental opml import as default (replace=true)
  - opml sort
+ - need incremental opml import as default (replace=true)
+ - run docker container as rakewire user
  - protect opml - with basic auth
  - update password
  - store config, tls keys in data file

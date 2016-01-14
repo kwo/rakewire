@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	gorillaHandlers "github.com/gorilla/handlers"
 	"log"
 	"net"
 	"net/http"
@@ -88,7 +89,7 @@ func (z *Service) Start() error {
 		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
 		return err
 	}
-	mainHandler := Adapt(router, LogAdapter(z.cfg.AccessLevel))
+	mainHandler := Adapt(router, NoCache(), gorillaHandlers.CompressHandler, LogAdapter(z.cfg.AccessLevel))
 
 	// start http config
 
