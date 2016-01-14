@@ -4,9 +4,6 @@
 
 ### Immediate
 
- - opml sort
- - need incremental opml import as default (replace=true)
- - run docker container as rakewire user
  - protect opml - with basic auth
  - update password
  - store config, tls keys in data file
@@ -30,6 +27,15 @@
    - allow assigning polling frequency per hour/day for feed
 
  - expire entries/items by date/feed size
+
+### DevOps
+ - run docker container as rakewire user
+ - need automated, one-touch deployment script
+ - need to remove pause from build, static should not be regenerated all the time
+ - need to automatically bump version number
+ - need to restart rakewire without haproxy (docker 1.9 networking?)
+
+
 
 ### Goals
   x Save Feed Entries

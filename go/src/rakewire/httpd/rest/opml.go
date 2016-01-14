@@ -44,7 +44,8 @@ func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
 			return err
 		}
 
-		return opml.Import(user.ID, o, true, z.db)
+		replace := req.URL.Query().Get("replace") == "true"
+		return opml.Import(user.ID, o, replace, z.db)
 
 	}()
 

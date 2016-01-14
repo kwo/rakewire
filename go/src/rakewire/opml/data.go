@@ -1,7 +1,6 @@
 package opml
 
 import (
-	"fmt"
 	"log"
 	"rakewire/db"
 	"rakewire/model"
@@ -17,8 +16,6 @@ const (
 	logWarn  = "[WARN]"
 	logError = "[ERROR]"
 )
-
-// TODO: sort entries on export
 
 // Export OPML document
 func Export(user *model.User, database db.Database) (*OPML, error) {
@@ -71,10 +68,21 @@ func Export(user *model.User, database db.Database) (*OPML, error) {
 				created = &x
 			}
 
+			getTitle := func(uf *model.UserFeed) string {
+				result := userfeed.Title
+				if result == "" {
+					result = userfeed.Feed.Title
+				}
+				if result == "" {
+					result = userfeed.Feed.URL
+				}
+				return result
+			}
+
 			outline := &Outline{
 				Type:        "rss",
-				Text:        userfeed.Title,
-				Title:       userfeed.Title,
+				Text:        getTitle(userfeed),
+				Title:       getTitle(userfeed),
 				Created:     created,
 				Description: userfeed.Notes,
 				Category:    flags,
@@ -86,11 +94,13 @@ func Export(user *model.User, database db.Database) (*OPML, error) {
 		}
 	}
 
-	outlines := []*Outline{}
+	outlines := Outlines{}
 	for _, category := range categories {
 		log.Printf("%-7s %-7s outline %s: %d", logDebug, logName, category.Text, len(category.Outlines))
 		outlines = append(outlines, category)
 	}
+
+	outlines.Sort()
 
 	opml := &OPML{
 		Head: &Head{
@@ -110,7 +120,9 @@ func Export(user *model.User, database db.Database) (*OPML, error) {
 // Import OPML document into database
 func Import(userID uint64, opml *OPML, replace bool, database db.Database) error {
 
-	flatOPML := Flatten(opml.Body)
+	log.Printf("%-7s %-7s importing opml for user %d, replace: %t", logDebug, logName, userID, replace)
+
+	flatOPML := Flatten(opml.Body.Outlines)
 
 	// add missing groups
 	groups, err := database.GroupGetAllByUser(userID)
@@ -118,12 +130,11 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 		return err
 	}
 	groupsByName := groupGroupsByName(groups)
-
 	for branch := range flatOPML {
-		group := groupsByName[branch.Name]
+		group := groupsByName[branch.Text]
 		if group == nil {
-			group = model.NewGroup(userID, branch.Name)
-			groupsByName[branch.Name] = group
+			group = model.NewGroup(userID, branch.Text)
+			groupsByName[branch.Text] = group
 		}
 		if err := database.GroupSave(group); err != nil {
 			return err
@@ -143,10 +154,7 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 
 	for branch, outlines := range flatOPML {
 
-		group := groupsByName[branch.Name]
-		if group == nil {
-			return fmt.Errorf("Group not found: %s", branch.Name)
-		}
+		group := groupsByName[branch.Text]
 
 		for _, outline := range outlines {
 
@@ -173,8 +181,8 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 
 			uf.Title = outline.Title
 			uf.Notes = outline.Description
-			uf.AutoRead = uf.AutoRead || branch.AutoRead || strings.Contains(outline.Category, "+autoread")
-			uf.AutoStar = uf.AutoStar || branch.AutoStar || strings.Contains(outline.Category, "+autostar")
+			uf.AutoRead = uf.AutoRead || branch.IsAutoRead() || outline.IsAutoRead()
+			uf.AutoStar = uf.AutoStar || branch.IsAutoStar() || outline.IsAutoStar()
 			uf.AddGroup(group.ID)
 			if outline.Created != nil && !outline.Created.IsZero() {
 				uf.DateAdded = *outline.Created
@@ -215,7 +223,7 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 			}
 		}
 
-		// remove unused groups
+		// remove unused groups // TODO: remove unused groups can be done in maintenance thread
 		uniqueGroups := collectGroups(userfeeds)
 		for _, group := range groupsByName {
 			if _, ok := uniqueGroups[group.ID]; !ok {
@@ -291,18 +299,6 @@ func collectGroups(userfeeds []*model.UserFeed) map[uint64]int {
 	for _, userfeed := range userfeeds {
 		for _, groupID := range userfeed.GroupIDs {
 			result[groupID] = result[groupID] + 1
-		}
-	}
-	return result
-}
-
-func groupOutlinesByURL(flatOPML map[*Branch][]*Outline) map[string]*Outline {
-	result := make(map[string]*Outline)
-	for _, outlines := range flatOPML {
-		for _, outline := range outlines {
-			if _, ok := result[outline.XMLURL]; !ok {
-				result[outline.XMLURL] = outline
-			}
 		}
 	}
 	return result
