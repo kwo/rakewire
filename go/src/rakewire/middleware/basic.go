@@ -51,6 +51,11 @@ func (z *BasicAuthOptions) authenticate(r *http.Request) bool {
 		return false
 	}
 
+	// return true if user has already been set
+	if user := context.Get(r, "user"); user != nil {
+		return true
+	}
+
 	// Confirm the request is sending Basic Authentication credentials.
 	auth := r.Header.Get("Authorization")
 	if !strings.HasPrefix(auth, basicScheme) {
