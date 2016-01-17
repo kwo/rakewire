@@ -62,6 +62,10 @@ func (z *boltBucket) Get(key []byte) []byte {
 	return z.bucket.Get(key)
 }
 
+func (z *boltBucket) NextSequence() (uint64, error) {
+	return z.bucket.NextSequence()
+}
+
 func (z *boltBucket) Put(key, value []byte) error {
 	return z.bucket.Put(key, value)
 }
