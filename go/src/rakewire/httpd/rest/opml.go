@@ -31,10 +31,8 @@ func (z *API) opmlExport(w http.ResponseWriter, req *http.Request) {
 func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
 
 	err := func() error {
-		user, err := z.db.UserGetByUsername("karl@ostendorf.com")
-		if err != nil {
-			return err
-		}
+
+		user := context.Get(req, "user").(*model.User)
 
 		o, err := opml.Parse(req.Body)
 		if err != nil {
