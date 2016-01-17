@@ -44,6 +44,11 @@ func NewService(cfg *db.Configuration) *Service {
 	}
 }
 
+// BoltDB temporary function
+func (z *Service) BoltDB() *bolt.DB {
+	return z.db
+}
+
 // Start the database
 func (z *Service) Start() error {
 

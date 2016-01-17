@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"rakewire/db"
+	"rakewire/middleware"
 	"sync"
 )
 
@@ -89,7 +90,7 @@ func (z *Service) Start() error {
 		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
 		return err
 	}
-	mainHandler := Adapt(router, NoCache(), gorillaHandlers.CompressHandler, LogAdapter(z.cfg.AccessLevel))
+	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter(z.cfg.AccessLevel))
 
 	// start http config
 

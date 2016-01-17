@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/boltdb/bolt"
 	m "rakewire/model"
 	"time"
 )
@@ -12,6 +13,7 @@ type Configuration struct {
 
 // Database interface
 type Database interface {
+	BoltDB() *bolt.DB
 
 	// Feed
 

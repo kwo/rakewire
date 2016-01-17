@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"rakewire/httpd/fever"
 	"rakewire/httpd/rest"
+	"rakewire/middleware"
+	"rakewire/model"
 )
 
 func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
@@ -18,7 +20,7 @@ func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
 		// api router
 		apiPrefix := "/api0"
 		router.PathPrefix(apiPrefix).Handler(
-			Adapt(z.apiRouter(apiPrefix), NoCache()),
+			z.apiRouter(apiPrefix),
 		)
 
 	}
@@ -27,7 +29,9 @@ func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
 	restPrefix := "/api"
 	restAPI := rest.NewAPI(restPrefix, z.database)
 	router.PathPrefix(restPrefix).Handler(
-		restAPI.Router(),
+		middleware.Adapt(restAPI.Router(), middleware.BasicAuth(&middleware.BasicAuthOptions{
+			Database: model.NewBoltDatabase(z.database.BoltDB()), Realm: "Rakewire",
+		})),
 	)
 
 	// fever api router
@@ -49,7 +53,7 @@ func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
 
 		// always redirect /index.html to /
 		router.Path("/index.html").Handler(
-			RedirectHandler("/"),
+			http.RedirectHandler("/", http.StatusMovedPermanently),
 		)
 
 		// static web site

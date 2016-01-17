@@ -1,18 +1,16 @@
 package rest
 
 import (
+	"github.com/gorilla/context"
 	"log"
 	"net/http"
+	"rakewire/model"
 	"rakewire/opml"
 )
 
 func (z *API) opmlExport(w http.ResponseWriter, req *http.Request) {
 
-	user, err := z.db.UserGetByUsername("karl@ostendorf.com")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	user := context.Get(req, "user").(*model.User)
 
 	doc, err := opml.Export(user, z.db)
 	if err != nil {

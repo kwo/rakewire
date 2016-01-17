@@ -12,6 +12,7 @@ import (
 	"rakewire/db"
 	"rakewire/db/bolt"
 	"rakewire/logging"
+	"rakewire/middleware"
 	m "rakewire/model"
 	"strings"
 	"testing"
@@ -22,27 +23,6 @@ const (
 	testUsername = "jeff"
 )
 
-// Adapter creates middleware.
-type Adapter func(http.Handler) http.Handler
-
-// Adapt calls adapters for http handler
-func Adapt(h http.Handler, adapters ...Adapter) http.Handler {
-	for i := len(adapters) - 1; i >= 0; i-- {
-		h = adapters[i](h)
-	}
-	return h
-}
-
-// NoCache adds cache-control headers so that the content is not cached
-func NoCache() Adapter {
-	return func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Cache-Control", "no-cache")
-			h.ServeHTTP(w, r)
-		})
-	}
-}
-
 func TestMain(m *testing.M) {
 	cfg := &logging.Configuration{Level: logging.LogWarn}
 	cfg.Init()
@@ -52,7 +32,7 @@ func TestMain(m *testing.M) {
 
 func newServer(database *bolt.Service) *httptest.Server {
 	apiFever := NewAPI("/fever", database)
-	return httptest.NewServer(Adapt(apiFever.Router(), NoCache(), gorillaHandlers.CompressHandler))
+	return httptest.NewServer(middleware.Adapt(apiFever.Router(), middleware.NoCache(), gorillaHandlers.CompressHandler))
 }
 
 func makeRequest(user *m.User, target string, formValues ...string) ([]byte, error) {

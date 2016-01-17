@@ -4,10 +4,11 @@
 
 ### Immediate
 
- - protect opml - with basic auth
+ - set userfeed title to url if no title available
  - update password
  - store config, tls keys in data file
  - code restructure
+   - move opml to model -> opml_db
    - create collection classes with groupby and sort functions
    - rename model elements: Feed/Item, Subscription/Entry
    - use manually managed transactions in database

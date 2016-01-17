@@ -6,22 +6,25 @@ import (
 
 // NewBoltDatabase creates a new Database backed by a bolt DB
 func NewBoltDatabase(db *bolt.DB) Database {
-	return &boltDatabase{db: db}
+	return &BoltDatabase{DB: db}
 }
 
-type boltDatabase struct {
-	db *bolt.DB
+// BoltDatabase implements a Database for boltDB
+type BoltDatabase struct {
+	DB *bolt.DB
 }
 
-func (z *boltDatabase) Select(fn func(tx Transaction) error) error {
-	return z.db.View(func(tx *bolt.Tx) error {
+// Select retrieve a transaction for read-only operations
+func (z *BoltDatabase) Select(fn func(tx Transaction) error) error {
+	return z.DB.View(func(tx *bolt.Tx) error {
 		bt := &boltTransaction{tx: tx}
 		return fn(bt)
 	})
 }
 
-func (z *boltDatabase) Update(fn func(transaction Transaction) error) error {
-	return z.db.Update(func(tx *bolt.Tx) error {
+// Update retrieve a transaction for read-write operations
+func (z *BoltDatabase) Update(fn func(transaction Transaction) error) error {
+	return z.DB.Update(func(tx *bolt.Tx) error {
 		bt := &boltTransaction{tx: tx}
 		return fn(bt)
 	})
