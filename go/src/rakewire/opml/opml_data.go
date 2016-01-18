@@ -179,7 +179,24 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 
 			}
 
-			uf.Title = outline.Title
+			getTitle := func() string {
+				result := outline.Title
+				if result == "" {
+					result = outline.Text
+				}
+				if result == "" {
+					result = uf.Feed.Title
+				}
+				if result == "" {
+					result = outline.HTMLURL
+				}
+				if result == "" {
+					result = outline.XMLURL
+				}
+				return result
+			}
+
+			uf.Title = getTitle()
 			uf.Notes = outline.Description
 			uf.AutoRead = uf.AutoRead || branch.IsAutoRead() || outline.IsAutoRead()
 			uf.AutoStar = uf.AutoStar || branch.IsAutoStar() || outline.IsAutoStar()

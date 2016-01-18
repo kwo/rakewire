@@ -4,8 +4,7 @@
 
 ### Immediate
 
- - set userfeed title to url if no title available
- - update password
+ - add subscribers count to user-agent when fetching
  - store config, tls keys in data file
  - code restructure
    - move opml to model -> opml_db
