@@ -13,6 +13,7 @@ import (
 	"rakewire/db/bolt"
 	"rakewire/logging"
 	"rakewire/middleware"
+	"rakewire/model"
 	m "rakewire/model"
 	"strings"
 	"testing"
@@ -126,7 +127,11 @@ func populateDatabase(database *bolt.Service) error {
 	// add test user
 	user := m.NewUser(testUsername)
 	user.SetPassword("abcdefg")
-	if err := database.UserSave(user); err != nil {
+
+	err := database.Update(func(tx model.Transaction) error {
+		return user.Save(tx)
+	})
+	if err != nil {
 		return err
 	}
 

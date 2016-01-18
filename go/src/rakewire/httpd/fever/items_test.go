@@ -2,6 +2,7 @@ package fever
 
 import (
 	"github.com/antonholmquist/jason"
+	"rakewire/model"
 	"testing"
 )
 
@@ -14,7 +15,14 @@ func TestItemsAll(t *testing.T) {
 	server := newServer(database)
 	defer server.Close()
 
-	user, err := database.UserGetByUsername(testUsername)
+	var user *model.User
+	err := database.Select(func(tx model.Transaction) error {
+		u, err := model.UserByUsername(testUsername, tx)
+		if err == nil && u != nil {
+			user = u
+		}
+		return err
+	})
 	if err != nil {
 		t.Fatalf("Cannot get user: %s", err.Error())
 	}
@@ -73,7 +81,14 @@ func TestItemsNext(t *testing.T) {
 	server := newServer(database)
 	defer server.Close()
 
-	user, err := database.UserGetByUsername(testUsername)
+	var user *model.User
+	err := database.Select(func(tx model.Transaction) error {
+		u, err := model.UserByUsername(testUsername, tx)
+		if err == nil && u != nil {
+			user = u
+		}
+		return err
+	})
 	if err != nil {
 		t.Fatalf("Cannot get user: %s", err.Error())
 	}
@@ -133,7 +148,14 @@ func TestItemsPrev(t *testing.T) {
 	server := newServer(database)
 	defer server.Close()
 
-	user, err := database.UserGetByUsername(testUsername)
+	var user *model.User
+	err := database.Select(func(tx model.Transaction) error {
+		u, err := model.UserByUsername(testUsername, tx)
+		if err == nil && u != nil {
+			user = u
+		}
+		return err
+	})
 	if err != nil {
 		t.Fatalf("Cannot get user: %s", err.Error())
 	}
@@ -193,7 +215,14 @@ func TestItemsByID(t *testing.T) {
 	server := newServer(database)
 	defer server.Close()
 
-	user, err := database.UserGetByUsername(testUsername)
+	var user *model.User
+	err := database.Select(func(tx model.Transaction) error {
+		u, err := model.UserByUsername(testUsername, tx)
+		if err == nil && u != nil {
+			user = u
+		}
+		return err
+	})
 	if err != nil {
 		t.Fatalf("Cannot get user: %s", err.Error())
 	}

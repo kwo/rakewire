@@ -2,6 +2,7 @@ package model
 
 // Database defines the interface to a key-value store
 type Database interface {
+	Location() string
 	Select(fn func(tx Transaction) error) error
 	Update(fn func(tx Transaction) error) error
 }

@@ -1,32 +1,17 @@
 package model
 
 import (
-	"github.com/boltdb/bolt"
 	"testing"
 )
 
 func TestConfig(t *testing.T) {
 
-	db, err := openDatabase()
-	if err != nil {
-		t.Fatalf("Cannot open database: %s", err.Error())
-	}
-
-	defer closeDatabase(db)
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucket([]byte(configurationBucketName))
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Cannot prepare database: %s", err.Error())
-	}
-
-	database := NewBoltDatabase(db)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 
 	config := NewConfiguration()
 	config.Set("hello", "world")
-	err = database.Update(func(tx Transaction) error {
+	err := database.Update(func(tx Transaction) error {
 		if err := config.Save(tx); err != nil {
 			return err
 		}
@@ -47,7 +32,7 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("Cannot load from database: %s", err.Error())
 	}
 
-	if value := config.Get("hello"); value != "world" {
+	if value := config.Get("hello", ""); value != "world" {
 		t.Errorf("Expected %s, actual %s", "world", value)
 	}
 

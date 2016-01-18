@@ -10,6 +10,12 @@ import (
 	"strings"
 )
 
+const (
+	bucketConfig = "Config"
+	bucketData   = "Data"
+	bucketIndex  = "Index"
+)
+
 // BasicAuthOptions stores the configuration for HTTP Basic Authentication.
 type BasicAuthOptions struct {
 	Realm    string
@@ -81,12 +87,13 @@ func (z *BasicAuthOptions) authenticateDatabase(token string) *model.User {
 	}
 
 	z.Database.Select(func(tx model.Transaction) error {
-		if user, err := model.UserGetByUsername(username, tx); err == nil && user != nil {
+		user, err := model.UserByUsername(username, tx)
+		if err == nil && user != nil {
 			if user.MatchPassword(password) {
 				result = user
 			}
 		}
-		return nil
+		return err
 	})
 
 	return result

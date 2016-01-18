@@ -42,27 +42,30 @@ func (z *Configuration) Save(tx Transaction) error {
 }
 
 // Get retrieves the named configuration value
-func (z *Configuration) Get(key string) string {
-	return z.values[key]
+func (z *Configuration) Get(key string, defaultValue string) string {
+	if value, ok := z.values[key]; ok {
+		return value
+	}
+	return defaultValue
 }
 
 // GetBool retrieves the named configuration value as a boolean
-func (z *Configuration) GetBool(key string) bool {
+func (z *Configuration) GetBool(key string, defaultValue bool) bool {
 	if value, ok := z.values[key]; ok {
 		return value == "1"
 	}
-	return false
+	return defaultValue
 }
 
 // GetInt retrieves the named configuration value as an integer
-func (z *Configuration) GetInt(key string) int {
+func (z *Configuration) GetInt(key string, defaultValue int) int {
 	if value, ok := z.values[key]; ok {
 		result, err := strconv.ParseInt(value, 10, 64)
 		if err == nil {
 			return int(result)
 		}
 	}
-	return 0
+	return defaultValue
 }
 
 // Set sets a configuration value

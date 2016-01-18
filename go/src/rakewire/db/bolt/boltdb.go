@@ -5,6 +5,7 @@ import (
 	"github.com/boltdb/bolt"
 	"log"
 	"rakewire/db"
+	"rakewire/model"
 	"sync"
 	"time"
 )
@@ -33,6 +34,7 @@ var (
 type Service struct {
 	sync.Mutex
 	db           *bolt.DB
+	database     model.Database
 	databaseFile string
 	running      bool
 }
@@ -44,9 +46,24 @@ func NewService(cfg *db.Configuration) *Service {
 	}
 }
 
-// BoltDB temporary function
-func (z *Service) BoltDB() *bolt.DB {
-	return z.db
+// Location return location of database
+func (z *Service) Location() string {
+	return z.database.Location()
+}
+
+// Select perform select on database
+func (z *Service) Select(fn func(tx model.Transaction) error) error {
+	return z.database.Select(fn)
+}
+
+// Update perform update on database
+func (z *Service) Update(fn func(transaction model.Transaction) error) error {
+	return z.database.Update(fn)
+}
+
+// ModelDatabase return database
+func (z *Service) ModelDatabase() model.Database {
+	return z.database
 }
 
 // Start the database
@@ -59,17 +76,19 @@ func (z *Service) Start() error {
 		return ErrRestart
 	}
 
-	db, err := bolt.Open(z.databaseFile, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	boltDB, err := bolt.Open(z.databaseFile, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		log.Printf("%-7s %-7s cannot open database at %s. %s", logError, logName, z.databaseFile, err.Error())
 		return err
 	}
-	z.db = db
+	z.db = boltDB
 
 	if err := z.checkDatabase(); err != nil {
 		log.Printf("%-7s %-7s cannot initialize database: %s", logError, logName, err.Error())
 		return err
 	}
+
+	z.database = model.NewBoltDatabase(boltDB)
 
 	z.running = true
 	log.Printf("%-7s %-7s service started using %s", logInfo, logName, z.databaseFile)

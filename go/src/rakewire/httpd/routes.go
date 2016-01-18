@@ -8,7 +8,6 @@ import (
 	"rakewire/httpd/fever"
 	"rakewire/httpd/rest"
 	"rakewire/middleware"
-	"rakewire/model"
 )
 
 func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
@@ -30,7 +29,7 @@ func (z *Service) mainRouter(useLocal, useLegacy bool) (*mux.Router, error) {
 	restAPI := rest.NewAPI(restPrefix, z.database)
 	router.PathPrefix(restPrefix).Handler(
 		middleware.Adapt(restAPI.Router(), middleware.BasicAuth(&middleware.BasicAuthOptions{
-			Database: model.NewBoltDatabase(z.database.BoltDB()), Realm: "Rakewire",
+			Database: z.database.ModelDatabase(), Realm: "Rakewire",
 		})),
 	)
 
@@ -75,7 +74,6 @@ func (z *Service) apiRouter(prefix string) *mux.Router {
 	router.Path(prefixFeeds).Methods(mGet).Queries("url", "{url:.+}").HandlerFunc(z.feedsGetFeedByURL)
 	router.Path(prefixFeeds).Methods(mGet).HandlerFunc(z.feedsGet)
 	router.Path(prefixFeeds).Methods(mPut).Headers(hContentType, mimeJSON).HandlerFunc(z.feedsSaveJSON)
-	router.Path(prefixFeeds).Methods(mPut).Headers(hContentType, mimeText).HandlerFunc(z.feedsSaveText)
 	router.Path(prefixFeeds).Methods(mPut).HandlerFunc(badMediaType)
 	router.Path(prefixFeeds).HandlerFunc(notSupported)
 

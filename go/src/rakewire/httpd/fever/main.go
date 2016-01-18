@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"rakewire/db"
-	m "rakewire/model"
+	"rakewire/model"
 )
 
 // http://feedafever.com/api
@@ -53,13 +53,17 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 		Version: 3,
 	}
 
-	var user *m.User
+	var user *model.User
 	if apiKey := req.PostFormValue(AuthParam); apiKey != "" {
-		if u, err := z.db.UserGetByFeverHash(apiKey); err == nil && u != nil {
-			rsp.Authorized = 1
-			log.Printf("%-7s %-7s authorized: %s", logDebug, logName, u.Username)
-			user = u
-		}
+		z.db.Select(func(tx model.Transaction) error {
+			u, err := model.UserByFeverHash(apiKey, tx)
+			if err == nil && u != nil {
+				rsp.Authorized = 1
+				log.Printf("%-7s %-7s authorized: %s", logDebug, logName, u.Username)
+				user = u
+			}
+			return err
+		})
 	}
 
 	log.Printf("%-7s %-7s request query: %v", logDebug, logName, req.URL.Query())

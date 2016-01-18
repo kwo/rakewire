@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"rakewire/model"
 	"testing"
 )
@@ -14,13 +15,10 @@ func TestBasicAuthOK(t *testing.T) {
 
 	t.Parallel()
 
-	database, err := openDatabase()
-	if err != nil {
-		t.Fatalf("Cannot open database: %s", err.Error())
-	}
+	database := openTestDatabase(t)
 	server := getServer(database)
 	defer server.Close()
-	defer closeDatabase(database)
+	defer closeTestDatabase(t, database)
 
 	req, err := http.NewRequest("GET", server.URL, nil)
 	if err != nil {
@@ -53,13 +51,10 @@ func TestBasicAuthBadCredentials(t *testing.T) {
 
 	t.Parallel()
 
-	database, err := openDatabase()
-	if err != nil {
-		t.Fatalf("Cannot open database: %s", err.Error())
-	}
+	database := openTestDatabase(t)
 	server := getServer(database)
 	defer server.Close()
-	defer closeDatabase(database)
+	defer closeTestDatabase(t, database)
 
 	req, err := http.NewRequest("GET", server.URL, nil)
 	if err != nil {
@@ -87,13 +82,10 @@ func TestBasicAuthNoHeader(t *testing.T) {
 
 	// given
 
-	database, err := openDatabase()
-	if err != nil {
-		t.Fatalf("Cannot open database: %s", err.Error())
-	}
+	database := openTestDatabase(t)
 	server := getServer(database)
 	defer server.Close()
-	defer closeDatabase(database)
+	defer closeTestDatabase(t, database)
 
 	// when
 
@@ -143,5 +135,53 @@ func getServer(database model.Database) *httptest.Server {
 	}
 
 	return httptest.NewServer(Adapt(router, BasicAuth(opts)))
+
+}
+
+func openTestDatabase(t *testing.T) model.Database {
+
+	f, err := ioutil.TempFile("", "bolt-")
+	if err != nil {
+		t.Fatalf("Cannot acquire temp file: %s", err.Error())
+	}
+	f.Close()
+	location := f.Name()
+
+	boltDB, err := model.OpenDatabase(location)
+	if err != nil {
+		t.Fatalf("Cannot open database: %s", err.Error())
+	}
+
+	err = boltDB.Update(func(tx model.Transaction) error {
+		return populateDatabase(tx)
+	})
+	if err != nil {
+		t.Fatalf("Cannot populate database: %s", err.Error())
+	}
+
+	return boltDB
+
+}
+
+func closeTestDatabase(t *testing.T, d model.Database) {
+
+	location := d.Location()
+
+	if err := model.CloseDatabase(d); err != nil {
+		t.Errorf("Cannot close database: %s", err.Error())
+	}
+
+	if err := os.Remove(location); err != nil {
+		t.Errorf("Cannot remove temp file: %s", err.Error())
+	}
+
+}
+
+func populateDatabase(tx model.Transaction) error {
+
+	// add test user
+	user := model.NewUser("karl")
+	user.SetPassword("abcdefg")
+	return user.Save(tx)
 
 }

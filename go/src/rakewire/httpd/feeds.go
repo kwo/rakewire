@@ -134,20 +134,6 @@ func (z *Service) feedsSaveJSON(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (z *Service) feedsSaveText(w http.ResponseWriter, req *http.Request) {
-
-	// curl -D - -X PUT -H "Content-Type: text/plain; charset=utf-8" --data-binary @feedlist.txt http://localhost:4444/api/feeds
-
-	if req.ContentLength == 0 {
-		sendError(w, http.StatusNoContent)
-		return
-	}
-
-	feeds := m.ParseFeedsFromReader(req.Body)
-	z.feedsSaveNative(w, feeds)
-
-}
-
 func (z *Service) feedsSaveNative(w http.ResponseWriter, feeds []*m.Feed) {
 
 	for _, feed := range feeds {

@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	m "rakewire/model"
+	"rakewire/model"
 	"testing"
 )
 
@@ -16,9 +16,12 @@ func TestUserGet(t *testing.T) {
 	defer closeDatabase(t, database, databaseFile)
 
 	// add test user
-	user := m.NewUser("testuser")
+	user := model.NewUser("testuser")
 	user.SetPassword("abcdefg")
-	if err := database.UserSave(user); err != nil {
+	err := database.Update(func(tx model.Transaction) error {
+		return user.Save(tx)
+	})
+	if err != nil {
 		t.Fatalf("Cannot save user: %s", err.Error())
 	}
 

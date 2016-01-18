@@ -2,6 +2,7 @@ package fever
 
 import (
 	"github.com/antonholmquist/jason"
+	"rakewire/model"
 	"strconv"
 	"testing"
 	"time"
@@ -12,11 +13,18 @@ func TestAuth(t *testing.T) {
 	t.Parallel()
 
 	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
 	server := newServer(database)
 	defer server.Close()
+	defer closeDatabase(t, database, databaseFile)
 
-	user, err := database.UserGetByUsername(testUsername)
+	var user *model.User
+	err := database.Select(func(tx model.Transaction) error {
+		u, err := model.UserByUsername(testUsername, tx)
+		if err == nil && u != nil {
+			user = u
+		}
+		return err
+	})
 	if err != nil {
 		t.Fatalf("Cannot get user: %s", err.Error())
 	}
@@ -115,7 +123,14 @@ func TestXmlUnsupported(t *testing.T) {
 	server := newServer(database)
 	defer server.Close()
 
-	user, err := database.UserGetByUsername(testUsername)
+	var user *model.User
+	err := database.Select(func(tx model.Transaction) error {
+		u, err := model.UserByUsername(testUsername, tx)
+		if err == nil && u != nil {
+			user = u
+		}
+		return err
+	})
 	if err != nil {
 		t.Fatalf("Cannot get user: %s", err.Error())
 	}

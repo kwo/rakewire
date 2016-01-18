@@ -4,13 +4,13 @@
 
 ### Immediate
 
+ - code restructure
+  - move opml to model -> opml_db
+  - create collection classes with groupby and sort functions
+  - rename model elements: Feed/Item, Subscription/Entry
+  - use manually managed transactions in database
  - add subscribers count to user-agent when fetching
  - store config, tls keys in data file
- - code restructure
-   - move opml to model -> opml_db
-   - create collection classes with groupby and sort functions
-   - rename model elements: Feed/Item, Subscription/Entry
-   - use manually managed transactions in database
  - jwt authentication and basic auth
  - optimize user-entries
  - native api to manage users

@@ -5,8 +5,21 @@ import (
 	"strings"
 )
 
-// UserGetByUsername get a user object by username, nil if not found
-func UserGetByUsername(username string, tx Transaction) (user *User, err error) {
+// UserByFeverHash get a user object by feverhash, nil if not found
+func UserByFeverHash(feverhash string, tx Transaction) (user *User, err error) {
+
+	data, ok := kvGetFromIndex(UserEntity, UserIndexFeverHash, []string{strings.ToLower(feverhash)}, tx)
+	if ok {
+		user = &User{}
+		err = user.Deserialize(data)
+	}
+
+	return
+
+}
+
+// UserByUsername get a user object by username, nil if not found
+func UserByUsername(username string, tx Transaction) (user *User, err error) {
 
 	data, ok := kvGetFromIndex(UserEntity, UserIndexUsername, []string{strings.ToLower(username)}, tx)
 	if ok {

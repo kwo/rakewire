@@ -13,21 +13,6 @@ const (
 	chSep = "|"
 )
 
-const (
-	bucketConfig = "Config"
-	bucketData   = "Data"
-	bucketIndex  = "Index"
-)
-
-const (
-	logName  = "[bolt]"
-	logTrace = "[TRACE]"
-	logDebug = "[DEBUG]"
-	logInfo  = "[INFO]"
-	logWarn  = "[WARN]"
-	logError = "[ERROR]"
-)
-
 // DataObject defines the functions necessary for objects to be persisted to the database
 type DataObject interface {
 	GetID() uint64
