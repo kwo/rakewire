@@ -1,4 +1,4 @@
-package opml
+package model
 
 import (
 	"encoding/xml"
@@ -94,15 +94,15 @@ func (z Outlines) Sort() {
 	}
 }
 
-// Parse parses input into a OPML structure
-func Parse(r io.Reader) (*OPML, error) {
+// OPMLParse parses input into a OPML structure
+func OPMLParse(r io.Reader) (*OPML, error) {
 	o := &OPML{}
 	err := xml.NewDecoder(r).Decode(o)
 	return o, err
 }
 
-// Format serializes output to a writer
-func Format(o *OPML, w io.Writer) error {
+// OPMLFormat serializes output to a writer
+func OPMLFormat(o *OPML, w io.Writer) error {
 	if _, err := w.Write([]byte(xml.Header)); err != nil {
 		return err
 	}
@@ -111,8 +111,8 @@ func Format(o *OPML, w io.Writer) error {
 	return encoder.Encode(o)
 }
 
-// Flatten pulls nested groups up to the top level, modifing the group name.
-func Flatten(outlines Outlines) map[*Outline]Outlines {
+// OPMLFlatten pulls nested groups up to the top level, modifing the group name.
+func OPMLFlatten(outlines Outlines) map[*Outline]Outlines {
 	result := make(map[*Outline]Outlines)
 	flatten(outlines, &Outline{}, result)
 	return result

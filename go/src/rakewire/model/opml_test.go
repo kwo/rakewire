@@ -1,4 +1,4 @@
-package opml
+package model
 
 import (
 	"bytes"
@@ -13,20 +13,20 @@ func TestParseFormat(t *testing.T) {
 	opml1 := getTestOPML()
 	document := getTestDocument()
 
-	// format opml1 to buffer
+	// OPMLFormat opml1 to buffer
 	buf1 := &bytes.Buffer{}
-	if err := Format(opml1, buf1); err != nil {
-		t.Fatalf("Error formatting OPML1: %s", err.Error())
+	if err := OPMLFormat(opml1, buf1); err != nil {
+		t.Fatalf("Error OPMLFormatting OPML1: %s", err.Error())
 	}
 
-	// parse and reformat opml2 to buffer
-	opml2, err := Parse(document)
+	// OPMLParse and reformat opml2 to buffer
+	opml2, err := OPMLParse(document)
 	if err != nil {
-		t.Fatalf("Cannot parse opml2: %s", err.Error())
+		t.Fatalf("Cannot OPMLParse opml2: %s", err.Error())
 	}
 	buf2 := &bytes.Buffer{}
-	if err := Format(opml2, buf2); err != nil {
-		t.Fatalf("Error formatting OPML2: %s", err.Error())
+	if err := OPMLFormat(opml2, buf2); err != nil {
+		t.Fatalf("Error OPMLFormatting OPML2: %s", err.Error())
 	}
 
 	// compare buffers
@@ -43,20 +43,20 @@ func TestSort(t *testing.T) {
 
 	opml1.Body.Outlines.Sort()
 
-	// format opml1 to buffer
+	// OPMLFormat opml1 to buffer
 	buf1 := &bytes.Buffer{}
-	if err := Format(opml1, buf1); err != nil {
-		t.Fatalf("Error formatting OPML1: %s", err.Error())
+	if err := OPMLFormat(opml1, buf1); err != nil {
+		t.Fatalf("Error OPMLFormatting OPML1: %s", err.Error())
 	}
 
-	// parse and reformat opml2 to buffer
-	opml2, err := Parse(document)
+	// OPMLParse and reformat opml2 to buffer
+	opml2, err := OPMLParse(document)
 	if err != nil {
-		t.Fatalf("Cannot parse opml2: %s", err.Error())
+		t.Fatalf("Cannot OPMLParse opml2: %s", err.Error())
 	}
 	buf2 := &bytes.Buffer{}
-	if err := Format(opml2, buf2); err != nil {
-		t.Fatalf("Error formatting OPML2: %s", err.Error())
+	if err := OPMLFormat(opml2, buf2); err != nil {
+		t.Fatalf("Error OPMLFormatting OPML2: %s", err.Error())
 	}
 
 	// compare buffers
@@ -70,7 +70,7 @@ func TestFlatten1(t *testing.T) {
 
 	// given
 	opml1 := getTestOPML()
-	flatOPML := Flatten(opml1.Body.Outlines)
+	flatOPML := OPMLFlatten(opml1.Body.Outlines)
 
 	// when
 	expectedKeyCount := 4
@@ -91,7 +91,7 @@ func TestFlatten2(t *testing.T) {
 	// when
 	opml1.Body.Outlines[1].SetAutoRead(true) // group1
 	opml1.Body.Outlines[2].SetAutoRead(true) // group3
-	flatOPML := Flatten(opml1.Body.Outlines)
+	flatOPML := OPMLFlatten(opml1.Body.Outlines)
 
 	for group := range flatOPML {
 		t.Logf("group: %t %t %s", group.IsAutoRead(), group.IsAutoStar(), group.Title)

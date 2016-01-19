@@ -1,31 +1,20 @@
-package opml
+package model
 
 import (
 	"log"
-	"rakewire/db"
-	"rakewire/model"
 	"strings"
 	"time"
 )
 
-const (
-	logName  = "[opml]"
-	logTrace = "[TRACE]"
-	logDebug = "[DEBUG]"
-	logInfo  = "[INFO]"
-	logWarn  = "[WARN]"
-	logError = "[ERROR]"
-)
+// OPMLExport OPML document
+func OPMLExport(user *User, tx Transaction) (*OPML, error) {
 
-// Export OPML document
-func Export(user *model.User, database db.Database) (*OPML, error) {
-
-	groups, err := database.GroupGetAllByUser(user.ID)
+	groups, err := GroupsByUser(user.ID, tx)
 	if err != nil {
 		return nil, err
 	}
 
-	userfeeds, err := database.UserFeedGetAllByUser(user.ID)
+	userfeeds, err := UserFeedsByUser(user.ID, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +57,7 @@ func Export(user *model.User, database db.Database) (*OPML, error) {
 				created = &x
 			}
 
-			getTitle := func(uf *model.UserFeed) string {
+			getTitle := func(uf *UserFeed) string {
 				result := userfeed.Title
 				if result == "" {
 					result = userfeed.Feed.Title
@@ -117,15 +106,15 @@ func Export(user *model.User, database db.Database) (*OPML, error) {
 
 }
 
-// Import OPML document into database
-func Import(userID uint64, opml *OPML, replace bool, database db.Database) error {
+// OPMLImport OPML document into database
+func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 
 	log.Printf("%-7s %-7s importing opml for user %d, replace: %t", logDebug, logName, userID, replace)
 
-	flatOPML := Flatten(opml.Body.Outlines)
+	flatOPML := OPMLFlatten(opml.Body.Outlines)
 
 	// add missing groups
-	groups, err := database.GroupGetAllByUser(userID)
+	groups, err := GroupsByUser(userID, tx)
 	if err != nil {
 		return err
 	}
@@ -133,15 +122,15 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 	for branch := range flatOPML {
 		group := groupsByName[branch.Text]
 		if group == nil {
-			group = model.NewGroup(userID, branch.Text)
+			group = NewGroup(userID, branch.Text)
 			groupsByName[branch.Text] = group
 		}
-		if err := database.GroupSave(group); err != nil {
+		if err := group.Save(tx); err != nil {
 			return err
 		}
 	}
 
-	userfeeds, err := database.UserFeedGetAllByUser(userID)
+	userfeeds, err := UserFeedsByUser(userID, tx)
 	if err != nil {
 		return err
 	}
@@ -161,19 +150,19 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 			uf := userfeedsByURL[outline.XMLURL]
 			if uf == nil {
 
-				f, err := database.GetFeedByURL(outline.XMLURL)
+				f, err := FeedByURL(outline.XMLURL, tx)
 				if err != nil {
 					return err
 				}
 				if f == nil {
-					f = model.NewFeed(outline.XMLURL)
+					f = NewFeed(outline.XMLURL)
 					log.Printf("%-7s %-7s adding feed: %s", logDebug, logName, f.URL)
-					if _, err := database.FeedSave(f); err != nil {
+					if _, err := f.Save(tx); err != nil {
 						return err
 					}
 				}
 
-				uf = model.NewUserFeed(userID, f.ID)
+				uf = NewUserFeed(userID, f.ID)
 				uf.Feed = f
 				log.Printf("%-7s %-7s adding userfeed: %s", logDebug, logName, uf.Feed.URL)
 
@@ -207,7 +196,7 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 			if uf.DateAdded.IsZero() {
 				uf.DateAdded = time.Now().Truncate(time.Second)
 			}
-			if err := database.UserFeedSave(uf); err != nil {
+			if err := uf.Save(tx); err != nil {
 				return err
 			}
 
@@ -220,7 +209,7 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 		outlinesByURL := groupOutlinesByURL(flatOPML)
 
 		// remove unused userfeeds
-		userfeeds, err := database.UserFeedGetAllByUser(userID)
+		userfeeds, err := UserFeedsByUser(userID, tx)
 		if err != nil {
 			return err
 		}
@@ -228,14 +217,14 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 		for _, userfeed := range userfeeds {
 			if _, ok := outlinesByURL[userfeed.Feed.URL]; !ok {
 				log.Printf("%-7s %-7s removing userfeed: %s", logDebug, logName, userfeed.Feed.URL)
-				if err := database.UserFeedDelete(userfeed); err != nil {
+				if err := userfeed.Delete(tx); err != nil {
 					return err
 				}
 			}
 		}
 		for _, userfeed := range userfeedDuplicates {
 			log.Printf("%-7s %-7s removing duplicate userfeed: %s", logDebug, logName, userfeed.Feed.URL)
-			if err := database.UserFeedDelete(userfeed); err != nil {
+			if err := userfeed.Delete(tx); err != nil {
 				return err
 			}
 		}
@@ -245,7 +234,7 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 		for _, group := range groupsByName {
 			if _, ok := uniqueGroups[group.ID]; !ok {
 				log.Printf("%-7s %-7s removing group: %s", logDebug, logName, group.Name)
-				if err := database.GroupDelete(group); err != nil {
+				if err := group.Delete(tx); err != nil {
 					return err
 				}
 			}
@@ -257,25 +246,25 @@ func Import(userID uint64, opml *OPML, replace bool, database db.Database) error
 
 }
 
-func groupGroupsByID(groups []*model.Group) map[uint64]*model.Group {
-	result := make(map[uint64]*model.Group)
+func groupGroupsByID(groups []*Group) map[uint64]*Group {
+	result := make(map[uint64]*Group)
 	for _, group := range groups {
 		result[group.ID] = group
 	}
 	return result
 }
 
-func groupGroupsByName(groups []*model.Group) map[string]*model.Group {
-	result := make(map[string]*model.Group)
+func groupGroupsByName(groups []*Group) map[string]*Group {
+	result := make(map[string]*Group)
 	for _, group := range groups {
 		result[group.Name] = group
 	}
 	return result
 }
 
-func groupUserFeedsByGroup(userfeeds []*model.UserFeed, groups map[uint64]*model.Group) map[*model.Group][]*model.UserFeed {
+func groupUserFeedsByGroup(userfeeds []*UserFeed, groups map[uint64]*Group) map[*Group][]*UserFeed {
 
-	result := make(map[*model.Group][]*model.UserFeed)
+	result := make(map[*Group][]*UserFeed)
 	for _, userfeed := range userfeeds {
 		for _, groupID := range userfeed.GroupIDs {
 			result[groups[groupID]] = append(result[groups[groupID]], userfeed)
@@ -285,9 +274,9 @@ func groupUserFeedsByGroup(userfeeds []*model.UserFeed, groups map[uint64]*model
 
 }
 
-func groupUserFeedsByURL(userfeeds []*model.UserFeed) (map[string]*model.UserFeed, []*model.UserFeed) {
-	result := make(map[string]*model.UserFeed)
-	duplicates := []*model.UserFeed{}
+func groupUserFeedsByURL(userfeeds []*UserFeed) (map[string]*UserFeed, []*UserFeed) {
+	result := make(map[string]*UserFeed)
+	duplicates := []*UserFeed{}
 	for _, userfeed := range userfeeds {
 		if _, ok := result[userfeed.Feed.URL]; !ok {
 			result[userfeed.Feed.URL] = userfeed
@@ -298,9 +287,9 @@ func groupUserFeedsByURL(userfeeds []*model.UserFeed) (map[string]*model.UserFee
 	return result, duplicates
 }
 
-func groupFeedsByURL(feeds []*model.Feed) (map[string]*model.Feed, []*model.Feed) {
-	result := make(map[string]*model.Feed)
-	duplicates := []*model.Feed{}
+func groupFeedsByURL(feeds []*Feed) (map[string]*Feed, []*Feed) {
+	result := make(map[string]*Feed)
+	duplicates := []*Feed{}
 	for _, feed := range feeds {
 		if _, ok := result[feed.URL]; !ok {
 			result[feed.URL] = feed
@@ -311,7 +300,7 @@ func groupFeedsByURL(feeds []*model.Feed) (map[string]*model.Feed, []*model.Feed
 	return result, duplicates
 }
 
-func collectGroups(userfeeds []*model.UserFeed) map[uint64]int {
+func collectGroups(userfeeds []*UserFeed) map[uint64]int {
 	result := make(map[uint64]int)
 	for _, userfeed := range userfeeds {
 		for _, groupID := range userfeed.GroupIDs {
