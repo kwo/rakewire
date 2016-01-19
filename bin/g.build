@@ -11,4 +11,8 @@ fi
 
 . $PROJECT_HOME/bin/b.vars
 
-go build -ldflags "$LDFLAGS" -o ../rakewire ./src/rakewire/rakewire.go
+go build -tags netgo -ldflags "$LDFLAGS" -o ../rakewire ./src/rakewire/rakewire.go
+
+# Notes: inspect shared libraries
+# otool -L rakewire #OSX
+# ldd rakewire #linux

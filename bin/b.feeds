@@ -1,4 +1,0 @@
-FEEDFILE=~/Downloads/feedlist.txt
-~/projects/fever-api/bin/fever feeds > $FEEDFILE
-curl -D - -X PUT -H "Content-Type: text/plain; charset=utf-8" \
-  --data-binary @$FEEDFILE http://localhost:4444/api0/feeds

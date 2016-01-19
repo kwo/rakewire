@@ -2,4 +2,4 @@ cd $PROJECT_HOME/go
 . $PROJECT_HOME/bin/b.vars
 g.tools
 go generate ./src/rakewire/...
-go run -ldflags "$LDFLAGS" ./src/rakewire/rakewire.go $*
+go run -tags netgo -ldflags "$LDFLAGS" ./src/rakewire/rakewire.go $*
