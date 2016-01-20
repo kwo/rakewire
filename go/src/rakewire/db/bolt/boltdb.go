@@ -61,6 +61,11 @@ func (z *Service) Update(fn func(transaction model.Transaction) error) error {
 	return z.database.Update(fn)
 }
 
+// Repair repairs
+func (z *Service) Repair() error {
+	return z.database.Repair()
+}
+
 // ModelDatabase return database
 func (z *Service) ModelDatabase() model.Database {
 	return z.database

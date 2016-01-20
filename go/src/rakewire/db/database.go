@@ -15,6 +15,7 @@ type Database interface {
 	Location() string
 	Select(fn func(tx model.Transaction) error) error
 	Update(fn func(tx model.Transaction) error) error
+	Repair() error
 	ModelDatabase() model.Database
 
 	// Feed

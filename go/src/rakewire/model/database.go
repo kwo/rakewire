@@ -5,6 +5,7 @@ type Database interface {
 	Location() string
 	Select(fn func(tx Transaction) error) error
 	Update(fn func(tx Transaction) error) error
+	Repair() error
 }
 
 // Transaction represents an atomic operation to the database
