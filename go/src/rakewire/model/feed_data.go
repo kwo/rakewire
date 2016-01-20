@@ -81,8 +81,11 @@ func FeedsFetch(maxTime time.Time, tx Transaction) ([]*Feed, error) {
 func FeedByID(id uint64, tx Transaction) (feed *Feed, err error) {
 	b := tx.Bucket(bucketData).Bucket(FeedEntity)
 	if data, ok := kvGet(id, b); ok {
-		feed := &Feed{}
+		feed = &Feed{}
 		err = feed.Deserialize(data)
+		feed.ID = id // if ID missing
+	} else {
+		err = fmt.Errorf("Feed not found: %d", id)
 	}
 	return
 }
@@ -90,8 +93,10 @@ func FeedByID(id uint64, tx Transaction) (feed *Feed, err error) {
 // FeedByURL return feed given url
 func FeedByURL(url string, tx Transaction) (feed *Feed, err error) {
 	if data, ok := kvGetFromIndex(FeedEntity, FeedIndexURL, []string{strings.ToLower(url)}, tx); ok {
-		feed := &Feed{}
+		feed = &Feed{}
 		err = feed.Deserialize(data)
+	} else {
+		err = fmt.Errorf("Feed not found: %s", url)
 	}
 	return
 }
@@ -144,6 +149,18 @@ func (feed *Feed) Delete(tx Transaction) error {
 	if err != nil {
 		return err
 	}
+
+	for _, entry := range entries {
+		if err := kvDelete(EntryEntity, entry, tx); err != nil {
+			return err
+		}
+	}
+
+	// TODO: remove feedlogs
+	// feedlogs, err := FeedLogsByFeed(feed.ID, time.Time{}, tx)
+	// if err != nil {
+	// 	return err
+	// }
 
 	for _, entry := range entries {
 		if err := kvDelete(EntryEntity, entry, tx); err != nil {

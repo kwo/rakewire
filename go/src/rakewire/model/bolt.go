@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// top lebel buckets
+// top level buckets
 const (
 	bucketConfig = "Config"
 	bucketData   = "Data"

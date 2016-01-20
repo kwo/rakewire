@@ -2,15 +2,21 @@ package rest
 
 import (
 	"github.com/gorilla/mux"
-	"rakewire/db"
+	"rakewire/model"
 )
 
 // NewAPI creates a new REST API instance
-func NewAPI(prefix string, database db.Database) *API {
+func NewAPI(prefix string, database model.Database) *API {
 	return &API{
 		prefix: prefix,
 		db:     database,
 	}
+}
+
+// API top level struct
+type API struct {
+	prefix string
+	db     model.Database
 }
 
 // Router returns the top-level Fever router
