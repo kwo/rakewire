@@ -123,7 +123,9 @@ func NewParser() *Parser {
 }
 
 // Parse feed
-func (z *Parser) Parse(reader io.ReadCloser, contentType string) (*Feed, error) {
+func (z *Parser) Parse(reader0 io.ReadCloser, contentType string) (*Feed, error) {
+
+	reader := NewFilterReader(reader0)
 
 	z.decoder = xml.NewDecoder(reader)
 	z.decoder.CharsetReader = charset.NewReader

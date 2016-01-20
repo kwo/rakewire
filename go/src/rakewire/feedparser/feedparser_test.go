@@ -4,9 +4,10 @@ import (
 	"encoding/xml"
 	"io"
 	"io/ioutil"
-	"log"
+	//"log"
 	"net/http"
 	"os"
+	//"rakewire/logging"
 	"strings"
 	"testing"
 	"time"
@@ -14,9 +15,42 @@ import (
 
 func TestMain(m *testing.M) {
 
-	log.SetOutput(ioutil.Discard)
+	// cfg := &logging.Configuration{Level: logging.LogTrace}
+	// cfg.Init()
 
 	m.Run()
+
+}
+
+func TestAndrew(t *testing.T) {
+
+	t.SkipNow()
+
+	f := testURL(t, "http://andrewhammel.typepad.com/how_many_which_ones_the_g/atom.xml")
+
+	// then
+	expectedEntries := 10
+	if len(f.Entries) != expectedEntries {
+		t.Errorf("Expected %d, actual %d", expectedEntries, len(f.Entries))
+	}
+
+	for _, entry := range f.Entries {
+		t.Logf("Entry: %s", entry.Title)
+	}
+
+}
+
+func TestStratechery(t *testing.T) {
+
+	t.SkipNow()
+
+	f := testURL(t, "https://stratechery.com/feed/")
+
+	// then
+
+	for _, entry := range f.Entries {
+		t.Logf("Entry: %s", entry.Title)
+	}
 
 }
 
@@ -278,16 +312,16 @@ func TestRSS(t *testing.T) {
 	assertEqual(t, 1, len(e.Links))
 	assertEqual(t, "https://en.blog.wordpress.com/2015/07/02/libre/", e.Links["alternate"])
 
-	assertEqual(t, "<em>Libre</em> brings a stylish, classic look to your personal blog or longform writing site.<img alt=\"\" border=\"0\" src=\"https://pixel.wp.com/b.gif?host=en.blog.wordpress.com&#038;blog=3584907&#038;post=31505&#038;subd=en.blog&#038;ref=&#038;feed=1\" width=\"1\" height=\"1\" />", e.Summary)
-	assertEqual(t, "<p>Happy Theme Thursday, all! Today I&#8217;m happy to introduce <em>Libre</em>, a new free theme designed by <a href=\"http://carolinethemes.com/\">yours truly</a>.</p>\n<h3><a href=\"http://wordpress.com/themes/libre/\">Libre</a></h3>\n<p><a href=\"http://wordpress.com/themes/libre/\"><img class=\"aligncenter size-full wp-image-31516\" src=\"https://en-blog.files.wordpress.com/2015/06/librelg.png?w=635&#038;h=476\" alt=\"Libre\" width=\"635\" height=\"476\" /></a></p>\n<p><em>Libre</em> brings a stylish, classic look to your personal blog or longform writing site. The main navigation bar stays fixed to the top while your visitors read, keeping your most important content at hand. At the bottom of your site, three footer widget areas give your secondary content a comfortable home.</p>\n<p>Customize <em>Libre</em> with a logo or a header image to make it your own, or use one of two custom templates &#8212; including a full-width template\u00a0with no sidebar &#8212; to change up the look of your pages. <em>Libre</em> sports a clean, responsive design that works seamlessly on screens of any size.</p>\n<p><img class=\"aligncenter size-full wp-image-31517\" src=\"https://en-blog.files.wordpress.com/2015/06/libreresponsive.jpg?w=635&#038;h=252\" alt=\"Responsive design\" width=\"635\" height=\"252\" /></p>\n<p>Read more about <em>Libre</em> on the <a href=\"https://wordpress.com/themes/libre/\">Theme Showcase</a>, or activate it on your site from <em>Appearance → Themes</em>!</p><br />Filed under: <a href='https://en.blog.wordpress.com/category/themes/'>Themes</a>  <a rel=\"nofollow\" href=\"http://feeds.wordpress.com/1.0/gocomments/en.blog.wordpress.com/31505/\"><img alt=\"\" border=\"0\" src=\"http://feeds.wordpress.com/1.0/comments/en.blog.wordpress.com/31505/\" /></a> <img alt=\"\" border=\"0\" src=\"https://pixel.wp.com/b.gif?host=en.blog.wordpress.com&#038;blog=3584907&#038;post=31505&#038;subd=en.blog&#038;ref=&#038;feed=1\" width=\"1\" height=\"1\" />", e.Content)
-
 }
 
 func testFeed(t *testing.T, reader io.ReadCloser, contentType string) *Feed {
 	p := NewParser()
 	feed, err := p.Parse(reader, contentType)
-	assertNoError(t, err)
-	assertNotNil(t, feed)
+	if err != nil {
+		t.Fatalf("Error parsing feed: %s", err.Error())
+	} else if feed == nil {
+		t.Fatal("Nil feed")
+	}
 	return feed
 }
 
