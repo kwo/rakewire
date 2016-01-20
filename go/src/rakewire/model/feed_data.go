@@ -83,7 +83,6 @@ func FeedByID(id uint64, tx Transaction) (feed *Feed, err error) {
 	if data, ok := kvGet(id, b); ok {
 		feed = &Feed{}
 		err = feed.Deserialize(data)
-		feed.ID = id // if ID missing
 	} else {
 		err = fmt.Errorf("Feed not found: %d", id)
 	}
