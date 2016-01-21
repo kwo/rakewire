@@ -226,3 +226,7 @@ func (z *UserFeed) IndexKeys() map[string][]string {
 
 	return result
 }
+
+func (z *UserFeed) isValid() bool {
+	return z.ID != 0 && z.UserID != 0 && z.FeedID != 0
+}

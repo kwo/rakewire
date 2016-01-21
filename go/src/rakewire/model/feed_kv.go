@@ -223,3 +223,7 @@ func (z *Feed) IndexKeys() map[string][]string {
 
 	return result
 }
+
+func (z *Feed) isValid() bool {
+	return z.ID != 0 && z.URL != ""
+}

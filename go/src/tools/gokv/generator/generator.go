@@ -37,6 +37,7 @@ type FieldInfo struct {
 	StructNameLower    string
 	Type               string
 	Tags               map[string]string
+	Required           bool
 	Comment            string
 	EmptyValue         string
 	ZeroTest           string
@@ -57,41 +58,56 @@ func (z *StructInfo) Finalize() error {
 
 		//fmt.Printf("%s/%s: %s\n", z.Name, field.Name, field.Type)
 
+		if field.Name == "ID" {
+			field.Required = true
+		}
+
 		if field.Type == "time.Time" {
 			z.Imports["time"] = true
 		}
 
 		tagFields := strings.Split(field.Tags["kv"], ",")
 		for _, tagField := range tagFields {
+
 			if tagField == "" {
 				continue
-			}
+			} else if tagField == "+required" {
+				// required field
+				field.Required = true
+				if field.Type == "bool" {
+					return fmt.Errorf("%s.%s, Type: bool - cannot be required", z.Name, field.Name)
+				}
+			} else {
 
-			elements := strings.Split(tagField, ":")
-			var filter string
-			switch len(elements) {
-			case 2:
-			case 3:
-				filter = elements[2]
-				z.Imports["strings"] = true
-			default:
-				return fmt.Errorf("Invalid index definition: %s", tagField)
-			}
+				// index definition
 
-			indexName := elements[0]
-			indexPosition, err := strconv.Atoi(elements[1])
-			if err != nil {
-				return fmt.Errorf("Index position is not an integer: %s", tagField)
-			} else if indexPosition < 1 {
-				return fmt.Errorf("Index positions are one-based: %s", tagField)
-			}
+				elements := strings.Split(tagField, ":")
+				var filter string
+				switch len(elements) {
+				case 2:
+				case 3:
+					filter = elements[2]
+					z.Imports["strings"] = true
+				default:
+					return fmt.Errorf("Invalid index definition: %s", tagField)
+				}
 
-			index := z.Indexes[indexName]
-			for len(index) < indexPosition {
-				index = append(index, nil)
+				indexName := elements[0]
+				indexPosition, err := strconv.Atoi(elements[1])
+				if err != nil {
+					return fmt.Errorf("Index position is not an integer: %s", tagField)
+				} else if indexPosition < 1 {
+					return fmt.Errorf("Index positions are one-based: %s", tagField)
+				}
+
+				index := z.Indexes[indexName]
+				for len(index) < indexPosition {
+					index = append(index, nil)
+				}
+				index[indexPosition-1] = &IndexField{Field: field.Name, Filter: filter}
+				z.Indexes[indexName] = index
+
 			}
-			index[indexPosition-1] = &IndexField{Field: field.Name, Filter: filter}
-			z.Indexes[indexName] = index
 
 		} // tagFields
 

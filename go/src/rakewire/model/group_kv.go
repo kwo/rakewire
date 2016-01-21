@@ -106,3 +106,7 @@ func (z *Group) IndexKeys() map[string][]string {
 
 	return result
 }
+
+func (z *Group) isValid() bool {
+	return z.ID != 0 && z.UserID != 0 && z.Name != ""
+}

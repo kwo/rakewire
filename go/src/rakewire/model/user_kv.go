@@ -112,3 +112,7 @@ func (z *User) IndexKeys() map[string][]string {
 
 	return result
 }
+
+func (z *User) isValid() bool {
+	return z.ID != 0 && z.Username != ""
+}

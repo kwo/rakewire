@@ -208,3 +208,7 @@ func (z *UserEntry) IndexKeys() map[string][]string {
 
 	return result
 }
+
+func (z *UserEntry) isValid() bool {
+	return z.ID != 0 && z.UserID != 0 && z.EntryID != 0 && z.UserFeedID != 0
+}

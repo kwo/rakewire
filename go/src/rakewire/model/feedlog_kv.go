@@ -325,3 +325,7 @@ func (z *FeedLog) IndexKeys() map[string][]string {
 
 	return result
 }
+
+func (z *FeedLog) isValid() bool {
+	return z.ID != 0 && z.FeedID != 0
+}

@@ -9,7 +9,7 @@ import (
 // FeedLog represents an attempted HTTP request to a feed
 type FeedLog struct {
 	ID            uint64        `json:"id" kv:"Time:2"`
-	FeedID        uint64        `json:"feedId" kv:"FeedTime:1"`
+	FeedID        uint64        `json:"feedId" kv:"+required,FeedTime:1"`
 	Duration      time.Duration `json:"duration"`
 	Result        string        `json:"result"`
 	ResultMessage string        `json:"resultMessage"`

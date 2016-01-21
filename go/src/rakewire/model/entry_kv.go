@@ -177,3 +177,7 @@ func (z *Entry) IndexKeys() map[string][]string {
 
 	return result
 }
+
+func (z *Entry) isValid() bool {
+	return z.ID != 0 && z.FeedID != 0
+}

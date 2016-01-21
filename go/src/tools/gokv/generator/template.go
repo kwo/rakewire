@@ -95,6 +95,10 @@ func (z *{{.Name}}) IndexKeys() map[string][]string {
 	return result
 }
 
+func (z *{{.Name}}) isValid() bool {
+	return {{range $index, $field := .Fields}}{{ if .Required}}{{if ne $index 0}} && {{end}}{{.ZeroTest}}{{end}}{{end}}
+}
+
 {{end}}
 
 `

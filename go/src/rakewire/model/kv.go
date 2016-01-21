@@ -21,6 +21,7 @@ type DataObject interface {
 	Serialize(flags ...bool) map[string]string
 	Deserialize(map[string]string) error
 	IndexKeys() map[string][]string
+	isValid() bool
 }
 
 func kvGet(id uint64, b Bucket) (map[string]string, bool) {
