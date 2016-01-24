@@ -26,6 +26,7 @@ func TestFeedSerial(t *testing.T) {
 	t.Parallel()
 
 	f := getNewFeed()
+	f.ID = 1
 	validateFeed(t, f)
 
 	data := f.Serialize()

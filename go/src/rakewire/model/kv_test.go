@@ -16,12 +16,13 @@ func TestKVDelete(t *testing.T) {
 	const URL = "http://localhost/"
 
 	err := d.Update(func(tx Transaction) error {
-		for i := 0; i < 5; i++ {
+		for i := 1; i < 6; i++ {
 			f := NewFeed(fmt.Sprintf("%s%d", URL, i))
 			f.ETag = fmt.Sprintf("%s%d", "Etag-", i)
 			f.Title = fmt.Sprintf("%s%d", "Title-", i)
 			f.Notes = fmt.Sprintf("%s%d", "Notes-", i)
 			f.LastModified = time.Now()
+			//t.Logf("%d: %d %s", i, f.ID, f.URL)
 			_, err := f.Save(tx)
 			if err != nil {
 				return err
@@ -34,7 +35,7 @@ func TestKVDelete(t *testing.T) {
 	}
 
 	err = d.Update(func(tx Transaction) error {
-		f, err := FeedByURL("http://localhost/2", tx)
+		f, err := FeedByURL("http://localhost/3", tx)
 		if err != nil {
 			return err
 		}
@@ -59,6 +60,52 @@ func TestKVDelete(t *testing.T) {
 	})
 	if err != nil {
 		t.Errorf("Error viewing feed: %s", err.Error())
+	}
+
+}
+
+func TestBucketKeyEncodeDecode(t *testing.T) {
+
+	key := kvBucketKeyEncode(24, "hello")
+	t.Logf("key: %s", key)
+
+	id, field, err := kvBucketKeyDecode(key)
+	if err != nil {
+		t.Fatalf("Error decoding bucket key: %s", err.Error())
+	}
+	if id != 24 {
+		t.Errorf("Expected %d, actual %d", 24, id)
+	}
+	if field != "hello" {
+		t.Errorf("Expected %s, actual %s", "world", field)
+	}
+
+}
+
+func TestDeserialize(t *testing.T) {
+
+	g1 := NewGroup(3, "three")
+	g1.ID = 3
+	values := g1.Serialize()
+
+	g2 := &Group{}
+	if err := g2.Deserialize(values, true); err != nil {
+		t.Errorf("deserialization error: %s", err.Error())
+	}
+
+	values["uuid"] = "unknown-field"
+
+	g2 = &Group{}
+	if err := g2.Deserialize(values, true); err == nil {
+		t.Error("expected deserialization error, none returned")
+	} else if derr, ok := err.(*DeserializationError); ok {
+
+		if len(derr.UnknownFieldnames) != 1 || !isStringInArray("uuid", derr.UnknownFieldnames) {
+			t.Error("Expected field uuid in UnknownFieldnames")
+		}
+
+	} else {
+		t.Error("Invalid error returned, not a Deserialization error")
 	}
 
 }

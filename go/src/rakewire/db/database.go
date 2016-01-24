@@ -77,7 +77,7 @@ type DataObject interface {
 	GetID() uint64
 	SetID(id uint64)
 	Clear()
-	Serialize(flags ...bool) map[string]string
-	Deserialize(map[string]string) error
+	Serialize(...bool) map[string]string
+	Deserialize(map[string]string, ...bool) error
 	IndexKeys() map[string][]string
 }

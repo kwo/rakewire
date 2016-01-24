@@ -69,6 +69,7 @@ func getNewFeedLog() *FeedLog {
 	dt := time.Date(2015, time.November, 26, 13, 55, 0, 0, time.Local)
 
 	fl := NewFeedLog(123)
+	fl.ID = 1
 	fl.ContentLength = 0
 	fl.ContentType = "text/plain"
 	fl.Duration = 6 * time.Second
@@ -96,7 +97,7 @@ func validateFeedLog(t *testing.T, fl *FeedLog) {
 
 	assertNotNil(t, fl)
 
-	if fl.ID != 0 {
+	if fl.ID != 1 {
 		t.Errorf("FeedLog ID incorrect, expected %d, actual %d", 0, fl.ID)
 	}
 

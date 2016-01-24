@@ -18,10 +18,45 @@ type DataObject interface {
 	GetID() uint64
 	SetID(id uint64)
 	Clear()
-	Serialize(flags ...bool) map[string]string
-	Deserialize(map[string]string) error
+	Serialize(...bool) map[string]string
+	Deserialize(map[string]string, ...bool) error
 	IndexKeys() map[string][]string
-	isValid() bool
+}
+
+// NewDeserializationError returns a new DeserializationError or nil of all arrays are empty.
+func newDeserializationError(errors []error, missing []string, unknown []string) error {
+
+	if len(errors) > 0 || len(missing) > 0 || len(unknown) > 0 {
+		return &DeserializationError{
+			Errors:            errors,
+			MissingFieldnames: missing,
+			UnknownFieldnames: unknown,
+		}
+	}
+
+	return nil
+
+}
+
+// DeserializationError represents multiple errors encountered during deserialization
+type DeserializationError struct {
+	Errors            []error
+	MissingFieldnames []string
+	UnknownFieldnames []string
+}
+
+func (z DeserializationError) Error() string {
+	texts := []string{}
+	for _, err := range z.Errors {
+		texts = append(texts, err.Error())
+	}
+	for _, field := range z.MissingFieldnames {
+		texts = append(texts, fmt.Sprintf("Missing field: %s", field))
+	}
+	for _, field := range z.UnknownFieldnames {
+		texts = append(texts, fmt.Sprintf("Unknown field: %s", field))
+	}
+	return strings.Join(texts, "\n")
 }
 
 func kvGet(id uint64, b Bucket) (map[string]string, bool) {
@@ -126,7 +161,7 @@ func kvSave(name string, value DataObject, tx Transaction) error {
 		value.SetID(id)
 	}
 
-	oldValues, _ := kvGet(value.GetID(), b)
+	oldValues, update := kvGet(value.GetID(), b)
 	newValues := value.Serialize()
 	newIndexes := value.IndexKeys()
 
@@ -136,16 +171,22 @@ func kvSave(name string, value DataObject, tx Transaction) error {
 	}
 
 	// create old index values
-	value.Clear()
-	if err := value.Deserialize(oldValues); err != nil {
-		return err
-	}
-	oldIndexes := value.IndexKeys()
+	oldIndexes := make(map[string][]string)
 
-	// put new values back
-	value.Clear()
-	if err := value.Deserialize(newValues); err != nil {
-		return err
+	if update {
+
+		value.Clear()
+		if err := value.Deserialize(oldValues); err != nil {
+			return err
+		}
+		oldIndexes = value.IndexKeys()
+
+		// put new values back
+		value.Clear()
+		if err := value.Deserialize(newValues); err != nil {
+			return err
+		}
+
 	}
 
 	// save indexes
@@ -233,10 +274,6 @@ func kvKeyElementID(k []byte, index int) (uint64, error) {
 	return strconv.ParseUint(kvKeyElement(k, index), 10, 64)
 }
 
-func kvKey(id uint64) string {
-	return fmt.Sprintf("%05d", id)
-}
-
 func kvMinKey(id uint64) string {
 	return kvKey(id)
 }
@@ -245,6 +282,40 @@ func kvNxtKey(id uint64) string {
 	return kvKey(id + 1)
 }
 
+func kvKey(id uint64) string {
+	return fmt.Sprintf("%05d", id)
+}
+
 func kvKeys(elements []string) string {
 	return strings.Join(elements, chSep)
+}
+
+func kvBucketKeyEncode(id uint64, fieldname string) []byte {
+	return []byte(kvKeys([]string{kvKey(id), fieldname}))
+}
+
+func kvBucketKeyDecode(key []byte) (uint64, string, error) {
+	fields := strings.Split(string(key), chSep)
+	id, err := strconv.ParseUint(fields[0], 10, 64)
+	if len(fields) != 2 {
+		err = fmt.Errorf("Invalid key, must have two fields: %s", key)
+	}
+	return id, fields[1], err
+}
+
+func kvIndexKeyEncode(fields ...string) []byte {
+	return []byte(kvKeys(fields))
+}
+
+func kvIndexKeyDecode(key []byte) []string {
+	return strings.Split(string(key), chSep)
+}
+
+func isStringInArray(a string, b []string) bool {
+	for _, x := range b {
+		if a == x {
+			return true
+		}
+	}
+	return false
 }

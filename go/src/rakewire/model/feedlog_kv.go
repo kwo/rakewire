@@ -40,6 +40,12 @@ const (
 	feedlogNewEntries    = "NewEntries"
 )
 
+var (
+	feedlogAllFields = []string{
+		feedlogID, feedlogFeedID, feedlogDuration, feedlogResult, feedlogResultMessage, feedlogStartTime, feedlogURL, feedlogContentLength, feedlogContentType, feedlogETag, feedlogLastModified, feedlogStatusCode, feedlogUsesGzip, feedlogFlavor, feedlogGenerator, feedlogTitle, feedlogLastUpdated, feedlogEntryCount, feedlogNewEntries,
+	}
+)
+
 // GetID return the primary key of the object.
 func (z *FeedLog) GetID() uint64 {
 	return z.ID
@@ -75,6 +81,7 @@ func (z *FeedLog) Clear() {
 }
 
 // Serialize serializes an object to a list of key-values.
+// An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
 func (z *FeedLog) Serialize(flags ...bool) map[string]string {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
@@ -164,8 +171,13 @@ func (z *FeedLog) Serialize(flags ...bool) map[string]string {
 }
 
 // Deserialize serializes an object to a list of key-values.
-func (z *FeedLog) Deserialize(values map[string]string) error {
+// An optional flag, when set, will return an error if unknown keys are contained in the values.
+func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
+	flagUnknownCheck := len(flags) > 0 && flags[0]
+
 	var errors []error
+	var missing []string
+	var unknown []string
 
 	z.ID = func(fieldName string, values map[string]string, errors []error) uint64 {
 		result, err := strconv.ParseUint(values[fieldName], 10, 64)
@@ -176,6 +188,10 @@ func (z *FeedLog) Deserialize(values map[string]string) error {
 		return uint64(result)
 	}(feedlogID, values, errors)
 
+	if !(z.ID != 0) {
+		missing = append(missing, feedlogID)
+	}
+
 	z.FeedID = func(fieldName string, values map[string]string, errors []error) uint64 {
 		result, err := strconv.ParseUint(values[fieldName], 10, 64)
 		if err != nil {
@@ -184,6 +200,10 @@ func (z *FeedLog) Deserialize(values map[string]string) error {
 		}
 		return uint64(result)
 	}(feedlogFeedID, values, errors)
+
+	if !(z.FeedID != 0) {
+		missing = append(missing, feedlogFeedID)
+	}
 
 	z.Duration = func(fieldName string, values map[string]string, errors []error) time.Duration {
 		var result time.Duration
@@ -296,10 +316,14 @@ func (z *FeedLog) Deserialize(values map[string]string) error {
 		return int(result)
 	}(feedlogNewEntries, values, errors)
 
-	if len(errors) > 0 {
-		return errors[0]
+	if flagUnknownCheck {
+		for fieldname := range values {
+			if !isStringInArray(fieldname, feedlogAllFields) {
+				unknown = append(unknown, fieldname)
+			}
+		}
 	}
-	return nil
+	return newDeserializationError(errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.
@@ -324,8 +348,4 @@ func (z *FeedLog) IndexKeys() map[string][]string {
 	}
 
 	return result
-}
-
-func (z *FeedLog) isValid() bool {
-	return z.ID != 0 && z.FeedID != 0
 }

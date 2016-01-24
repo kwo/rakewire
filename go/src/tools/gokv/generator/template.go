@@ -34,6 +34,12 @@ const (
 {{end}}
 )
 
+var (
+	{{$structure.NameLower}}AllFields = []string{
+	  {{range $index, $field := .Fields}}{{$structure.NameLower}}{{.Name}},{{end}}
+	}
+)
+
 // GetID return the primary key of the object.
 func (z *{{.Name}}) GetID() uint64 {
 	return z.ID
@@ -51,6 +57,7 @@ func (z *{{.Name}}) Clear() {
 }
 
 // Serialize serializes an object to a list of key-values.
+// An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
 func (z *{{.Name}}) Serialize(flags ...bool) map[string]string {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
@@ -63,15 +70,29 @@ func (z *{{.Name}}) Serialize(flags ...bool) map[string]string {
 }
 
 // Deserialize serializes an object to a list of key-values.
-func (z *{{.Name}}) Deserialize(values map[string]string) error {
+// An optional flag, when set, will return an error if unknown keys are contained in the values.
+func (z *{{.Name}}) Deserialize(values map[string]string, flags ...bool) error {
+	flagUnknownCheck := len(flags) > 0 && flags[0]
+	{{$struct := .}}
 	var errors []error
+	var missing []string
+	var unknown []string
 	{{range $index, $field := .Fields}}
 		z.{{.Name}} = {{.DeserializeCommand}}
+		{{if .Required}}
+		if !({{.ZeroTest}}) {
+			missing = append(missing, {{$struct.NameLower}}{{.Name}})
+		}
+		{{end}}
 	{{end}}
-	if len(errors) > 0 {
-		return errors[0]
+	if flagUnknownCheck {
+		for fieldname := range values {
+			if !isStringInArray(fieldname, {{$struct.NameLower}}AllFields) {
+				unknown = append(unknown, fieldname)
+			}
+		}
 	}
-	return nil
+	return newDeserializationError(errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.
@@ -93,10 +114,6 @@ func (z *{{.Name}}) IndexKeys() map[string][]string {
 	}
 	{{end}}
 	return result
-}
-
-func (z *{{.Name}}) isValid() bool {
-	return {{range $index, $field := .Fields}}{{ if .Required}}{{if ne $index 0}} && {{end}}{{.ZeroTest}}{{end}}{{end}}
 }
 
 {{end}}
