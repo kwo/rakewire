@@ -3,7 +3,7 @@ package reaper
 import (
 	"log"
 	"rakewire/db"
-	m "rakewire/model"
+	"rakewire/model"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -23,7 +23,7 @@ type Configuration struct {
 
 // Service for saving fetch responses back to the database
 type Service struct {
-	Input      chan *m.Feed
+	Input      chan *model.Feed
 	database   db.Database
 	killsignal chan bool
 	running    int32
@@ -34,7 +34,7 @@ type Service struct {
 func NewService(cfg *Configuration, database db.Database) *Service {
 
 	return &Service{
-		Input:      make(chan *m.Feed),
+		Input:      make(chan *model.Feed),
 		database:   database,
 		killsignal: make(chan bool),
 	}
@@ -87,97 +87,104 @@ run:
 
 }
 
-func (z *Service) processResponse(feed *m.Feed) {
+func (z *Service) processResponse(feed *model.Feed) {
 
-	// query previous entries of feed
-	var guIDs []string
-	for _, entry := range feed.Entries {
-		guIDs = append(guIDs, entry.GUID)
-	}
-	dbEntries, err := z.database.GetFeedEntriesFromIDs(feed.ID, guIDs)
-	if err != nil {
-		log.Printf("%-7s %-7s Cannot get previous feed entries %s: %s", logWarn, logName, feed.URL, err.Error())
-		return
-	}
+	z.database.Update(func(tx model.Transaction) error {
 
-	// setIDs, check dates for new entries
-	var mostRecent time.Time
-	newEntryCount := 0
-	for _, entry := range feed.Entries {
-
-		if dbEntry := dbEntries[entry.GUID]; dbEntry == nil {
-
-			// new entry
-			newEntryCount++
-			now := time.Now()
-
-			// prevent entries marks with a future date
-			if entry.Created.IsZero() || entry.Created.After(now) {
-				entry.Created = now
-			}
-			if entry.Updated.IsZero() || entry.Updated.After(now) {
-				entry.Updated = entry.Created
-			}
-
-		} else {
-
-			// old entry
-			entry.ID = dbEntry.ID
-
-			// set if zero and prevent from creeping forward
-			if entry.Created.IsZero() || entry.Created.After(dbEntry.Created) {
-				entry.Created = dbEntry.Created
-			}
-
-			// set if zero and prevent from creeping forward
-			if entry.Updated.IsZero() {
-				entry.Updated = dbEntry.Updated
-			} else if entry.Updated.After(dbEntry.Updated) && entry.Hash() == dbEntry.Hash() {
-				entry.Updated = dbEntry.Updated
-			}
-
+		// query previous entries of feed
+		var guIDs []string
+		for _, entry := range feed.Entries {
+			guIDs = append(guIDs, entry.GUID)
 		}
 
-		if entry.Updated.After(mostRecent) {
-			mostRecent = entry.Updated
+		dbEntries, err := model.EntriesByGUIDs(feed.ID, guIDs, tx)
+		if err != nil {
+			log.Printf("%-7s %-7s Cannot get previous feed entries %s: %s", logWarn, logName, feed.URL, err.Error())
+			return err
 		}
 
-	} // loop entries
+		// setIDs, check dates for new entries
+		var mostRecent time.Time
+		newEntryCount := 0
+		for _, entry := range feed.Entries {
 
-	feed.Attempt.LastUpdated = mostRecent
+			if dbEntry := dbEntries[entry.GUID]; dbEntry == nil {
 
-	// only bump up LastUpdated if mostRecent is after previous time
-	// lastUpdated can move forward if no new entries, if an existing entry has been updated
-	if mostRecent.After(feed.LastUpdated) {
-		feed.LastUpdated = mostRecent
-	}
+				// new entry
+				newEntryCount++
+				now := time.Now()
 
-	if feed.Attempt.Result == m.FetchResultOK {
-		if feed.LastUpdated.IsZero() {
-			feed.LastUpdated = time.Now() // only if new entries?
+				// prevent entries marks with a future date
+				if entry.Created.IsZero() || entry.Created.After(now) {
+					entry.Created = now
+				}
+				if entry.Updated.IsZero() || entry.Updated.After(now) {
+					entry.Updated = entry.Created
+				}
+
+			} else {
+
+				// old entry
+				entry.ID = dbEntry.ID
+
+				// set if zero and prevent from creeping forward
+				if entry.Created.IsZero() || entry.Created.After(dbEntry.Created) {
+					entry.Created = dbEntry.Created
+				}
+
+				// set if zero and prevent from creeping forward
+				if entry.Updated.IsZero() {
+					entry.Updated = dbEntry.Updated
+				} else if entry.Updated.After(dbEntry.Updated) && entry.Hash() == dbEntry.Hash() {
+					entry.Updated = dbEntry.Updated
+				}
+
+			}
+
+			if entry.Updated.After(mostRecent) {
+				mostRecent = entry.Updated
+			}
+
+		} // loop entries
+
+		feed.Attempt.LastUpdated = mostRecent
+
+		// only bump up LastUpdated if mostRecent is after previous time
+		// lastUpdated can move forward if no new entries, if an existing entry has been updated
+		if mostRecent.After(feed.LastUpdated) {
+			feed.LastUpdated = mostRecent
 		}
-	}
 
-	feed.Attempt.EntryCount = len(feed.Entries)
-	feed.Attempt.NewEntries = newEntryCount
+		if feed.Attempt.Result == model.FetchResultOK {
+			if feed.LastUpdated.IsZero() {
+				feed.LastUpdated = time.Now() // only if new entries?
+			}
+		}
 
-	switch feed.Status {
-	case m.FetchResultOK:
-		feed.UpdateFetchTime(feed.LastUpdated)
-	case m.FetchResultRedirect:
-		feed.AdjustFetchTime(1 * time.Second)
-	default: // errors
-		feed.UpdateFetchTime(feed.StatusSince)
-	}
+		feed.Attempt.EntryCount = len(feed.Entries)
+		feed.Attempt.NewEntries = newEntryCount
 
-	// save feed
-	_, err = z.database.FeedSave(feed)
-	if err != nil {
-		log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, feed.URL, err.Error())
-		return
-	}
+		switch feed.Status {
+		case model.FetchResultOK:
+			feed.UpdateFetchTime(feed.LastUpdated)
+		case model.FetchResultRedirect:
+			feed.AdjustFetchTime(1 * time.Second)
+		default: // errors
+			feed.UpdateFetchTime(feed.StatusSince)
+		}
 
-	log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logDebug, logName, feed.Status, feed.Attempt.StatusCode, feed.LastUpdated.Local().Format("02.01.06 15:04"), feed.Attempt.NewEntries, feed.Attempt.EntryCount, feed.URL, feed.StatusMessage)
+		// save feed
+		_, err = feed.Save(tx)
+		if err != nil {
+			log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, feed.URL, err.Error())
+			return err
+		}
+
+		log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logDebug, logName, feed.Status, feed.Attempt.StatusCode, feed.LastUpdated.Local().Format("02.01.06 15:04"), feed.Attempt.NewEntries, feed.Attempt.EntryCount, feed.URL, feed.StatusMessage)
+
+		return nil
+
+	})
 
 }
 
