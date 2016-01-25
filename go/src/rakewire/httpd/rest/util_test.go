@@ -3,9 +3,8 @@ package rest
 import (
 	"io/ioutil"
 	"os"
-	"rakewire/db"
-	"rakewire/db/bolt"
 	"rakewire/logging"
+	"rakewire/model"
 	"testing"
 )
 
@@ -16,33 +15,41 @@ func TestMain(m *testing.M) {
 	os.Exit(status)
 }
 
-func openDatabase(t *testing.T) (*bolt.Service, string) {
+func openTestDatabase(t *testing.T) model.Database {
 
 	f, err := ioutil.TempFile("", "bolt-")
 	if err != nil {
-		t.Fatalf("Error creating tempfile: %s\n", err.Error())
+		t.Fatalf("Cannot acquire temp file: %s", err.Error())
 	}
-	testDatabaseFile := f.Name()
 	f.Close()
+	location := f.Name()
 
-	cfg := db.Configuration{
-		Location: testDatabaseFile,
-	}
-	testDatabase := bolt.NewService(&cfg)
-	err = testDatabase.Start()
+	boltDB, err := model.OpenDatabase(location)
 	if err != nil {
-		t.Fatalf("Cannot open database: %s\n", err.Error())
+		t.Fatalf("Cannot open database: %s", err.Error())
 	}
 
-	return testDatabase, testDatabaseFile
+	// err = boltDB.Update(func(tx model.Transaction) error {
+	// 	return populateDatabase(tx)
+	// })
+	// if err != nil {
+	// 	t.Fatalf("Cannot populate database: %s", err.Error())
+	// }
+
+	return boltDB
 
 }
 
-func closeDatabase(t *testing.T, database *bolt.Service, testDatabaseFile string) {
+func closeTestDatabase(t *testing.T, d model.Database) {
 
-	database.Stop()
-	if err := os.Remove(testDatabaseFile); err != nil {
-		t.Errorf("Cannot delete temp database file: %s", err.Error())
+	location := d.Location()
+
+	if err := model.CloseDatabase(d); err != nil {
+		t.Errorf("Cannot close database: %s", err.Error())
+	}
+
+	if err := os.Remove(location); err != nil {
+		t.Errorf("Cannot remove temp file: %s", err.Error())
 	}
 
 }

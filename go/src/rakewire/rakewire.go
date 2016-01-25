@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"rakewire/config"
-	"rakewire/db/bolt"
 	"rakewire/fetch"
 	"rakewire/httpd"
 	"rakewire/model"
@@ -25,7 +24,7 @@ const (
 )
 
 var (
-	database *bolt.Service
+	database model.Database
 	fetchd   *fetch.Service
 	polld    *pollfeed.Service
 	reaperd  *reaper.Service
@@ -48,25 +47,29 @@ func main() {
 	log.Printf("Build Time: %s\n", model.BuildTime)
 	log.Printf("Build Hash: %s\n", model.BuildHash)
 
-	database = bolt.NewService(&cfg.Database)
+	var err error
+	database, err = model.OpenDatabase(cfg.Database.Location)
+	if err != nil {
+		log.Printf("Cannot open database: %s", err.Error())
+		model.CloseDatabase(database)
+		return
+	}
 	polld = pollfeed.NewService(&cfg.Poll, database)
 	reaperd = reaper.NewService(&cfg.Reaper, database)
 	fetchd := fetch.NewService(&cfg.Fetcher, polld.Output, reaperd.Input)
 	ws = httpd.NewService(&cfg.Httpd, database)
 
 	chErrors := make(chan error, 1)
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 4; i++ {
 		var err error
 		switch i {
 		case 0:
-			err = database.Start()
-		case 1:
 			err = polld.Start()
-		case 2:
+		case 1:
 			err = fetchd.Start()
-		case 3:
+		case 2:
 			err = reaperd.Start()
-		case 4:
+		case 3:
 			err = ws.Start()
 		} // select
 		if err != nil {
@@ -100,7 +103,9 @@ func monitorShutdown(chErrors chan error) {
 	polld.Stop()
 	fetchd.Stop()
 	reaperd.Stop()
-	database.Stop()
+	if err := model.CloseDatabase(database); err != nil {
+		log.Printf("%-7s %-7s Error closing database: %s", logWarn, logName, err.Error())
+	}
 
 	log.Printf("%-7s %-7s done", logInfo, logName)
 

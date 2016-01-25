@@ -1,5 +1,10 @@
 package model
 
+// DatabaseConfiguration configuration for service.
+type DatabaseConfiguration struct {
+	Location string
+}
+
 // Database defines the interface to a key-value store
 type Database interface {
 	Location() string

@@ -11,8 +11,8 @@ func TestRootNotFound(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 
 	apiRest := NewAPI("/api", database)
 	server := httptest.NewServer(apiRest.Router())

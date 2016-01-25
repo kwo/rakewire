@@ -6,7 +6,7 @@
 
  - code restructure
   x move opml to model -> opml_db
-  - use manually managed transactions in database
+  x use manually managed transactions in database
   - create collection classes with groupby and sort functions
   - rename model elements: Feed/Item, Subscription/Entry
  - add subscribers count to user-agent when fetching

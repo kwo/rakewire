@@ -12,8 +12,8 @@ func TestUserGet(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 
 	// add test user
 	user := model.NewUser("testuser")

@@ -6,10 +6,10 @@ import (
 	"io"
 	"os"
 	"path"
-	"rakewire/db"
 	"rakewire/fetch"
 	"rakewire/httpd"
 	"rakewire/logging"
+	"rakewire/model"
 	"rakewire/pollfeed"
 	"rakewire/reaper"
 )
@@ -21,7 +21,7 @@ const (
 
 // Configuration object
 type Configuration struct {
-	Database db.Configuration
+	Database model.DatabaseConfiguration
 	Fetcher  fetch.Configuration
 	Httpd    httpd.Configuration
 	Logging  logging.Configuration
