@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"rakewire/feedparser"
-	m "rakewire/model"
+	"rakewire/model"
 	"sync"
 	"time"
 )
@@ -39,7 +39,7 @@ var (
 
 var (
 	defaultTimeout = time.Second * 20
-	httpUserAgent  = "Rakewire " + m.Version
+	httpUserAgent  = "Rakewire " + model.Version
 )
 
 // Configuration configuration
@@ -52,15 +52,15 @@ type Configuration struct {
 type Service struct {
 	sync.Mutex
 	running bool
-	input   chan *m.Feed
-	output  chan *m.Feed
+	input   chan *model.Feed
+	output  chan *model.Feed
 	workers int
 	latch   sync.WaitGroup
 	client  *http.Client
 }
 
 // NewService create new fetcher service
-func NewService(cfg *Configuration, input chan *m.Feed, output chan *m.Feed) *Service {
+func NewService(cfg *Configuration, input chan *model.Feed, output chan *model.Feed) *Service {
 	timeout, err := time.ParseDuration(cfg.Timeout)
 	if err != nil {
 		timeout = defaultTimeout
@@ -139,11 +139,11 @@ func (z *Service) run(id int) {
 
 }
 
-func (z *Service) processFeed(feed *m.Feed, id int) {
+func (z *Service) processFeed(feed *model.Feed, id int) {
 
 	startTime := time.Now().UTC().Truncate(time.Millisecond)
 	now := startTime.Truncate(time.Second)
-	feed.Attempt = m.NewFeedLog(feed.ID)
+	feed.Attempt = model.NewFeedLog(feed.ID)
 
 	feed.Attempt.URL = feed.URL
 	feed.Attempt.StartTime = now
@@ -197,8 +197,8 @@ func (z *Service) processFeed(feed *m.Feed, id int) {
 
 }
 
-func processFeedOK(feed *m.Feed, rsp *http.Response) {
-	feed.Attempt.Result = m.FetchResultOK
+func processFeedOK(feed *model.Feed, rsp *http.Response) {
+	feed.Attempt.Result = model.FetchResultOK
 	feed.Attempt.ContentType = rsp.Header.Get(hContentType)
 	feed.Attempt.ETag = rsp.Header.Get(hEtag)
 	feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
@@ -207,12 +207,12 @@ func processFeedOK(feed *m.Feed, rsp *http.Response) {
 	feed.LastModified = feed.Attempt.LastModified
 }
 
-func processFeedOKButCannotParse(feed *m.Feed, err error) {
-	feed.Attempt.Result = m.FetchResultFeedError
+func processFeedOKButCannotParse(feed *model.Feed, err error) {
+	feed.Attempt.Result = model.FetchResultFeedError
 	feed.Attempt.ResultMessage = err.Error()
 }
 
-func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
+func processFeedOKAndParse(feed *model.Feed, size int, xmlFeed *feedparser.Feed) {
 	feed.Attempt.ContentLength = size
 	feed.Attempt.Flavor = xmlFeed.Flavor
 	feed.Attempt.Generator = xmlFeed.Generator
@@ -239,29 +239,29 @@ func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
 
 }
 
-func processFeedClientError(feed *m.Feed, err error) {
-	feed.Attempt.Result = m.FetchResultClientError
+func processFeedClientError(feed *model.Feed, err error) {
+	feed.Attempt.Result = model.FetchResultClientError
 	feed.Attempt.ResultMessage = err.Error()
 }
 
-func processFeedServerError(feed *m.Feed, rsp *http.Response) {
-	feed.Attempt.Result = m.FetchResultServerError
+func processFeedServerError(feed *model.Feed, rsp *http.Response) {
+	feed.Attempt.Result = model.FetchResultServerError
 }
 
-func processFeedMovedPermanently(feed *m.Feed, rsp *http.Response) {
-	feed.Attempt.Result = m.FetchResultRedirect
+func processFeedMovedPermanently(feed *model.Feed, rsp *http.Response) {
+	feed.Attempt.Result = model.FetchResultRedirect
 	newURL := rsp.Header.Get(hLocation)
 	feed.Attempt.ResultMessage = fmt.Sprintf("%s moved %s", feed.URL, newURL)
 	feed.URL = newURL // update feed
 }
 
-func processFeedNotModified(feed *m.Feed, rsp *http.Response) {
-	feed.Attempt.Result = m.FetchResultOK
+func processFeedNotModified(feed *model.Feed, rsp *http.Response) {
+	feed.Attempt.Result = model.FetchResultOK
 	feed.Attempt.ETag = rsp.Header.Get(hEtag)
 	feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 }
 
-func newRequest(feed *m.Feed) *http.Request {
+func newRequest(feed *model.Feed) *http.Request {
 	req, _ := http.NewRequest(mGET, feed.URL, nil)
 	req.Header.Set(hUserAgent, httpUserAgent)
 	req.Header.Set(hAcceptEncoding, "gzip")
