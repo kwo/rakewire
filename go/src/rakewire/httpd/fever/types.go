@@ -1,15 +1,5 @@
 package fever
 
-import (
-	"rakewire/db"
-)
-
-// API top level struct
-type API struct {
-	prefix string
-	db     db.Database
-}
-
 // Response defines the json/xml response return by requests.
 type Response struct {
 	Version       int          `json:"api_version"`

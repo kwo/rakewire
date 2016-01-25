@@ -1,19 +1,19 @@
 package fever
 
 import (
-	m "rakewire/model"
+	"rakewire/model"
 	"strconv"
 	"strings"
 )
 
-func (z *API) getFeeds(userID uint64) ([]*Feed, []*FeedGroup, error) {
+func (z *API) getFeeds(userID uint64, tx model.Transaction) ([]*Feed, []*FeedGroup, error) {
 
-	mGroups, err := z.db.GroupGetAllByUser(userID)
+	mGroups, err := model.GroupsByUser(userID, tx)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	mFeeds, err := z.db.UserFeedGetAllByUser(userID)
+	mFeeds, err := model.UserFeedsByUser(userID, tx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,14 +38,14 @@ func (z *API) getFeeds(userID uint64) ([]*Feed, []*FeedGroup, error) {
 
 }
 
-func (z *API) getGroups(userID uint64) ([]*Group, []*FeedGroup, error) {
+func (z *API) getGroups(userID uint64, tx model.Transaction) ([]*Group, []*FeedGroup, error) {
 
-	mGroups, err := z.db.GroupGetAllByUser(userID)
+	mGroups, err := model.GroupsByUser(userID, tx)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	mFeeds, err := z.db.UserFeedGetAllByUser(userID)
+	mFeeds, err := model.UserFeedsByUser(userID, tx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -65,7 +65,7 @@ func (z *API) getGroups(userID uint64) ([]*Group, []*FeedGroup, error) {
 
 }
 
-func makeFeedGroups(mGroups []*m.Group, mFeeds []*m.UserFeed) []*FeedGroup {
+func makeFeedGroups(mGroups []*model.Group, mFeeds []*model.UserFeed) []*FeedGroup {
 
 	contains := func(i uint64, a []uint64) bool {
 		for _, x := range a {

@@ -12,21 +12,24 @@ func TestUnreadIDs(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 
 	var user *model.User
 	err := database.Select(func(tx model.Transaction) error {
 		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
+		if err != nil {
+			return err
 		}
-		return err
+		user = u
+		return nil
 	})
 	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
+		t.Fatalf("Error: %s", err.Error())
+	} else if user == nil {
+		t.Fatal("User not found")
 	}
 
 	var expectedNumberItems = 24
@@ -91,8 +94,8 @@ func TestSavedIDs(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 

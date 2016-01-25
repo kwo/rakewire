@@ -1,12 +1,12 @@
 package fever
 
 import (
-	m "rakewire/model"
+	"rakewire/model"
 )
 
-func (z *API) getItemsAll(userID uint64) ([]*Item, error) {
+func (z *API) getItemsAll(userID uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := z.db.UserEntryGetNext(userID, 0, 0)
+	entries, err := model.UserEntryGetNext(userID, 0, 0, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -20,9 +20,9 @@ func (z *API) getItemsAll(userID uint64) ([]*Item, error) {
 
 }
 
-func (z *API) getItemsNext(userID uint64, minID uint64) ([]*Item, error) {
+func (z *API) getItemsNext(userID uint64, minID uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := z.db.UserEntryGetNext(userID, minID, 50)
+	entries, err := model.UserEntryGetNext(userID, minID, 50, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -36,9 +36,9 @@ func (z *API) getItemsNext(userID uint64, minID uint64) ([]*Item, error) {
 
 }
 
-func (z *API) getItemsPrev(userID uint64, maxID uint64) ([]*Item, error) {
+func (z *API) getItemsPrev(userID uint64, maxID uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := z.db.UserEntryGetPrev(userID, maxID, 50)
+	entries, err := model.UserEntryGetPrev(userID, maxID, 50, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -52,9 +52,9 @@ func (z *API) getItemsPrev(userID uint64, maxID uint64) ([]*Item, error) {
 
 }
 
-func (z *API) getItemsByIds(userID uint64, ids []uint64) ([]*Item, error) {
+func (z *API) getItemsByIds(userID uint64, ids []uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := z.db.UserEntryGetByID(userID, ids)
+	entries, err := model.UserEntriesByUser(userID, ids, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (z *API) getItemsByIds(userID uint64, ids []uint64) ([]*Item, error) {
 
 }
 
-func toItem(entry *m.UserEntry) *Item {
+func toItem(entry *model.UserEntry) *Item {
 	return &Item{
 		ID:         entry.ID,
 		UserFeedID: entry.UserFeedID,

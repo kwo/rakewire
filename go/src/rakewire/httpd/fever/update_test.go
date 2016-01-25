@@ -10,8 +10,8 @@ func TestMark(t *testing.T) {
 
 	t.SkipNow()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 

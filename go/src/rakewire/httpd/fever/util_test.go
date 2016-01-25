@@ -9,12 +9,9 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"rakewire/db"
-	"rakewire/db/bolt"
 	"rakewire/logging"
 	"rakewire/middleware"
 	"rakewire/model"
-	m "rakewire/model"
 	"strings"
 	"testing"
 	"time"
@@ -31,12 +28,12 @@ func TestMain(m *testing.M) {
 	os.Exit(status)
 }
 
-func newServer(database *bolt.Service) *httptest.Server {
+func newServer(database model.Database) *httptest.Server {
 	apiFever := NewAPI("/fever", database)
 	return httptest.NewServer(middleware.Adapt(apiFever.Router(), middleware.NoCache(), gorillaHandlers.CompressHandler))
 }
 
-func makeRequest(user *m.User, target string, formValues ...string) ([]byte, error) {
+func makeRequest(user *model.User, target string, formValues ...string) ([]byte, error) {
 
 	values := url.Values{}
 	if user != nil {
@@ -87,76 +84,86 @@ func makeRequest(user *m.User, target string, formValues ...string) ([]byte, err
 
 }
 
-func openDatabase(t *testing.T) (*bolt.Service, string) {
+func openTestDatabase(t *testing.T) model.Database {
 
 	f, err := ioutil.TempFile("", "bolt-")
 	if err != nil {
-		t.Fatalf("Error creating tempfile: %s\n", err.Error())
+		t.Fatalf("Cannot acquire temp file: %s", err.Error())
 	}
-	testDatabaseFile := f.Name()
 	f.Close()
+	location := f.Name()
 
-	cfg := db.Configuration{
-		Location: testDatabaseFile,
-	}
-	testDatabase := bolt.NewService(&cfg)
-	err = testDatabase.Start()
+	boltDB, err := model.OpenDatabase(location)
 	if err != nil {
-		t.Fatalf("Cannot open database: %s\n", err.Error())
+		t.Fatalf("Cannot open database: %s", err.Error())
 	}
 
-	if err := populateDatabase(testDatabase); err != nil {
-		t.Fatalf("Cannot populate database: %s", err.Error())
-	}
-
-	return testDatabase, testDatabaseFile
-
-}
-
-func closeDatabase(t *testing.T, database *bolt.Service, testDatabaseFile string) {
-
-	database.Stop()
-	if err := os.Remove(testDatabaseFile); err != nil {
-		t.Errorf("Cannot delete temp database file: %s", err.Error())
-	}
-
-}
-
-func populateDatabase(database *bolt.Service) error {
-
-	// add test user
-	user := m.NewUser(testUsername)
-	user.SetPassword("abcdefg")
-
-	err := database.Update(func(tx model.Transaction) error {
-		return user.Save(tx)
+	err = boltDB.Update(func(tx model.Transaction) error {
+		return populateDatabase(tx)
 	})
 	if err != nil {
+		t.Fatalf("Cannot populate database: %s", err.Error())
+	}
+	// err = boltDB.Select(func(tx model.Transaction) error {
+	// 	b := tx.Bucket("Data").Bucket("User")
+	// 	b.ForEach(func(k, v []byte) error {
+	// 		t.Logf("user %s: %s", k, v)
+	// 		return nil
+	// 	})
+	// 	return nil
+	// })
+
+	return boltDB
+
+}
+
+func closeTestDatabase(t *testing.T, d model.Database) {
+
+	location := d.Location()
+
+	if err := model.CloseDatabase(d); err != nil {
+		t.Errorf("Cannot close database: %s", err.Error())
+	}
+
+	if err := os.Remove(location); err != nil {
+		t.Errorf("Cannot remove temp file: %s", err.Error())
+	}
+
+}
+
+func populateDatabase(tx model.Transaction) error {
+
+	// add test user
+	user := model.NewUser(testUsername)
+	user.SetPassword("abcdefg")
+	if err := user.Save(tx); err != nil {
 		return err
 	}
 
 	// add test groups
-	mGroups := []*m.Group{}
+	mGroups := []*model.Group{}
 	for i := 0; i < 2; i++ {
-		g := m.NewGroup(user.ID, fmt.Sprintf("Group%d", i))
+		g := model.NewGroup(user.ID, fmt.Sprintf("Group%d", i))
 		mGroups = append(mGroups, g)
-		if err := database.GroupSave(g); err != nil {
+		if err := g.Save(tx); err != nil {
 			return err
 		}
 	}
 
 	// add test feeds
-	mFeeds := []*m.Feed{}
-	mUserFeeds := []*m.UserFeed{}
+	mFeeds := []*model.Feed{}
+	mUserFeeds := []*model.UserFeed{}
 	for i := 0; i < 4; i++ {
-		f := m.NewFeed(fmt.Sprintf("http://localhost%d", i))
-		if _, err := database.FeedSave(f); err != nil {
+		f := model.NewFeed(fmt.Sprintf("http://localhost%d", i))
+		if _, err := f.Save(tx); err != nil {
 			return err
 		}
 		mFeeds = append(mFeeds, f)
-		uf := m.NewUserFeed(user.ID, f.ID)
+		uf := model.NewUserFeed(user.ID, f.ID)
 		uf.GroupIDs = append(uf.GroupIDs, mGroups[i%2].ID)
-		database.UserFeedSave(uf)
+		if err := uf.Save(tx); err != nil {
+			return err
+		}
 		mUserFeeds = append(mUserFeeds, uf)
 	}
 
@@ -164,20 +171,20 @@ func populateDatabase(database *bolt.Service) error {
 	for _, f := range mFeeds {
 		now := time.Now().Truncate(time.Second)
 		for i := 0; i < 10; i++ {
-			entry := m.NewEntry(f.ID, fmt.Sprintf("Entry%d", i))
+			entry := model.NewEntry(f.ID, fmt.Sprintf("Entry%d", i))
 			entry.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
 			entry.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
 			f.Entries = append(f.Entries, entry)
 		}
-		f.Attempt = m.NewFeedLog(f.ID)
+		f.Attempt = model.NewFeedLog(f.ID)
 		f.Attempt.StartTime = now
-		if _, err := database.FeedSave(f); err != nil {
+		if _, err := f.Save(tx); err != nil {
 			return err
 		}
 	}
 
 	// mark entries read
-	userEntries, err := database.UserEntryGetNext(user.ID, 0, 0)
+	userEntries, err := model.UserEntryGetNext(user.ID, 0, 0, tx)
 	if err != nil {
 		return err
 	}
@@ -188,7 +195,7 @@ func populateDatabase(database *bolt.Service) error {
 		ue.IsRead = ue.Updated.Before(tRead)
 		ue.IsStar = ue.Updated.Before(tStar)
 	}
-	if err := database.UserEntrySave(userEntries); err != nil {
+	if err := model.UserEntriesSave(userEntries, tx); err != nil {
 		return err
 	}
 

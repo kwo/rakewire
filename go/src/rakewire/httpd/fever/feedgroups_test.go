@@ -13,26 +13,30 @@ func TestGroups(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 
 	var user *model.User
+	var mUserFeeds []*model.UserFeed
 	err := database.Select(func(tx model.Transaction) error {
 		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
+		if err != nil {
+			return err
 		}
-		return err
+		user = u
+		ufs, err := model.UserFeedsByUser(user.ID, tx)
+		if err != nil {
+			return err
+		}
+		mUserFeeds = ufs
+		return nil
 	})
 	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
-	}
-
-	mUserFeeds, err := database.UserFeedGetAllByUser(user.ID)
-	if err != nil {
-		t.Fatalf("Cannot get user feeds: %s", err.Error())
+		t.Fatalf("Error: %s", err.Error())
+	} else if user == nil {
+		t.Fatal("User not found")
 	}
 
 	// make request
@@ -107,26 +111,30 @@ func TestFeeds(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 
 	var user *model.User
+	var mUserFeeds []*model.UserFeed
 	err := database.Select(func(tx model.Transaction) error {
 		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
+		if err != nil {
+			return err
 		}
-		return err
+		user = u
+		ufs, err := model.UserFeedsByUser(user.ID, tx)
+		if err != nil {
+			return err
+		}
+		mUserFeeds = ufs
+		return nil
 	})
 	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
-	}
-
-	mUserFeeds, err := database.UserFeedGetAllByUser(user.ID)
-	if err != nil {
-		t.Fatalf("Cannot get user feeds: %s", err.Error())
+		t.Fatalf("Error: %s", err.Error())
+	} else if user == nil {
+		t.Fatal("User not found")
 	}
 
 	target := server.URL + "/fever?api&feeds"

@@ -12,10 +12,10 @@ func TestAuth(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
+	database := openTestDatabase(t)
 	server := newServer(database)
 	defer server.Close()
-	defer closeDatabase(t, database, databaseFile)
+	defer closeTestDatabase(t, database)
 
 	var user *model.User
 	err := database.Select(func(tx model.Transaction) error {
@@ -79,8 +79,8 @@ func TestBadAuth(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 
@@ -118,8 +118,8 @@ func TestXmlUnsupported(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 

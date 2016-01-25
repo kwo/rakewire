@@ -143,7 +143,7 @@ func UserEntriesStarredByUser(userID uint64, tx Transaction) ([]*UserEntry, erro
 			if err := userentry.Deserialize(data); err != nil {
 				return nil, err
 			}
-			if data, ok := kvGet(ue.EntryID, bEntry); ok {
+			if data, ok := kvGet(userentry.EntryID, bEntry); ok {
 				entry := &Entry{}
 				if err := entry.Deserialize(data); err != nil {
 					return nil, err
@@ -195,7 +195,7 @@ func UserEntriesUnreadByUser(userID uint64, tx Transaction) ([]*UserEntry, error
 			if err := userentry.Deserialize(data); err != nil {
 				return nil, err
 			}
-			if data, ok := kvGet(ue.EntryID, bEntry); ok {
+			if data, ok := kvGet(userentry.EntryID, bEntry); ok {
 				entry := &Entry{}
 				if err := entry.Deserialize(data); err != nil {
 					return nil, err
@@ -281,7 +281,7 @@ func UserEntryGetNext(userID uint64, minID uint64, count int, tx Transaction) ([
 				if err := entry.Deserialize(data); err != nil {
 					return nil, err
 				}
-				ue.Entry = entry
+				userentry.Entry = entry
 				userentries = append(userentries, userentry)
 			}
 		}

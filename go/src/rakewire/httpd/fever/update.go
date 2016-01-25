@@ -2,12 +2,12 @@ package fever
 
 import (
 	"fmt"
-	m "rakewire/model"
+	"rakewire/model"
 	"strconv"
 	"time"
 )
 
-func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string) error {
+func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string, tx model.Transaction) error {
 
 	if idStr == "-1" {
 		return fmt.Errorf("sparks not supported")
@@ -30,7 +30,7 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string) err
 	switch mark {
 	case "item":
 
-		items, err := z.db.UserEntryGetByID(userID, []uint64{id})
+		items, err := model.UserEntriesByUser(userID, []uint64{id}, tx)
 		if err != nil {
 			return err
 		}
@@ -52,7 +52,7 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string) err
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
 
-		if err := z.db.UserEntrySave([]*m.UserEntry{item}); err != nil {
+		if err := model.UserEntriesSave([]*model.UserEntry{item}, tx); err != nil {
 			return err
 		}
 
@@ -60,7 +60,7 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string) err
 		if pAs != "read" {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		if err := z.db.UserEntryUpdateReadByFeed(userID, id, maxTime, true); err != nil {
+		if err := model.UserEntriesUpdateReadByFeed(userID, id, maxTime, true, tx); err != nil {
 			return err
 		}
 
@@ -68,7 +68,7 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string) err
 		if pAs != "read" {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		if err := z.db.UserEntryUpdateReadByGroup(userID, id, maxTime, true); err != nil {
+		if err := model.UserEntriesUpdateReadByGroup(userID, id, maxTime, true, tx); err != nil {
 			return err
 		}
 

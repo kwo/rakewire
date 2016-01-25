@@ -5,7 +5,6 @@ import (
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"rakewire/db"
 	"rakewire/model"
 )
 
@@ -17,11 +16,17 @@ const (
 )
 
 // NewAPI creates a new Fever API instance
-func NewAPI(prefix string, db db.Database) *API {
+func NewAPI(prefix string, db model.Database) *API {
 	return &API{
 		prefix: prefix,
 		db:     db,
 	}
+}
+
+// API top level struct
+type API struct {
+	prefix string
+	db     model.Database
 }
 
 // Router returns the top-level Fever router
@@ -53,115 +58,117 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 		Version: 3,
 	}
 
-	var user *model.User
-	if apiKey := req.PostFormValue(AuthParam); apiKey != "" {
-		z.db.Select(func(tx model.Transaction) error {
-			u, err := model.UserByFeverHash(apiKey, tx)
-			if err == nil && u != nil {
-				rsp.Authorized = 1
-				log.Printf("%-7s %-7s authorized: %s", logDebug, logName, u.Username)
-				user = u
-			}
-			return err
-		})
-	}
+	z.db.Update(func(tx model.Transaction) error {
 
-	log.Printf("%-7s %-7s request query: %v", logDebug, logName, req.URL.Query())
-	log.Printf("%-7s %-7s request form:  %v", logDebug, logName, req.PostForm)
-
-	if rsp.Authorized == 1 {
-
-		for k := range req.URL.Query() {
-			switch k {
-
-			case "api":
-				startTime, err := z.db.FeedLogGetLastFetchTime()
-				if err == nil {
-					rsp.LastRefreshed = startTime.Unix()
-				} else {
-					log.Printf("%-7s %-7s error retrieving last feedlog fetch time: %s", logWarn, logName, err.Error())
+		var user *model.User
+		if apiKey := req.PostFormValue(AuthParam); apiKey != "" {
+			z.db.Select(func(tx model.Transaction) error {
+				u, err := model.UserByFeverHash(apiKey, tx)
+				if err == nil && u != nil {
+					rsp.Authorized = 1
+					log.Printf("%-7s %-7s authorized: %s", logDebug, logName, u.Username)
+					user = u
 				}
-
-				uMark := req.PostFormValue("mark")
-				uAs := req.PostFormValue("as")
-				uID := req.PostFormValue("id")
-				uBefore := req.PostFormValue("before")
-				if uMark != "" {
-					if err := z.updateItems(user.ID, uMark, uAs, uID, uBefore); err != nil {
-						log.Printf("%-7s %-7s error updating items: %s", logWarn, logName, err.Error())
-					}
-				}
-
-			case "feeds":
-				if feeds, feedGroups, err := z.getFeeds(user.ID); err == nil {
-					rsp.Feeds = feeds
-					rsp.FeedGroups = feedGroups
-				} else {
-					log.Printf("%-7s %-7s error retrieving feeds and feed_groups: %s", logWarn, logName, err.Error())
-				}
-
-			case "groups":
-				if groups, feedGroups, err := z.getGroups(user.ID); err == nil {
-					rsp.Groups = groups
-					rsp.FeedGroups = feedGroups
-				} else {
-					log.Printf("%-7s %-7s error retrieving groups and feed_groups: %s", logWarn, logName, err.Error())
-				}
-
-			case "items":
-				if count, err := z.db.UserEntryGetTotalForUser(user.ID); err == nil {
-					rsp.ItemCount = count
-				} else {
-					log.Printf("%-7s %-7s error retrieving item count: %s", logWarn, logName, err.Error())
-				}
-				if id := parseID(req.URL.Query(), "since_id"); id > 0 {
-					items, err := z.getItemsNext(user.ID, id)
-					if err == nil {
-						rsp.Items = items
-					} else {
-						log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
-					}
-				} else if id := parseID(req.URL.Query(), "max_id"); id > 0 {
-					items, err := z.getItemsPrev(user.ID, id)
-					if err == nil {
-						rsp.Items = items
-					} else {
-						log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
-					}
-				} else if ids := parseIDArray(req.URL.Query(), "with_ids"); ids != nil {
-					items, err := z.getItemsByIds(user.ID, ids)
-					if err == nil {
-						rsp.Items = items
-					} else {
-						log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
-					}
-				} else {
-					items, err := z.getItemsAll(user.ID)
-					if err == nil {
-						rsp.Items = items
-					} else {
-						log.Printf("%-7s %-7s error retrieving items all: %s", logWarn, logName, err.Error())
-					}
-				}
-
-			case "unread_item_ids":
-				if itemIDs, err := z.getUnreadItemIDs(user.ID); err == nil {
-					rsp.UnreadItemIDs = itemIDs
-				} else {
-					log.Printf("%-7s %-7s error retrieving unread item IDs: %s", logWarn, logName, err.Error())
-				}
-
-			case "saved_item_ids":
-				if itemIDs, err := z.getSavedItemIDs(user.ID); err == nil {
-					rsp.SavedItemIDs = itemIDs
-				} else {
-					log.Printf("%-7s %-7s error retrieving saved item IDs: %s", logWarn, logName, err.Error())
-				}
-
-			}
+				return err
+			})
 		}
 
-	} // authorized
+		log.Printf("%-7s %-7s request query: %v", logDebug, logName, req.URL.Query())
+		log.Printf("%-7s %-7s request form:  %v", logDebug, logName, req.PostForm)
+
+		if rsp.Authorized == 1 {
+
+			for k := range req.URL.Query() {
+				switch k {
+
+				case "api":
+					startTime, err := model.LastFetchTime(tx)
+					if err == nil {
+						rsp.LastRefreshed = startTime.Unix()
+					} else {
+						log.Printf("%-7s %-7s error retrieving last feedlog fetch time: %s", logWarn, logName, err.Error())
+					}
+
+					uMark := req.PostFormValue("mark")
+					uAs := req.PostFormValue("as")
+					uID := req.PostFormValue("id")
+					uBefore := req.PostFormValue("before")
+					if uMark != "" {
+						if err := z.updateItems(user.ID, uMark, uAs, uID, uBefore, tx); err != nil {
+							log.Printf("%-7s %-7s error updating items: %s", logWarn, logName, err.Error())
+						}
+					}
+
+				case "feeds":
+					if feeds, feedGroups, err := z.getFeeds(user.ID, tx); err == nil {
+						rsp.Feeds = feeds
+						rsp.FeedGroups = feedGroups
+					} else {
+						log.Printf("%-7s %-7s error retrieving feeds and feed_groups: %s", logWarn, logName, err.Error())
+					}
+
+				case "groups":
+					if groups, feedGroups, err := z.getGroups(user.ID, tx); err == nil {
+						rsp.Groups = groups
+						rsp.FeedGroups = feedGroups
+					} else {
+						log.Printf("%-7s %-7s error retrieving groups and feed_groups: %s", logWarn, logName, err.Error())
+					}
+
+				case "items":
+					rsp.ItemCount = model.UserEntryTotalByUser(user.ID, tx)
+					if id := parseID(req.URL.Query(), "since_id"); id > 0 {
+						items, err := z.getItemsNext(user.ID, id, tx)
+						if err == nil {
+							rsp.Items = items
+						} else {
+							log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
+						}
+					} else if id := parseID(req.URL.Query(), "max_id"); id > 0 {
+						items, err := z.getItemsPrev(user.ID, id, tx)
+						if err == nil {
+							rsp.Items = items
+						} else {
+							log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
+						}
+					} else if ids := parseIDArray(req.URL.Query(), "with_ids"); ids != nil {
+						items, err := z.getItemsByIds(user.ID, ids, tx)
+						if err == nil {
+							rsp.Items = items
+						} else {
+							log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
+						}
+					} else {
+						items, err := z.getItemsAll(user.ID, tx)
+						if err == nil {
+							rsp.Items = items
+						} else {
+							log.Printf("%-7s %-7s error retrieving items all: %s", logWarn, logName, err.Error())
+						}
+					}
+
+				case "unread_item_ids":
+					if itemIDs, err := z.getUnreadItemIDs(user.ID, tx); err == nil {
+						rsp.UnreadItemIDs = itemIDs
+					} else {
+						log.Printf("%-7s %-7s error retrieving unread item IDs: %s", logWarn, logName, err.Error())
+					}
+
+				case "saved_item_ids":
+					if itemIDs, err := z.getSavedItemIDs(user.ID, tx); err == nil {
+						rsp.SavedItemIDs = itemIDs
+					} else {
+						log.Printf("%-7s %-7s error retrieving saved item IDs: %s", logWarn, logName, err.Error())
+					}
+
+				}
+			}
+
+		} // authorized
+
+		return nil
+
+	})
 
 	w.Header().Set(hContentType, mimeJSON)
 	w.WriteHeader(http.StatusOK)

@@ -10,8 +10,8 @@ func TestItemsAll(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 
@@ -76,8 +76,8 @@ func TestItemsNext(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 
@@ -143,8 +143,8 @@ func TestItemsPrev(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 
@@ -210,8 +210,8 @@ func TestItemsByID(t *testing.T) {
 
 	t.Parallel()
 
-	database, databaseFile := openDatabase(t)
-	defer closeDatabase(t, database, databaseFile)
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
 
