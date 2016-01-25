@@ -89,7 +89,7 @@ run:
 
 func (z *Service) processResponse(feed *model.Feed) {
 
-	z.database.Update(func(tx model.Transaction) error {
+	err := z.database.Update(func(tx model.Transaction) error {
 
 		// query previous entries of feed
 		var guIDs []string
@@ -185,6 +185,10 @@ func (z *Service) processResponse(feed *model.Feed) {
 		return nil
 
 	})
+
+	if err != nil {
+		log.Printf("%-7s %-7s Error processing feed: %s", logWarn, logName, err.Error())
+	}
 
 }
 
