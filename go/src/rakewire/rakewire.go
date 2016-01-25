@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -35,25 +34,11 @@ var (
 
 func main() {
 
-	var debug = flag.Bool("debug", false, "run in debug mode")
-	var trace = flag.Bool("trace", false, "run in trace mode, implies debug")
-	flag.Parse()
-
 	cfg := config.GetConfig()
 	if cfg == nil {
 		log.Printf("abort! no config file found at %s\n", config.GetConfigFileLocation())
 		os.Exit(1)
 		return
-	}
-
-	if *debug {
-		cfg.Logging.Level = "DEBUG"
-		cfg.Httpd.UseLocal = true
-		cfg.Httpd.UseLegacy = true
-	}
-	if *trace {
-		cfg.Logging.Level = "TRACE"
-		cfg.Httpd.UseLocal = true
 	}
 
 	// initialize logging
@@ -62,12 +47,6 @@ func main() {
 	log.Printf("Rakewire %s\n", model.Version)
 	log.Printf("Build Time: %s\n", model.BuildTime)
 	log.Printf("Build Hash: %s\n", model.BuildHash)
-	if *debug {
-		log.Printf("%-7s %-7s debug mode enabled", logDebug, logName)
-	}
-	if *trace {
-		log.Printf("%-7s %-7s trace mode enabled", logTrace, logName)
-	}
 
 	database = bolt.NewService(&cfg.Database)
 	polld = pollfeed.NewService(&cfg.Poll, database)
