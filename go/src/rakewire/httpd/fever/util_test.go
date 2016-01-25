@@ -175,8 +175,8 @@ func populateDatabase(tx model.Transaction) error {
 		}
 	}
 
-	// mark items read
-	entries, err := model.EntryGetNext(user.ID, 0, 0, tx)
+	// mark entries read
+	entries, err := model.EntriesGetNext(user.ID, 0, 0, tx)
 	if err != nil {
 		return err
 	}

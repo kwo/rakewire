@@ -242,8 +242,8 @@ func EntriesByUser(userID uint64, ids []uint64, tx Transaction) ([]*Entry, error
 
 }
 
-// EntryGetNext retrieves the next X user items for a user.
-func EntryGetNext(userID uint64, minID uint64, count int, tx Transaction) ([]*Entry, error) {
+// EntriesGetNext retrieves the next X user items for a user.
+func EntriesGetNext(userID uint64, minID uint64, count int, tx Transaction) ([]*Entry, error) {
 
 	var entries []*Entry
 
@@ -296,8 +296,8 @@ func EntryGetNext(userID uint64, minID uint64, count int, tx Transaction) ([]*En
 
 }
 
-// EntryGetPrev retrieves the previous X user items for a user.
-func EntryGetPrev(userID uint64, maxID uint64, count int, tx Transaction) ([]*Entry, error) {
+// EntriesGetPrev retrieves the previous X user items for a user.
+func EntriesGetPrev(userID uint64, maxID uint64, count int, tx Transaction) ([]*Entry, error) {
 
 	var entries []*Entry
 

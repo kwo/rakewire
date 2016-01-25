@@ -6,7 +6,7 @@ import (
 
 func (z *API) getItemsAll(userID uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.EntryGetNext(userID, 0, 0, tx)
+	entries, err := model.EntriesGetNext(userID, 0, 0, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +22,7 @@ func (z *API) getItemsAll(userID uint64, tx model.Transaction) ([]*Item, error) 
 
 func (z *API) getItemsNext(userID uint64, minID uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.EntryGetNext(userID, minID, 50, tx)
+	entries, err := model.EntriesGetNext(userID, minID, 50, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (z *API) getItemsNext(userID uint64, minID uint64, tx model.Transaction) ([
 
 func (z *API) getItemsPrev(userID uint64, maxID uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.EntryGetPrev(userID, maxID, 50, tx)
+	entries, err := model.EntriesGetPrev(userID, maxID, 50, tx)
 	if err != nil {
 		return nil, err
 	}
