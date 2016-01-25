@@ -14,24 +14,24 @@ import (
 // index names
 const (
 	EntryEntity    = "Entry"
-	EntryIndexGUID = "GUID"
+	EntryIndexRead = "Read"
+	EntryIndexStar = "Star"
+	EntryIndexUser = "User"
 )
 
 const (
-	entryID      = "ID"
-	entryGUID    = "GUID"
-	entryFeedID  = "FeedID"
-	entryCreated = "Created"
-	entryUpdated = "Updated"
-	entryURL     = "URL"
-	entryAuthor  = "Author"
-	entryTitle   = "Title"
-	entryContent = "Content"
+	entryID             = "ID"
+	entryUserID         = "UserID"
+	entryItemID         = "ItemID"
+	entrySubscriptionID = "SubscriptionID"
+	entryUpdated        = "Updated"
+	entryIsRead         = "IsRead"
+	entryIsStar         = "IsStar"
 )
 
 var (
 	entryAllFields = []string{
-		entryID, entryGUID, entryFeedID, entryCreated, entryUpdated, entryURL, entryAuthor, entryTitle, entryContent,
+		entryID, entryUserID, entryItemID, entrySubscriptionID, entryUpdated, entryIsRead, entryIsStar,
 	}
 )
 
@@ -48,14 +48,12 @@ func (z *Entry) SetID(id uint64) {
 // Clear reset all fields to zero/empty
 func (z *Entry) Clear() {
 	z.ID = 0
-	z.GUID = ""
-	z.FeedID = 0
-	z.Created = time.Time{}
+	z.UserID = 0
+	z.ItemID = 0
+	z.SubscriptionID = 0
 	z.Updated = time.Time{}
-	z.URL = ""
-	z.Author = ""
-	z.Title = ""
-	z.Content = ""
+	z.IsRead = false
+	z.IsStar = false
 
 }
 
@@ -69,36 +67,38 @@ func (z *Entry) Serialize(flags ...bool) map[string]string {
 		result[entryID] = fmt.Sprintf("%05d", z.ID)
 	}
 
-	if flagNoZeroCheck || z.GUID != "" {
-		result[entryGUID] = z.GUID
+	if flagNoZeroCheck || z.UserID != 0 {
+		result[entryUserID] = fmt.Sprintf("%05d", z.UserID)
 	}
 
-	if flagNoZeroCheck || z.FeedID != 0 {
-		result[entryFeedID] = fmt.Sprintf("%05d", z.FeedID)
+	if flagNoZeroCheck || z.ItemID != 0 {
+		result[entryItemID] = fmt.Sprintf("%05d", z.ItemID)
 	}
 
-	if flagNoZeroCheck || !z.Created.IsZero() {
-		result[entryCreated] = z.Created.UTC().Format(time.RFC3339)
+	if flagNoZeroCheck || z.SubscriptionID != 0 {
+		result[entrySubscriptionID] = fmt.Sprintf("%05d", z.SubscriptionID)
 	}
 
 	if flagNoZeroCheck || !z.Updated.IsZero() {
 		result[entryUpdated] = z.Updated.UTC().Format(time.RFC3339)
 	}
 
-	if flagNoZeroCheck || z.URL != "" {
-		result[entryURL] = z.URL
+	if flagNoZeroCheck || z.IsRead {
+		result[entryIsRead] = func(value bool) string {
+			if value {
+				return "1"
+			}
+			return "0"
+		}(z.IsRead)
 	}
 
-	if flagNoZeroCheck || z.Author != "" {
-		result[entryAuthor] = z.Author
-	}
-
-	if flagNoZeroCheck || z.Title != "" {
-		result[entryTitle] = z.Title
-	}
-
-	if flagNoZeroCheck || z.Content != "" {
-		result[entryContent] = z.Content
+	if flagNoZeroCheck || z.IsStar {
+		result[entryIsStar] = func(value bool) string {
+			if value {
+				return "1"
+			}
+			return "0"
+		}(z.IsStar)
 	}
 
 	return result
@@ -126,33 +126,44 @@ func (z *Entry) Deserialize(values map[string]string, flags ...bool) error {
 		missing = append(missing, entryID)
 	}
 
-	z.GUID = values[entryGUID]
-
-	z.FeedID = func(fieldName string, values map[string]string, errors []error) uint64 {
+	z.UserID = func(fieldName string, values map[string]string, errors []error) uint64 {
 		result, err := strconv.ParseUint(values[fieldName], 10, 64)
 		if err != nil {
 			errors = append(errors, err)
 			return 0
 		}
 		return uint64(result)
-	}(entryFeedID, values, errors)
+	}(entryUserID, values, errors)
 
-	if !(z.FeedID != 0) {
-		missing = append(missing, entryFeedID)
+	if !(z.UserID != 0) {
+		missing = append(missing, entryUserID)
 	}
 
-	z.Created = func(fieldName string, values map[string]string, errors []error) time.Time {
-		result := time.Time{}
-		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
-			if err != nil {
-				errors = append(errors, err)
-			} else {
-				result = t
-			}
+	z.ItemID = func(fieldName string, values map[string]string, errors []error) uint64 {
+		result, err := strconv.ParseUint(values[fieldName], 10, 64)
+		if err != nil {
+			errors = append(errors, err)
+			return 0
 		}
-		return result
-	}(entryCreated, values, errors)
+		return uint64(result)
+	}(entryItemID, values, errors)
+
+	if !(z.ItemID != 0) {
+		missing = append(missing, entryItemID)
+	}
+
+	z.SubscriptionID = func(fieldName string, values map[string]string, errors []error) uint64 {
+		result, err := strconv.ParseUint(values[fieldName], 10, 64)
+		if err != nil {
+			errors = append(errors, err)
+			return 0
+		}
+		return uint64(result)
+	}(entrySubscriptionID, values, errors)
+
+	if !(z.SubscriptionID != 0) {
+		missing = append(missing, entrySubscriptionID)
+	}
 
 	z.Updated = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
@@ -167,13 +178,19 @@ func (z *Entry) Deserialize(values map[string]string, flags ...bool) error {
 		return result
 	}(entryUpdated, values, errors)
 
-	z.URL = values[entryURL]
+	z.IsRead = func(fieldName string, values map[string]string, errors []error) bool {
+		if value, ok := values[fieldName]; ok {
+			return value == "1"
+		}
+		return false
+	}(entryIsRead, values, errors)
 
-	z.Author = values[entryAuthor]
-
-	z.Title = values[entryTitle]
-
-	z.Content = values[entryContent]
+	z.IsStar = func(fieldName string, values map[string]string, errors []error) bool {
+		if value, ok := values[fieldName]; ok {
+			return value == "1"
+		}
+		return false
+	}(entryIsStar, values, errors)
 
 	if flagUnknownCheck {
 		for fieldname := range values {
@@ -192,11 +209,33 @@ func (z *Entry) IndexKeys() map[string][]string {
 
 	data := z.Serialize(true)
 
-	result[EntryIndexGUID] = []string{
+	result[EntryIndexRead] = []string{
 
-		data[entryFeedID],
+		data[entryUserID],
 
-		data[entryGUID],
+		data[entryIsRead],
+
+		data[entryUpdated],
+
+		data[entryID],
+	}
+
+	result[EntryIndexStar] = []string{
+
+		data[entryUserID],
+
+		data[entryIsStar],
+
+		data[entryUpdated],
+
+		data[entryID],
+	}
+
+	result[EntryIndexUser] = []string{
+
+		data[entryUserID],
+
+		data[entryID],
 	}
 
 	return result

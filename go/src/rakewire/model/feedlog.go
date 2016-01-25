@@ -25,8 +25,8 @@ type FeedLog struct {
 	Generator     string        `json:"generator"`
 	Title         string        `json:"title"`
 	LastUpdated   time.Time     `json:"lastUpdated"`
-	EntryCount    int           `json:"entryCount"`
-	NewEntries    int           `json:"newEntries"`
+	ItemCount     int           `json:"itemCount"`
+	NewItems      int           `json:"newItems"`
 }
 
 // FetchResults

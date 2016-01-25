@@ -90,78 +90,78 @@ func (z *Service) processResponse(feed *model.Feed) {
 
 	err := z.database.Update(func(tx model.Transaction) error {
 
-		// query previous entries of feed
+		// query previous items of feed
 		var guIDs []string
-		for _, entry := range feed.Entries {
-			guIDs = append(guIDs, entry.GUID)
+		for _, item := range feed.Items {
+			guIDs = append(guIDs, item.GUID)
 		}
 
-		dbEntries, err := model.EntriesByGUIDs(feed.ID, guIDs, tx)
+		dbItems, err := model.ItemsByGUIDs(feed.ID, guIDs, tx)
 		if err != nil {
-			log.Printf("%-7s %-7s Cannot get previous feed entries %s: %s", logWarn, logName, feed.URL, err.Error())
+			log.Printf("%-7s %-7s Cannot get previous feed items %s: %s", logWarn, logName, feed.URL, err.Error())
 			return err
 		}
 
-		// setIDs, check dates for new entries
+		// setIDs, check dates for new items
 		var mostRecent time.Time
-		newEntryCount := 0
-		for _, entry := range feed.Entries {
+		newItemCount := 0
+		for _, item := range feed.Items {
 
-			if dbEntry := dbEntries[entry.GUID]; dbEntry == nil {
+			if dbItem := dbItems[item.GUID]; dbItem == nil {
 
-				// new entry
-				newEntryCount++
+				// new item
+				newItemCount++
 				now := time.Now()
 
-				// prevent entries marks with a future date
-				if entry.Created.IsZero() || entry.Created.After(now) {
-					entry.Created = now
+				// prevent items marks with a future date
+				if item.Created.IsZero() || item.Created.After(now) {
+					item.Created = now
 				}
-				if entry.Updated.IsZero() || entry.Updated.After(now) {
-					entry.Updated = entry.Created
+				if item.Updated.IsZero() || item.Updated.After(now) {
+					item.Updated = item.Created
 				}
 
 			} else {
 
-				// old entry
-				entry.ID = dbEntry.ID
+				// old item
+				item.ID = dbItem.ID
 
 				// set if zero and prevent from creeping forward
-				if entry.Created.IsZero() || entry.Created.After(dbEntry.Created) {
-					entry.Created = dbEntry.Created
+				if item.Created.IsZero() || item.Created.After(dbItem.Created) {
+					item.Created = dbItem.Created
 				}
 
 				// set if zero and prevent from creeping forward
-				if entry.Updated.IsZero() {
-					entry.Updated = dbEntry.Updated
-				} else if entry.Updated.After(dbEntry.Updated) && entry.Hash() == dbEntry.Hash() {
-					entry.Updated = dbEntry.Updated
+				if item.Updated.IsZero() {
+					item.Updated = dbItem.Updated
+				} else if item.Updated.After(dbItem.Updated) && item.Hash() == dbItem.Hash() {
+					item.Updated = dbItem.Updated
 				}
 
 			}
 
-			if entry.Updated.After(mostRecent) {
-				mostRecent = entry.Updated
+			if item.Updated.After(mostRecent) {
+				mostRecent = item.Updated
 			}
 
-		} // loop entries
+		} // loop items
 
 		feed.Attempt.LastUpdated = mostRecent
 
 		// only bump up LastUpdated if mostRecent is after previous time
-		// lastUpdated can move forward if no new entries, if an existing entry has been updated
+		// lastUpdated can move forward if no new items, if an existing item has been updated
 		if mostRecent.After(feed.LastUpdated) {
 			feed.LastUpdated = mostRecent
 		}
 
 		if feed.Attempt.Result == model.FetchResultOK {
 			if feed.LastUpdated.IsZero() {
-				feed.LastUpdated = time.Now() // only if new entries?
+				feed.LastUpdated = time.Now() // only if new items?
 			}
 		}
 
-		feed.Attempt.EntryCount = len(feed.Entries)
-		feed.Attempt.NewEntries = newEntryCount
+		feed.Attempt.ItemCount = len(feed.Items)
+		feed.Attempt.NewItems = newItemCount
 
 		switch feed.Status {
 		case model.FetchResultOK:
@@ -179,7 +179,7 @@ func (z *Service) processResponse(feed *model.Feed) {
 			return err
 		}
 
-		log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logDebug, logName, feed.Status, feed.Attempt.StatusCode, feed.LastUpdated.Local().Format("02.01.06 15:04"), feed.Attempt.NewEntries, feed.Attempt.EntryCount, feed.URL, feed.StatusMessage)
+		log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logDebug, logName, feed.Status, feed.Attempt.StatusCode, feed.LastUpdated.Local().Format("02.01.06 15:04"), feed.Attempt.NewItems, feed.Attempt.ItemCount, feed.URL, feed.StatusMessage)
 
 		return nil
 

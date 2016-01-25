@@ -101,13 +101,13 @@ func FeedByURL(url string, tx Transaction) (feed *Feed, err error) {
 }
 
 // Save save feeds
-func (feed *Feed) Save(tx Transaction) ([]*Entry, error) {
+func (feed *Feed) Save(tx Transaction) ([]*Item, error) {
 
 	if feed == nil {
 		return nil, fmt.Errorf("Nil feed")
 	}
 
-	newEntries := []*Entry{}
+	newItems := []*Item{}
 
 	// save feed log if available
 	if feed.Attempt != nil {
@@ -116,19 +116,19 @@ func (feed *Feed) Save(tx Transaction) ([]*Entry, error) {
 		}
 	}
 
-	// save entries
-	if feed.Entries != nil {
-		for _, entry := range feed.Entries {
-			if entry.ID == 0 {
-				newEntries = append(newEntries, entry)
+	// save items
+	if feed.Items != nil {
+		for _, item := range feed.Items {
+			if item.ID == 0 {
+				newItems = append(newItems, item)
 			}
-			if err := kvSave(EntryEntity, entry, tx); err != nil {
+			if err := kvSave(ItemEntity, item, tx); err != nil {
 				return nil, err
 			}
 		}
 	}
 
-	if err := UserEntriesAddNew(newEntries, tx); err != nil {
+	if err := EntriesAddNew(newItems, tx); err != nil {
 		return nil, err
 	}
 
@@ -137,20 +137,20 @@ func (feed *Feed) Save(tx Transaction) ([]*Entry, error) {
 		return nil, err
 	}
 
-	return newEntries, nil
+	return newItems, nil
 
 }
 
-// Delete removes a feed and associated entries from the database.
+// Delete removes a feed and associated items from the database.
 func (feed *Feed) Delete(tx Transaction) error {
 
-	entries, err := EntriesByFeed(feed.ID, tx)
+	items, err := ItemsByFeed(feed.ID, tx)
 	if err != nil {
 		return err
 	}
 
-	for _, entry := range entries {
-		if err := kvDelete(EntryEntity, entry, tx); err != nil {
+	for _, item := range items {
+		if err := kvDelete(ItemEntity, item, tx); err != nil {
 			return err
 		}
 	}
@@ -161,8 +161,8 @@ func (feed *Feed) Delete(tx Transaction) error {
 	// 	return err
 	// }
 
-	for _, entry := range entries {
-		if err := kvDelete(EntryEntity, entry, tx); err != nil {
+	for _, item := range items {
+		if err := kvDelete(ItemEntity, item, tx); err != nil {
 			return err
 		}
 	}

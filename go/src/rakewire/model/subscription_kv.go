@@ -15,41 +15,41 @@ import (
 
 // index names
 const (
-	UserFeedEntity    = "UserFeed"
-	UserFeedIndexFeed = "Feed"
-	UserFeedIndexUser = "User"
+	SubscriptionEntity    = "Subscription"
+	SubscriptionIndexFeed = "Feed"
+	SubscriptionIndexUser = "User"
 )
 
 const (
-	userfeedID        = "ID"
-	userfeedUserID    = "UserID"
-	userfeedFeedID    = "FeedID"
-	userfeedGroupIDs  = "GroupIDs"
-	userfeedDateAdded = "DateAdded"
-	userfeedTitle     = "Title"
-	userfeedNotes     = "Notes"
-	userfeedAutoRead  = "AutoRead"
-	userfeedAutoStar  = "AutoStar"
+	subscriptionID        = "ID"
+	subscriptionUserID    = "UserID"
+	subscriptionFeedID    = "FeedID"
+	subscriptionGroupIDs  = "GroupIDs"
+	subscriptionDateAdded = "DateAdded"
+	subscriptionTitle     = "Title"
+	subscriptionNotes     = "Notes"
+	subscriptionAutoRead  = "AutoRead"
+	subscriptionAutoStar  = "AutoStar"
 )
 
 var (
-	userfeedAllFields = []string{
-		userfeedID, userfeedUserID, userfeedFeedID, userfeedGroupIDs, userfeedDateAdded, userfeedTitle, userfeedNotes, userfeedAutoRead, userfeedAutoStar,
+	subscriptionAllFields = []string{
+		subscriptionID, subscriptionUserID, subscriptionFeedID, subscriptionGroupIDs, subscriptionDateAdded, subscriptionTitle, subscriptionNotes, subscriptionAutoRead, subscriptionAutoStar,
 	}
 )
 
 // GetID return the primary key of the object.
-func (z *UserFeed) GetID() uint64 {
+func (z *Subscription) GetID() uint64 {
 	return z.ID
 }
 
 // SetID sets the primary key of the object.
-func (z *UserFeed) SetID(id uint64) {
+func (z *Subscription) SetID(id uint64) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
-func (z *UserFeed) Clear() {
+func (z *Subscription) Clear() {
 	z.ID = 0
 	z.UserID = 0
 	z.FeedID = 0
@@ -64,24 +64,24 @@ func (z *UserFeed) Clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *UserFeed) Serialize(flags ...bool) map[string]string {
+func (z *Subscription) Serialize(flags ...bool) map[string]string {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
 	if flagNoZeroCheck || z.ID != 0 {
-		result[userfeedID] = fmt.Sprintf("%05d", z.ID)
+		result[subscriptionID] = fmt.Sprintf("%05d", z.ID)
 	}
 
 	if flagNoZeroCheck || z.UserID != 0 {
-		result[userfeedUserID] = fmt.Sprintf("%05d", z.UserID)
+		result[subscriptionUserID] = fmt.Sprintf("%05d", z.UserID)
 	}
 
 	if flagNoZeroCheck || z.FeedID != 0 {
-		result[userfeedFeedID] = fmt.Sprintf("%05d", z.FeedID)
+		result[subscriptionFeedID] = fmt.Sprintf("%05d", z.FeedID)
 	}
 
 	if flagNoZeroCheck || len(z.GroupIDs) > 0 {
-		result[userfeedGroupIDs] = func(values []uint64) string {
+		result[subscriptionGroupIDs] = func(values []uint64) string {
 			var buffer bytes.Buffer
 			for i, value := range values {
 				if i > 0 {
@@ -94,19 +94,19 @@ func (z *UserFeed) Serialize(flags ...bool) map[string]string {
 	}
 
 	if flagNoZeroCheck || !z.DateAdded.IsZero() {
-		result[userfeedDateAdded] = z.DateAdded.UTC().Format(time.RFC3339)
+		result[subscriptionDateAdded] = z.DateAdded.UTC().Format(time.RFC3339)
 	}
 
 	if flagNoZeroCheck || z.Title != "" {
-		result[userfeedTitle] = z.Title
+		result[subscriptionTitle] = z.Title
 	}
 
 	if flagNoZeroCheck || z.Notes != "" {
-		result[userfeedNotes] = z.Notes
+		result[subscriptionNotes] = z.Notes
 	}
 
 	if flagNoZeroCheck || z.AutoRead {
-		result[userfeedAutoRead] = func(value bool) string {
+		result[subscriptionAutoRead] = func(value bool) string {
 			if value {
 				return "1"
 			}
@@ -115,7 +115,7 @@ func (z *UserFeed) Serialize(flags ...bool) map[string]string {
 	}
 
 	if flagNoZeroCheck || z.AutoStar {
-		result[userfeedAutoStar] = func(value bool) string {
+		result[subscriptionAutoStar] = func(value bool) string {
 			if value {
 				return "1"
 			}
@@ -128,7 +128,7 @@ func (z *UserFeed) Serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *UserFeed) Deserialize(values map[string]string, flags ...bool) error {
+func (z *Subscription) Deserialize(values map[string]string, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error
@@ -142,10 +142,10 @@ func (z *UserFeed) Deserialize(values map[string]string, flags ...bool) error {
 			return 0
 		}
 		return uint64(result)
-	}(userfeedID, values, errors)
+	}(subscriptionID, values, errors)
 
 	if !(z.ID != 0) {
-		missing = append(missing, userfeedID)
+		missing = append(missing, subscriptionID)
 	}
 
 	z.UserID = func(fieldName string, values map[string]string, errors []error) uint64 {
@@ -155,10 +155,10 @@ func (z *UserFeed) Deserialize(values map[string]string, flags ...bool) error {
 			return 0
 		}
 		return uint64(result)
-	}(userfeedUserID, values, errors)
+	}(subscriptionUserID, values, errors)
 
 	if !(z.UserID != 0) {
-		missing = append(missing, userfeedUserID)
+		missing = append(missing, subscriptionUserID)
 	}
 
 	z.FeedID = func(fieldName string, values map[string]string, errors []error) uint64 {
@@ -168,10 +168,10 @@ func (z *UserFeed) Deserialize(values map[string]string, flags ...bool) error {
 			return 0
 		}
 		return uint64(result)
-	}(userfeedFeedID, values, errors)
+	}(subscriptionFeedID, values, errors)
 
 	if !(z.FeedID != 0) {
-		missing = append(missing, userfeedFeedID)
+		missing = append(missing, subscriptionFeedID)
 	}
 
 	z.GroupIDs = func(fieldName string, values map[string]string, errors []error) []uint64 {
@@ -188,7 +188,7 @@ func (z *UserFeed) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 		return result
-	}(userfeedGroupIDs, values, errors)
+	}(subscriptionGroupIDs, values, errors)
 
 	z.DateAdded = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
@@ -201,29 +201,29 @@ func (z *UserFeed) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 		return result
-	}(userfeedDateAdded, values, errors)
+	}(subscriptionDateAdded, values, errors)
 
-	z.Title = values[userfeedTitle]
+	z.Title = values[subscriptionTitle]
 
-	z.Notes = values[userfeedNotes]
+	z.Notes = values[subscriptionNotes]
 
 	z.AutoRead = func(fieldName string, values map[string]string, errors []error) bool {
 		if value, ok := values[fieldName]; ok {
 			return value == "1"
 		}
 		return false
-	}(userfeedAutoRead, values, errors)
+	}(subscriptionAutoRead, values, errors)
 
 	z.AutoStar = func(fieldName string, values map[string]string, errors []error) bool {
 		if value, ok := values[fieldName]; ok {
 			return value == "1"
 		}
 		return false
-	}(userfeedAutoStar, values, errors)
+	}(subscriptionAutoStar, values, errors)
 
 	if flagUnknownCheck {
 		for fieldname := range values {
-			if !isStringInArray(fieldname, userfeedAllFields) {
+			if !isStringInArray(fieldname, subscriptionAllFields) {
 				unknown = append(unknown, fieldname)
 			}
 		}
@@ -232,24 +232,24 @@ func (z *UserFeed) Deserialize(values map[string]string, flags ...bool) error {
 }
 
 // IndexKeys returns the keys of all indexes for this object.
-func (z *UserFeed) IndexKeys() map[string][]string {
+func (z *Subscription) IndexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
 	data := z.Serialize(true)
 
-	result[UserFeedIndexFeed] = []string{
+	result[SubscriptionIndexFeed] = []string{
 
-		data[userfeedFeedID],
+		data[subscriptionFeedID],
 
-		data[userfeedUserID],
+		data[subscriptionUserID],
 	}
 
-	result[UserFeedIndexUser] = []string{
+	result[SubscriptionIndexUser] = []string{
 
-		data[userfeedUserID],
+		data[subscriptionUserID],
 
-		data[userfeedFeedID],
+		data[subscriptionFeedID],
 	}
 
 	return result

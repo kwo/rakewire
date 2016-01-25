@@ -36,13 +36,13 @@ const (
 	feedlogGenerator     = "Generator"
 	feedlogTitle         = "Title"
 	feedlogLastUpdated   = "LastUpdated"
-	feedlogEntryCount    = "EntryCount"
-	feedlogNewEntries    = "NewEntries"
+	feedlogItemCount     = "ItemCount"
+	feedlogNewItems      = "NewItems"
 )
 
 var (
 	feedlogAllFields = []string{
-		feedlogID, feedlogFeedID, feedlogDuration, feedlogResult, feedlogResultMessage, feedlogStartTime, feedlogURL, feedlogContentLength, feedlogContentType, feedlogETag, feedlogLastModified, feedlogStatusCode, feedlogUsesGzip, feedlogFlavor, feedlogGenerator, feedlogTitle, feedlogLastUpdated, feedlogEntryCount, feedlogNewEntries,
+		feedlogID, feedlogFeedID, feedlogDuration, feedlogResult, feedlogResultMessage, feedlogStartTime, feedlogURL, feedlogContentLength, feedlogContentType, feedlogETag, feedlogLastModified, feedlogStatusCode, feedlogUsesGzip, feedlogFlavor, feedlogGenerator, feedlogTitle, feedlogLastUpdated, feedlogItemCount, feedlogNewItems,
 	}
 )
 
@@ -75,8 +75,8 @@ func (z *FeedLog) Clear() {
 	z.Generator = ""
 	z.Title = ""
 	z.LastUpdated = time.Time{}
-	z.EntryCount = 0
-	z.NewEntries = 0
+	z.ItemCount = 0
+	z.NewItems = 0
 
 }
 
@@ -159,12 +159,12 @@ func (z *FeedLog) Serialize(flags ...bool) map[string]string {
 		result[feedlogLastUpdated] = z.LastUpdated.UTC().Format(time.RFC3339)
 	}
 
-	if flagNoZeroCheck || z.EntryCount != 0 {
-		result[feedlogEntryCount] = fmt.Sprintf("%d", z.EntryCount)
+	if flagNoZeroCheck || z.ItemCount != 0 {
+		result[feedlogItemCount] = fmt.Sprintf("%d", z.ItemCount)
 	}
 
-	if flagNoZeroCheck || z.NewEntries != 0 {
-		result[feedlogNewEntries] = fmt.Sprintf("%d", z.NewEntries)
+	if flagNoZeroCheck || z.NewItems != 0 {
+		result[feedlogNewItems] = fmt.Sprintf("%d", z.NewItems)
 	}
 
 	return result
@@ -298,23 +298,23 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 		return result
 	}(feedlogLastUpdated, values, errors)
 
-	z.EntryCount = func(fieldName string, values map[string]string, errors []error) int {
+	z.ItemCount = func(fieldName string, values map[string]string, errors []error) int {
 		result, err := strconv.ParseInt(values[fieldName], 10, 64)
 		if err != nil {
 			errors = append(errors, err)
 			return 0
 		}
 		return int(result)
-	}(feedlogEntryCount, values, errors)
+	}(feedlogItemCount, values, errors)
 
-	z.NewEntries = func(fieldName string, values map[string]string, errors []error) int {
+	z.NewItems = func(fieldName string, values map[string]string, errors []error) int {
 		result, err := strconv.ParseInt(values[fieldName], 10, 64)
 		if err != nil {
 			errors = append(errors, err)
 			return 0
 		}
 		return int(result)
-	}(feedlogNewEntries, values, errors)
+	}(feedlogNewItems, values, errors)
 
 	if flagUnknownCheck {
 		for fieldname := range values {

@@ -19,18 +19,18 @@ func TestGroups(t *testing.T) {
 	defer server.Close()
 
 	var user *model.User
-	var mUserFeeds []*model.UserFeed
+	var mSubscriptions []*model.Subscription
 	err := database.Select(func(tx model.Transaction) error {
 		u, err := model.UserByUsername(testUsername, tx)
 		if err != nil {
 			return err
 		}
 		user = u
-		ufs, err := model.UserFeedsByUser(user.ID, tx)
+		ufs, err := model.SubscriptionsByUser(user.ID, tx)
 		if err != nil {
 			return err
 		}
-		mUserFeeds = ufs
+		mSubscriptions = ufs
 		return nil
 	})
 	if err != nil {
@@ -96,8 +96,8 @@ func TestGroups(t *testing.T) {
 						if err != nil {
 							t.Errorf("Invalid FeedID: %s", err.Error())
 						}
-						if uint64(feedID) != mUserFeeds[(j*2)+i].ID {
-							t.Errorf("FeedID mismatch, expected %d, actual %d", mUserFeeds[(j*2)+i].ID, feedID)
+						if uint64(feedID) != mSubscriptions[(j*2)+i].ID {
+							t.Errorf("FeedID mismatch, expected %d, actual %d", mSubscriptions[(j*2)+i].ID, feedID)
 						}
 					}
 				}
@@ -117,18 +117,18 @@ func TestFeeds(t *testing.T) {
 	defer server.Close()
 
 	var user *model.User
-	var mUserFeeds []*model.UserFeed
+	var mSubscriptions []*model.Subscription
 	err := database.Select(func(tx model.Transaction) error {
 		u, err := model.UserByUsername(testUsername, tx)
 		if err != nil {
 			return err
 		}
 		user = u
-		ufs, err := model.UserFeedsByUser(user.ID, tx)
+		ufs, err := model.SubscriptionsByUser(user.ID, tx)
 		if err != nil {
 			return err
 		}
-		mUserFeeds = ufs
+		mSubscriptions = ufs
 		return nil
 	})
 	if err != nil {
@@ -157,13 +157,13 @@ func TestFeeds(t *testing.T) {
 		for i, feed := range feeds {
 			if id, err := feed.GetInt64("id"); err != nil {
 				t.Errorf("Cannot retrieve feed.id: %s", err.Error())
-			} else if uint64(id) != mUserFeeds[i].ID {
-				t.Errorf("feed.id mimatch, expected %d, actual %d", id, mUserFeeds[i].ID)
+			} else if uint64(id) != mSubscriptions[i].ID {
+				t.Errorf("feed.id mimatch, expected %d, actual %d", id, mSubscriptions[i].ID)
 			}
 			if title, err := feed.GetString("title"); err != nil {
 				t.Errorf("Cannot retrieve feed.title: %s", err.Error())
-			} else if title != mUserFeeds[i].Title {
-				t.Errorf("feed.title mimatch, expected %s, actual %s", mUserFeeds[i].Title, title)
+			} else if title != mSubscriptions[i].Title {
+				t.Errorf("feed.title mimatch, expected %s, actual %s", mSubscriptions[i].Title, title)
 			}
 		}
 	}
@@ -193,8 +193,8 @@ func TestFeeds(t *testing.T) {
 						if err != nil {
 							t.Errorf("Invalid FeedID: %s", err.Error())
 						}
-						if uint64(feedID) != mUserFeeds[(j*2)+i].ID {
-							t.Errorf("FeedID mismatch, expected %d, actual %d", mUserFeeds[(j*2)+i].ID, feedID)
+						if uint64(feedID) != mSubscriptions[(j*2)+i].ID {
+							t.Errorf("FeedID mismatch, expected %d, actual %d", mSubscriptions[(j*2)+i].ID, feedID)
 						}
 					}
 				}

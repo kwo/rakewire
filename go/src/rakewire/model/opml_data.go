@@ -14,16 +14,16 @@ func OPMLExport(user *User, tx Transaction) (*OPML, error) {
 		return nil, err
 	}
 
-	userfeeds, err := UserFeedsByUser(user.ID, tx)
+	subscriptions, err := SubscriptionsByUser(user.ID, tx)
 	if err != nil {
 		return nil, err
 	}
 
 	groupsByID := groupGroupsByID(groups)
-	userfeedsByGroup := groupUserFeedsByGroup(userfeeds, groupsByID)
+	subscriptionsByGroup := groupSubscriptionsByGroup(subscriptions, groupsByID)
 
 	categories := make(map[string]*Outline)
-	for group, userfeeds1 := range userfeedsByGroup {
+	for group, subscriptions1 := range subscriptionsByGroup {
 
 		log.Printf("%-7s %-7s category: %s", logDebug, logName, group.Name)
 
@@ -40,43 +40,43 @@ func OPMLExport(user *User, tx Transaction) (*OPML, error) {
 
 		// TODO: if all outlines in a group are autoread/autostar assign to group and remove from outlines
 
-		for _, userfeed := range userfeeds1 {
+		for _, subscription := range subscriptions1 {
 
 			flags := ""
-			if userfeed.AutoRead {
+			if subscription.AutoRead {
 				flags += " +autoread"
 			}
-			if userfeed.AutoStar {
+			if subscription.AutoStar {
 				flags += " +autostar"
 			}
 			flags = strings.TrimSpace(flags)
 
 			var created *time.Time
-			if !userfeed.DateAdded.IsZero() {
-				x := userfeed.DateAdded.UTC()
+			if !subscription.DateAdded.IsZero() {
+				x := subscription.DateAdded.UTC()
 				created = &x
 			}
 
-			getTitle := func(uf *UserFeed) string {
-				result := userfeed.Title
+			getTitle := func(uf *Subscription) string {
+				result := subscription.Title
 				if result == "" {
-					result = userfeed.Feed.Title
+					result = subscription.Feed.Title
 				}
 				if result == "" {
-					result = userfeed.Feed.URL
+					result = subscription.Feed.URL
 				}
 				return result
 			}
 
 			outline := &Outline{
 				Type:        "rss",
-				Text:        getTitle(userfeed),
-				Title:       getTitle(userfeed),
+				Text:        getTitle(subscription),
+				Title:       getTitle(subscription),
 				Created:     created,
-				Description: userfeed.Notes,
+				Description: subscription.Notes,
 				Category:    flags,
-				XMLURL:      userfeed.Feed.URL,
-				HTMLURL:     userfeed.Feed.SiteURL,
+				XMLURL:      subscription.Feed.URL,
+				HTMLURL:     subscription.Feed.SiteURL,
 			}
 			log.Printf("%-7s %-7s feed: %s", logDebug, logName, outline.Text)
 			category.Outlines = append(category.Outlines, outline)
@@ -130,16 +130,16 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 		}
 	}
 
-	userfeeds, err := UserFeedsByUser(userID, tx)
+	subscriptions, err := SubscriptionsByUser(userID, tx)
 	if err != nil {
 		return err
 	}
-	for _, userfeed := range userfeeds {
-		userfeed.GroupIDs = []uint64{}
-		userfeed.AutoRead = false
-		userfeed.AutoStar = false
+	for _, subscription := range subscriptions {
+		subscription.GroupIDs = []uint64{}
+		subscription.AutoRead = false
+		subscription.AutoStar = false
 	}
-	userfeedsByURL, _ := groupUserFeedsByURL(userfeeds)
+	subscriptionsByURL, _ := groupSubscriptionsByURL(subscriptions)
 
 	for branch, outlines := range flatOPML {
 
@@ -147,7 +147,7 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 
 		for _, outline := range outlines {
 
-			uf := userfeedsByURL[outline.XMLURL]
+			uf := subscriptionsByURL[outline.XMLURL]
 			if uf == nil {
 
 				f, err := FeedByURL(outline.XMLURL, tx)
@@ -162,9 +162,9 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 					}
 				}
 
-				uf = NewUserFeed(userID, f.ID)
+				uf = NewSubscription(userID, f.ID)
 				uf.Feed = f
-				log.Printf("%-7s %-7s adding userfeed: %s", logDebug, logName, uf.Feed.URL)
+				log.Printf("%-7s %-7s adding subscription: %s", logDebug, logName, uf.Feed.URL)
 
 			}
 
@@ -208,29 +208,29 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 
 		outlinesByURL := groupOutlinesByURL(flatOPML)
 
-		// remove unused userfeeds
-		userfeeds, err := UserFeedsByUser(userID, tx)
+		// remove unused subscriptions
+		subscriptions, err := SubscriptionsByUser(userID, tx)
 		if err != nil {
 			return err
 		}
-		_, userfeedDuplicates := groupUserFeedsByURL(userfeeds)
-		for _, userfeed := range userfeeds {
-			if _, ok := outlinesByURL[userfeed.Feed.URL]; !ok {
-				log.Printf("%-7s %-7s removing userfeed: %s", logDebug, logName, userfeed.Feed.URL)
-				if err := userfeed.Delete(tx); err != nil {
+		_, subscriptionDuplicates := groupSubscriptionsByURL(subscriptions)
+		for _, subscription := range subscriptions {
+			if _, ok := outlinesByURL[subscription.Feed.URL]; !ok {
+				log.Printf("%-7s %-7s removing subscription: %s", logDebug, logName, subscription.Feed.URL)
+				if err := subscription.Delete(tx); err != nil {
 					return err
 				}
 			}
 		}
-		for _, userfeed := range userfeedDuplicates {
-			log.Printf("%-7s %-7s removing duplicate userfeed: %s", logDebug, logName, userfeed.Feed.URL)
-			if err := userfeed.Delete(tx); err != nil {
+		for _, subscription := range subscriptionDuplicates {
+			log.Printf("%-7s %-7s removing duplicate subscription: %s", logDebug, logName, subscription.Feed.URL)
+			if err := subscription.Delete(tx); err != nil {
 				return err
 			}
 		}
 
 		// remove unused groups // TODO: remove unused groups can be done in maintenance thread
-		uniqueGroups := collectGroups(userfeeds)
+		uniqueGroups := collectGroups(subscriptions)
 		for _, group := range groupsByName {
 			if _, ok := uniqueGroups[group.ID]; !ok {
 				log.Printf("%-7s %-7s removing group: %s", logDebug, logName, group.Name)
@@ -262,26 +262,26 @@ func groupGroupsByName(groups []*Group) map[string]*Group {
 	return result
 }
 
-func groupUserFeedsByGroup(userfeeds []*UserFeed, groups map[uint64]*Group) map[*Group][]*UserFeed {
+func groupSubscriptionsByGroup(subscriptions []*Subscription, groups map[uint64]*Group) map[*Group][]*Subscription {
 
-	result := make(map[*Group][]*UserFeed)
-	for _, userfeed := range userfeeds {
-		for _, groupID := range userfeed.GroupIDs {
-			result[groups[groupID]] = append(result[groups[groupID]], userfeed)
+	result := make(map[*Group][]*Subscription)
+	for _, subscription := range subscriptions {
+		for _, groupID := range subscription.GroupIDs {
+			result[groups[groupID]] = append(result[groups[groupID]], subscription)
 		}
 	}
 	return result
 
 }
 
-func groupUserFeedsByURL(userfeeds []*UserFeed) (map[string]*UserFeed, []*UserFeed) {
-	result := make(map[string]*UserFeed)
-	duplicates := []*UserFeed{}
-	for _, userfeed := range userfeeds {
-		if _, ok := result[userfeed.Feed.URL]; !ok {
-			result[userfeed.Feed.URL] = userfeed
+func groupSubscriptionsByURL(subscriptions []*Subscription) (map[string]*Subscription, []*Subscription) {
+	result := make(map[string]*Subscription)
+	duplicates := []*Subscription{}
+	for _, subscription := range subscriptions {
+		if _, ok := result[subscription.Feed.URL]; !ok {
+			result[subscription.Feed.URL] = subscription
 		} else {
-			duplicates = append(duplicates, userfeed)
+			duplicates = append(duplicates, subscription)
 		}
 	}
 	return result, duplicates
@@ -300,10 +300,10 @@ func groupFeedsByURL(feeds []*Feed) (map[string]*Feed, []*Feed) {
 	return result, duplicates
 }
 
-func collectGroups(userfeeds []*UserFeed) map[uint64]int {
+func collectGroups(subscriptions []*Subscription) map[uint64]int {
 	result := make(map[uint64]int)
-	for _, userfeed := range userfeeds {
-		for _, groupID := range userfeed.GroupIDs {
+	for _, subscription := range subscriptions {
+		for _, groupID := range subscription.GroupIDs {
 			result[groupID] = result[groupID] + 1
 		}
 	}

@@ -220,20 +220,20 @@ func processFeedOKAndParse(feed *m.Feed, size int, xmlFeed *feedparser.Feed) {
 	feed.Title = xmlFeed.Title
 	feed.SiteURL = xmlFeed.GetLinkAlternate()
 
-	// convert Entries to Entries
+	// convert Items to Items
 	for _, xmlEntry := range xmlFeed.Entries {
-		entry := feed.AddEntry(xmlEntry.ID)
-		entry.Created = xmlEntry.Created
-		entry.Updated = xmlEntry.Updated
-		entry.Title = xmlEntry.Title
-		entry.URL = xmlEntry.GetLinkAlternate()
+		item := feed.AddItem(xmlEntry.ID)
+		item.Created = xmlEntry.Created
+		item.Updated = xmlEntry.Updated
+		item.Title = xmlEntry.Title
+		item.URL = xmlEntry.GetLinkAlternate()
 		if len(xmlEntry.Authors) > 0 {
-			entry.Author = xmlEntry.Authors[0]
+			item.Author = xmlEntry.Authors[0]
 		}
 		if xmlEntry.Content != "" {
-			entry.Content = xmlEntry.Content
+			item.Content = xmlEntry.Content
 		} else {
-			entry.Content = xmlEntry.Summary
+			item.Content = xmlEntry.Summary
 		}
 	}
 

@@ -165,7 +165,7 @@ func kvSave(name string, value DataObject, tx Transaction) error {
 	newValues := value.Serialize()
 	newIndexes := value.IndexKeys()
 
-	// save entry
+	// save item
 	if err := kvPut(value.GetID(), newValues, b); err != nil {
 		return err
 	}

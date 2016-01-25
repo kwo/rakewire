@@ -144,29 +144,29 @@ func populateDatabase(tx model.Transaction) error {
 
 	// add test feeds
 	mFeeds := []*model.Feed{}
-	mUserFeeds := []*model.UserFeed{}
+	mSubscriptions := []*model.Subscription{}
 	for i := 0; i < 4; i++ {
 		f := model.NewFeed(fmt.Sprintf("http://localhost%d", i))
 		if _, err := f.Save(tx); err != nil {
 			return err
 		}
 		mFeeds = append(mFeeds, f)
-		uf := model.NewUserFeed(user.ID, f.ID)
+		uf := model.NewSubscription(user.ID, f.ID)
 		uf.GroupIDs = append(uf.GroupIDs, mGroups[i%2].ID)
 		if err := uf.Save(tx); err != nil {
 			return err
 		}
-		mUserFeeds = append(mUserFeeds, uf)
+		mSubscriptions = append(mSubscriptions, uf)
 	}
 
-	// add test entries
+	// add test items
 	for _, f := range mFeeds {
 		now := time.Now().Truncate(time.Second)
 		for i := 0; i < 10; i++ {
-			entry := model.NewEntry(f.ID, fmt.Sprintf("Entry%d", i))
-			entry.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
-			entry.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
-			f.Entries = append(f.Entries, entry)
+			item := model.NewItem(f.ID, fmt.Sprintf("Item%d", i))
+			item.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
+			item.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
+			f.Items = append(f.Items, item)
 		}
 		f.Attempt = model.NewFeedLog(f.ID)
 		f.Attempt.StartTime = now
@@ -175,19 +175,19 @@ func populateDatabase(tx model.Transaction) error {
 		}
 	}
 
-	// mark entries read
-	userEntries, err := model.UserEntryGetNext(user.ID, 0, 0, tx)
+	// mark items read
+	entries, err := model.EntryGetNext(user.ID, 0, 0, tx)
 	if err != nil {
 		return err
 	}
 	now := time.Now().Truncate(time.Second)
 	tRead := now.Add(-6 * 24 * time.Hour).Add(1 * time.Second)
 	tStar := now.Add(-8 * 24 * time.Hour).Add(1 * time.Second)
-	for _, ue := range userEntries {
+	for _, ue := range entries {
 		ue.IsRead = ue.Updated.Before(tRead)
 		ue.IsStar = ue.Updated.Before(tStar)
 	}
-	if err := model.UserEntriesSave(userEntries, tx); err != nil {
+	if err := model.EntriesSave(entries, tx); err != nil {
 		return err
 	}
 

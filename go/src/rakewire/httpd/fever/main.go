@@ -116,7 +116,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 					}
 
 				case "items":
-					rsp.ItemCount = model.UserEntryTotalByUser(user.ID, tx)
+					rsp.ItemCount = model.EntryTotalByUser(user.ID, tx)
 					if id := parseID(req.URL.Query(), "since_id"); id > 0 {
 						items, err := z.getItemsNext(user.ID, id, tx)
 						if err == nil {

@@ -13,7 +13,7 @@ func (z *API) getFeeds(userID uint64, tx model.Transaction) ([]*Feed, []*FeedGro
 		return nil, nil, err
 	}
 
-	mFeeds, err := model.UserFeedsByUser(userID, tx)
+	mFeeds, err := model.SubscriptionsByUser(userID, tx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -45,7 +45,7 @@ func (z *API) getGroups(userID uint64, tx model.Transaction) ([]*Group, []*FeedG
 		return nil, nil, err
 	}
 
-	mFeeds, err := model.UserFeedsByUser(userID, tx)
+	mFeeds, err := model.SubscriptionsByUser(userID, tx)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -65,7 +65,7 @@ func (z *API) getGroups(userID uint64, tx model.Transaction) ([]*Group, []*FeedG
 
 }
 
-func makeFeedGroups(mGroups []*model.Group, mFeeds []*model.UserFeed) []*FeedGroup {
+func makeFeedGroups(mGroups []*model.Group, mFeeds []*model.Subscription) []*FeedGroup {
 
 	contains := func(i uint64, a []uint64) bool {
 		for _, x := range a {

@@ -9,14 +9,14 @@ import (
 
 func (z *API) getSavedItemIDs(userID uint64, tx model.Transaction) (string, error) {
 
-	userentries, err := model.UserEntriesStarredByUser(userID, tx)
+	entries, err := model.EntriesStarredByUser(userID, tx)
 	if err != nil {
 		return "", err
 	}
 
 	idArray := []string{}
-	for _, userentry := range userentries {
-		id := strconv.FormatUint(userentry.ID, 10)
+	for _, entry := range entries {
+		id := strconv.FormatUint(entry.ID, 10)
 		idArray = append(idArray, id)
 	}
 
@@ -26,15 +26,15 @@ func (z *API) getSavedItemIDs(userID uint64, tx model.Transaction) (string, erro
 
 func (z *API) getUnreadItemIDs(userID uint64, tx model.Transaction) (string, error) {
 
-	userentries, err := model.UserEntriesUnreadByUser(userID, tx)
+	entries, err := model.EntriesUnreadByUser(userID, tx)
 	if err != nil {
 		return "", err
 	}
-	log.Printf("%-7s %-7s userentry count %d", logDebug, logName, len(userentries))
+	log.Printf("%-7s %-7s entry count %d", logDebug, logName, len(entries))
 
 	idArray := []string{}
-	for _, userentry := range userentries {
-		id := strconv.FormatUint(userentry.ID, 10)
+	for _, entry := range entries {
+		id := strconv.FormatUint(entry.ID, 10)
 		idArray = append(idArray, id)
 	}
 

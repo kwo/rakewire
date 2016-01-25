@@ -72,7 +72,7 @@ func (z *boltDatabase) Update(fn func(transaction Transaction) error) error {
 func (z *boltDatabase) Repair() error {
 	return z.Update(func(tx Transaction) error {
 
-		if err := removeInvalidEntries(tx); err != nil {
+		if err := removeInvalidItems(tx); err != nil {
 			return err
 		}
 

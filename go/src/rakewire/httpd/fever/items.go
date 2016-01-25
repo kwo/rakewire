@@ -6,7 +6,7 @@ import (
 
 func (z *API) getItemsAll(userID uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.UserEntryGetNext(userID, 0, 0, tx)
+	entries, err := model.EntryGetNext(userID, 0, 0, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +22,7 @@ func (z *API) getItemsAll(userID uint64, tx model.Transaction) ([]*Item, error) 
 
 func (z *API) getItemsNext(userID uint64, minID uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.UserEntryGetNext(userID, minID, 50, tx)
+	entries, err := model.EntryGetNext(userID, minID, 50, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (z *API) getItemsNext(userID uint64, minID uint64, tx model.Transaction) ([
 
 func (z *API) getItemsPrev(userID uint64, maxID uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.UserEntryGetPrev(userID, maxID, 50, tx)
+	entries, err := model.EntryGetPrev(userID, maxID, 50, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (z *API) getItemsPrev(userID uint64, maxID uint64, tx model.Transaction) ([
 
 func (z *API) getItemsByIds(userID uint64, ids []uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.UserEntriesByUser(userID, ids, tx)
+	entries, err := model.EntriesByUser(userID, ids, tx)
 	if err != nil {
 		return nil, err
 	}
@@ -68,16 +68,16 @@ func (z *API) getItemsByIds(userID uint64, ids []uint64, tx model.Transaction) (
 
 }
 
-func toItem(entry *model.UserEntry) *Item {
+func toItem(entry *model.Entry) *Item {
 	return &Item{
-		ID:         entry.ID,
-		UserFeedID: entry.UserFeedID,
-		Title:      entry.Entry.Title,
-		Author:     entry.Entry.Author,
-		HTML:       entry.Entry.Content,
-		URL:        entry.Entry.URL,
-		IsSaved:    boolToUint8(entry.IsStar),
-		IsRead:     boolToUint8(entry.IsRead),
-		Created:    entry.Entry.Created.Unix(),
+		ID:             entry.ID,
+		SubscriptionID: entry.SubscriptionID,
+		Title:          entry.Item.Title,
+		Author:         entry.Item.Author,
+		HTML:           entry.Item.Content,
+		URL:            entry.Item.URL,
+		IsSaved:        boolToUint8(entry.IsStar),
+		IsRead:         boolToUint8(entry.IsRead),
+		Created:        entry.Item.Created.Unix(),
 	}
 }

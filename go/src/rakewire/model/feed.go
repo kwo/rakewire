@@ -9,7 +9,7 @@ import (
 // Feed feed descriptor
 type Feed struct {
 	Attempt *FeedLog `json:"-" kv:"-"`
-	Entries []*Entry `json:"-" kv:"-"`
+	Items   []*Item  `json:"-" kv:"-"`
 
 	ID      uint64 `json:"id"  kv:"NextFetch:2"`
 	URL     string `json:"url" kv:"+required,URL:1:lower"`
@@ -37,11 +37,11 @@ func NewFeed(url string) *Feed {
 	}
 }
 
-// AddEntry to the feed
-func (z *Feed) AddEntry(guID string) *Entry {
-	entry := NewEntry(z.ID, guID)
-	z.Entries = append(z.Entries, entry)
-	return entry
+// AddItem to the feed
+func (z *Feed) AddItem(guID string) *Item {
+	item := NewItem(z.ID, guID)
+	z.Items = append(z.Items, item)
+	return item
 }
 
 // UpdateFetchTime increases the fetch interval

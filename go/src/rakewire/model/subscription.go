@@ -6,8 +6,8 @@ import (
 
 //go:generate gokv $GOFILE
 
-// UserFeed defines a feed specific to a user.
-type UserFeed struct {
+// Subscription defines a feed specific to a user.
+type Subscription struct {
 	ID        uint64
 	UserID    uint64 `kv:"+required,Feed:2,User:1"`
 	FeedID    uint64 `kv:"+required,Feed:1,User:2"`
@@ -20,24 +20,24 @@ type UserFeed struct {
 	Feed      *Feed `kv:"-"`
 }
 
-// NewUserFeed associates a feed with a user.
-func NewUserFeed(userID, feedID uint64) *UserFeed {
-	return &UserFeed{
+// NewSubscription associates a feed with a user.
+func NewSubscription(userID, feedID uint64) *Subscription {
+	return &Subscription{
 		UserID:   userID,
 		FeedID:   feedID,
 		GroupIDs: []uint64{},
 	}
 }
 
-// AddGroup adds the userfeed to the given group.
-func (z *UserFeed) AddGroup(groupID uint64) {
+// AddGroup adds the subscription to the given group.
+func (z *Subscription) AddGroup(groupID uint64) {
 	if !z.HasGroup(groupID) {
 		z.GroupIDs = append(z.GroupIDs, groupID)
 	}
 }
 
-// RemoveGroup removes the UserFeed from the given group.
-func (z *UserFeed) RemoveGroup(groupID uint64) {
+// RemoveGroup removes the Subscription from the given group.
+func (z *Subscription) RemoveGroup(groupID uint64) {
 	for i, value := range z.GroupIDs {
 		if value == groupID {
 			z.GroupIDs = append(z.GroupIDs[:i], z.GroupIDs[i+1:]...)
@@ -45,8 +45,8 @@ func (z *UserFeed) RemoveGroup(groupID uint64) {
 	}
 }
 
-// HasGroup tests if the UserFeed belongs to the given group
-func (z *UserFeed) HasGroup(groupID uint64) bool {
+// HasGroup tests if the Subscription belongs to the given group
+func (z *Subscription) HasGroup(groupID uint64) bool {
 	result := false
 	if len(z.GroupIDs) > 0 {
 		for _, value := range z.GroupIDs {

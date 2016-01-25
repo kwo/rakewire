@@ -30,12 +30,12 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string, tx 
 	switch mark {
 	case "item":
 
-		items, err := model.UserEntriesByUser(userID, []uint64{id}, tx)
+		items, err := model.EntriesByUser(userID, []uint64{id}, tx)
 		if err != nil {
 			return err
 		}
 		if len(items) != 1 {
-			return fmt.Errorf("User entry not found: %s", idStr)
+			return fmt.Errorf("User item not found: %s", idStr)
 		}
 		item := items[0]
 
@@ -52,7 +52,7 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string, tx 
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
 
-		if err := model.UserEntriesSave([]*model.UserEntry{item}, tx); err != nil {
+		if err := model.EntriesSave([]*model.Entry{item}, tx); err != nil {
 			return err
 		}
 
@@ -60,7 +60,7 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string, tx 
 		if pAs != "read" {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		if err := model.UserEntriesUpdateReadByFeed(userID, id, maxTime, true, tx); err != nil {
+		if err := model.EntriesUpdateReadByFeed(userID, id, maxTime, true, tx); err != nil {
 			return err
 		}
 
@@ -68,7 +68,7 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string, tx 
 		if pAs != "read" {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		if err := model.UserEntriesUpdateReadByGroup(userID, id, maxTime, true, tx); err != nil {
+		if err := model.EntriesUpdateReadByGroup(userID, id, maxTime, true, tx); err != nil {
 			return err
 		}
 

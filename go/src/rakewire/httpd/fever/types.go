@@ -39,13 +39,13 @@ type Feed struct {
 
 // Item is a fever item construct
 type Item struct {
-	ID         uint64 `json:"id"`
-	UserFeedID uint64 `json:"feed_id"`
-	Title      string `json:"title"`
-	Author     string `json:"author"`
-	HTML       string `json:"html"`
-	URL        string `json:"url"`
-	IsSaved    uint8  `json:"is_saved"`
-	IsRead     uint8  `json:"is_read"`
-	Created    int64  `json:"created_on_time"`
+	ID             uint64 `json:"id"`
+	SubscriptionID uint64 `json:"feed_id"`
+	Title          string `json:"title"`
+	Author         string `json:"author"`
+	HTML           string `json:"html"`
+	URL            string `json:"url"`
+	IsSaved        uint8  `json:"is_saved"`
+	IsRead         uint8  `json:"is_read"`
+	Created        int64  `json:"created_on_time"`
 }

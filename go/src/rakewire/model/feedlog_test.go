@@ -85,7 +85,7 @@ func getNewFeedLog() *FeedLog {
 	fl.Title = "title"
 	fl.URL = "url"
 	fl.UsesGzip = false
-	fl.NewEntries = 2
+	fl.NewItems = 2
 
 	return fl
 
@@ -119,6 +119,6 @@ func validateFeedLog(t *testing.T, fl *FeedLog) {
 	assertEqual(t, "title", fl.Title)
 	assertEqual(t, "url", fl.URL)
 	assertEqual(t, false, fl.UsesGzip)
-	assertEqual(t, 2, fl.NewEntries)
+	assertEqual(t, 2, fl.NewItems)
 
 }

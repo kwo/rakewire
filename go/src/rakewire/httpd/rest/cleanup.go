@@ -32,16 +32,16 @@ func (z *API) cleanup(w http.ResponseWriter, req *http.Request) {
 				if len(feedIDs) > 1 {
 					for _, feedID := range feedIDs[1:] {
 
-						userfeeds, err := model.UserFeedsByFeed(feedID, tx)
+						subscriptions, err := model.SubscriptionsByFeed(feedID, tx)
 						if err != nil {
 							return err
 						}
 
-						for _, userfeed := range userfeeds {
-							if userfeed.FeedID != feed.ID {
-								log.Printf("%-7s %-7s Repointing subscriptions of duplicate %d to %d", logDebug, logName, userfeed.FeedID, feed.ID)
-								userfeed.FeedID = feed.ID
-								if err := userfeed.Save(tx); err != nil {
+						for _, subscription := range subscriptions {
+							if subscription.FeedID != feed.ID {
+								log.Printf("%-7s %-7s Repointing subscriptions of duplicate %d to %d", logDebug, logName, subscription.FeedID, feed.ID)
+								subscription.FeedID = feed.ID
+								if err := subscription.Save(tx); err != nil {
 									return err
 								}
 							}
@@ -76,12 +76,12 @@ func (z *API) cleanup(w http.ResponseWriter, req *http.Request) {
 					return err
 				}
 
-				userfeeds, err := model.UserFeedsByFeed(feed.ID, tx)
+				subscriptions, err := model.SubscriptionsByFeed(feed.ID, tx)
 				if err != nil {
 					return err
 				}
 
-				if len(userfeeds) == 0 {
+				if len(subscriptions) == 0 {
 					log.Printf("%-7s %-7s Remove unused feed %d: %s", logDebug, logName, feed.ID, feed.URL)
 					if err := feed.Delete(tx); err != nil {
 						return err
