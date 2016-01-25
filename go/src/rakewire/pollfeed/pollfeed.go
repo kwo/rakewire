@@ -2,8 +2,7 @@ package pollfeed
 
 import (
 	"log"
-	"rakewire/db"
-	m "rakewire/model"
+	"rakewire/model"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -30,8 +29,8 @@ type Configuration struct {
 
 // Service for pumping feeds between fetcher and database
 type Service struct {
-	Output       chan *m.Feed
-	database     db.Database
+	Output       chan *model.Feed
+	database     model.Database
 	limit        int
 	pollInterval time.Duration
 	killsignal   chan bool
@@ -43,7 +42,7 @@ type Service struct {
 }
 
 // NewService create a new service
-func NewService(cfg *Configuration, database db.Database) *Service {
+func NewService(cfg *Configuration, database model.Database) *Service {
 
 	interval, err := time.ParseDuration(cfg.Interval)
 	if err != nil {
@@ -52,7 +51,7 @@ func NewService(cfg *Configuration, database db.Database) *Service {
 	}
 
 	return &Service{
-		Output:       make(chan *m.Feed),
+		Output:       make(chan *model.Feed),
 		limit:        cfg.Limit,
 		database:     database,
 		pollInterval: interval,
@@ -129,32 +128,42 @@ func (z *Service) poll(t time.Time) {
 
 	log.Printf("%-7s %-7s polling...", logDebug, logName)
 
-	// get next feeds
-	feeds, err := z.database.GetFetchFeeds(t)
-	if err != nil {
-		log.Printf("%-7s %-7s Cannot poll feeds: %s", logWarn, logName, err.Error())
+	err := z.database.Select(func(tx model.Transaction) error {
+
+		// get next feeds
+		feeds, err := model.FeedsFetch(t, tx)
+		if err != nil {
+			log.Printf("%-7s %-7s Cannot poll feeds: %s", logWarn, logName, err.Error())
+			z.setPolling(false)
+			z.polllatch.Done()
+			return err
+		}
+
+		// limit runs to X feeds
+		if z.limit > 0 && len(feeds) > z.limit {
+			feeds = feeds[:z.limit]
+		}
+
+		// convert feeds
+		if numFeeds := len(feeds); numFeeds > 0 {
+			log.Printf("%-7s %-7s polling feeds: %d", logInfo, logName, numFeeds)
+		}
+
+		// send to output
+		for i := 0; i < len(feeds) && !z.isKilled(); i++ {
+			z.Output <- feeds[i]
+		}
+
 		z.setPolling(false)
 		z.polllatch.Done()
-		return
-	}
 
-	// limit runs to X feeds
-	if z.limit > 0 && len(feeds) > z.limit {
-		feeds = feeds[:z.limit]
-	}
+		return nil
 
-	// convert feeds
-	if numFeeds := len(feeds); numFeeds > 0 {
-		log.Printf("%-7s %-7s polling feeds: %d", logInfo, logName, numFeeds)
-	}
+	})
 
-	// send to output
-	for i := 0; i < len(feeds) && !z.isKilled(); i++ {
-		z.Output <- feeds[i]
+	if err != nil {
+		log.Printf("%-7s %-7s Error poll feeds: %s", logWarn, logName, err.Error())
 	}
-
-	z.setPolling(false)
-	z.polllatch.Done()
 
 }
 

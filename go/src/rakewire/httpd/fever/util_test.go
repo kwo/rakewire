@@ -104,14 +104,6 @@ func openTestDatabase(t *testing.T) model.Database {
 	if err != nil {
 		t.Fatalf("Cannot populate database: %s", err.Error())
 	}
-	// err = boltDB.Select(func(tx model.Transaction) error {
-	// 	b := tx.Bucket("Data").Bucket("User")
-	// 	b.ForEach(func(k, v []byte) error {
-	// 		t.Logf("user %s: %s", k, v)
-	// 		return nil
-	// 	})
-	// 	return nil
-	// })
 
 	return boltDB
 

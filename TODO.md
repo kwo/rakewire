@@ -5,10 +5,10 @@
 ### Immediate
 
  - code restructure
-  - move opml to model -> opml_db
+  x move opml to model -> opml_db
+  - use manually managed transactions in database
   - create collection classes with groupby and sort functions
   - rename model elements: Feed/Item, Subscription/Entry
-  - use manually managed transactions in database
  - add subscribers count to user-agent when fetching
  - store config, tls keys in data file
  - jwt authentication and basic auth
@@ -21,7 +21,7 @@
  - turn off logging to console, store in database, call via api
    - save to buffer, write to db every 5? seconds, api to filter entries by level and category
    - expire entries by level (TRACE/DEBUG after 10min, other after X days)
-   - remove command-line flags
+   x remove command-line flags
 
  - create feed item frequency graph per feed for one week
    - allow assigning polling frequency per hour/day for feed

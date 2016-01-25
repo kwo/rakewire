@@ -2,7 +2,6 @@ package reaper
 
 import (
 	"log"
-	"rakewire/db"
 	"rakewire/model"
 	"sync"
 	"sync/atomic"
@@ -24,14 +23,14 @@ type Configuration struct {
 // Service for saving fetch responses back to the database
 type Service struct {
 	Input      chan *model.Feed
-	database   db.Database
+	database   model.Database
 	killsignal chan bool
 	running    int32
 	runlatch   sync.WaitGroup
 }
 
 // NewService create a new service
-func NewService(cfg *Configuration, database db.Database) *Service {
+func NewService(cfg *Configuration, database model.Database) *Service {
 
 	return &Service{
 		Input:      make(chan *model.Feed),
