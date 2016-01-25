@@ -8,9 +8,8 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"rakewire/db"
 	"rakewire/middleware"
-	//"rakewire/model"
+	"rakewire/model"
 	"sync"
 )
 
@@ -31,7 +30,7 @@ var (
 type Service struct {
 	sync.Mutex
 	cfg      *Configuration
-	database db.Database
+	database model.Database
 	listener net.Listener
 	running  bool
 }
@@ -42,7 +41,6 @@ type Configuration struct {
 	Address     string
 	Port        int
 	UseLocal    bool
-	UseLegacy   bool
 	Hostname    string
 	UseTLS      bool
 	TLSPublic   string
@@ -64,7 +62,7 @@ const (
 )
 
 // NewService creates a new httpd service.
-func NewService(cfg *Configuration, database db.Database) *Service {
+func NewService(cfg *Configuration, database model.Database) *Service {
 	return &Service{
 		cfg:      cfg,
 		database: database,
@@ -86,7 +84,7 @@ func (z *Service) Start() error {
 		return errors.New("No database")
 	}
 
-	router, err := z.mainRouter(z.cfg.UseLocal, z.cfg.UseLegacy)
+	router, err := z.mainRouter(z.cfg.UseLocal)
 	if err != nil {
 		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
 		return err
