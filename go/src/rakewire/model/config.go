@@ -4,10 +4,6 @@ import (
 	"strconv"
 )
 
-const (
-	configurationBucketName = "Config"
-)
-
 // Configuration holds application configuration data
 type Configuration struct {
 	values map[string]string
@@ -23,7 +19,7 @@ func NewConfiguration() *Configuration {
 // Load reads configuration values from the database
 func (z *Configuration) Load(tx Transaction) error {
 	z.values = make(map[string]string)
-	b := tx.Bucket(configurationBucketName)
+	b := tx.Bucket(bucketConfig)
 	return b.ForEach(func(k, v []byte) error {
 		z.values[string(k)] = string(v)
 		return nil
@@ -32,7 +28,7 @@ func (z *Configuration) Load(tx Transaction) error {
 
 // Save saves configuration values to the database
 func (z *Configuration) Save(tx Transaction) error {
-	b := tx.Bucket(configurationBucketName)
+	b := tx.Bucket(bucketConfig)
 	for key, value := range z.values {
 		if err := b.Put([]byte(key), []byte(value)); err != nil {
 			return err
