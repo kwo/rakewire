@@ -156,35 +156,35 @@ func checkSchema(tx *bolt.Tx) error {
 
 }
 
-func removeInvalidItems(tx Transaction) error {
+func removeInvalidKeys(tx Transaction) error {
 
 	log.Printf("%-7s %-7s remove invalid items...", logInfo, logName)
 
-	if err := removeInvalidItemsForEntity(UserEntity, &User{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(UserEntity, &User{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidItemsForEntity(GroupEntity, &Group{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(GroupEntity, &Group{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidItemsForEntity(FeedEntity, &Feed{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(FeedEntity, &Feed{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidItemsForEntity(FeedLogEntity, &FeedLog{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(FeedLogEntity, &FeedLog{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidItemsForEntity(ItemEntity, &Item{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(ItemEntity, &Item{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidItemsForEntity(EntryEntity, &Entry{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(EntryEntity, &Entry{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidItemsForEntity(SubscriptionEntity, &Subscription{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(SubscriptionEntity, &Subscription{}, tx); err != nil {
 		return err
 	}
 
@@ -193,7 +193,7 @@ func removeInvalidItems(tx Transaction) error {
 	return nil
 }
 
-func removeInvalidItemsForEntity(entityName string, dao DataObject, tx Transaction) error {
+func removeInvalidKeysForEntity(entityName string, dao DataObject, tx Transaction) error {
 
 	b := tx.Bucket(bucketData).Bucket(entityName)
 
