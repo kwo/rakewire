@@ -13,8 +13,8 @@ import (
 
 // index names
 const (
-	ItemEntity    = "Item"
-	ItemIndexGUID = "GUID"
+	itemEntity    = "Item"
+	itemIndexGUID = "GUID"
 )
 
 const (
@@ -36,17 +36,17 @@ var (
 )
 
 // GetID return the primary key of the object.
-func (z *Item) GetID() uint64 {
+func (z *Item) getID() uint64 {
 	return z.ID
 }
 
 // SetID sets the primary key of the object.
-func (z *Item) SetID(id uint64) {
+func (z *Item) setID(id uint64) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
-func (z *Item) Clear() {
+func (z *Item) clear() {
 	z.ID = 0
 	z.GUID = ""
 	z.FeedID = 0
@@ -61,7 +61,7 @@ func (z *Item) Clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *Item) Serialize(flags ...bool) map[string]string {
+func (z *Item) serialize(flags ...bool) map[string]string {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
@@ -106,7 +106,7 @@ func (z *Item) Serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *Item) Deserialize(values map[string]string, flags ...bool) error {
+func (z *Item) deserialize(values map[string]string, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error
@@ -182,17 +182,17 @@ func (z *Item) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 	}
-	return newDeserializationError(ItemEntity, errors, missing, unknown)
+	return newDeserializationError(itemEntity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.
-func (z *Item) IndexKeys() map[string][]string {
+func (z *Item) indexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize(true)
+	data := z.serialize(true)
 
-	result[ItemIndexGUID] = []string{
+	result[itemIndexGUID] = []string{
 
 		data[itemFeedID],
 

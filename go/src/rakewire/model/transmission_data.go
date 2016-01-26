@@ -17,12 +17,12 @@ func TransmissionsByFeed(feedID uint64, since time.Duration, tx Transaction) ([]
 	fl := &Transmission{}
 	fl.FeedID = feedID
 	fl.StartTime = now.Add(-since)
-	minKeys := fl.IndexKeys()[TransmissionIndexFeedTime]
+	minKeys := fl.indexKeys()[transmissionIndexFeedTime]
 	fl.StartTime = now.Add(1 * time.Minute) // max later than now
-	nxtKeys := fl.IndexKeys()[TransmissionIndexFeedTime]
+	nxtKeys := fl.indexKeys()[transmissionIndexFeedTime]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(TransmissionEntity).Bucket(TransmissionIndexFeedTime)
-	b := tx.Bucket(bucketData).Bucket(TransmissionEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(transmissionEntity).Bucket(transmissionIndexFeedTime)
+	b := tx.Bucket(bucketData).Bucket(transmissionEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -36,7 +36,7 @@ func TransmissionsByFeed(feedID uint64, since time.Duration, tx Transaction) ([]
 
 		if data, ok := kvGet(id, b); ok {
 			transmission := &Transmission{}
-			if err := transmission.Deserialize(data); err != nil {
+			if err := transmission.deserialize(data); err != nil {
 				return nil, err
 			}
 			transmissions = append(transmissions, transmission)
@@ -58,7 +58,7 @@ func LastFetchTime(tx Transaction) (lastFetchTime time.Time, err error) {
 
 	lastFetchTime = time.Now().Truncate(time.Second)
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(TransmissionEntity).Bucket(TransmissionIndexTime)
+	bIndex := tx.Bucket(bucketIndex).Bucket(transmissionEntity).Bucket(transmissionIndexTime)
 	c := bIndex.Cursor()
 	k, _ := c.Last()
 	if k != nil {

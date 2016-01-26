@@ -15,12 +15,12 @@ const (
 
 // DataObject defines the functions necessary for objects to be persisted to the database
 type DataObject interface {
-	GetID() uint64
-	SetID(id uint64)
-	Clear()
-	Serialize(...bool) map[string]string
-	Deserialize(map[string]string, ...bool) error
-	IndexKeys() map[string][]string
+	getID() uint64
+	setID(id uint64)
+	clear()
+	serialize(...bool) map[string]string
+	deserialize(map[string]string, ...bool) error
+	indexKeys() map[string][]string
 }
 
 // NewDeserializationError returns a new DeserializationError or nil of all arrays are empty.
@@ -155,20 +155,20 @@ func kvSave(name string, value DataObject, tx Transaction) error {
 
 	b := tx.Bucket(bucketData).Bucket(name)
 
-	if value.GetID() == 0 {
+	if value.getID() == 0 {
 		id, err := b.NextSequence()
 		if err != nil {
 			return err
 		}
-		value.SetID(id)
+		value.setID(id)
 	}
 
-	oldValues, update := kvGet(value.GetID(), b)
-	newValues := value.Serialize()
-	newIndexes := value.IndexKeys()
+	oldValues, update := kvGet(value.getID(), b)
+	newValues := value.serialize()
+	newIndexes := value.indexKeys()
 
 	// save item
-	if err := kvPut(value.GetID(), newValues, b); err != nil {
+	if err := kvPut(value.getID(), newValues, b); err != nil {
 		return err
 	}
 
@@ -177,22 +177,22 @@ func kvSave(name string, value DataObject, tx Transaction) error {
 
 	if update {
 
-		value.Clear()
-		if err := value.Deserialize(oldValues); err != nil {
+		value.clear()
+		if err := value.deserialize(oldValues); err != nil {
 			return err
 		}
-		oldIndexes = value.IndexKeys()
+		oldIndexes = value.indexKeys()
 
 		// put new values back
-		value.Clear()
-		if err := value.Deserialize(newValues); err != nil {
+		value.clear()
+		if err := value.deserialize(newValues); err != nil {
 			return err
 		}
 
 	}
 
 	// save indexes
-	if err := kvSaveIndexes(name, value.GetID(), newIndexes, oldIndexes, tx); err != nil {
+	if err := kvSaveIndexes(name, value.getID(), newIndexes, oldIndexes, tx); err != nil {
 		return err
 	}
 
@@ -239,15 +239,15 @@ func kvSaveIndexes(name string, id uint64, newIndexes map[string][]string, oldIn
 
 func kvDelete(name string, value DataObject, tx Transaction) error {
 
-	if value.GetID() == 0 {
+	if value.getID() == 0 {
 		return fmt.Errorf("Cannot delete %s with ID of 0", name)
 	}
 
 	// delete data
 	b := tx.Bucket(bucketData).Bucket(name)
 	c := b.Cursor()
-	min := []byte(kvMinKey(value.GetID()))
-	nxt := []byte(kvNxtKey(value.GetID()))
+	min := []byte(kvMinKey(value.getID()))
+	nxt := []byte(kvNxtKey(value.getID()))
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
 		if err := c.Delete(); err != nil {
 			return err
@@ -256,7 +256,7 @@ func kvDelete(name string, value DataObject, tx Transaction) error {
 
 	// delete indexes
 	indexBucket := tx.Bucket(bucketIndex).Bucket(name)
-	for indexName, indexElements := range value.IndexKeys() {
+	for indexName, indexElements := range value.indexKeys() {
 		b := indexBucket.Bucket(indexName)
 		keyStr := kvKeys(indexElements)
 		if err := b.Delete([]byte(keyStr)); err != nil {

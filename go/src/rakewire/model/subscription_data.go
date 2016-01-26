@@ -13,13 +13,13 @@ func SubscriptionsByUser(userID uint64, tx Transaction) ([]*Subscription, error)
 	// define index keys
 	uf := &Subscription{}
 	uf.UserID = userID
-	minKeys := uf.IndexKeys()[SubscriptionIndexUser]
+	minKeys := uf.indexKeys()[subscriptionIndexUser]
 	uf.UserID = userID + 1
-	nxtKeys := uf.IndexKeys()[SubscriptionIndexUser]
+	nxtKeys := uf.indexKeys()[subscriptionIndexUser]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(SubscriptionEntity).Bucket(SubscriptionIndexUser)
-	bSubscription := tx.Bucket(bucketData).Bucket(SubscriptionEntity)
-	bFeed := tx.Bucket(bucketData).Bucket(FeedEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(subscriptionEntity).Bucket(subscriptionIndexUser)
+	bSubscription := tx.Bucket(bucketData).Bucket(subscriptionEntity)
+	bFeed := tx.Bucket(bucketData).Bucket(feedEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -33,12 +33,12 @@ func SubscriptionsByUser(userID uint64, tx Transaction) ([]*Subscription, error)
 
 		if data, ok := kvGet(id, bSubscription); ok {
 			uf := &Subscription{}
-			if err := uf.Deserialize(data); err != nil {
+			if err := uf.deserialize(data); err != nil {
 				return nil, err
 			}
 			if data, ok := kvGet(uf.FeedID, bFeed); ok {
 				f := &Feed{}
-				if err := f.Deserialize(data); err != nil {
+				if err := f.deserialize(data); err != nil {
 					return nil, err
 				}
 				uf.Feed = f
@@ -60,13 +60,13 @@ func SubscriptionsByFeed(feedID uint64, tx Transaction) ([]*Subscription, error)
 	// define index keys
 	uf := &Subscription{}
 	uf.FeedID = feedID
-	minKeys := uf.IndexKeys()[SubscriptionIndexFeed]
+	minKeys := uf.indexKeys()[subscriptionIndexFeed]
 	uf.FeedID = feedID + 1
-	nxtKeys := uf.IndexKeys()[SubscriptionIndexFeed]
+	nxtKeys := uf.indexKeys()[subscriptionIndexFeed]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(SubscriptionEntity).Bucket(SubscriptionIndexFeed)
-	bSubscription := tx.Bucket(bucketData).Bucket(SubscriptionEntity)
-	bFeed := tx.Bucket(bucketData).Bucket(FeedEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(subscriptionEntity).Bucket(subscriptionIndexFeed)
+	bSubscription := tx.Bucket(bucketData).Bucket(subscriptionEntity)
+	bFeed := tx.Bucket(bucketData).Bucket(feedEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -80,12 +80,12 @@ func SubscriptionsByFeed(feedID uint64, tx Transaction) ([]*Subscription, error)
 
 		if data, ok := kvGet(id, bSubscription); ok {
 			uf := &Subscription{}
-			if err := uf.Deserialize(data); err != nil {
+			if err := uf.deserialize(data); err != nil {
 				return nil, err
 			}
 			if data, ok := kvGet(uf.FeedID, bFeed); ok {
 				f := &Feed{}
-				if err := f.Deserialize(data); err != nil {
+				if err := f.deserialize(data); err != nil {
 					return nil, err
 				}
 				uf.Feed = f
@@ -101,10 +101,10 @@ func SubscriptionsByFeed(feedID uint64, tx Transaction) ([]*Subscription, error)
 
 // Delete removes a subscription from the database.
 func (subscription *Subscription) Delete(tx Transaction) error {
-	return kvDelete(SubscriptionEntity, subscription, tx)
+	return kvDelete(subscriptionEntity, subscription, tx)
 }
 
 // Save saves a user to the database.
 func (subscription *Subscription) Save(tx Transaction) error {
-	return kvSave(SubscriptionEntity, subscription, tx)
+	return kvSave(subscriptionEntity, subscription, tx)
 }

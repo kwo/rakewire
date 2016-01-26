@@ -29,11 +29,11 @@ func TestFeedSerial(t *testing.T) {
 	f.ID = 1
 	validateFeed(t, f)
 
-	data := f.Serialize()
+	data := f.serialize()
 	assertNotNil(t, data)
 
 	f2 := &Feed{}
-	err := f2.Deserialize(data)
+	err := f2.deserialize(data)
 	assertNoError(t, err)
 	validateFeed(t, f2)
 

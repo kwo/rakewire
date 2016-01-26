@@ -13,9 +13,9 @@ import (
 
 // index names
 const (
-	TransmissionEntity        = "Transmission"
-	TransmissionIndexFeedTime = "FeedTime"
-	TransmissionIndexTime     = "Time"
+	transmissionEntity        = "Transmission"
+	transmissionIndexFeedTime = "FeedTime"
+	transmissionIndexTime     = "Time"
 )
 
 const (
@@ -47,17 +47,17 @@ var (
 )
 
 // GetID return the primary key of the object.
-func (z *Transmission) GetID() uint64 {
+func (z *Transmission) getID() uint64 {
 	return z.ID
 }
 
 // SetID sets the primary key of the object.
-func (z *Transmission) SetID(id uint64) {
+func (z *Transmission) setID(id uint64) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
-func (z *Transmission) Clear() {
+func (z *Transmission) clear() {
 	z.ID = 0
 	z.FeedID = 0
 	z.Duration = 0
@@ -82,7 +82,7 @@ func (z *Transmission) Clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *Transmission) Serialize(flags ...bool) map[string]string {
+func (z *Transmission) serialize(flags ...bool) map[string]string {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
@@ -172,7 +172,7 @@ func (z *Transmission) Serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *Transmission) Deserialize(values map[string]string, flags ...bool) error {
+func (z *Transmission) deserialize(values map[string]string, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error
@@ -323,24 +323,24 @@ func (z *Transmission) Deserialize(values map[string]string, flags ...bool) erro
 			}
 		}
 	}
-	return newDeserializationError(TransmissionEntity, errors, missing, unknown)
+	return newDeserializationError(transmissionEntity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.
-func (z *Transmission) IndexKeys() map[string][]string {
+func (z *Transmission) indexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize(true)
+	data := z.serialize(true)
 
-	result[TransmissionIndexFeedTime] = []string{
+	result[transmissionIndexFeedTime] = []string{
 
 		data[transmissionFeedID],
 
 		data[transmissionStartTime],
 	}
 
-	result[TransmissionIndexTime] = []string{
+	result[transmissionIndexTime] = []string{
 
 		data[transmissionStartTime],
 

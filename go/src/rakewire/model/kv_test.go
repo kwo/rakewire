@@ -82,21 +82,21 @@ func TestBucketKeyEncodeDecode(t *testing.T) {
 
 }
 
-func TestDeserialize(t *testing.T) {
+func Testdeserialize(t *testing.T) {
 
 	g1 := NewGroup(3, "three")
 	g1.ID = 3
-	values := g1.Serialize()
+	values := g1.serialize()
 
 	g2 := &Group{}
-	if err := g2.Deserialize(values, true); err != nil {
+	if err := g2.deserialize(values, true); err != nil {
 		t.Errorf("deserialization error: %s", err.Error())
 	}
 
 	values["uuid"] = "unknown-field"
 
 	g2 = &Group{}
-	if err := g2.Deserialize(values, true); err == nil {
+	if err := g2.deserialize(values, true); err == nil {
 		t.Error("expected deserialization error, none returned")
 	} else if derr, ok := err.(*DeserializationError); ok {
 

@@ -16,11 +16,11 @@ func ItemsByGUIDs(feedID uint64, guIDs []string, tx Transaction) (map[string]*It
 	for _, guID := range guIDs {
 
 		e.GUID = guID
-		indexKeys := e.IndexKeys()[ItemIndexGUID]
+		indexKeys := e.indexKeys()[itemIndexGUID]
 
-		if data, ok := kvGetFromIndex(ItemEntity, ItemIndexGUID, indexKeys, tx); ok {
+		if data, ok := kvGetFromIndex(itemEntity, itemIndexGUID, indexKeys, tx); ok {
 			item := &Item{}
-			if err := item.Deserialize(data); err != nil {
+			if err := item.deserialize(data); err != nil {
 				return nil, err
 			}
 			items[item.GUID] = item
@@ -40,12 +40,12 @@ func ItemsByFeed(feedID uint64, tx Transaction) ([]*Item, error) {
 	// define index keys
 	e := &Item{}
 	e.FeedID = feedID
-	minKeys := e.IndexKeys()[ItemIndexGUID]
+	minKeys := e.indexKeys()[itemIndexGUID]
 	e.FeedID = feedID + 1
-	nxtKeys := e.IndexKeys()[ItemIndexGUID]
+	nxtKeys := e.indexKeys()[itemIndexGUID]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(ItemEntity).Bucket(ItemIndexGUID)
-	bItem := tx.Bucket(bucketData).Bucket(ItemEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(itemEntity).Bucket(itemIndexGUID)
+	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -61,7 +61,7 @@ func ItemsByFeed(feedID uint64, tx Transaction) ([]*Item, error) {
 
 		if data, ok := kvGet(id, bItem); ok {
 			item := &Item{}
-			if err := item.Deserialize(data); err != nil {
+			if err := item.deserialize(data); err != nil {
 				return nil, err
 			}
 			items = append(items, item)
@@ -75,5 +75,5 @@ func ItemsByFeed(feedID uint64, tx Transaction) ([]*Item, error) {
 
 // Delete removes an item from the database.
 func (item *Item) Delete(tx Transaction) error {
-	return kvSave(ItemEntity, item, tx)
+	return kvSave(itemEntity, item, tx)
 }

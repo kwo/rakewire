@@ -15,9 +15,9 @@ import (
 
 // index names
 const (
-	SubscriptionEntity    = "Subscription"
-	SubscriptionIndexFeed = "Feed"
-	SubscriptionIndexUser = "User"
+	subscriptionEntity    = "Subscription"
+	subscriptionIndexFeed = "Feed"
+	subscriptionIndexUser = "User"
 )
 
 const (
@@ -39,17 +39,17 @@ var (
 )
 
 // GetID return the primary key of the object.
-func (z *Subscription) GetID() uint64 {
+func (z *Subscription) getID() uint64 {
 	return z.ID
 }
 
 // SetID sets the primary key of the object.
-func (z *Subscription) SetID(id uint64) {
+func (z *Subscription) setID(id uint64) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
-func (z *Subscription) Clear() {
+func (z *Subscription) clear() {
 	z.ID = 0
 	z.UserID = 0
 	z.FeedID = 0
@@ -64,7 +64,7 @@ func (z *Subscription) Clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *Subscription) Serialize(flags ...bool) map[string]string {
+func (z *Subscription) serialize(flags ...bool) map[string]string {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
@@ -128,7 +128,7 @@ func (z *Subscription) Serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *Subscription) Deserialize(values map[string]string, flags ...bool) error {
+func (z *Subscription) deserialize(values map[string]string, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error
@@ -228,24 +228,24 @@ func (z *Subscription) Deserialize(values map[string]string, flags ...bool) erro
 			}
 		}
 	}
-	return newDeserializationError(SubscriptionEntity, errors, missing, unknown)
+	return newDeserializationError(subscriptionEntity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.
-func (z *Subscription) IndexKeys() map[string][]string {
+func (z *Subscription) indexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize(true)
+	data := z.serialize(true)
 
-	result[SubscriptionIndexFeed] = []string{
+	result[subscriptionIndexFeed] = []string{
 
 		data[subscriptionFeedID],
 
 		data[subscriptionUserID],
 	}
 
-	result[SubscriptionIndexUser] = []string{
+	result[subscriptionIndexUser] = []string{
 
 		data[subscriptionUserID],
 

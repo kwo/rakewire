@@ -8,10 +8,10 @@ import (
 // UserByFeverHash get a user object by feverhash, nil if not found
 func UserByFeverHash(feverhash string, tx Transaction) (user *User, err error) {
 
-	data, ok := kvGetFromIndex(UserEntity, UserIndexFeverHash, []string{strings.ToLower(feverhash)}, tx)
+	data, ok := kvGetFromIndex(userEntity, userIndexFeverHash, []string{strings.ToLower(feverhash)}, tx)
 	if ok {
 		user = &User{}
-		err = user.Deserialize(data)
+		err = user.deserialize(data)
 	}
 
 	return
@@ -21,10 +21,10 @@ func UserByFeverHash(feverhash string, tx Transaction) (user *User, err error) {
 // UserByUsername get a user object by username, nil if not found
 func UserByUsername(username string, tx Transaction) (user *User, err error) {
 
-	data, ok := kvGetFromIndex(UserEntity, UserIndexUsername, []string{strings.ToLower(username)}, tx)
+	data, ok := kvGetFromIndex(userEntity, userIndexUsername, []string{strings.ToLower(username)}, tx)
 	if ok {
 		user = &User{}
-		err = user.Deserialize(data)
+		err = user.deserialize(data)
 	}
 
 	return
@@ -35,13 +35,13 @@ func UserByUsername(username string, tx Transaction) (user *User, err error) {
 func (z *User) Save(tx Transaction) error {
 
 	// new user, check for unique username
-	if z.GetID() == 0 {
-		indexName := UserIndexUsername
-		if _, ok := kvGetFromIndex(UserEntity, indexName, z.IndexKeys()[indexName], tx); ok {
+	if z.getID() == 0 {
+		indexName := userIndexUsername
+		if _, ok := kvGetFromIndex(userEntity, indexName, z.indexKeys()[indexName], tx); ok {
 			return fmt.Errorf("Cannot save user, username is already taken: %s", strings.ToLower(z.Username))
 		}
 	}
 
-	return kvSave(UserEntity, z, tx)
+	return kvSave(userEntity, z, tx)
 
 }

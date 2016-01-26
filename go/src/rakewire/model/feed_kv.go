@@ -14,9 +14,9 @@ import (
 
 // index names
 const (
-	FeedEntity         = "Feed"
-	FeedIndexNextFetch = "NextFetch"
-	FeedIndexURL       = "URL"
+	feedEntity         = "Feed"
+	feedIndexNextFetch = "NextFetch"
+	feedIndexURL       = "URL"
 )
 
 const (
@@ -41,17 +41,17 @@ var (
 )
 
 // GetID return the primary key of the object.
-func (z *Feed) GetID() uint64 {
+func (z *Feed) getID() uint64 {
 	return z.ID
 }
 
 // SetID sets the primary key of the object.
-func (z *Feed) SetID(id uint64) {
+func (z *Feed) setID(id uint64) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
-func (z *Feed) Clear() {
+func (z *Feed) clear() {
 	z.ID = 0
 	z.URL = ""
 	z.SiteURL = ""
@@ -69,7 +69,7 @@ func (z *Feed) Clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *Feed) Serialize(flags ...bool) map[string]string {
+func (z *Feed) serialize(flags ...bool) map[string]string {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
@@ -126,7 +126,7 @@ func (z *Feed) Serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *Feed) Deserialize(values map[string]string, flags ...bool) error {
+func (z *Feed) deserialize(values map[string]string, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error
@@ -223,24 +223,24 @@ func (z *Feed) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 	}
-	return newDeserializationError(FeedEntity, errors, missing, unknown)
+	return newDeserializationError(feedEntity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.
-func (z *Feed) IndexKeys() map[string][]string {
+func (z *Feed) indexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize(true)
+	data := z.serialize(true)
 
-	result[FeedIndexNextFetch] = []string{
+	result[feedIndexNextFetch] = []string{
 
 		data[feedNextFetch],
 
 		data[feedID],
 	}
 
-	result[FeedIndexURL] = []string{
+	result[feedIndexURL] = []string{
 
 		strings.ToLower(data[feedURL]),
 	}

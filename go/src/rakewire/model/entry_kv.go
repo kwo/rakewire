@@ -13,10 +13,10 @@ import (
 
 // index names
 const (
-	EntryEntity    = "Entry"
-	EntryIndexRead = "Read"
-	EntryIndexStar = "Star"
-	EntryIndexUser = "User"
+	entryEntity    = "Entry"
+	entryIndexRead = "Read"
+	entryIndexStar = "Star"
+	entryIndexUser = "User"
 )
 
 const (
@@ -36,17 +36,17 @@ var (
 )
 
 // GetID return the primary key of the object.
-func (z *Entry) GetID() uint64 {
+func (z *Entry) getID() uint64 {
 	return z.ID
 }
 
 // SetID sets the primary key of the object.
-func (z *Entry) SetID(id uint64) {
+func (z *Entry) setID(id uint64) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
-func (z *Entry) Clear() {
+func (z *Entry) clear() {
 	z.ID = 0
 	z.UserID = 0
 	z.ItemID = 0
@@ -59,7 +59,7 @@ func (z *Entry) Clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *Entry) Serialize(flags ...bool) map[string]string {
+func (z *Entry) serialize(flags ...bool) map[string]string {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
@@ -106,7 +106,7 @@ func (z *Entry) Serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *Entry) Deserialize(values map[string]string, flags ...bool) error {
+func (z *Entry) deserialize(values map[string]string, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error
@@ -199,17 +199,17 @@ func (z *Entry) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 	}
-	return newDeserializationError(EntryEntity, errors, missing, unknown)
+	return newDeserializationError(entryEntity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.
-func (z *Entry) IndexKeys() map[string][]string {
+func (z *Entry) indexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize(true)
+	data := z.serialize(true)
 
-	result[EntryIndexRead] = []string{
+	result[entryIndexRead] = []string{
 
 		data[entryUserID],
 
@@ -220,7 +220,7 @@ func (z *Entry) IndexKeys() map[string][]string {
 		data[entryID],
 	}
 
-	result[EntryIndexStar] = []string{
+	result[entryIndexStar] = []string{
 
 		data[entryUserID],
 
@@ -231,7 +231,7 @@ func (z *Entry) IndexKeys() map[string][]string {
 		data[entryID],
 	}
 
-	result[EntryIndexUser] = []string{
+	result[entryIndexUser] = []string{
 
 		data[entryUserID],
 

@@ -33,13 +33,13 @@ func TestTransmissionSerialize(t *testing.T) {
 	fl := getNewTransmission()
 	validateTransmission(t, fl)
 
-	data := fl.Serialize()
+	data := fl.serialize()
 	if data == nil {
 		t.Fatal("Transmission serialize returned a nil map")
 	}
 
 	fl2 := &Transmission{}
-	if err := fl2.Deserialize(data); err != nil {
+	if err := fl2.deserialize(data); err != nil {
 		t.Fatalf("Transmission deserialize returned an error: %s", err.Error())
 	}
 	validateTransmission(t, fl2)

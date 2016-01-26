@@ -10,7 +10,7 @@ import (
 func EntriesSave(entries []*Entry, tx Transaction) error {
 
 	for _, entry := range entries {
-		if err := kvSave(EntryEntity, entry, tx); err != nil {
+		if err := kvSave(entryEntity, entry, tx); err != nil {
 			return err
 		}
 	}
@@ -29,12 +29,12 @@ func EntriesAddNew(allItems []*Item, tx Transaction) error {
 		// define index keys
 		uf := &Subscription{}
 		uf.FeedID = feedID
-		minKeys := uf.IndexKeys()[SubscriptionIndexFeed]
+		minKeys := uf.indexKeys()[subscriptionIndexFeed]
 		uf.FeedID++
-		nxtKeys := uf.IndexKeys()[SubscriptionIndexFeed]
+		nxtKeys := uf.indexKeys()[subscriptionIndexFeed]
 
-		bIndex := tx.Bucket(bucketIndex).Bucket(SubscriptionEntity).Bucket(SubscriptionIndexFeed)
-		bSubscription := tx.Bucket(bucketData).Bucket(SubscriptionEntity)
+		bIndex := tx.Bucket(bucketIndex).Bucket(subscriptionEntity).Bucket(subscriptionIndexFeed)
+		bSubscription := tx.Bucket(bucketData).Bucket(subscriptionEntity)
 
 		c := bIndex.Cursor()
 		min := []byte(kvKeys(minKeys))
@@ -53,7 +53,7 @@ func EntriesAddNew(allItems []*Item, tx Transaction) error {
 
 			subscription := &Subscription{}
 			if data, ok := kvGet(subscriptionID, bSubscription); ok {
-				if err := subscription.Deserialize(data); err != nil {
+				if err := subscription.deserialize(data); err != nil {
 					return err
 				}
 			}
@@ -67,7 +67,7 @@ func EntriesAddNew(allItems []*Item, tx Transaction) error {
 					IsRead:         subscription.AutoRead,
 					IsStar:         subscription.AutoStar,
 				}
-				if err := kvSave(EntryEntity, entry, tx); err != nil {
+				if err := kvSave(entryEntity, entry, tx); err != nil {
 					return err
 				}
 			}
@@ -88,11 +88,11 @@ func EntryTotalByUser(userID uint64, tx Transaction) uint {
 	// define index keys
 	ue := &Entry{}
 	ue.UserID = userID
-	minKeys := ue.IndexKeys()[EntryIndexUser]
+	minKeys := ue.indexKeys()[entryIndexUser]
 	ue.UserID = userID + 1
-	nxtKeys := ue.IndexKeys()[EntryIndexUser]
+	nxtKeys := ue.indexKeys()[entryIndexUser]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(EntryEntity).Bucket(EntryIndexUser)
+	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexUser)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -114,14 +114,14 @@ func EntriesStarredByUser(userID uint64, tx Transaction) ([]*Entry, error) {
 	ue := &Entry{}
 	ue.UserID = userID
 	ue.IsStar = true
-	minKeys := ue.IndexKeys()[EntryIndexStar]
+	minKeys := ue.indexKeys()[entryIndexStar]
 	ue.UserID = userID + 1
 	ue.IsStar = false
-	nxtKeys := ue.IndexKeys()[EntryIndexStar]
+	nxtKeys := ue.indexKeys()[entryIndexStar]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(EntryEntity).Bucket(EntryIndexStar)
-	bEntry := tx.Bucket(bucketData).Bucket(EntryEntity)
-	bItem := tx.Bucket(bucketData).Bucket(ItemEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexStar)
+	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
+	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -140,12 +140,12 @@ func EntriesStarredByUser(userID uint64, tx Transaction) ([]*Entry, error) {
 
 		if data, ok := kvGet(id, bEntry); ok {
 			entry := &Entry{}
-			if err := entry.Deserialize(data); err != nil {
+			if err := entry.deserialize(data); err != nil {
 				return nil, err
 			}
 			if data, ok := kvGet(entry.ItemID, bItem); ok {
 				item := &Item{}
-				if err := item.Deserialize(data); err != nil {
+				if err := item.deserialize(data); err != nil {
 					return nil, err
 				}
 				entry.Item = item
@@ -167,13 +167,13 @@ func EntriesUnreadByUser(userID uint64, tx Transaction) ([]*Entry, error) {
 	// define index keys
 	ue := &Entry{}
 	ue.UserID = userID
-	minKeys := ue.IndexKeys()[EntryIndexRead]
+	minKeys := ue.indexKeys()[entryIndexRead]
 	ue.IsRead = true
-	nxtKeys := ue.IndexKeys()[EntryIndexRead]
+	nxtKeys := ue.indexKeys()[entryIndexRead]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(EntryEntity).Bucket(EntryIndexRead)
-	bEntry := tx.Bucket(bucketData).Bucket(EntryEntity)
-	bItem := tx.Bucket(bucketData).Bucket(ItemEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexRead)
+	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
+	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -192,12 +192,12 @@ func EntriesUnreadByUser(userID uint64, tx Transaction) ([]*Entry, error) {
 
 		if data, ok := kvGet(id, bEntry); ok {
 			entry := &Entry{}
-			if err := entry.Deserialize(data); err != nil {
+			if err := entry.deserialize(data); err != nil {
 				return nil, err
 			}
 			if data, ok := kvGet(entry.ItemID, bItem); ok {
 				item := &Item{}
-				if err := item.Deserialize(data); err != nil {
+				if err := item.deserialize(data); err != nil {
 					return nil, err
 				}
 				entry.Item = item
@@ -216,19 +216,19 @@ func EntriesByUser(userID uint64, ids []uint64, tx Transaction) ([]*Entry, error
 
 	var entries []*Entry
 
-	bEntry := tx.Bucket(bucketData).Bucket(EntryEntity)
-	bItem := tx.Bucket(bucketData).Bucket(ItemEntity)
+	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
+	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	for _, id := range ids {
 
 		if data, ok := kvGet(id, bEntry); ok {
 			entry := &Entry{}
-			if err := entry.Deserialize(data); err != nil {
+			if err := entry.deserialize(data); err != nil {
 				return nil, err
 			}
 			if data, ok := kvGet(entry.ItemID, bItem); ok {
 				item := &Item{}
-				if err := item.Deserialize(data); err != nil {
+				if err := item.deserialize(data); err != nil {
 					return nil, err
 				}
 				entry.Item = item
@@ -251,13 +251,13 @@ func EntriesGetNext(userID uint64, minID uint64, count int, tx Transaction) ([]*
 	ue := &Entry{}
 	ue.UserID = userID
 	ue.ID = minID + 1 // minID is exclusive, cursor, inclusive
-	minKeys := ue.IndexKeys()[EntryIndexUser]
+	minKeys := ue.indexKeys()[entryIndexUser]
 	ue.UserID = userID + 1
-	nxtKeys := ue.IndexKeys()[EntryIndexUser]
+	nxtKeys := ue.indexKeys()[entryIndexUser]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(EntryEntity).Bucket(EntryIndexUser)
-	bEntry := tx.Bucket(bucketData).Bucket(EntryEntity)
-	bItem := tx.Bucket(bucketData).Bucket(ItemEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexUser)
+	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
+	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -273,12 +273,12 @@ func EntriesGetNext(userID uint64, minID uint64, count int, tx Transaction) ([]*
 
 		if data, ok := kvGet(id, bEntry); ok {
 			entry := &Entry{}
-			if err := entry.Deserialize(data); err != nil {
+			if err := entry.deserialize(data); err != nil {
 				return nil, err
 			}
 			if data, ok := kvGet(entry.ItemID, bItem); ok {
 				item := &Item{}
-				if err := item.Deserialize(data); err != nil {
+				if err := item.deserialize(data); err != nil {
 					return nil, err
 				}
 				entry.Item = item
@@ -305,13 +305,13 @@ func EntriesGetPrev(userID uint64, maxID uint64, count int, tx Transaction) ([]*
 	ue := &Entry{}
 	ue.UserID = userID
 	ue.ID = maxID - 1 // maxID is exclusive, cursor, inclusive
-	maxKeys := ue.IndexKeys()[EntryIndexUser]
+	maxKeys := ue.indexKeys()[entryIndexUser]
 	ue.ID = 0
-	minKeys := ue.IndexKeys()[EntryIndexUser]
+	minKeys := ue.indexKeys()[entryIndexUser]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(EntryEntity).Bucket(EntryIndexUser)
-	bEntry := tx.Bucket(bucketData).Bucket(EntryEntity)
-	bItem := tx.Bucket(bucketData).Bucket(ItemEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexUser)
+	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
+	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
 	// for k, v := c.First(); k != nil; k, v = c.Next() {
@@ -342,12 +342,12 @@ func EntriesGetPrev(userID uint64, maxID uint64, count int, tx Transaction) ([]*
 
 		if data, ok := kvGet(id, bEntry); ok {
 			entry := &Entry{}
-			if err := entry.Deserialize(data); err != nil {
+			if err := entry.deserialize(data); err != nil {
 				return nil, err
 			}
 			if data, ok := kvGet(entry.ItemID, bItem); ok {
 				item := &Item{}
-				if err := item.Deserialize(data); err != nil {
+				if err := item.deserialize(data); err != nil {
 					return nil, err
 				}
 				entry.Item = item
@@ -374,12 +374,12 @@ func EntriesUpdateReadByFeed(userID, subscriptionID uint64, maxTime time.Time, r
 	ue := &Entry{}
 	ue.UserID = userID
 	ue.IsRead = !read
-	minKeys := ue.IndexKeys()[EntryIndexRead]
+	minKeys := ue.indexKeys()[entryIndexRead]
 	ue.Updated = maxTime.Add(1 * time.Second).Truncate(time.Second)
-	nxtKeys := ue.IndexKeys()[EntryIndexRead]
+	nxtKeys := ue.indexKeys()[entryIndexRead]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(EntryEntity).Bucket(EntryIndexRead)
-	bEntry := tx.Bucket(bucketData).Bucket(EntryEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexRead)
+	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -402,13 +402,13 @@ func EntriesUpdateReadByFeed(userID, subscriptionID uint64, maxTime time.Time, r
 		if data, ok := kvGet(id, bEntry); ok {
 
 			entry := &Entry{}
-			if err := entry.Deserialize(data); err != nil {
+			if err := entry.deserialize(data); err != nil {
 				return err
 			}
 
 			if subscriptionID == 0 || entry.SubscriptionID == subscriptionID { // additional filter not in index
 				entry.IsRead = read
-				if err := kvSave(EntryEntity, entry, tx); err != nil {
+				if err := kvSave(entryEntity, entry, tx); err != nil {
 					return err
 				}
 			}
@@ -429,12 +429,12 @@ func EntriesUpdateStarByFeed(userID, subscriptionID uint64, maxTime time.Time, s
 	ue := &Entry{}
 	ue.UserID = userID
 	ue.IsStar = !star
-	minKeys := ue.IndexKeys()[EntryIndexStar]
+	minKeys := ue.indexKeys()[entryIndexStar]
 	ue.Updated = maxTime.Add(1 * time.Second).Truncate(time.Second)
-	nxtKeys := ue.IndexKeys()[EntryIndexStar]
+	nxtKeys := ue.indexKeys()[entryIndexStar]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(EntryEntity).Bucket(EntryIndexStar)
-	bEntry := tx.Bucket(bucketData).Bucket(EntryEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexStar)
+	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -457,13 +457,13 @@ func EntriesUpdateStarByFeed(userID, subscriptionID uint64, maxTime time.Time, s
 		if data, ok := kvGet(id, bEntry); ok {
 
 			entry := &Entry{}
-			if err := entry.Deserialize(data); err != nil {
+			if err := entry.deserialize(data); err != nil {
 				return err
 			}
 
 			if subscriptionID == 0 || entry.SubscriptionID == subscriptionID { // additional filter not in index
 				entry.IsStar = star
-				if err := kvSave(EntryEntity, entry, tx); err != nil {
+				if err := kvSave(entryEntity, entry, tx); err != nil {
 					return err
 				}
 			}

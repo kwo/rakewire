@@ -8,10 +8,10 @@ import (
 
 // GroupByID retrieves a single group.
 func GroupByID(groupID uint64, tx Transaction) (group *Group, err error) {
-	b := tx.Bucket(bucketData).Bucket(GroupEntity)
+	b := tx.Bucket(bucketData).Bucket(groupEntity)
 	if values, ok := kvGet(groupID, b); ok {
 		group = &Group{}
-		err = group.Deserialize(values)
+		err = group.deserialize(values)
 	}
 	return
 }
@@ -24,12 +24,12 @@ func GroupsByUser(userID uint64, tx Transaction) ([]*Group, error) {
 	// define index keys
 	g := &Group{}
 	g.UserID = userID
-	minKeys := g.IndexKeys()[GroupIndexUserGroup]
+	minKeys := g.indexKeys()[groupIndexUserGroup]
 	g.UserID = userID + 1
-	nxtKeys := g.IndexKeys()[GroupIndexUserGroup]
+	nxtKeys := g.indexKeys()[groupIndexUserGroup]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(GroupEntity).Bucket(GroupIndexUserGroup)
-	b := tx.Bucket(bucketData).Bucket(GroupEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(groupEntity).Bucket(groupIndexUserGroup)
+	b := tx.Bucket(bucketData).Bucket(groupEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -43,7 +43,7 @@ func GroupsByUser(userID uint64, tx Transaction) ([]*Group, error) {
 
 		if data, ok := kvGet(id, b); ok {
 			g := &Group{}
-			if err := g.Deserialize(data); err != nil {
+			if err := g.deserialize(data); err != nil {
 				return nil, err
 			}
 			result = append(result, g)
@@ -59,17 +59,17 @@ func GroupsByUser(userID uint64, tx Transaction) ([]*Group, error) {
 func (group *Group) Save(tx Transaction) error {
 
 	// new group, check for unique group name
-	if group.GetID() == 0 {
-		if _, ok := kvGetFromIndex(GroupEntity, GroupIndexUserGroup, group.IndexKeys()[GroupIndexUserGroup], tx); ok {
+	if group.getID() == 0 {
+		if _, ok := kvGetFromIndex(groupEntity, groupIndexUserGroup, group.indexKeys()[groupIndexUserGroup], tx); ok {
 			return fmt.Errorf("Cannot save group, group name is already taken: %s", group.Name)
 		}
 	}
 
-	return kvSave(GroupEntity, group, tx)
+	return kvSave(groupEntity, group, tx)
 
 }
 
 // Delete deletes a group in the database.
 func (group *Group) Delete(tx Transaction) error {
-	return kvDelete(GroupEntity, group, tx)
+	return kvDelete(groupEntity, group, tx)
 }

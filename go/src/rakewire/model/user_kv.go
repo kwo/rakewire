@@ -13,9 +13,9 @@ import (
 
 // index names
 const (
-	UserEntity         = "User"
-	UserIndexFeverHash = "FeverHash"
-	UserIndexUsername  = "Username"
+	userEntity         = "User"
+	userIndexFeverHash = "FeverHash"
+	userIndexUsername  = "Username"
 )
 
 const (
@@ -32,17 +32,17 @@ var (
 )
 
 // GetID return the primary key of the object.
-func (z *User) GetID() uint64 {
+func (z *User) getID() uint64 {
 	return z.ID
 }
 
 // SetID sets the primary key of the object.
-func (z *User) SetID(id uint64) {
+func (z *User) setID(id uint64) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
-func (z *User) Clear() {
+func (z *User) clear() {
 	z.ID = 0
 	z.Username = ""
 	z.PasswordHash = ""
@@ -52,7 +52,7 @@ func (z *User) Clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *User) Serialize(flags ...bool) map[string]string {
+func (z *User) serialize(flags ...bool) map[string]string {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
@@ -77,7 +77,7 @@ func (z *User) Serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *User) Deserialize(values map[string]string, flags ...bool) error {
+func (z *User) deserialize(values map[string]string, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error
@@ -114,22 +114,22 @@ func (z *User) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 	}
-	return newDeserializationError(UserEntity, errors, missing, unknown)
+	return newDeserializationError(userEntity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.
-func (z *User) IndexKeys() map[string][]string {
+func (z *User) indexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
-	data := z.Serialize(true)
+	data := z.serialize(true)
 
-	result[UserIndexFeverHash] = []string{
+	result[userIndexFeverHash] = []string{
 
 		data[userFeverHash],
 	}
 
-	result[UserIndexUsername] = []string{
+	result[userIndexUsername] = []string{
 
 		strings.ToLower(data[userUsername]),
 	}

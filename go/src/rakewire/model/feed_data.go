@@ -13,8 +13,8 @@ func FeedsAll(tx Transaction) ([]*Feed, error) {
 
 	var result []*Feed
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(FeedEntity).Bucket(FeedIndexURL)
-	b := tx.Bucket(bucketData).Bucket(FeedEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(feedEntity).Bucket(feedIndexURL)
+	b := tx.Bucket(bucketData).Bucket(feedEntity)
 
 	c := bIndex.Cursor()
 	for k, v := c.First(); k != nil; k, v = c.Next() {
@@ -26,7 +26,7 @@ func FeedsAll(tx Transaction) ([]*Feed, error) {
 
 		if data, ok := kvGet(id, b); ok {
 			f := &Feed{}
-			if err := f.Deserialize(data); err != nil {
+			if err := f.deserialize(data); err != nil {
 				return nil, err
 			}
 			result = append(result, f)
@@ -47,12 +47,12 @@ func FeedsFetch(maxTime time.Time, tx Transaction) ([]*Feed, error) {
 	}
 	f := &Feed{}
 	f.NextFetch = maxTime
-	nxtKeys := f.IndexKeys()[FeedIndexNextFetch]
+	nxtKeys := f.indexKeys()[feedIndexNextFetch]
 
 	var result []*Feed
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(FeedEntity).Bucket(FeedIndexNextFetch)
-	b := tx.Bucket(bucketData).Bucket(FeedEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(feedEntity).Bucket(feedIndexNextFetch)
+	b := tx.Bucket(bucketData).Bucket(feedEntity)
 
 	c := bIndex.Cursor()
 	nxt := []byte(kvKeys(nxtKeys))
@@ -65,7 +65,7 @@ func FeedsFetch(maxTime time.Time, tx Transaction) ([]*Feed, error) {
 
 		if data, ok := kvGet(id, b); ok {
 			f := &Feed{}
-			if err := f.Deserialize(data); err != nil {
+			if err := f.deserialize(data); err != nil {
 				return nil, err
 			}
 			result = append(result, f)
@@ -79,19 +79,19 @@ func FeedsFetch(maxTime time.Time, tx Transaction) ([]*Feed, error) {
 
 // FeedByID return feed given id
 func FeedByID(id uint64, tx Transaction) (feed *Feed, err error) {
-	b := tx.Bucket(bucketData).Bucket(FeedEntity)
+	b := tx.Bucket(bucketData).Bucket(feedEntity)
 	if data, ok := kvGet(id, b); ok {
 		feed = &Feed{}
-		err = feed.Deserialize(data)
+		err = feed.deserialize(data)
 	}
 	return
 }
 
 // FeedByURL return feed given url
 func FeedByURL(url string, tx Transaction) (feed *Feed, err error) {
-	if data, ok := kvGetFromIndex(FeedEntity, FeedIndexURL, []string{strings.ToLower(url)}, tx); ok {
+	if data, ok := kvGetFromIndex(feedEntity, feedIndexURL, []string{strings.ToLower(url)}, tx); ok {
 		feed = &Feed{}
-		err = feed.Deserialize(data)
+		err = feed.deserialize(data)
 	}
 	return
 }
@@ -107,7 +107,7 @@ func (feed *Feed) Save(tx Transaction) ([]*Item, error) {
 
 	// save feed log if available
 	if feed.Transmission != nil {
-		if err := kvSave(TransmissionEntity, feed.Transmission, tx); err != nil {
+		if err := kvSave(transmissionEntity, feed.Transmission, tx); err != nil {
 			return nil, err
 		}
 	}
@@ -118,7 +118,7 @@ func (feed *Feed) Save(tx Transaction) ([]*Item, error) {
 			if item.ID == 0 {
 				newItems = append(newItems, item)
 			}
-			if err := kvSave(ItemEntity, item, tx); err != nil {
+			if err := kvSave(itemEntity, item, tx); err != nil {
 				return nil, err
 			}
 		}
@@ -129,7 +129,7 @@ func (feed *Feed) Save(tx Transaction) ([]*Item, error) {
 	}
 
 	// save feed itself
-	if err := kvSave(FeedEntity, feed, tx); err != nil {
+	if err := kvSave(feedEntity, feed, tx); err != nil {
 		return nil, err
 	}
 
@@ -146,7 +146,7 @@ func (feed *Feed) Delete(tx Transaction) error {
 		return err
 	}
 	for _, item := range items {
-		if err := kvDelete(ItemEntity, item, tx); err != nil {
+		if err := kvDelete(itemEntity, item, tx); err != nil {
 			return err
 		}
 	}
@@ -157,13 +157,13 @@ func (feed *Feed) Delete(tx Transaction) error {
 		return err
 	}
 	for _, transmission := range transmissions {
-		if err := kvDelete(TransmissionEntity, transmission, tx); err != nil {
+		if err := kvDelete(transmissionEntity, transmission, tx); err != nil {
 			return err
 		}
 	}
 
 	// remove feed itself
-	return kvDelete(FeedEntity, feed, tx)
+	return kvDelete(feedEntity, feed, tx)
 
 }
 
@@ -172,7 +172,7 @@ func FeedDuplicates(tx Transaction) (map[string][]uint64, error) {
 
 	result := make(map[string][]uint64)
 
-	b := tx.Bucket(bucketData).Bucket(FeedEntity)
+	b := tx.Bucket(bucketData).Bucket(feedEntity)
 	err := b.ForEach(func(k, v []byte) error {
 		if fieldName := kvKeyElement(k, 1); fieldName == "URL" {
 			id, err := kvKeyElementID(k, 0)

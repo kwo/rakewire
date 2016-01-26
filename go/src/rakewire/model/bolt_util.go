@@ -31,37 +31,37 @@ func checkSchema(tx *bolt.Tx) error {
 	}
 
 	// data
-	b, err = bucketData.CreateBucketIfNotExists([]byte(UserEntity))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(userEntity))
 	if err != nil {
 		return err
 	}
 
-	b, err = bucketData.CreateBucketIfNotExists([]byte(GroupEntity))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(groupEntity))
 	if err != nil {
 		return err
 	}
 
-	b, err = bucketData.CreateBucketIfNotExists([]byte(FeedEntity))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(feedEntity))
 	if err != nil {
 		return err
 	}
 
-	b, err = bucketData.CreateBucketIfNotExists([]byte(TransmissionEntity))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(transmissionEntity))
 	if err != nil {
 		return err
 	}
 
-	b, err = bucketData.CreateBucketIfNotExists([]byte(ItemEntity))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(itemEntity))
 	if err != nil {
 		return err
 	}
 
-	b, err = bucketData.CreateBucketIfNotExists([]byte(EntryEntity))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(entryEntity))
 	if err != nil {
 		return err
 	}
 
-	b, err = bucketData.CreateBucketIfNotExists([]byte(SubscriptionEntity))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(subscriptionEntity))
 	if err != nil {
 		return err
 	}
@@ -69,11 +69,11 @@ func checkSchema(tx *bolt.Tx) error {
 	// indexes
 
 	user := NewUser("")
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(UserEntity))
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(userEntity))
 	if err != nil {
 		return err
 	}
-	for k := range user.IndexKeys() {
+	for k := range user.indexKeys() {
 		_, err = b.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
 			return err
@@ -81,11 +81,11 @@ func checkSchema(tx *bolt.Tx) error {
 	}
 
 	group := NewGroup(0, "")
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(GroupEntity))
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(groupEntity))
 	if err != nil {
 		return err
 	}
-	for k := range group.IndexKeys() {
+	for k := range group.indexKeys() {
 		_, err = b.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
 			return err
@@ -93,11 +93,11 @@ func checkSchema(tx *bolt.Tx) error {
 	}
 
 	feed := NewFeed("")
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(FeedEntity))
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(feedEntity))
 	if err != nil {
 		return err
 	}
-	for k := range feed.IndexKeys() {
+	for k := range feed.indexKeys() {
 		_, err = b.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
 			return err
@@ -105,11 +105,11 @@ func checkSchema(tx *bolt.Tx) error {
 	}
 
 	transmission := NewTransmission(feed.ID)
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(TransmissionEntity))
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(transmissionEntity))
 	if err != nil {
 		return err
 	}
-	for k := range transmission.IndexKeys() {
+	for k := range transmission.indexKeys() {
 		_, err = b.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
 			return err
@@ -117,11 +117,11 @@ func checkSchema(tx *bolt.Tx) error {
 	}
 
 	item := NewItem(feed.ID, "")
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(ItemEntity))
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(itemEntity))
 	if err != nil {
 		return err
 	}
-	for k := range item.IndexKeys() {
+	for k := range item.indexKeys() {
 		_, err = b.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
 			return err
@@ -129,11 +129,11 @@ func checkSchema(tx *bolt.Tx) error {
 	}
 
 	ue := Entry{}
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(EntryEntity))
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(entryEntity))
 	if err != nil {
 		return err
 	}
-	for k := range ue.IndexKeys() {
+	for k := range ue.indexKeys() {
 		_, err = b.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
 			return err
@@ -141,11 +141,11 @@ func checkSchema(tx *bolt.Tx) error {
 	}
 
 	uf := NewSubscription(user.ID, feed.ID)
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(SubscriptionEntity))
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(subscriptionEntity))
 	if err != nil {
 		return err
 	}
-	for k := range uf.IndexKeys() {
+	for k := range uf.indexKeys() {
 		_, err = b.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
 			return err
@@ -166,31 +166,31 @@ func removeInvalidKeys(tx Transaction) error {
 
 	log.Printf("%-7s %-7s remove invalid items...", logInfo, logName)
 
-	if err := removeInvalidKeysForEntity(UserEntity, &User{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(userEntity, &User{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidKeysForEntity(GroupEntity, &Group{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(groupEntity, &Group{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidKeysForEntity(FeedEntity, &Feed{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(feedEntity, &Feed{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidKeysForEntity(TransmissionEntity, &Transmission{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(transmissionEntity, &Transmission{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidKeysForEntity(ItemEntity, &Item{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(itemEntity, &Item{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidKeysForEntity(EntryEntity, &Entry{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(entryEntity, &Entry{}, tx); err != nil {
 		return err
 	}
 
-	if err := removeInvalidKeysForEntity(SubscriptionEntity, &Subscription{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(subscriptionEntity, &Subscription{}, tx); err != nil {
 		return err
 	}
 
@@ -224,7 +224,7 @@ func removeInvalidKeysForEntity(entityName string, dao DataObject, tx Transactio
 		if id != lastID {
 
 			// deserialize dao
-			if err := dao.Deserialize(data, true); err != nil {
+			if err := dao.deserialize(data, true); err != nil {
 				if derr, ok := err.(*DeserializationError); ok {
 					if len(derr.Errors) > 0 || len(derr.MissingFieldnames) > 0 {
 						// invalid item, remove complete record, all keys
@@ -246,7 +246,7 @@ func removeInvalidKeysForEntity(entityName string, dao DataObject, tx Transactio
 			lastID = id
 			data = make(map[string]string)
 			keys = [][]byte{}
-			dao.Clear()
+			dao.clear()
 
 		} // id switch
 
@@ -285,31 +285,31 @@ func rebuildIndexes(tx *boltTransaction) error {
 		return err
 	}
 
-	if err := rebuildIndexesForEntity(UserEntity, &User{}, tx); err != nil {
+	if err := rebuildIndexesForEntity(userEntity, &User{}, tx); err != nil {
 		return err
 	}
 
-	if err := rebuildIndexesForEntity(GroupEntity, &Group{}, tx); err != nil {
+	if err := rebuildIndexesForEntity(groupEntity, &Group{}, tx); err != nil {
 		return err
 	}
 
-	if err := rebuildIndexesForEntity(FeedEntity, &Feed{}, tx); err != nil {
+	if err := rebuildIndexesForEntity(feedEntity, &Feed{}, tx); err != nil {
 		return err
 	}
 
-	if err := rebuildIndexesForEntity(TransmissionEntity, &Transmission{}, tx); err != nil {
+	if err := rebuildIndexesForEntity(transmissionEntity, &Transmission{}, tx); err != nil {
 		return err
 	}
 
-	if err := rebuildIndexesForEntity(ItemEntity, &Item{}, tx); err != nil {
+	if err := rebuildIndexesForEntity(itemEntity, &Item{}, tx); err != nil {
 		return err
 	}
 
-	if err := rebuildIndexesForEntity(EntryEntity, &Entry{}, tx); err != nil {
+	if err := rebuildIndexesForEntity(entryEntity, &Entry{}, tx); err != nil {
 		return err
 	}
 
-	if err := rebuildIndexesForEntity(SubscriptionEntity, &Subscription{}, tx); err != nil {
+	if err := rebuildIndexesForEntity(subscriptionEntity, &Subscription{}, tx); err != nil {
 		return err
 	}
 
@@ -328,12 +328,12 @@ func rebuildIndexesForEntity(entityName string, dao DataObject, tx Transaction) 
 	}
 
 	for _, id := range ids {
-		dao.Clear()
+		dao.clear()
 		if data, ok := kvGet(id, bEntity); ok {
-			if err := dao.Deserialize(data); err != nil {
+			if err := dao.deserialize(data); err != nil {
 				return err
 			}
-			if err := kvSaveIndexes(entityName, id, dao.IndexKeys(), nil, tx); err != nil {
+			if err := kvSaveIndexes(entityName, id, dao.indexKeys(), nil, tx); err != nil {
 				return err
 			}
 		}
