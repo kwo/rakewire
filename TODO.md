@@ -9,9 +9,8 @@
   x use manually managed transactions in database
   x rename model elements: Feed/Item, Subscription/Entry
   x rename FeedLog to Transmission
+  x pull up rest api, fever api
   - create collection classes with groupby and sort functions
-  - new structure: services, apis, model, ....
-  - pull up rest api, fever api
   - add command-line flag to repair/compact database, remove cleanup api
  - store config, tls keys in data file, eliminate config package
  - optimize entries

@@ -5,9 +5,9 @@ package httpd
 import (
 	"github.com/gorilla/mux"
 	"net/http"
-	"rakewire/httpd/fever"
-	"rakewire/httpd/rest"
+	"rakewire/fever"
 	"rakewire/middleware"
+	"rakewire/rest"
 )
 
 func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
