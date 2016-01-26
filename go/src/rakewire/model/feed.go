@@ -12,7 +12,7 @@ type Feed struct {
 	Items        []*Item       `json:"-" kv:"-"`
 
 	ID      uint64 `json:"id"  kv:"NextFetch:2"`
-	URL     string `json:"url" kv:"+required,+groupby,URL:1:lower"`
+	URL     string `json:"url" kv:"+required,+groupall,URL:1:lower"`
 	SiteURL string `json:"siteURL"`
 
 	ETag         string    `json:"etag"`

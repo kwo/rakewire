@@ -1,8 +1,13 @@
 package model
 
 import (
+	"fmt"
 	"github.com/boltdb/bolt"
 	"log"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
 )
 
 // top level buckets
@@ -162,6 +167,49 @@ func upgradeSchema(tx *bolt.Tx) error {
 
 }
 
+func checkIntegrity(location string) error {
+
+	// rename database file to backup name, create new file, open both files
+	newLocation, err := renameWithTimestamp(location)
+	if err != nil {
+		return err
+	}
+	log.Printf("original database saved to %s\n", newLocation)
+
+	oldDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		return err
+	}
+	defer oldDB.Close()
+
+	newDB, err := bolt.Open(newLocation, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		return err
+	}
+	defer newDB.Close()
+
+	// ensure correct buckets exist in new file
+	log.Print("ensuring database structure...")
+	if err := oldDB.Update(func(tx *bolt.Tx) error {
+		return checkSchema(tx)
+	}); err != nil {
+		oldDB.Close()
+		return err
+	}
+	if err := newDB.Update(func(tx *bolt.Tx) error {
+		return checkSchema(tx)
+	}); err != nil {
+		newDB.Close()
+		return err
+	}
+	log.Println("ensuring database structure...finished.")
+
+	// - copy all kv pairs in data buckets to new file, only if they are valid, report invalid records
+
+	return nil
+
+}
+
 func removeInvalidKeys(tx Transaction) error {
 
 	log.Printf("%-7s %-7s remove invalid items...", logInfo, logName)
@@ -199,7 +247,7 @@ func removeInvalidKeys(tx Transaction) error {
 	return nil
 }
 
-func removeInvalidKeysForEntity(entityName string, dao DataObject, tx Transaction) error {
+func removeInvalidKeysForEntity(entityName string, dao Object, tx Transaction) error {
 
 	b := tx.Bucket(bucketData).Bucket(entityName)
 
@@ -319,7 +367,7 @@ func rebuildIndexes(tx *boltTransaction) error {
 
 }
 
-func rebuildIndexesForEntity(entityName string, dao DataObject, tx Transaction) error {
+func rebuildIndexesForEntity(entityName string, dao Object, tx Transaction) error {
 
 	bEntity := tx.Bucket(bucketData).Bucket(entityName)
 	ids, err := kvGetUniqueIDs(bEntity) // TODO: what about really large buckets
@@ -340,4 +388,20 @@ func rebuildIndexesForEntity(entityName string, dao DataObject, tx Transaction) 
 	}
 
 	return nil
+}
+
+func renameWithTimestamp(location string) (string, error) {
+
+	now := time.Now().Truncate(time.Second)
+	timestamp := now.Format("20060102150405")
+
+	dir := filepath.Dir(location)
+	ext := filepath.Ext(location)
+	filename := strings.TrimSuffix(filepath.Base(location), ext)
+
+	newFilename := fmt.Sprintf("%s%s%s-%s%s", dir, string(os.PathSeparator), filename, timestamp, ext)
+	err := os.Rename(location, newFilename)
+
+	return newFilename, err
+
 }

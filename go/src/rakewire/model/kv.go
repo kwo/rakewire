@@ -13,13 +13,19 @@ const (
 	chSep = "|"
 )
 
-// DataObject defines the functions necessary for objects to be persisted to the database
-type DataObject interface {
+// Record defines a group of key-value pairs that can create a new Object
+type Record map[string]string
+
+// OnRecord defines a function type that fires on a new Record
+type OnRecord func(Record) error
+
+// Object defines the functions necessary for objects to be persisted to the database
+type Object interface {
 	getID() uint64
 	setID(id uint64)
 	clear()
-	serialize(...bool) map[string]string
-	deserialize(map[string]string, ...bool) error
+	serialize(...bool) Record
+	deserialize(Record, ...bool) error
 	indexKeys() map[string][]string
 }
 
@@ -59,6 +65,41 @@ func (z DeserializationError) Error() string {
 		texts = append(texts, fmt.Sprintf("Unknown field in %s: %s", z.Entity, field))
 	}
 	return strings.Join(texts, "\n")
+}
+
+func kvIterate(b Bucket, onRecord OnRecord) error {
+
+	firstRow := false
+	var lastID uint64
+	record := make(Record)
+
+	return b.ForEach(func(key, value []byte) error {
+
+		id, fieldname, err := kvBucketKeyDecode(key)
+		if err != nil {
+			// log error?
+			return nil // continue
+		}
+
+		if !firstRow {
+			lastID = id
+			firstRow = true
+		}
+
+		if id != lastID {
+			if err := onRecord(record); err != nil {
+				return err
+			}
+			// reset
+			lastID = id
+			record = make(Record)
+		} // id switch
+
+		record[fieldname] = string(value)
+		return nil
+
+	}) // for each
+
 }
 
 func kvGet(id uint64, b Bucket) (map[string]string, bool) {
@@ -103,6 +144,7 @@ func kvGetFromIndex(name string, index string, keys []string, tx Transaction) (m
 
 }
 
+// kvGetUniqueIDs: deprecated
 func kvGetUniqueIDs(b Bucket) ([]uint64, error) {
 
 	var result []uint64
@@ -151,7 +193,7 @@ func kvPut(id uint64, values map[string]string, b Bucket) error {
 
 }
 
-func kvSave(name string, value DataObject, tx Transaction) error {
+func kvSave(name string, value Object, tx Transaction) error {
 
 	b := tx.Bucket(bucketData).Bucket(name)
 
@@ -237,7 +279,7 @@ func kvSaveIndexes(name string, id uint64, newIndexes map[string][]string, oldIn
 
 }
 
-func kvDelete(name string, value DataObject, tx Transaction) error {
+func kvDelete(name string, value Object, tx Transaction) error {
 
 	if value.getID() == 0 {
 		return fmt.Errorf("Cannot delete %s with ID of 0", name)

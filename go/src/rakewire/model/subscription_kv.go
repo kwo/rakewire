@@ -83,7 +83,7 @@ func (z *Subscription) clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *Subscription) serialize(flags ...bool) map[string]string {
+func (z *Subscription) serialize(flags ...bool) Record {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
@@ -147,7 +147,7 @@ func (z *Subscription) serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *Subscription) deserialize(values map[string]string, flags ...bool) error {
+func (z *Subscription) deserialize(values Record, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error

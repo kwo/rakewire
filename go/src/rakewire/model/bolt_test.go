@@ -3,6 +3,7 @@ package model
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -41,6 +42,39 @@ func closeTestDatabase(t *testing.T, d Database) {
 
 	if err := os.Remove(location); err != nil {
 		t.Errorf("Cannot remove temp file: %s", err.Error())
+	}
+
+}
+
+func TestRenameWithTimestamp(t *testing.T) {
+
+	t.Parallel()
+
+	tmpdir := os.TempDir()
+	filename := "data.db"
+	location := filepath.Join(tmpdir, filename)
+	if err := ioutil.WriteFile(location, []byte{}, os.ModePerm); err != nil {
+		t.Fatalf("Error touching file: %s", err.Error())
+	}
+
+	if newLocation, err := renameWithTimestamp(location); err != nil {
+		t.Errorf("Error renaming file: %s", err.Error())
+	} else {
+
+		t.Log(newLocation)
+
+		if _, err := os.Stat(location); err == nil {
+			t.Error("Expected error getting stats for now non-existent original file")
+		}
+
+		if _, err := os.Stat(newLocation); err != nil {
+			t.Errorf("Error getting stats for new file: %s", err.Error())
+		}
+
+		if err := os.Remove(newLocation); err != nil {
+			t.Errorf("Cannot remove temp file: %s", err.Error())
+		}
+
 	}
 
 }

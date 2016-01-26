@@ -88,7 +88,7 @@ func (z *Feed) clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *Feed) serialize(flags ...bool) map[string]string {
+func (z *Feed) serialize(flags ...bool) Record {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
@@ -145,7 +145,7 @@ func (z *Feed) serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *Feed) deserialize(values map[string]string, flags ...bool) error {
+func (z *Feed) deserialize(values Record, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error
@@ -267,11 +267,13 @@ func (z *Feed) indexKeys() map[string][]string {
 	return result
 }
 
-// GroupByURL groups elements in the Feeds collection by URL
-func (z Feeds) GroupByURL() map[string]*Feed {
-	result := make(map[string]*Feed)
+// GroupAllByURL groups collections of elements in Feeds by URL
+func (z Feeds) GroupAllByURL() map[string]Feeds {
+	result := make(map[string]Feeds)
 	for _, feed := range z {
-		result[feed.URL] = feed
+		a := result[feed.URL]
+		a = append(a, feed)
+		result[feed.URL] = a
 	}
 	return result
 }

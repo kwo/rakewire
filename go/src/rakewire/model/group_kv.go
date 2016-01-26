@@ -67,7 +67,7 @@ func (z *Group) clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *Group) serialize(flags ...bool) map[string]string {
+func (z *Group) serialize(flags ...bool) Record {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
@@ -88,7 +88,7 @@ func (z *Group) serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *Group) deserialize(values map[string]string, flags ...bool) error {
+func (z *Group) deserialize(values Record, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error
