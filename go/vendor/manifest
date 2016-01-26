@@ -10,7 +10,7 @@
 		{
 			"importpath": "github.com/boltdb/bolt",
 			"repository": "https://github.com/boltdb/bolt",
-			"revision": "b34b35ea8d06bb9ae69d9a349119252e4c1d8ee0",
+			"revision": "ee4a0888a9abe7eefe5a0992ca4cb06864839873",
 			"branch": "master"
 		},
 		{
@@ -22,13 +22,13 @@
 		{
 			"importpath": "github.com/gorilla/handlers",
 			"repository": "https://github.com/gorilla/handlers",
-			"revision": "1af6d56d7cd39d982856bc0cee11142baf392c52",
+			"revision": "8f2758070a82adb7a3ad6b223a0b91878f32d400",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/gorilla/mux",
 			"repository": "https://github.com/gorilla/mux",
-			"revision": "9c068cf16d982f8bd444b8c352acbeec34c4fe5b",
+			"revision": "26a6070f849969ba72b72256e9f14cf519751690",
 			"branch": "master"
 		},
 		{
@@ -48,14 +48,14 @@
 		{
 			"importpath": "golang.org/x/crypto/bcrypt",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "7b85b097bf7527677d54d3220065e966a0e3b613",
+			"revision": "3760e016850398b85094c4c99e955b8c3dea5711",
 			"branch": "master",
 			"path": "/bcrypt"
 		},
 		{
 			"importpath": "golang.org/x/crypto/blowfish",
 			"repository": "https://go.googlesource.com/crypto",
-			"revision": "7b85b097bf7527677d54d3220065e966a0e3b613",
+			"revision": "3760e016850398b85094c4c99e955b8c3dea5711",
 			"branch": "master",
 			"path": "/blowfish"
 		},
