@@ -7,27 +7,28 @@ import (
 )
 
 // OpenDatabase opens the database at the specified location
-func OpenDatabase(location string) (Database, error) {
+func OpenDatabase(location string, flags ...bool) (Database, error) {
+
+	flagCheckIntegrity := len(flags) > 0 && flags[0]
+
+	if flagCheckIntegrity {
+		return nil, checkIntegrity(location)
+	}
 
 	boltDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return nil, err
 	}
 
-	err = boltDB.Update(func(tx *bolt.Tx) error {
-
+	if err := boltDB.Update(func(tx *bolt.Tx) error {
 		if err := checkSchema(tx); err != nil {
 			return err
 		}
-
 		if err := upgradeSchema(tx); err != nil {
 			return err
 		}
-
 		return nil
-
-	})
-	if err != nil {
+	}); err != nil {
 		boltDB.Close()
 		return nil, err
 	}
@@ -75,23 +76,6 @@ func (z *boltDatabase) Update(fn func(transaction Transaction) error) error {
 	return z.db.Update(func(tx *bolt.Tx) error {
 		bt := &boltTransaction{tx: tx}
 		return fn(bt)
-	})
-}
-
-// Repair ensures the integrity of the database.
-func (z *boltDatabase) Repair() error {
-	return z.Update(func(tx Transaction) error {
-
-		if err := removeInvalidKeys(tx); err != nil {
-			return err
-		}
-
-		if err := rebuildIndexes(tx.(*boltTransaction)); err != nil {
-			return err
-		}
-
-		return nil
-
 	})
 }
 

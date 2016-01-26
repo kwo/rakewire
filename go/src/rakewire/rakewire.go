@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -33,6 +34,9 @@ var (
 
 func main() {
 
+	var checkDatabase = flag.Bool("check", false, "check database integrity and exit")
+	flag.Parse()
+
 	cfg := config.GetConfig()
 	if cfg == nil {
 		log.Printf("abort! no config file found at %s\n", config.GetConfigFileLocation())
@@ -48,12 +52,19 @@ func main() {
 	log.Printf("Build Hash: %s\n", model.BuildHash)
 
 	var err error
-	database, err = model.OpenDatabase(cfg.Database.Location)
-	if err != nil {
+	database, err = model.OpenDatabase(cfg.Database.Location, *checkDatabase)
+	if !*checkDatabase && err != nil {
 		log.Printf("Cannot open database: %s", err.Error())
 		model.CloseDatabase(database)
 		return
+	} else if *checkDatabase {
+		if err != nil {
+			log.Printf("Error checking database: %s", err.Error())
+		}
+		// exit application if running check
+		return
 	}
+
 	polld = pollfeed.NewService(&cfg.Poll, database)
 	reaperd = reaper.NewService(&cfg.Reaper, database)
 	fetchd := fetch.NewService(&cfg.Fetcher, polld.Output, reaperd.Input)
