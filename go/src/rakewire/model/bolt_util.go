@@ -169,20 +169,22 @@ func upgradeSchema(tx *bolt.Tx) error {
 
 func checkIntegrity(location string) error {
 
+	log.Println("checking database integrity...")
+
 	// rename database file to backup name, create new file, open both files
-	newLocation, err := renameWithTimestamp(location)
+	backupFilename, err := renameWithTimestamp(location)
 	if err != nil {
 		return err
 	}
-	log.Printf("original database saved to %s\n", newLocation)
+	log.Printf("original database saved to %s\n", backupFilename)
 
-	oldDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	oldDB, err := bolt.Open(backupFilename, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return err
 	}
 	defer oldDB.Close()
 
-	newDB, err := bolt.Open(newLocation, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	newDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return err
 	}
@@ -204,7 +206,40 @@ func checkIntegrity(location string) error {
 	}
 	log.Println("ensuring database structure...finished.")
 
-	// - copy all kv pairs in data buckets to new file, only if they are valid, report invalid records
+	// copy all kv pairs in data buckets to new file, only if they are valid, report invalid records
+	log.Println("migrating data...")
+	if err := copyContainers(newBoltDatabase(oldDB), newBoltDatabase(newDB)); err != nil {
+		return err
+	}
+	log.Println("migrating data...complete")
+
+	// TODO: copy config which is not record based, need new type - Field
+
+	log.Println("checking database integrity...complete")
+
+	return nil
+
+}
+
+func copyContainers(src, dst Database) error {
+
+	containers := []string{"Entry", "Feed", "Group", "Item", "Subscription", "Transmission", "User"}
+
+	for _, container := range containers {
+		log.Printf("  %s...", container)
+		err := src.Select(func(srcTx Transaction) error {
+			srcContainer := srcTx.Container(bucketData).Container(container)
+			return dst.Update(func(dstTx Transaction) error {
+				dstContainer := dstTx.Container(bucketData).Container(container)
+				return srcContainer.Iterate(func(record Record) error {
+					return dstContainer.Put(record.GetID(), record)
+				})
+			})
+		})
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 

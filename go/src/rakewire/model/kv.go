@@ -16,6 +16,17 @@ const (
 // Record defines a group of key-value pairs that can create a new Object
 type Record map[string]string
 
+// GetID return the primary key of the object.
+func (z Record) GetID() uint64 {
+	id, _ := strconv.ParseUint(z["ID"], 10, 64)
+	return id
+}
+
+// SetID sets the primary key of the object.
+func (z Record) SetID(id uint64) {
+	z["ID"] = strconv.FormatUint(id, 10)
+}
+
 // OnRecord defines a function type that fires on a new Record
 type OnRecord func(Record) error
 
@@ -65,41 +76,6 @@ func (z DeserializationError) Error() string {
 		texts = append(texts, fmt.Sprintf("Unknown field in %s: %s", z.Entity, field))
 	}
 	return strings.Join(texts, "\n")
-}
-
-func kvIterate(b Bucket, onRecord OnRecord) error {
-
-	firstRow := false
-	var lastID uint64
-	record := make(Record)
-
-	return b.ForEach(func(key, value []byte) error {
-
-		id, fieldname, err := kvBucketKeyDecode(key)
-		if err != nil {
-			// log error?
-			return nil // continue
-		}
-
-		if !firstRow {
-			lastID = id
-			firstRow = true
-		}
-
-		if id != lastID {
-			if err := onRecord(record); err != nil {
-				return err
-			}
-			// reset
-			lastID = id
-			record = make(Record)
-		} // id switch
-
-		record[fieldname] = string(value)
-		return nil
-
-	}) // for each
-
 }
 
 func kvGet(id uint64, b Bucket) (map[string]string, bool) {

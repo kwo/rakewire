@@ -78,3 +78,32 @@ func TestRenameWithTimestamp(t *testing.T) {
 	}
 
 }
+
+func TestContainerIterate(t *testing.T) {
+
+	t.Parallel()
+
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
+
+	if err := database.Update(func(tx Transaction) error {
+		feed := NewFeed("http://localhost/")
+		_, err := feed.Save(tx)
+		return err
+	}); err != nil {
+		t.Fatalf("Error updating database: %s", err.Error())
+	}
+
+	if err := database.Select(func(tx Transaction) error {
+		feeds := tx.Container("Data/Feed")
+		return feeds.Iterate(func(record Record) error {
+			for k, v := range record {
+				t.Logf("%s: %s", k, v)
+			}
+			return nil
+		})
+	}); err != nil {
+		t.Fatalf("Error selecting database: %s", err.Error())
+	}
+
+}

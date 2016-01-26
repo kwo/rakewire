@@ -2,8 +2,13 @@ package model
 
 import (
 	"github.com/boltdb/bolt"
+	"strings"
 	"sync"
 	"time"
+)
+
+const (
+	containerSeparator = "/"
 )
 
 // OpenDatabase opens the database at the specified location
@@ -88,6 +93,19 @@ func (z *boltTransaction) Bucket(name string) Bucket {
 	return &boltBucket{bucket: bucket}
 }
 
+func (z *boltTransaction) Container(path string) Container {
+	names := strings.Split(path, containerSeparator)
+	var b *bolt.Bucket
+	for _, name := range names {
+		if b == nil {
+			b = z.tx.Bucket([]byte(name))
+		} else {
+			b = b.Bucket([]byte(name))
+		}
+	}
+	return &boltContainer{bucket: b}
+}
+
 type boltBucket struct {
 	bucket *bolt.Bucket
 }
@@ -120,6 +138,79 @@ func (z *boltBucket) NextSequence() (uint64, error) {
 
 func (z *boltBucket) Put(key, value []byte) error {
 	return z.bucket.Put(key, value)
+}
+
+type boltContainer struct {
+	bucket *bolt.Bucket
+}
+
+func (z *boltContainer) Container(path string) Container {
+	names := strings.Split(path, containerSeparator)
+	b := z.bucket
+	for _, name := range names {
+		b = b.Bucket([]byte(name))
+	}
+	return &boltContainer{bucket: b}
+}
+
+func (z *boltContainer) Iterate(onRecord OnRecord, flags ...bool) error {
+
+	flagIgnoreBaddies := len(flags) > 0 && flags[0]
+
+	firstRow := false
+	var lastID uint64
+	record := make(Record)
+
+	err := z.bucket.ForEach(func(key, value []byte) error {
+
+		id, fieldname, err := kvBucketKeyDecode(key)
+		if err != nil && !flagIgnoreBaddies {
+			return err
+		}
+
+		if !firstRow {
+			lastID = id
+			firstRow = true
+		}
+
+		if id != lastID {
+			if err := onRecord(record); err != nil {
+				return err
+			}
+			// reset
+			lastID = id
+			record = make(Record)
+		} // id switch
+
+		record[fieldname] = string(value)
+		return nil
+
+	}) // for each
+
+	if err != nil {
+		return err
+	}
+
+	// fire last one
+	if len(record) > 0 {
+		if err := onRecord(record); err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func (z *boltContainer) Put(id uint64, record Record) error {
+	for fieldname, v := range record {
+		key := kvBucketKeyEncode(id, fieldname)
+		value := []byte(v)
+		if err := z.bucket.Put(key, value); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type boltCursor struct {
