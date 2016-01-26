@@ -8,12 +8,14 @@
   x move opml to model -> opml_db
   x use manually managed transactions in database
   x rename model elements: Feed/Item, Subscription/Entry
-  - rename FeedLog to Transmission
+  x rename FeedLog to Transmission
   - create collection classes with groupby and sort functions
+  - new structure: services, apis, model, ....
   - pull up rest api, fever api
- - store config, tls keys in data file
- - jwt authentication and basic auth
+  - add command-line flag to repair/compact database, remove cleanup api
+ - store config, tls keys in data file, eliminate config package
  - optimize entries
+ - jwt authentication and basic auth
  - native api to manage users
    - add
    - remove
@@ -23,7 +25,6 @@
    - save to buffer, write to db every 5? seconds, api to filter entries by level and category
    - expire entries by level (TRACE/DEBUG after 10min, other after X days)
    x remove command-line flags
-   - add command-line flag to repair/compact database
 
  - create feed item frequency graph per feed for one week
    - allow assigning polling frequency per hour/day for feed
