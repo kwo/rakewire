@@ -8,9 +8,9 @@ import (
 
 // TransmissionsByFeed retrieves the past fetch attempts for the feed in reverse chronological order.
 // If since is equal to 0, return all.
-func TransmissionsByFeed(feedID uint64, since time.Duration, tx Transaction) ([]*Transmission, error) {
+func TransmissionsByFeed(feedID uint64, since time.Duration, tx Transaction) (Transmissions, error) {
 
-	transmissions := []*Transmission{}
+	transmissions := Transmissions{}
 
 	// define index keys
 	now := time.Now().Truncate(time.Second)
@@ -45,9 +45,7 @@ func TransmissionsByFeed(feedID uint64, since time.Duration, tx Transaction) ([]
 	}
 
 	// reverse order of result
-	for left, right := 0, len(transmissions)-1; left < right; left, right = left+1, right-1 {
-		transmissions[left], transmissions[right] = transmissions[right], transmissions[left]
-	}
+	transmissions.Reverse()
 
 	return transmissions, nil
 

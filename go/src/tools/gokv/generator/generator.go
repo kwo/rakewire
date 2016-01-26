@@ -22,11 +22,12 @@ var (
 
 // StructInfo describes a struct
 type StructInfo struct {
-	Name      string
-	NameLower string
-	Imports   map[string]bool
-	Fields    []*FieldInfo
-	Indexes   map[string][]*IndexField
+	Name       string
+	NameLower  string
+	NamePlural string
+	Imports    map[string]bool
+	Fields     []*FieldInfo
+	Indexes    map[string][]*IndexField
 }
 
 // FieldInfo describes a field
@@ -38,6 +39,8 @@ type FieldInfo struct {
 	Type               string
 	Tags               map[string]string
 	Required           bool
+	GroupBy            bool
+	GroupAllBy         bool
 	Comment            string
 	EmptyValue         string
 	ZeroTest           string
@@ -77,6 +80,12 @@ func (z *StructInfo) Finalize() error {
 				if field.Type == "bool" {
 					return fmt.Errorf("%s.%s, Type: bool - cannot be required", z.Name, field.Name)
 				}
+			} else if tagField == "+groupby" {
+				// groupby field
+				field.GroupBy = true
+			} else if tagField == "+groupall" {
+				// groupall field
+				field.GroupAllBy = true
 			} else {
 
 				// index definition
@@ -283,10 +292,11 @@ func ExtractStructs(filename string) (string, []*StructInfo, error) {
 	for k, d := range f.Scope.Objects {
 		if d.Kind == ast.Typ {
 			structInfo := &StructInfo{
-				Name:      k,
-				NameLower: strings.ToLower(k),
-				Imports:   make(map[string]bool),
-				Indexes:   make(map[string][]*IndexField),
+				Name:       k,
+				NameLower:  strings.ToLower(k),
+				NamePlural: makePlural(k),
+				Imports:    make(map[string]bool),
+				Indexes:    make(map[string][]*IndexField),
 			}
 
 			ast.Inspect(d.Decl.(ast.Node), func(n ast.Node) bool {
@@ -366,4 +376,11 @@ func extractTags(literal *ast.BasicLit) map[string]string {
 		}
 	}
 	return result
+}
+
+func makePlural(name string) string {
+	if strings.HasSuffix(name, "y") {
+		return name[:len(name)-1] + "ies"
+	}
+	return name + "s"
 }

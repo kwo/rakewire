@@ -35,6 +35,25 @@ var (
 	}
 )
 
+// Items is a collection of Item elements
+type Items []*Item
+
+func (z Items) Len() int      { return len(z) }
+func (z Items) Swap(i, j int) { z[i], z[j] = z[j], z[i] }
+func (z Items) Less(i, j int) bool {
+	return z[i].ID < z[j].ID
+}
+
+// First returns the first element in the collection
+func (z Items) First() *Item { return z[0] }
+
+// Reverse reverses the order of the collection
+func (z Items) Reverse() {
+	for left, right := 0, len(z)-1; left < right; left, right = left+1, right-1 {
+		z[left], z[right] = z[right], z[left]
+	}
+}
+
 // GetID return the primary key of the object.
 func (z *Item) getID() uint64 {
 	return z.ID
@@ -199,5 +218,25 @@ func (z *Item) indexKeys() map[string][]string {
 		data[itemGUID],
 	}
 
+	return result
+}
+
+// GroupByGUID groups elements in the Items collection by GUID
+func (z Items) GroupByGUID() map[string]*Item {
+	result := make(map[string]*Item)
+	for _, item := range z {
+		result[item.GUID] = item
+	}
+	return result
+}
+
+// GroupAllByFeedID groups collections of elements in Items by FeedID
+func (z Items) GroupAllByFeedID() map[uint64]Items {
+	result := make(map[uint64]Items)
+	for _, item := range z {
+		a := result[item.FeedID]
+		a = append(a, item)
+		result[item.FeedID] = a
+	}
 	return result
 }

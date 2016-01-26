@@ -4,9 +4,9 @@ package model
 
 //Group defines a group of feeds for a user
 type Group struct {
-	ID     uint64
+	ID     uint64 `kv:"+groupby"`
 	UserID uint64 `kv:"+required,UserGroup:1"`
-	Name   string `kv:"+required,UserGroup:2"`
+	Name   string `kv:"+required,+groupby,UserGroup:2"`
 }
 
 // NewGroup creates a new group with the specified user

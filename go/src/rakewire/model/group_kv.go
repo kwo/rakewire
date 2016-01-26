@@ -28,6 +28,25 @@ var (
 	}
 )
 
+// Groups is a collection of Group elements
+type Groups []*Group
+
+func (z Groups) Len() int      { return len(z) }
+func (z Groups) Swap(i, j int) { z[i], z[j] = z[j], z[i] }
+func (z Groups) Less(i, j int) bool {
+	return z[i].ID < z[j].ID
+}
+
+// First returns the first element in the collection
+func (z Groups) First() *Group { return z[0] }
+
+// Reverse reverses the order of the collection
+func (z Groups) Reverse() {
+	for left, right := 0, len(z)-1; left < right; left, right = left+1, right-1 {
+		z[left], z[right] = z[right], z[left]
+	}
+}
+
 // GetID return the primary key of the object.
 func (z *Group) getID() uint64 {
 	return z.ID
@@ -132,5 +151,23 @@ func (z *Group) indexKeys() map[string][]string {
 		data[groupName],
 	}
 
+	return result
+}
+
+// GroupByID groups elements in the Groups collection by ID
+func (z Groups) GroupByID() map[uint64]*Group {
+	result := make(map[uint64]*Group)
+	for _, group := range z {
+		result[group.ID] = group
+	}
+	return result
+}
+
+// GroupByName groups elements in the Groups collection by Name
+func (z Groups) GroupByName() map[string]*Group {
+	result := make(map[string]*Group)
+	for _, group := range z {
+		result[group.Name] = group
+	}
 	return result
 }

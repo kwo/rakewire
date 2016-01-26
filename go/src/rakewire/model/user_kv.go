@@ -31,6 +31,25 @@ var (
 	}
 )
 
+// Users is a collection of User elements
+type Users []*User
+
+func (z Users) Len() int      { return len(z) }
+func (z Users) Swap(i, j int) { z[i], z[j] = z[j], z[i] }
+func (z Users) Less(i, j int) bool {
+	return z[i].ID < z[j].ID
+}
+
+// First returns the first element in the collection
+func (z Users) First() *User { return z[0] }
+
+// Reverse reverses the order of the collection
+func (z Users) Reverse() {
+	for left, right := 0, len(z)-1; left < right; left, right = left+1, right-1 {
+		z[left], z[right] = z[right], z[left]
+	}
+}
+
 // GetID return the primary key of the object.
 func (z *User) getID() uint64 {
 	return z.ID
@@ -134,5 +153,14 @@ func (z *User) indexKeys() map[string][]string {
 		strings.ToLower(data[userUsername]),
 	}
 
+	return result
+}
+
+// GroupByUsername groups elements in the Users collection by Username
+func (z Users) GroupByUsername() map[string]*User {
+	result := make(map[string]*User)
+	for _, user := range z {
+		result[user.Username] = user
+	}
 	return result
 }

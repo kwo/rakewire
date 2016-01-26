@@ -19,7 +19,7 @@ func OPMLExport(user *User, tx Transaction) (*OPML, error) {
 		return nil, err
 	}
 
-	groupsByID := groupGroupsByID(groups)
+	groupsByID := groups.GroupByID()
 	subscriptionsByGroup := groupSubscriptionsByGroup(subscriptions, groupsByID)
 
 	categories := make(map[string]*Outline)
@@ -118,7 +118,7 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 	if err != nil {
 		return err
 	}
-	groupsByName := groupGroupsByName(groups)
+	groupsByName := groups.GroupByName()
 	for branch := range flatOPML {
 		group := groupsByName[branch.Text]
 		if group == nil {
@@ -246,25 +246,9 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 
 }
 
-func groupGroupsByID(groups []*Group) map[uint64]*Group {
-	result := make(map[uint64]*Group)
-	for _, group := range groups {
-		result[group.ID] = group
-	}
-	return result
-}
+func groupSubscriptionsByGroup(subscriptions Subscriptions, groups map[uint64]*Group) map[*Group]Subscriptions {
 
-func groupGroupsByName(groups []*Group) map[string]*Group {
-	result := make(map[string]*Group)
-	for _, group := range groups {
-		result[group.Name] = group
-	}
-	return result
-}
-
-func groupSubscriptionsByGroup(subscriptions []*Subscription, groups map[uint64]*Group) map[*Group][]*Subscription {
-
-	result := make(map[*Group][]*Subscription)
+	result := make(map[*Group]Subscriptions)
 	for _, subscription := range subscriptions {
 		for _, groupID := range subscription.GroupIDs {
 			result[groups[groupID]] = append(result[groups[groupID]], subscription)
@@ -274,9 +258,9 @@ func groupSubscriptionsByGroup(subscriptions []*Subscription, groups map[uint64]
 
 }
 
-func groupSubscriptionsByURL(subscriptions []*Subscription) (map[string]*Subscription, []*Subscription) {
+func groupSubscriptionsByURL(subscriptions Subscriptions) (map[string]*Subscription, Subscriptions) {
 	result := make(map[string]*Subscription)
-	duplicates := []*Subscription{}
+	duplicates := Subscriptions{}
 	for _, subscription := range subscriptions {
 		if _, ok := result[subscription.Feed.URL]; !ok {
 			result[subscription.Feed.URL] = subscription
@@ -287,20 +271,7 @@ func groupSubscriptionsByURL(subscriptions []*Subscription) (map[string]*Subscri
 	return result, duplicates
 }
 
-func groupFeedsByURL(feeds []*Feed) (map[string]*Feed, []*Feed) {
-	result := make(map[string]*Feed)
-	duplicates := []*Feed{}
-	for _, feed := range feeds {
-		if _, ok := result[feed.URL]; !ok {
-			result[feed.URL] = feed
-		} else {
-			duplicates = append(duplicates, feed)
-		}
-	}
-	return result, duplicates
-}
-
-func collectGroups(subscriptions []*Subscription) map[uint64]int {
+func collectGroups(subscriptions Subscriptions) map[uint64]int {
 	result := make(map[uint64]int)
 	for _, subscription := range subscriptions {
 		for _, groupID := range subscription.GroupIDs {

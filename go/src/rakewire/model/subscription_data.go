@@ -6,9 +6,9 @@ import (
 )
 
 // SubscriptionsByUser retrieves the subscriptions belonging to the user with the Feed populated.
-func SubscriptionsByUser(userID uint64, tx Transaction) ([]*Subscription, error) {
+func SubscriptionsByUser(userID uint64, tx Transaction) (Subscriptions, error) {
 
-	var result []*Subscription
+	result := Subscriptions{}
 
 	// define index keys
 	uf := &Subscription{}
@@ -53,9 +53,9 @@ func SubscriptionsByUser(userID uint64, tx Transaction) ([]*Subscription, error)
 }
 
 // SubscriptionsByFeed retrieves the subscriptions associated with the feed.
-func SubscriptionsByFeed(feedID uint64, tx Transaction) ([]*Subscription, error) {
+func SubscriptionsByFeed(feedID uint64, tx Transaction) (Subscriptions, error) {
 
-	var result []*Subscription
+	result := Subscriptions{}
 
 	// define index keys
 	uf := &Subscription{}

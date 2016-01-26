@@ -9,9 +9,9 @@ import (
 )
 
 // FeedsAll list feeds
-func FeedsAll(tx Transaction) ([]*Feed, error) {
+func FeedsAll(tx Transaction) (Feeds, error) {
 
-	var result []*Feed
+	result := Feeds{}
 
 	bIndex := tx.Bucket(bucketIndex).Bucket(feedEntity).Bucket(feedIndexURL)
 	b := tx.Bucket(bucketData).Bucket(feedEntity)
@@ -39,7 +39,7 @@ func FeedsAll(tx Transaction) ([]*Feed, error) {
 }
 
 // FeedsFetch get feeds to be fetched within the given max time parameter.
-func FeedsFetch(maxTime time.Time, tx Transaction) ([]*Feed, error) {
+func FeedsFetch(maxTime time.Time, tx Transaction) (Feeds, error) {
 
 	// define index keys
 	if maxTime.IsZero() {
@@ -49,7 +49,7 @@ func FeedsFetch(maxTime time.Time, tx Transaction) ([]*Feed, error) {
 	f.NextFetch = maxTime
 	nxtKeys := f.indexKeys()[feedIndexNextFetch]
 
-	var result []*Feed
+	result := Feeds{}
 
 	bIndex := tx.Bucket(bucketIndex).Bucket(feedEntity).Bucket(feedIndexNextFetch)
 	b := tx.Bucket(bucketData).Bucket(feedEntity)
@@ -97,13 +97,13 @@ func FeedByURL(url string, tx Transaction) (feed *Feed, err error) {
 }
 
 // Save save feeds
-func (feed *Feed) Save(tx Transaction) ([]*Item, error) {
+func (feed *Feed) Save(tx Transaction) (Items, error) {
 
 	if feed == nil {
 		return nil, fmt.Errorf("Nil feed")
 	}
 
-	newItems := []*Item{}
+	newItems := Items{}
 
 	// save feed log if available
 	if feed.Transmission != nil {

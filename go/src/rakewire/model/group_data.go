@@ -17,9 +17,9 @@ func GroupByID(groupID uint64, tx Transaction) (group *Group, err error) {
 }
 
 // GroupsByUser retrieves the groups belonging to the user.
-func GroupsByUser(userID uint64, tx Transaction) ([]*Group, error) {
+func GroupsByUser(userID uint64, tx Transaction) (Groups, error) {
 
-	result := []*Group{}
+	result := Groups{}
 
 	// define index keys
 	g := &Group{}

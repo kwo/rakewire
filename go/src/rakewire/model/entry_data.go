@@ -7,7 +7,7 @@ import (
 )
 
 // EntriesSave saves entries to the database.
-func EntriesSave(entries []*Entry, tx Transaction) error {
+func EntriesSave(entries Entries, tx Transaction) error {
 
 	for _, entry := range entries {
 		if err := kvSave(entryEntity, entry, tx); err != nil {
@@ -20,9 +20,9 @@ func EntriesSave(entries []*Entry, tx Transaction) error {
 }
 
 // EntriesAddNew saves entries to the database.
-func EntriesAddNew(allItems []*Item, tx Transaction) error {
+func EntriesAddNew(allItems Items, tx Transaction) error {
 
-	keyedItems := groupItemsByFeed(allItems)
+	keyedItems := allItems.GroupAllByFeedID()
 
 	for feedID, items := range keyedItems {
 
@@ -106,9 +106,9 @@ func EntryTotalByUser(userID uint64, tx Transaction) uint {
 }
 
 // EntriesStarredByUser retrieves starred user items for a user.
-func EntriesStarredByUser(userID uint64, tx Transaction) ([]*Entry, error) {
+func EntriesStarredByUser(userID uint64, tx Transaction) (Entries, error) {
 
-	var entries []*Entry
+	entries := Entries{}
 
 	// define index keys
 	ue := &Entry{}
@@ -160,9 +160,9 @@ func EntriesStarredByUser(userID uint64, tx Transaction) ([]*Entry, error) {
 }
 
 // EntriesUnreadByUser retrieves unread user items for a user.
-func EntriesUnreadByUser(userID uint64, tx Transaction) ([]*Entry, error) {
+func EntriesUnreadByUser(userID uint64, tx Transaction) (Entries, error) {
 
-	var entries []*Entry
+	entries := Entries{}
 
 	// define index keys
 	ue := &Entry{}
@@ -212,9 +212,9 @@ func EntriesUnreadByUser(userID uint64, tx Transaction) ([]*Entry, error) {
 }
 
 // EntriesByUser retrieves the specific user items for a user.
-func EntriesByUser(userID uint64, ids []uint64, tx Transaction) ([]*Entry, error) {
+func EntriesByUser(userID uint64, ids []uint64, tx Transaction) (Entries, error) {
 
-	var entries []*Entry
+	entries := Entries{}
 
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
@@ -243,9 +243,9 @@ func EntriesByUser(userID uint64, ids []uint64, tx Transaction) ([]*Entry, error
 }
 
 // EntriesGetNext retrieves the next X user items for a user.
-func EntriesGetNext(userID uint64, minID uint64, count int, tx Transaction) ([]*Entry, error) {
+func EntriesGetNext(userID uint64, minID uint64, count int, tx Transaction) (Entries, error) {
 
-	var entries []*Entry
+	entries := Entries{}
 
 	// define index keys
 	ue := &Entry{}
@@ -297,9 +297,9 @@ func EntriesGetNext(userID uint64, minID uint64, count int, tx Transaction) ([]*
 }
 
 // EntriesGetPrev retrieves the previous X user items for a user.
-func EntriesGetPrev(userID uint64, maxID uint64, count int, tx Transaction) ([]*Entry, error) {
+func EntriesGetPrev(userID uint64, maxID uint64, count int, tx Transaction) (Entries, error) {
 
-	var entries []*Entry
+	entries := Entries{}
 
 	// define index keys
 	ue := &Entry{}
@@ -510,19 +510,5 @@ func EntriesUpdateStarByGroup(userID, groupID uint64, maxTime time.Time, star bo
 	}
 
 	return nil
-
-}
-
-func groupItemsByFeed(items []*Item) map[uint64][]*Item {
-
-	result := make(map[uint64][]*Item)
-
-	for _, item := range items {
-		a := result[item.FeedID]
-		a = append(a, item)
-		result[item.FeedID] = a
-	}
-
-	return result
 
 }

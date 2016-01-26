@@ -6,9 +6,9 @@ import (
 )
 
 // ItemsByGUIDs retrieves items for specific GUIDs
-func ItemsByGUIDs(feedID uint64, guIDs []string, tx Transaction) (map[string]*Item, error) {
+func ItemsByGUIDs(feedID uint64, guIDs []string, tx Transaction) (Items, error) {
 
-	items := make(map[string]*Item)
+	items := Items{}
 
 	e := &Item{}
 	e.FeedID = feedID
@@ -23,7 +23,7 @@ func ItemsByGUIDs(feedID uint64, guIDs []string, tx Transaction) (map[string]*It
 			if err := item.deserialize(data); err != nil {
 				return nil, err
 			}
-			items[item.GUID] = item
+			items = append(items, item)
 		}
 
 	} // loop
@@ -33,9 +33,9 @@ func ItemsByGUIDs(feedID uint64, guIDs []string, tx Transaction) (map[string]*It
 }
 
 // ItemsByFeed retrieves items for the given feed
-func ItemsByFeed(feedID uint64, tx Transaction) ([]*Item, error) {
+func ItemsByFeed(feedID uint64, tx Transaction) (Items, error) {
 
-	items := []*Item{}
+	items := Items{}
 
 	// define index keys
 	e := &Item{}

@@ -11,8 +11,8 @@ import (
 // Item from a feed
 type Item struct {
 	ID      uint64    `json:"id"`
-	GUID    string    `json:"-" kv:"GUID:2"`
-	FeedID  uint64    `json:"feedId" kv:"+required,GUID:1"`
+	GUID    string    `json:"-" kv:"+groupby,GUID:2"`
+	FeedID  uint64    `json:"feedId" kv:"+required,+groupall,GUID:1"`
 	Created time.Time `json:"created"`
 	Updated time.Time `json:"updated"`
 	URL     string    `json:"url"`

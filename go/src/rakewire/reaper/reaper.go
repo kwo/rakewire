@@ -96,18 +96,19 @@ func (z *Service) processResponse(feed *model.Feed) {
 			guIDs = append(guIDs, item.GUID)
 		}
 
-		dbItems, err := model.ItemsByGUIDs(feed.ID, guIDs, tx)
+		dbItems0, err := model.ItemsByGUIDs(feed.ID, guIDs, tx)
 		if err != nil {
 			log.Printf("%-7s %-7s Cannot get previous feed items %s: %s", logWarn, logName, feed.URL, err.Error())
 			return err
 		}
+		dbItems := dbItems0.GroupByGUID()
 
 		// setIDs, check dates for new items
 		var mostRecent time.Time
 		newItemCount := 0
 		for _, item := range feed.Items {
 
-			if dbItem := dbItems[item.GUID]; dbItem == nil {
+			if dbItem, ok := dbItems[item.GUID]; !ok {
 
 				// new item
 				newItemCount++

@@ -35,6 +35,25 @@ var (
 	}
 )
 
+// Entries is a collection of Entry elements
+type Entries []*Entry
+
+func (z Entries) Len() int      { return len(z) }
+func (z Entries) Swap(i, j int) { z[i], z[j] = z[j], z[i] }
+func (z Entries) Less(i, j int) bool {
+	return z[i].ID < z[j].ID
+}
+
+// First returns the first element in the collection
+func (z Entries) First() *Entry { return z[0] }
+
+// Reverse reverses the order of the collection
+func (z Entries) Reverse() {
+	for left, right := 0, len(z)-1; left < right; left, right = left+1, right-1 {
+		z[left], z[right] = z[right], z[left]
+	}
+}
+
 // GetID return the primary key of the object.
 func (z *Entry) getID() uint64 {
 	return z.ID

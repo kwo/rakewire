@@ -86,7 +86,7 @@ func (z Outlines) Less(i, j int) bool {
 	return strings.ToLower(z[i].Title) < strings.ToLower(z[j].Title)
 }
 
-// Sort sort by title
+// Sort recursively sort by title
 func (z Outlines) Sort() {
 	sort.Sort(z)
 	for _, outline := range z {
