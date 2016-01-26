@@ -32,8 +32,6 @@ func (z *API) Router() *mux.Router {
 	router.Path(z.prefix + "/rakewire.opml").Methods(mGet).HandlerFunc(z.opmlExport)
 	router.Path(z.prefix + "/rakewire.opml").Methods(mPut).HandlerFunc(z.opmlImport)
 
-	router.Path(z.prefix + "/cleanup").Methods(mPost).HandlerFunc(z.cleanup)
-
 	router.Path(z.prefix).HandlerFunc(notFound)
 
 	return router
