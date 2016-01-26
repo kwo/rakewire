@@ -146,7 +146,7 @@ func (z *Service) processResponse(feed *model.Feed) {
 
 		} // loop items
 
-		feed.Attempt.LastUpdated = mostRecent
+		feed.Transmission.LastUpdated = mostRecent
 
 		// only bump up LastUpdated if mostRecent is after previous time
 		// lastUpdated can move forward if no new items, if an existing item has been updated
@@ -154,14 +154,14 @@ func (z *Service) processResponse(feed *model.Feed) {
 			feed.LastUpdated = mostRecent
 		}
 
-		if feed.Attempt.Result == model.FetchResultOK {
+		if feed.Transmission.Result == model.FetchResultOK {
 			if feed.LastUpdated.IsZero() {
 				feed.LastUpdated = time.Now() // only if new items?
 			}
 		}
 
-		feed.Attempt.ItemCount = len(feed.Items)
-		feed.Attempt.NewItems = newItemCount
+		feed.Transmission.ItemCount = len(feed.Items)
+		feed.Transmission.NewItems = newItemCount
 
 		switch feed.Status {
 		case model.FetchResultOK:
@@ -179,7 +179,7 @@ func (z *Service) processResponse(feed *model.Feed) {
 			return err
 		}
 
-		log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logDebug, logName, feed.Status, feed.Attempt.StatusCode, feed.LastUpdated.Local().Format("02.01.06 15:04"), feed.Attempt.NewItems, feed.Attempt.ItemCount, feed.URL, feed.StatusMessage)
+		log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logDebug, logName, feed.Status, feed.Transmission.StatusCode, feed.LastUpdated.Local().Format("02.01.06 15:04"), feed.Transmission.NewItems, feed.Transmission.ItemCount, feed.URL, feed.StatusMessage)
 
 		return nil
 

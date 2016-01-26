@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-func TestNewFeedLog(t *testing.T) {
+func TestNewTransmission(t *testing.T) {
 
 	t.Parallel()
 
-	fl := NewFeedLog(123)
+	fl := NewTransmission(123)
 
 	if fl == nil {
-		t.Fatalf("FeedLog factory not returning a valid feedlog")
+		t.Fatalf("Transmission factory not returning a valid transmission")
 	}
 
 	if fl.ID != 0 {
@@ -26,49 +26,49 @@ func TestNewFeedLog(t *testing.T) {
 
 }
 
-func TestFeedLogSerialize(t *testing.T) {
+func TestTransmissionSerialize(t *testing.T) {
 
 	t.Parallel()
 
-	fl := getNewFeedLog()
-	validateFeedLog(t, fl)
+	fl := getNewTransmission()
+	validateTransmission(t, fl)
 
 	data := fl.Serialize()
 	if data == nil {
-		t.Fatal("FeedLog serialize returned a nil map")
+		t.Fatal("Transmission serialize returned a nil map")
 	}
 
-	fl2 := &FeedLog{}
+	fl2 := &Transmission{}
 	if err := fl2.Deserialize(data); err != nil {
-		t.Fatalf("FeedLog deserialize returned an error: %s", err.Error())
+		t.Fatalf("Transmission deserialize returned an error: %s", err.Error())
 	}
-	validateFeedLog(t, fl2)
+	validateTransmission(t, fl2)
 
 }
 
-func TestFeedLogJSON(t *testing.T) {
+func TestTransmissionJSON(t *testing.T) {
 
 	t.Parallel()
 
-	fl := getNewFeedLog()
-	validateFeedLog(t, fl)
+	fl := getNewTransmission()
+	validateTransmission(t, fl)
 
 	data, err := json.Marshal(fl)
 	assertNoError(t, err)
 	assertNotNil(t, data)
 
-	fl2 := &FeedLog{}
+	fl2 := &Transmission{}
 	err = json.Unmarshal(data, fl2)
 	assertNoError(t, err)
-	validateFeedLog(t, fl)
+	validateTransmission(t, fl)
 
 }
 
-func getNewFeedLog() *FeedLog {
+func getNewTransmission() *Transmission {
 
 	dt := time.Date(2015, time.November, 26, 13, 55, 0, 0, time.Local)
 
-	fl := NewFeedLog(123)
+	fl := NewTransmission(123)
 	fl.ID = 1
 	fl.ContentLength = 0
 	fl.ContentType = "text/plain"
@@ -91,14 +91,14 @@ func getNewFeedLog() *FeedLog {
 
 }
 
-func validateFeedLog(t *testing.T, fl *FeedLog) {
+func validateTransmission(t *testing.T, fl *Transmission) {
 
 	dt := time.Date(2015, time.November, 26, 13, 55, 0, 0, time.Local)
 
 	assertNotNil(t, fl)
 
 	if fl.ID != 1 {
-		t.Errorf("FeedLog ID incorrect, expected %d, actual %d", 0, fl.ID)
+		t.Errorf("Transmission ID incorrect, expected %d, actual %d", 0, fl.ID)
 	}
 
 	assertEqual(t, 0, fl.ContentLength)

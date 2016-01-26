@@ -7,12 +7,13 @@
  - code restructure
   x move opml to model -> opml_db
   x use manually managed transactions in database
+  x rename model elements: Feed/Item, Subscription/Entry
+  - rename FeedLog to Transmission
   - create collection classes with groupby and sort functions
-  - rename model elements: Feed/Item, Subscription/Entry
- - add subscribers count to user-agent when fetching
+  - pull up rest api, fever api
  - store config, tls keys in data file
  - jwt authentication and basic auth
- - optimize user-entries
+ - optimize entries
  - native api to manage users
    - add
    - remove
@@ -22,6 +23,7 @@
    - save to buffer, write to db every 5? seconds, api to filter entries by level and category
    - expire entries by level (TRACE/DEBUG after 10min, other after X days)
    x remove command-line flags
+   - add command-line flag to repair/compact database
 
  - create feed item frequency graph per feed for one week
    - allow assigning polling frequency per hour/day for feed
@@ -43,6 +45,7 @@
   - add support for Hot Links to Fever API support
 
 ### Unsorted
+  - add subscribers count to user-agent when fetching
   - rackt redux (flux like state replay)
     - http://merrickchristensen.com/articles/single-state-tree.html
     - http://teropa.info/blog/2015/09/10/full-stack-redux-tutorial.html

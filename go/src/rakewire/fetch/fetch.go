@@ -143,17 +143,17 @@ func (z *Service) processFeed(feed *model.Feed, id int) {
 
 	startTime := time.Now().UTC().Truncate(time.Millisecond)
 	now := startTime.Truncate(time.Second)
-	feed.Attempt = model.NewFeedLog(feed.ID)
+	feed.Transmission = model.NewTransmission(feed.ID)
 
-	feed.Attempt.URL = feed.URL
-	feed.Attempt.StartTime = now
+	feed.Transmission.URL = feed.URL
+	feed.Transmission.StartTime = now
 
 	rsp, err := z.client.Do(newRequest(feed))
 	if err != nil && (rsp == nil || rsp.StatusCode != http.StatusMovedPermanently) {
 		processFeedClientError(feed, err)
 	} else {
 
-		feed.Attempt.StatusCode = rsp.StatusCode
+		feed.Transmission.StatusCode = rsp.StatusCode
 
 		switch {
 
@@ -164,7 +164,7 @@ func (z *Service) processFeed(feed *model.Feed, id int) {
 			reader, _ := readBody(rsp)
 			body := &ReadCounter{ReadCloser: reader}
 			p := feedparser.NewParser()
-			xmlFeed, err := p.Parse(body, feed.Attempt.ContentType)
+			xmlFeed, err := p.Parse(body, feed.Transmission.ContentType)
 
 			processFeedOK(feed, rsp)
 			if err != nil || xmlFeed == nil {
@@ -186,37 +186,37 @@ func (z *Service) processFeed(feed *model.Feed, id int) {
 
 	} // not err
 
-	feed.Attempt.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
-	if feed.StatusSince.IsZero() || feed.Status != feed.Attempt.Result {
+	feed.Transmission.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
+	if feed.StatusSince.IsZero() || feed.Status != feed.Transmission.Result {
 		feed.StatusSince = time.Now()
 	}
-	feed.Status = feed.Attempt.Result
-	feed.StatusMessage = feed.Attempt.ResultMessage
+	feed.Status = feed.Transmission.Result
+	feed.StatusMessage = feed.Transmission.ResultMessage
 
 	z.output <- feed
 
 }
 
 func processFeedOK(feed *model.Feed, rsp *http.Response) {
-	feed.Attempt.Result = model.FetchResultOK
-	feed.Attempt.ContentType = rsp.Header.Get(hContentType)
-	feed.Attempt.ETag = rsp.Header.Get(hEtag)
-	feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
-	feed.Attempt.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
-	feed.ETag = feed.Attempt.ETag
-	feed.LastModified = feed.Attempt.LastModified
+	feed.Transmission.Result = model.FetchResultOK
+	feed.Transmission.ContentType = rsp.Header.Get(hContentType)
+	feed.Transmission.ETag = rsp.Header.Get(hEtag)
+	feed.Transmission.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
+	feed.Transmission.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
+	feed.ETag = feed.Transmission.ETag
+	feed.LastModified = feed.Transmission.LastModified
 }
 
 func processFeedOKButCannotParse(feed *model.Feed, err error) {
-	feed.Attempt.Result = model.FetchResultFeedError
-	feed.Attempt.ResultMessage = err.Error()
+	feed.Transmission.Result = model.FetchResultFeedError
+	feed.Transmission.ResultMessage = err.Error()
 }
 
 func processFeedOKAndParse(feed *model.Feed, size int, xmlFeed *feedparser.Feed) {
-	feed.Attempt.ContentLength = size
-	feed.Attempt.Flavor = xmlFeed.Flavor
-	feed.Attempt.Generator = xmlFeed.Generator
-	feed.Attempt.Title = xmlFeed.Title
+	feed.Transmission.ContentLength = size
+	feed.Transmission.Flavor = xmlFeed.Flavor
+	feed.Transmission.Generator = xmlFeed.Generator
+	feed.Transmission.Title = xmlFeed.Title
 	feed.Title = xmlFeed.Title
 	feed.SiteURL = xmlFeed.GetLinkAlternate()
 
@@ -240,25 +240,25 @@ func processFeedOKAndParse(feed *model.Feed, size int, xmlFeed *feedparser.Feed)
 }
 
 func processFeedClientError(feed *model.Feed, err error) {
-	feed.Attempt.Result = model.FetchResultClientError
-	feed.Attempt.ResultMessage = err.Error()
+	feed.Transmission.Result = model.FetchResultClientError
+	feed.Transmission.ResultMessage = err.Error()
 }
 
 func processFeedServerError(feed *model.Feed, rsp *http.Response) {
-	feed.Attempt.Result = model.FetchResultServerError
+	feed.Transmission.Result = model.FetchResultServerError
 }
 
 func processFeedMovedPermanently(feed *model.Feed, rsp *http.Response) {
-	feed.Attempt.Result = model.FetchResultRedirect
+	feed.Transmission.Result = model.FetchResultRedirect
 	newURL := rsp.Header.Get(hLocation)
-	feed.Attempt.ResultMessage = fmt.Sprintf("%s moved %s", feed.URL, newURL)
+	feed.Transmission.ResultMessage = fmt.Sprintf("%s moved %s", feed.URL, newURL)
 	feed.URL = newURL // update feed
 }
 
 func processFeedNotModified(feed *model.Feed, rsp *http.Response) {
-	feed.Attempt.Result = model.FetchResultOK
-	feed.Attempt.ETag = rsp.Header.Get(hEtag)
-	feed.Attempt.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
+	feed.Transmission.Result = model.FetchResultOK
+	feed.Transmission.ETag = rsp.Header.Get(hEtag)
+	feed.Transmission.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 }
 
 func newRequest(feed *model.Feed) *http.Request {

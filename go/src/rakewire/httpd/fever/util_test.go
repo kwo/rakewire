@@ -168,8 +168,8 @@ func populateDatabase(tx model.Transaction) error {
 			item.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
 			f.Items = append(f.Items, item)
 		}
-		f.Attempt = model.NewFeedLog(f.ID)
-		f.Attempt.StartTime = now
+		f.Transmission = model.NewTransmission(f.ID)
+		f.Transmission.StartTime = now
 		if _, err := f.Save(tx); err != nil {
 			return err
 		}

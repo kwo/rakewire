@@ -110,8 +110,8 @@ func (feed *Feed) Save(tx Transaction) ([]*Item, error) {
 	newItems := []*Item{}
 
 	// save feed log if available
-	if feed.Attempt != nil {
-		if err := kvSave(FeedLogEntity, feed.Attempt, tx); err != nil {
+	if feed.Transmission != nil {
+		if err := kvSave(TransmissionEntity, feed.Transmission, tx); err != nil {
 			return nil, err
 		}
 	}
@@ -155,13 +155,13 @@ func (feed *Feed) Delete(tx Transaction) error {
 		}
 	}
 
-	// remove feedlogs
-	feedlogs, err := FeedLogsByFeed(feed.ID, time.Now().Sub(time.Time{}), tx)
+	// remove transmissions
+	transmissions, err := TransmissionsByFeed(feed.ID, time.Now().Sub(time.Time{}), tx)
 	if err != nil {
 		return err
 	}
-	for _, feedlog := range feedlogs {
-		if err := kvDelete(FeedLogEntity, feedlog, tx); err != nil {
+	for _, transmission := range transmissions {
+		if err := kvDelete(TransmissionEntity, transmission, tx); err != nil {
 			return err
 		}
 	}

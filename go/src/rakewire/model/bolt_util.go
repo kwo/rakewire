@@ -46,7 +46,7 @@ func checkSchema(tx *bolt.Tx) error {
 		return err
 	}
 
-	b, err = bucketData.CreateBucketIfNotExists([]byte(FeedLogEntity))
+	b, err = bucketData.CreateBucketIfNotExists([]byte(TransmissionEntity))
 	if err != nil {
 		return err
 	}
@@ -104,12 +104,12 @@ func checkSchema(tx *bolt.Tx) error {
 		}
 	}
 
-	feedlog := NewFeedLog(feed.ID)
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(FeedLogEntity))
+	transmission := NewTransmission(feed.ID)
+	b, err = bucketIndex.CreateBucketIfNotExists([]byte(TransmissionEntity))
 	if err != nil {
 		return err
 	}
-	for k := range feedlog.IndexKeys() {
+	for k := range transmission.IndexKeys() {
 		_, err = b.CreateBucketIfNotExists([]byte(k))
 		if err != nil {
 			return err
@@ -211,7 +211,7 @@ func removeInvalidKeys(tx Transaction) error {
 		return err
 	}
 
-	if err := removeInvalidKeysForEntity(FeedLogEntity, &FeedLog{}, tx); err != nil {
+	if err := removeInvalidKeysForEntity(TransmissionEntity, &Transmission{}, tx); err != nil {
 		return err
 	}
 
@@ -330,7 +330,7 @@ func rebuildIndexes(tx *boltTransaction) error {
 		return err
 	}
 
-	if err := rebuildIndexesForEntity(FeedLogEntity, &FeedLog{}, tx); err != nil {
+	if err := rebuildIndexesForEntity(TransmissionEntity, &Transmission{}, tx); err != nil {
 		return err
 	}
 

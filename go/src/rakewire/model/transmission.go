@@ -6,8 +6,8 @@ import (
 	"time"
 )
 
-// FeedLog represents an attempted HTTP request to a feed
-type FeedLog struct {
+// Transmission represents an attempted HTTP request to a feed
+type Transmission struct {
 	ID            uint64        `json:"id" kv:"Time:2"`
 	FeedID        uint64        `json:"feedId" kv:"+required,FeedTime:1"`
 	Duration      time.Duration `json:"duration"`
@@ -38,9 +38,9 @@ const (
 	FetchResultFeedError   = "FP" // cannot parse feed
 )
 
-// NewFeedLog instantiates a new FeedLog with the required fields set.
-func NewFeedLog(feedID uint64) *FeedLog {
-	return &FeedLog{
+// NewTransmission instantiates a new Transmission with the required fields set.
+func NewTransmission(feedID uint64) *Transmission {
+	return &Transmission{
 		FeedID: feedID,
 	}
 }

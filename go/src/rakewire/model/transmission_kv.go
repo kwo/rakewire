@@ -13,51 +13,51 @@ import (
 
 // index names
 const (
-	FeedLogEntity        = "FeedLog"
-	FeedLogIndexFeedTime = "FeedTime"
-	FeedLogIndexTime     = "Time"
+	TransmissionEntity        = "Transmission"
+	TransmissionIndexFeedTime = "FeedTime"
+	TransmissionIndexTime     = "Time"
 )
 
 const (
-	feedlogID            = "ID"
-	feedlogFeedID        = "FeedID"
-	feedlogDuration      = "Duration"
-	feedlogResult        = "Result"
-	feedlogResultMessage = "ResultMessage"
-	feedlogStartTime     = "StartTime"
-	feedlogURL           = "URL"
-	feedlogContentLength = "ContentLength"
-	feedlogContentType   = "ContentType"
-	feedlogETag          = "ETag"
-	feedlogLastModified  = "LastModified"
-	feedlogStatusCode    = "StatusCode"
-	feedlogUsesGzip      = "UsesGzip"
-	feedlogFlavor        = "Flavor"
-	feedlogGenerator     = "Generator"
-	feedlogTitle         = "Title"
-	feedlogLastUpdated   = "LastUpdated"
-	feedlogItemCount     = "ItemCount"
-	feedlogNewItems      = "NewItems"
+	transmissionID            = "ID"
+	transmissionFeedID        = "FeedID"
+	transmissionDuration      = "Duration"
+	transmissionResult        = "Result"
+	transmissionResultMessage = "ResultMessage"
+	transmissionStartTime     = "StartTime"
+	transmissionURL           = "URL"
+	transmissionContentLength = "ContentLength"
+	transmissionContentType   = "ContentType"
+	transmissionETag          = "ETag"
+	transmissionLastModified  = "LastModified"
+	transmissionStatusCode    = "StatusCode"
+	transmissionUsesGzip      = "UsesGzip"
+	transmissionFlavor        = "Flavor"
+	transmissionGenerator     = "Generator"
+	transmissionTitle         = "Title"
+	transmissionLastUpdated   = "LastUpdated"
+	transmissionItemCount     = "ItemCount"
+	transmissionNewItems      = "NewItems"
 )
 
 var (
-	feedlogAllFields = []string{
-		feedlogID, feedlogFeedID, feedlogDuration, feedlogResult, feedlogResultMessage, feedlogStartTime, feedlogURL, feedlogContentLength, feedlogContentType, feedlogETag, feedlogLastModified, feedlogStatusCode, feedlogUsesGzip, feedlogFlavor, feedlogGenerator, feedlogTitle, feedlogLastUpdated, feedlogItemCount, feedlogNewItems,
+	transmissionAllFields = []string{
+		transmissionID, transmissionFeedID, transmissionDuration, transmissionResult, transmissionResultMessage, transmissionStartTime, transmissionURL, transmissionContentLength, transmissionContentType, transmissionETag, transmissionLastModified, transmissionStatusCode, transmissionUsesGzip, transmissionFlavor, transmissionGenerator, transmissionTitle, transmissionLastUpdated, transmissionItemCount, transmissionNewItems,
 	}
 )
 
 // GetID return the primary key of the object.
-func (z *FeedLog) GetID() uint64 {
+func (z *Transmission) GetID() uint64 {
 	return z.ID
 }
 
 // SetID sets the primary key of the object.
-func (z *FeedLog) SetID(id uint64) {
+func (z *Transmission) SetID(id uint64) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
-func (z *FeedLog) Clear() {
+func (z *Transmission) Clear() {
 	z.ID = 0
 	z.FeedID = 0
 	z.Duration = 0
@@ -82,60 +82,60 @@ func (z *FeedLog) Clear() {
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
-func (z *FeedLog) Serialize(flags ...bool) map[string]string {
+func (z *Transmission) Serialize(flags ...bool) map[string]string {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
 	if flagNoZeroCheck || z.ID != 0 {
-		result[feedlogID] = fmt.Sprintf("%05d", z.ID)
+		result[transmissionID] = fmt.Sprintf("%05d", z.ID)
 	}
 
 	if flagNoZeroCheck || z.FeedID != 0 {
-		result[feedlogFeedID] = fmt.Sprintf("%05d", z.FeedID)
+		result[transmissionFeedID] = fmt.Sprintf("%05d", z.FeedID)
 	}
 
 	if flagNoZeroCheck || z.Duration != 0 {
-		result[feedlogDuration] = z.Duration.String()
+		result[transmissionDuration] = z.Duration.String()
 	}
 
 	if flagNoZeroCheck || z.Result != "" {
-		result[feedlogResult] = z.Result
+		result[transmissionResult] = z.Result
 	}
 
 	if flagNoZeroCheck || z.ResultMessage != "" {
-		result[feedlogResultMessage] = z.ResultMessage
+		result[transmissionResultMessage] = z.ResultMessage
 	}
 
 	if flagNoZeroCheck || !z.StartTime.IsZero() {
-		result[feedlogStartTime] = z.StartTime.UTC().Format(time.RFC3339)
+		result[transmissionStartTime] = z.StartTime.UTC().Format(time.RFC3339)
 	}
 
 	if flagNoZeroCheck || z.URL != "" {
-		result[feedlogURL] = z.URL
+		result[transmissionURL] = z.URL
 	}
 
 	if flagNoZeroCheck || z.ContentLength != 0 {
-		result[feedlogContentLength] = fmt.Sprintf("%d", z.ContentLength)
+		result[transmissionContentLength] = fmt.Sprintf("%d", z.ContentLength)
 	}
 
 	if flagNoZeroCheck || z.ContentType != "" {
-		result[feedlogContentType] = z.ContentType
+		result[transmissionContentType] = z.ContentType
 	}
 
 	if flagNoZeroCheck || z.ETag != "" {
-		result[feedlogETag] = z.ETag
+		result[transmissionETag] = z.ETag
 	}
 
 	if flagNoZeroCheck || !z.LastModified.IsZero() {
-		result[feedlogLastModified] = z.LastModified.UTC().Format(time.RFC3339)
+		result[transmissionLastModified] = z.LastModified.UTC().Format(time.RFC3339)
 	}
 
 	if flagNoZeroCheck || z.StatusCode != 0 {
-		result[feedlogStatusCode] = fmt.Sprintf("%d", z.StatusCode)
+		result[transmissionStatusCode] = fmt.Sprintf("%d", z.StatusCode)
 	}
 
 	if flagNoZeroCheck || z.UsesGzip {
-		result[feedlogUsesGzip] = func(value bool) string {
+		result[transmissionUsesGzip] = func(value bool) string {
 			if value {
 				return "1"
 			}
@@ -144,27 +144,27 @@ func (z *FeedLog) Serialize(flags ...bool) map[string]string {
 	}
 
 	if flagNoZeroCheck || z.Flavor != "" {
-		result[feedlogFlavor] = z.Flavor
+		result[transmissionFlavor] = z.Flavor
 	}
 
 	if flagNoZeroCheck || z.Generator != "" {
-		result[feedlogGenerator] = z.Generator
+		result[transmissionGenerator] = z.Generator
 	}
 
 	if flagNoZeroCheck || z.Title != "" {
-		result[feedlogTitle] = z.Title
+		result[transmissionTitle] = z.Title
 	}
 
 	if flagNoZeroCheck || !z.LastUpdated.IsZero() {
-		result[feedlogLastUpdated] = z.LastUpdated.UTC().Format(time.RFC3339)
+		result[transmissionLastUpdated] = z.LastUpdated.UTC().Format(time.RFC3339)
 	}
 
 	if flagNoZeroCheck || z.ItemCount != 0 {
-		result[feedlogItemCount] = fmt.Sprintf("%d", z.ItemCount)
+		result[transmissionItemCount] = fmt.Sprintf("%d", z.ItemCount)
 	}
 
 	if flagNoZeroCheck || z.NewItems != 0 {
-		result[feedlogNewItems] = fmt.Sprintf("%d", z.NewItems)
+		result[transmissionNewItems] = fmt.Sprintf("%d", z.NewItems)
 	}
 
 	return result
@@ -172,7 +172,7 @@ func (z *FeedLog) Serialize(flags ...bool) map[string]string {
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
-func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
+func (z *Transmission) Deserialize(values map[string]string, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 
 	var errors []error
@@ -186,10 +186,10 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 			return 0
 		}
 		return uint64(result)
-	}(feedlogID, values, errors)
+	}(transmissionID, values, errors)
 
 	if !(z.ID != 0) {
-		missing = append(missing, feedlogID)
+		missing = append(missing, transmissionID)
 	}
 
 	z.FeedID = func(fieldName string, values map[string]string, errors []error) uint64 {
@@ -199,10 +199,10 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 			return 0
 		}
 		return uint64(result)
-	}(feedlogFeedID, values, errors)
+	}(transmissionFeedID, values, errors)
 
 	if !(z.FeedID != 0) {
-		missing = append(missing, feedlogFeedID)
+		missing = append(missing, transmissionFeedID)
 	}
 
 	z.Duration = func(fieldName string, values map[string]string, errors []error) time.Duration {
@@ -216,11 +216,11 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 		return result
-	}(feedlogDuration, values, errors)
+	}(transmissionDuration, values, errors)
 
-	z.Result = values[feedlogResult]
+	z.Result = values[transmissionResult]
 
-	z.ResultMessage = values[feedlogResultMessage]
+	z.ResultMessage = values[transmissionResultMessage]
 
 	z.StartTime = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
@@ -233,9 +233,9 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 		return result
-	}(feedlogStartTime, values, errors)
+	}(transmissionStartTime, values, errors)
 
-	z.URL = values[feedlogURL]
+	z.URL = values[transmissionURL]
 
 	z.ContentLength = func(fieldName string, values map[string]string, errors []error) int {
 		result, err := strconv.ParseInt(values[fieldName], 10, 64)
@@ -244,11 +244,11 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 			return 0
 		}
 		return int(result)
-	}(feedlogContentLength, values, errors)
+	}(transmissionContentLength, values, errors)
 
-	z.ContentType = values[feedlogContentType]
+	z.ContentType = values[transmissionContentType]
 
-	z.ETag = values[feedlogETag]
+	z.ETag = values[transmissionETag]
 
 	z.LastModified = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
@@ -261,7 +261,7 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 		return result
-	}(feedlogLastModified, values, errors)
+	}(transmissionLastModified, values, errors)
 
 	z.StatusCode = func(fieldName string, values map[string]string, errors []error) int {
 		result, err := strconv.ParseInt(values[fieldName], 10, 64)
@@ -270,20 +270,20 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 			return 0
 		}
 		return int(result)
-	}(feedlogStatusCode, values, errors)
+	}(transmissionStatusCode, values, errors)
 
 	z.UsesGzip = func(fieldName string, values map[string]string, errors []error) bool {
 		if value, ok := values[fieldName]; ok {
 			return value == "1"
 		}
 		return false
-	}(feedlogUsesGzip, values, errors)
+	}(transmissionUsesGzip, values, errors)
 
-	z.Flavor = values[feedlogFlavor]
+	z.Flavor = values[transmissionFlavor]
 
-	z.Generator = values[feedlogGenerator]
+	z.Generator = values[transmissionGenerator]
 
-	z.Title = values[feedlogTitle]
+	z.Title = values[transmissionTitle]
 
 	z.LastUpdated = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
@@ -296,7 +296,7 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 		return result
-	}(feedlogLastUpdated, values, errors)
+	}(transmissionLastUpdated, values, errors)
 
 	z.ItemCount = func(fieldName string, values map[string]string, errors []error) int {
 		result, err := strconv.ParseInt(values[fieldName], 10, 64)
@@ -305,7 +305,7 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 			return 0
 		}
 		return int(result)
-	}(feedlogItemCount, values, errors)
+	}(transmissionItemCount, values, errors)
 
 	z.NewItems = func(fieldName string, values map[string]string, errors []error) int {
 		result, err := strconv.ParseInt(values[fieldName], 10, 64)
@@ -314,11 +314,11 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 			return 0
 		}
 		return int(result)
-	}(feedlogNewItems, values, errors)
+	}(transmissionNewItems, values, errors)
 
 	if flagUnknownCheck {
 		for fieldname := range values {
-			if !isStringInArray(fieldname, feedlogAllFields) {
+			if !isStringInArray(fieldname, transmissionAllFields) {
 				unknown = append(unknown, fieldname)
 			}
 		}
@@ -327,24 +327,24 @@ func (z *FeedLog) Deserialize(values map[string]string, flags ...bool) error {
 }
 
 // IndexKeys returns the keys of all indexes for this object.
-func (z *FeedLog) IndexKeys() map[string][]string {
+func (z *Transmission) IndexKeys() map[string][]string {
 
 	result := make(map[string][]string)
 
 	data := z.Serialize(true)
 
-	result[FeedLogIndexFeedTime] = []string{
+	result[TransmissionIndexFeedTime] = []string{
 
-		data[feedlogFeedID],
+		data[transmissionFeedID],
 
-		data[feedlogStartTime],
+		data[transmissionStartTime],
 	}
 
-	result[FeedLogIndexTime] = []string{
+	result[TransmissionIndexTime] = []string{
 
-		data[feedlogStartTime],
+		data[transmissionStartTime],
 
-		data[feedlogID],
+		data[transmissionID],
 	}
 
 	return result

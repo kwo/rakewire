@@ -6,23 +6,23 @@ import (
 	"time"
 )
 
-// FeedLogsByFeed retrieves the past fetch attempts for the feed in reverse chronological order.
+// TransmissionsByFeed retrieves the past fetch attempts for the feed in reverse chronological order.
 // If since is equal to 0, return all.
-func FeedLogsByFeed(feedID uint64, since time.Duration, tx Transaction) ([]*FeedLog, error) {
+func TransmissionsByFeed(feedID uint64, since time.Duration, tx Transaction) ([]*Transmission, error) {
 
-	feedlogs := []*FeedLog{}
+	transmissions := []*Transmission{}
 
 	// define index keys
 	now := time.Now().Truncate(time.Second)
-	fl := &FeedLog{}
+	fl := &Transmission{}
 	fl.FeedID = feedID
 	fl.StartTime = now.Add(-since)
-	minKeys := fl.IndexKeys()[FeedLogIndexFeedTime]
+	minKeys := fl.IndexKeys()[TransmissionIndexFeedTime]
 	fl.StartTime = now.Add(1 * time.Minute) // max later than now
-	nxtKeys := fl.IndexKeys()[FeedLogIndexFeedTime]
+	nxtKeys := fl.IndexKeys()[TransmissionIndexFeedTime]
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(FeedLogEntity).Bucket(FeedLogIndexFeedTime)
-	b := tx.Bucket(bucketData).Bucket(FeedLogEntity)
+	bIndex := tx.Bucket(bucketIndex).Bucket(TransmissionEntity).Bucket(TransmissionIndexFeedTime)
+	b := tx.Bucket(bucketData).Bucket(TransmissionEntity)
 
 	c := bIndex.Cursor()
 	min := []byte(kvKeys(minKeys))
@@ -35,21 +35,21 @@ func FeedLogsByFeed(feedID uint64, since time.Duration, tx Transaction) ([]*Feed
 		}
 
 		if data, ok := kvGet(id, b); ok {
-			feedlog := &FeedLog{}
-			if err := feedlog.Deserialize(data); err != nil {
+			transmission := &Transmission{}
+			if err := transmission.Deserialize(data); err != nil {
 				return nil, err
 			}
-			feedlogs = append(feedlogs, feedlog)
+			transmissions = append(transmissions, transmission)
 		}
 
 	}
 
 	// reverse order of result
-	for left, right := 0, len(feedlogs)-1; left < right; left, right = left+1, right-1 {
-		feedlogs[left], feedlogs[right] = feedlogs[right], feedlogs[left]
+	for left, right := 0, len(transmissions)-1; left < right; left, right = left+1, right-1 {
+		transmissions[left], transmissions[right] = transmissions[right], transmissions[left]
 	}
 
-	return feedlogs, nil
+	return transmissions, nil
 
 }
 
@@ -58,7 +58,7 @@ func LastFetchTime(tx Transaction) (lastFetchTime time.Time, err error) {
 
 	lastFetchTime = time.Now().Truncate(time.Second)
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(FeedLogEntity).Bucket(FeedLogIndexTime)
+	bIndex := tx.Bucket(bucketIndex).Bucket(TransmissionEntity).Bucket(TransmissionIndexTime)
 	c := bIndex.Cursor()
 	k, _ := c.Last()
 	if k != nil {

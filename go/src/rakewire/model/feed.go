@@ -8,8 +8,8 @@ import (
 
 // Feed feed descriptor
 type Feed struct {
-	Attempt *FeedLog `json:"-" kv:"-"`
-	Items   []*Item  `json:"-" kv:"-"`
+	Transmission *Transmission `json:"-" kv:"-"`
+	Items        []*Item       `json:"-" kv:"-"`
 
 	ID      uint64 `json:"id"  kv:"NextFetch:2"`
 	URL     string `json:"url" kv:"+required,URL:1:lower"`

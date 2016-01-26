@@ -46,6 +46,6 @@ func deserializeFeeds(r io.Reader) ([]*m.Feed, error) {
 	return feeds, err
 }
 
-func serializeLogs(logs []*m.FeedLog, w io.Writer) error {
+func serializeLogs(logs []*m.Transmission, w io.Writer) error {
 	return json.NewEncoder(w).Encode(&logs)
 }

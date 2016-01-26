@@ -86,7 +86,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 					if err == nil {
 						rsp.LastRefreshed = startTime.Unix()
 					} else {
-						log.Printf("%-7s %-7s error retrieving last feedlog fetch time: %s", logWarn, logName, err.Error())
+						log.Printf("%-7s %-7s error retrieving last transmission fetch time: %s", logWarn, logName, err.Error())
 					}
 
 					uMark := req.PostFormValue("mark")
