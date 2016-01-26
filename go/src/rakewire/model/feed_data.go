@@ -144,29 +144,29 @@ func (feed *Feed) Save(tx Transaction) ([]*Item, error) {
 // Delete removes a feed and associated items from the database.
 func (feed *Feed) Delete(tx Transaction) error {
 
+	// remove items
 	items, err := ItemsByFeed(feed.ID, tx)
 	if err != nil {
 		return err
 	}
-
 	for _, item := range items {
 		if err := kvDelete(ItemEntity, item, tx); err != nil {
 			return err
 		}
 	}
 
-	// TODO: remove feedlogs
-	// feedlogs, err := FeedLogsByFeed(feed.ID, time.Time{}, tx)
-	// if err != nil {
-	// 	return err
-	// }
-
-	for _, item := range items {
-		if err := kvDelete(ItemEntity, item, tx); err != nil {
+	// remove feedlogs
+	feedlogs, err := FeedLogsByFeed(feed.ID, time.Now().Sub(time.Time{}), tx)
+	if err != nil {
+		return err
+	}
+	for _, feedlog := range feedlogs {
+		if err := kvDelete(FeedLogEntity, feedlog, tx); err != nil {
 			return err
 		}
 	}
 
+	// remove feed itself
 	return kvDelete(FeedEntity, feed, tx)
 
 }
