@@ -114,7 +114,7 @@ func (z *User) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 	}
-	return newDeserializationError(errors, missing, unknown)
+	return newDeserializationError(UserEntity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.

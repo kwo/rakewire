@@ -228,7 +228,7 @@ func (z *Subscription) Deserialize(values map[string]string, flags ...bool) erro
 			}
 		}
 	}
-	return newDeserializationError(errors, missing, unknown)
+	return newDeserializationError(SubscriptionEntity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.

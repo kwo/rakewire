@@ -323,7 +323,7 @@ func (z *Transmission) Deserialize(values map[string]string, flags ...bool) erro
 			}
 		}
 	}
-	return newDeserializationError(errors, missing, unknown)
+	return newDeserializationError(TransmissionEntity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.

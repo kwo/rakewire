@@ -182,7 +182,7 @@ func (z *Item) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 	}
-	return newDeserializationError(errors, missing, unknown)
+	return newDeserializationError(ItemEntity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.

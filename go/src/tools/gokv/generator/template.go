@@ -92,7 +92,7 @@ func (z *{{.Name}}) Deserialize(values map[string]string, flags ...bool) error {
 			}
 		}
 	}
-	return newDeserializationError(errors, missing, unknown)
+	return newDeserializationError({{$struct.Name}}Entity, errors, missing, unknown)
 }
 
 // IndexKeys returns the keys of all indexes for this object.

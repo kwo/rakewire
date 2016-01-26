@@ -24,10 +24,11 @@ type DataObject interface {
 }
 
 // NewDeserializationError returns a new DeserializationError or nil of all arrays are empty.
-func newDeserializationError(errors []error, missing []string, unknown []string) error {
+func newDeserializationError(entityName string, errors []error, missing []string, unknown []string) error {
 
 	if len(errors) > 0 || len(missing) > 0 || len(unknown) > 0 {
 		return &DeserializationError{
+			Entity:            entityName,
 			Errors:            errors,
 			MissingFieldnames: missing,
 			UnknownFieldnames: unknown,
@@ -40,6 +41,7 @@ func newDeserializationError(errors []error, missing []string, unknown []string)
 
 // DeserializationError represents multiple errors encountered during deserialization
 type DeserializationError struct {
+	Entity            string
 	Errors            []error
 	MissingFieldnames []string
 	UnknownFieldnames []string
@@ -51,10 +53,10 @@ func (z DeserializationError) Error() string {
 		texts = append(texts, err.Error())
 	}
 	for _, field := range z.MissingFieldnames {
-		texts = append(texts, fmt.Sprintf("Missing field: %s", field))
+		texts = append(texts, fmt.Sprintf("Missing field in %s: %s", z.Entity, field))
 	}
 	for _, field := range z.UnknownFieldnames {
-		texts = append(texts, fmt.Sprintf("Unknown field: %s", field))
+		texts = append(texts, fmt.Sprintf("Unknown field in %s: %s", z.Entity, field))
 	}
 	return strings.Join(texts, "\n")
 }
