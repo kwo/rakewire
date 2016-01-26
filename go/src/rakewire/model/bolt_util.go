@@ -223,17 +223,29 @@ func checkIntegrity(location string) error {
 
 func copyContainers(src, dst Database) error {
 
-	containers := []string{"Entry", "Feed", "Group", "Item", "Subscription", "Transmission", "User"}
+	containers := make(map[string]Object)
+	containers[entryEntity] = &Entry{}
+	containers[feedEntity] = &Feed{}
+	containers[groupEntity] = &Group{}
+	containers[itemEntity] = &Item{}
+	containers[subscriptionEntity] = &Subscription{}
+	containers[transmissionEntity] = &Transmission{}
+	containers[userEntity] = &User{}
 
-	for _, container := range containers {
-		log.Printf("  %s...", container)
+	for entityName, entity := range containers {
+		log.Printf("  %s...", entityName)
 		err := src.Select(func(srcTx Transaction) error {
-			srcContainer := srcTx.Container(bucketData).Container(container)
+			srcContainer := srcTx.Container(bucketData).Container(entityName)
 			return dst.Update(func(dstTx Transaction) error {
-				dstContainer := dstTx.Container(bucketData).Container(container)
+				dstContainer := dstTx.Container(bucketData).Container(entityName)
 				return srcContainer.Iterate(func(record Record) error {
+					entity.clear()
+					if err := entity.deserialize(record, true); err != nil {
+						log.Printf("Error in record (%d): %s", record.GetID(), err.Error())
+						return nil
+					}
 					return dstContainer.Put(record.GetID(), record)
-				})
+				}, true)
 			})
 		})
 		if err != nil {
