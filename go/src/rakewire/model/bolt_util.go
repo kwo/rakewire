@@ -156,6 +156,45 @@ func checkSchema(tx *bolt.Tx) error {
 
 }
 
+func upgradeSchema(tx *bolt.Tx) error {
+
+	if tx.Bucket([]byte(bucketData)).Bucket([]byte("UserFeed")) != nil {
+		if err := migrateBuckets1(tx); err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func migrateBuckets1(tx *bolt.Tx) error {
+
+	copyBucket := func(src, dst *bolt.Bucket) error {
+		return src.ForEach(func(k, v []byte) error {
+			return dst.Put(k, v)
+		})
+	}
+
+	migrations := make(map[string]string)
+	migrations["Entry"] = ItemEntity
+	migrations["UserFeed"] = SubscriptionEntity
+	migrations["UserEntry"] = EntryEntity
+
+	for srcName, dstName := range migrations {
+		src := tx.Bucket([]byte(bucketData)).Bucket([]byte(srcName))
+		dst := tx.Bucket([]byte(bucketData)).Bucket([]byte(dstName))
+		if err := copyBucket(src, dst); err != nil {
+			return err
+		}
+		if err := tx.Bucket([]byte(bucketData)).DeleteBucket([]byte(srcName)); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func removeInvalidKeys(tx Transaction) error {
 
 	log.Printf("%-7s %-7s remove invalid items...", logInfo, logName)

@@ -15,7 +15,17 @@ func OpenDatabase(location string) (Database, error) {
 	}
 
 	err = boltDB.Update(func(tx *bolt.Tx) error {
-		return checkSchema(tx)
+
+		if err := checkSchema(tx); err != nil {
+			return err
+		}
+
+		if err := upgradeSchema(tx); err != nil {
+			return err
+		}
+
+		return nil
+
 	})
 	if err != nil {
 		boltDB.Close()
