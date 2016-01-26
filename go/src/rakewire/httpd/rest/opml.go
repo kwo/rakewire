@@ -51,6 +51,7 @@ func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
 	})
 
 	if err != nil {
+		log.Printf("%-7s %-7s Error importing OPML: %s", logWarn, logName, err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
