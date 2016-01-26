@@ -83,8 +83,6 @@ func FeedByID(id uint64, tx Transaction) (feed *Feed, err error) {
 	if data, ok := kvGet(id, b); ok {
 		feed = &Feed{}
 		err = feed.Deserialize(data)
-	} else {
-		err = fmt.Errorf("Feed not found: %d", id)
 	}
 	return
 }
@@ -94,8 +92,6 @@ func FeedByURL(url string, tx Transaction) (feed *Feed, err error) {
 	if data, ok := kvGetFromIndex(FeedEntity, FeedIndexURL, []string{strings.ToLower(url)}, tx); ok {
 		feed = &Feed{}
 		err = feed.Deserialize(data)
-	} else {
-		err = fmt.Errorf("Feed not found: %s", url)
 	}
 	return
 }
