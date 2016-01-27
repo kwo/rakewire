@@ -1,14 +1,11 @@
 package model
 
 import (
+	"bytes"
 	"github.com/boltdb/bolt"
 	"strings"
 	"sync"
 	"time"
-)
-
-const (
-	containerSeparator = "/"
 )
 
 // OpenDatabase opens the database at the specified location
@@ -93,8 +90,11 @@ func (z *boltTransaction) Bucket(name string) Bucket {
 	return &boltBucket{bucket: bucket}
 }
 
-func (z *boltTransaction) Container(path string) Container {
-	names := strings.Split(path, containerSeparator)
+func (z *boltTransaction) Container(paths ...string) (Container, error) {
+	names := []string{}
+	for _, path := range paths {
+		names = append(names, strings.Split(path, ContainerSeparator)...)
+	}
 	var b *bolt.Bucket
 	for _, name := range names {
 		if b == nil {
@@ -103,7 +103,7 @@ func (z *boltTransaction) Container(path string) Container {
 			b = b.Bucket([]byte(name))
 		}
 	}
-	return &boltContainer{bucket: b}
+	return &boltContainer{bucket: b}, nil
 }
 
 type boltBucket struct {
@@ -144,13 +144,54 @@ type boltContainer struct {
 	bucket *bolt.Bucket
 }
 
-func (z *boltContainer) Container(path string) Container {
-	names := strings.Split(path, containerSeparator)
+func (z *boltContainer) Container(paths ...string) (Container, error) {
+	names := []string{}
+	for _, path := range paths {
+		names = append(names, strings.Split(path, ContainerSeparator)...)
+	}
 	b := z.bucket
 	for _, name := range names {
 		b = b.Bucket([]byte(name))
 	}
-	return &boltContainer{bucket: b}
+	return &boltContainer{bucket: b}, nil
+}
+
+func (z *boltContainer) Delete(id uint64) error {
+
+	c := z.bucket.Cursor()
+	min := []byte(kvMinKey(id))
+	nxt := []byte(kvNxtKey(id))
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
+		if err := c.Delete(); err != nil {
+			return err
+		}
+	} // for loop
+
+	return nil
+
+}
+
+func (z *boltContainer) Get(id uint64) (Record, error) {
+
+	found := false
+	record := make(Record)
+
+	c := z.bucket.Cursor()
+	min := []byte(kvMinKey(id))
+	nxt := []byte(kvNxtKey(id))
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+		// assume proper key format of ID/fieldname
+		_, fieldname, _ := kvBucketKeyDecode(k)
+		record[fieldname] = string(v)
+		found = true
+	} // for loop
+
+	if found {
+		return record, nil
+	}
+
+	return nil, nil
+
 }
 
 func (z *boltContainer) Iterate(onRecord OnRecord, flags ...bool) error {
@@ -202,7 +243,23 @@ func (z *boltContainer) Iterate(onRecord OnRecord, flags ...bool) error {
 
 }
 
-func (z *boltContainer) Put(id uint64, record Record) error {
+func (z *boltContainer) NextID() (uint64, error) {
+	return z.bucket.NextSequence()
+}
+
+func (z *boltContainer) Put(record Record) error {
+
+	id := record.GetID()
+
+	if id == 0 {
+		nxtID, err := z.NextID()
+		if err != nil {
+			return err
+		}
+		record.SetID(nxtID)
+		id = nxtID
+	}
+
 	for fieldname, v := range record {
 		key := kvBucketKeyEncode(id, fieldname)
 		value := []byte(v)
@@ -210,7 +267,9 @@ func (z *boltContainer) Put(id uint64, record Record) error {
 			return err
 		}
 	}
+
 	return nil
+
 }
 
 type boltCursor struct {

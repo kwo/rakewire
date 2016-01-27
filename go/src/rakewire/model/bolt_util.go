@@ -235,16 +235,22 @@ func copyContainers(src, dst Database) error {
 	for entityName, entity := range containers {
 		log.Printf("  %s...", entityName)
 		err := src.Select(func(srcTx Transaction) error {
-			srcContainer := srcTx.Container(bucketData).Container(entityName)
+			srcContainer, err := srcTx.Container(bucketData, entityName)
+			if err != nil {
+				return err
+			}
 			return dst.Update(func(dstTx Transaction) error {
-				dstContainer := dstTx.Container(bucketData).Container(entityName)
+				dstContainer, err := dstTx.Container(bucketData, entityName)
+				if err != nil {
+					return err
+				}
 				return srcContainer.Iterate(func(record Record) error {
 					entity.clear()
 					if err := entity.deserialize(record, true); err != nil {
 						log.Printf("Error in record (%d): %s", record.GetID(), err.Error())
 						return nil
 					}
-					return dstContainer.Put(record.GetID(), record)
+					return dstContainer.Put(record)
 				}, true)
 			})
 		})
