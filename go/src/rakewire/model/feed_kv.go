@@ -65,12 +65,12 @@ func (z Feeds) Reverse() {
 	}
 }
 
-// GetID return the primary key of the object.
+// getID return the primary key of the object.
 func (z *Feed) getID() uint64 {
 	return z.ID
 }
 
-// SetID sets the primary key of the object.
+// setID sets the primary key of the object.
 func (z *Feed) setID(id uint64) {
 	z.ID = id
 }

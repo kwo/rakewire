@@ -71,12 +71,12 @@ func (z Transmissions) Reverse() {
 	}
 }
 
-// GetID return the primary key of the object.
+// getID return the primary key of the object.
 func (z *Transmission) getID() uint64 {
 	return z.ID
 }
 
-// SetID sets the primary key of the object.
+// setID sets the primary key of the object.
 func (z *Transmission) setID(id uint64) {
 	z.ID = id
 }

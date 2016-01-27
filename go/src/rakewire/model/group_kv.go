@@ -53,12 +53,12 @@ func (z Groups) Reverse() {
 	}
 }
 
-// GetID return the primary key of the object.
+// getID return the primary key of the object.
 func (z *Group) getID() uint64 {
 	return z.ID
 }
 
-// SetID sets the primary key of the object.
+// setID sets the primary key of the object.
 func (z *Group) setID(id uint64) {
 	z.ID = id
 }
