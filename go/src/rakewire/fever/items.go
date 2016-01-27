@@ -6,7 +6,7 @@ import (
 
 func (z *API) getItemsAll(userID uint64, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.EntriesGetNext(userID, 0, 0, tx)
+	entries, err := model.EntriesGetAll(userID, tx)
 	if err != nil {
 		return nil, err
 	}

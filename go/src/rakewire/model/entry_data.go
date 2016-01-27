@@ -242,6 +242,11 @@ func EntriesByUser(userID uint64, ids []uint64, tx Transaction) (Entries, error)
 
 }
 
+// EntriesGetAll retrieves the all entries for a user.
+func EntriesGetAll(userID uint64, tx Transaction) (Entries, error) {
+	return EntriesGetNext(userID, 0, 0, tx)
+}
+
 // EntriesGetNext retrieves the next X user items for a user.
 func EntriesGetNext(userID uint64, minID uint64, count int, tx Transaction) (Entries, error) {
 
