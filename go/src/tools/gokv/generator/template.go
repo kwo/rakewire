@@ -49,6 +49,11 @@ func (z {{$structure.NamePlural}} ) Less(i, j int) bool {
 	return z[i].ID < z[j].ID
 }
 
+// SortByID sort collection by ID
+func (z {{$structure.NamePlural}} ) SortByID() {
+	sort.Stable(z)
+}
+
 // First returns the first element in the collection
 func (z {{$structure.NamePlural}} ) First() *{{$structure.Name}} { return z[0] }
 

@@ -7,6 +7,7 @@ package model
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 )
 
@@ -35,6 +36,11 @@ func (z Groups) Len() int      { return len(z) }
 func (z Groups) Swap(i, j int) { z[i], z[j] = z[j], z[i] }
 func (z Groups) Less(i, j int) bool {
 	return z[i].ID < z[j].ID
+}
+
+// SortByID sort collection by ID
+func (z Groups) SortByID() {
+	sort.Stable(z)
 }
 
 // First returns the first element in the collection

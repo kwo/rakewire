@@ -7,6 +7,7 @@ package model
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -53,6 +54,11 @@ func (z Transmissions) Len() int      { return len(z) }
 func (z Transmissions) Swap(i, j int) { z[i], z[j] = z[j], z[i] }
 func (z Transmissions) Less(i, j int) bool {
 	return z[i].ID < z[j].ID
+}
+
+// SortByID sort collection by ID
+func (z Transmissions) SortByID() {
+	sort.Stable(z)
 }
 
 // First returns the first element in the collection

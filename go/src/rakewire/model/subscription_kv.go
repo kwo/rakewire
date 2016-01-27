@@ -8,6 +8,7 @@ package model
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -45,6 +46,11 @@ func (z Subscriptions) Len() int      { return len(z) }
 func (z Subscriptions) Swap(i, j int) { z[i], z[j] = z[j], z[i] }
 func (z Subscriptions) Less(i, j int) bool {
 	return z[i].ID < z[j].ID
+}
+
+// SortByID sort collection by ID
+func (z Subscriptions) SortByID() {
+	sort.Stable(z)
 }
 
 // First returns the first element in the collection

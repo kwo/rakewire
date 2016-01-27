@@ -235,6 +235,7 @@ func Generate(filename, kvFilename string) error {
 
 	imports := make(map[string]bool)
 	imports["fmt"] = true
+	imports["sort"] = true
 	imports["strconv"] = true
 	for _, s := range structInfos {
 		for k := range s.Imports {
