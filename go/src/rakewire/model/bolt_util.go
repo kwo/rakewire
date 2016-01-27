@@ -255,6 +255,12 @@ func checkIntegrity(location string) error {
 	}
 	log.Println("interrogating entries...complete")
 
+	log.Println("rebuilding indexes...")
+	if err := rebuildIndexes(newDB); err != nil {
+		return err
+	}
+	log.Println("rebuilding indexes...complete")
+
 	log.Println("checking database integrity...complete")
 
 	return nil
@@ -746,73 +752,45 @@ func checkTransmissions(db Database) error {
 
 }
 
-func rebuildIndexes(tx *boltTransaction) error {
+func rebuildIndexes(db Database) error {
 
-	log.Printf("%-7s %-7s rebuilding indexes...", logInfo, logName)
+	containers := make(map[string]Object)
+	containers[entryEntity] = &Entry{}
+	containers[feedEntity] = &Feed{}
+	containers[groupEntity] = &Group{}
+	containers[itemEntity] = &Item{}
+	containers[subscriptionEntity] = &Subscription{}
+	containers[transmissionEntity] = &Transmission{}
+	containers[userEntity] = &User{}
 
-	if err := tx.tx.DeleteBucket([]byte(bucketIndex)); err != nil {
-		return err
-	}
+	for entityName, entity := range containers {
+		log.Printf("  %s...", entityName)
 
-	if err := checkSchema(tx.tx); err != nil {
-		return err
-	}
-
-	if err := rebuildIndexesForEntity(userEntity, &User{}, tx); err != nil {
-		return err
-	}
-
-	if err := rebuildIndexesForEntity(groupEntity, &Group{}, tx); err != nil {
-		return err
-	}
-
-	if err := rebuildIndexesForEntity(feedEntity, &Feed{}, tx); err != nil {
-		return err
-	}
-
-	if err := rebuildIndexesForEntity(transmissionEntity, &Transmission{}, tx); err != nil {
-		return err
-	}
-
-	if err := rebuildIndexesForEntity(itemEntity, &Item{}, tx); err != nil {
-		return err
-	}
-
-	if err := rebuildIndexesForEntity(entryEntity, &Entry{}, tx); err != nil {
-		return err
-	}
-
-	if err := rebuildIndexesForEntity(subscriptionEntity, &Subscription{}, tx); err != nil {
-		return err
-	}
-
-	log.Printf("%-7s %-7s rebuilding indexes complete", logInfo, logName)
-
-	return nil
-
-}
-
-func rebuildIndexesForEntity(entityName string, dao Object, tx Transaction) error {
-
-	bEntity := tx.Bucket(bucketData).Bucket(entityName)
-	ids, err := kvGetUniqueIDs(bEntity) // TODO: what about really large buckets
-	if err != nil {
-		return err
-	}
-
-	for _, id := range ids {
-		dao.clear()
-		if data, ok := kvGet(id, bEntity); ok {
-			if err := dao.deserialize(data); err != nil {
+		err := db.Update(func(tx Transaction) error {
+			container, err := tx.Container(bucketData, entityName)
+			if err != nil {
 				return err
 			}
-			if err := kvSaveIndexes(entityName, id, dao.indexKeys(), nil, tx); err != nil {
-				return err
-			}
+			return container.Iterate(func(record Record) error {
+				entity.clear()
+				if err := entity.deserialize(record); err != nil {
+					return err
+				}
+				if err := kvSaveIndexes(entityName, entity.getID(), entity.indexKeys(), nil, tx); err != nil {
+					return err
+				}
+				return nil
+			})
+		})
+
+		if err != nil {
+			return err
 		}
-	}
+
+	} // loop entities
 
 	return nil
+
 }
 
 func renameWithTimestamp(location string) (string, error) {
