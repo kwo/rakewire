@@ -249,6 +249,12 @@ func checkIntegrity(location string) error {
 	}
 	log.Println("interrogating transmissions...complete")
 
+	log.Println("interrogating entries...")
+	if err := checkEntries(newDB); err != nil {
+		return err
+	}
+	log.Println("interrogating entries...complete")
+
 	log.Println("checking database integrity...complete")
 
 	return nil
@@ -318,6 +324,94 @@ func copyContainers(src, dst Database) error {
 	}
 
 	return nil
+
+}
+
+func checkEntries(db Database) error {
+
+	return db.Update(func(tx Transaction) error {
+
+		userCache := make(map[uint64]Record)
+		users, err := tx.Container(bucketData, userEntity)
+		if err != nil {
+			return err
+		}
+		userExists := func(userID uint64) bool {
+			if _, ok := userCache[userID]; !ok {
+				if u, err := users.Get(userID); err == nil {
+					userCache[userID] = u
+				}
+			}
+			u, _ := userCache[userID]
+			return u != nil
+		}
+
+		itemCache := make(map[uint64]Record)
+		items, err := tx.Container(bucketData, itemEntity)
+		if err != nil {
+			return err
+		}
+		itemExists := func(itemID uint64) bool {
+			if _, ok := itemCache[itemID]; !ok {
+				if i, err := items.Get(itemID); err == nil {
+					itemCache[itemID] = i
+				}
+			}
+			i, _ := itemCache[itemID]
+			return i != nil
+		}
+
+		subscriptionCache := make(map[uint64]Record)
+		subscriptions, err := tx.Container(bucketData, subscriptionEntity)
+		if err != nil {
+			return err
+		}
+		subscriptionExists := func(subscriptionID uint64) bool {
+			if _, ok := subscriptionCache[subscriptionID]; !ok {
+				if s, err := subscriptions.Get(subscriptionID); err == nil {
+					subscriptionCache[subscriptionID] = s
+				}
+			}
+			s, _ := subscriptionCache[subscriptionID]
+			return s != nil
+		}
+
+		badIDs := []uint64{}
+
+		entries, err := tx.Container(bucketData, entryEntity)
+		if err != nil {
+			return err
+		}
+
+		entry := &Entry{}
+		entries.Iterate(func(record Record) error {
+			entry.clear()
+			if err := entry.deserialize(record); err == nil {
+				if !userExists(entry.UserID) {
+					log.Printf("  entry without user: %d", entry.ID)
+					badIDs = append(badIDs, entry.ID)
+				} else if !itemExists(entry.ItemID) {
+					log.Printf("  entry without item: %d", entry.ID)
+					badIDs = append(badIDs, entry.ID)
+				} else if !subscriptionExists(entry.SubscriptionID) {
+					log.Printf("  entry without subscription: %d", entry.ID)
+					badIDs = append(badIDs, entry.ID)
+				}
+			}
+			return nil
+		})
+
+		// remove bad entries
+		for _, id := range badIDs {
+			// use container, because operating on database without indexes yet
+			if err := entries.Delete(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
 
 }
 
