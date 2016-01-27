@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -65,17 +66,14 @@ type DeserializationError struct {
 }
 
 func (z DeserializationError) Error() string {
-	texts := []string{}
+	sort.Strings(z.MissingFieldnames)
+	sort.Strings(z.UnknownFieldnames)
+	errors := []string{}
 	for _, err := range z.Errors {
-		texts = append(texts, err.Error())
+		errors = append(errors, err.Error())
 	}
-	for _, field := range z.MissingFieldnames {
-		texts = append(texts, fmt.Sprintf("Missing field in %s: %s", z.Entity, field))
-	}
-	for _, field := range z.UnknownFieldnames {
-		texts = append(texts, fmt.Sprintf("Unknown field in %s: %s", z.Entity, field))
-	}
-	return strings.Join(texts, "\n")
+	message := fmt.Sprintf("Invalid %s: missing %s; unknown: %s; errors: %s", z.Entity, strings.Join(z.MissingFieldnames, ", "), strings.Join(z.UnknownFieldnames, ", "), strings.Join(errors, ", "))
+	return message
 }
 
 func kvGet(id uint64, b Bucket) (map[string]string, bool) {
