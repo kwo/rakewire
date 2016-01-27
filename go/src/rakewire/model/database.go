@@ -44,7 +44,6 @@ type Container interface {
 
 // Cursor loops through values in a bucket
 type Cursor interface {
-	Delete() error
 	First() (key []byte, value []byte)
 	Last() (key []byte, value []byte)
 	Next() (key []byte, value []byte)

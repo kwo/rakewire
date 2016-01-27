@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -107,6 +108,94 @@ func TestContainerIterate(t *testing.T) {
 		})
 	}); err != nil {
 		t.Fatalf("Error selecting database: %s", err.Error())
+	}
+
+}
+
+func TestContainerPutGetDelete(t *testing.T) {
+
+	t.Parallel()
+
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
+
+	if err := database.Update(func(tx Transaction) error {
+
+		items, err := tx.Container(bucketData, itemEntity)
+		if err != nil {
+			return err
+		}
+
+		for i := 1; i < 10; i++ {
+			item := &Item{}
+			item.FeedID = 3
+			item.GUID = fmt.Sprintf("localhost%d", i)
+			item.ID = uint64(i)
+			if err := items.Put(item.serialize()); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	}); err != nil {
+		t.Fatalf("Error updating database: %s", err.Error())
+	}
+
+	if err := database.Select(func(tx Transaction) error {
+
+		items, err := tx.Container(bucketData, itemEntity)
+		if err != nil {
+			return err
+		}
+
+		for i := 1; i < 10; i++ {
+			item := &Item{}
+			record, err := items.Get(uint64(i))
+			if err != nil {
+				return err
+			}
+			if err := item.deserialize(record); err != nil {
+				return err
+			}
+			if item.GUID != fmt.Sprintf("localhost%d", i) {
+				t.Errorf("Bad GUID: %s", item.GUID)
+			}
+		}
+
+		return nil
+
+	}); err != nil {
+		t.Fatalf("Error selecting database: %s", err.Error())
+	}
+
+	if err := database.Update(func(tx Transaction) error {
+
+		items, err := tx.Container(bucketData, itemEntity)
+		if err != nil {
+			return err
+		}
+
+		for i := 1; i < 10; i++ {
+			if err := items.Delete(uint64(i)); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	}); err != nil {
+		t.Fatalf("Error deleting from database: %s", err.Error())
+	}
+
+	if err := database.Select(func(tx Transaction) error {
+		items := tx.Bucket(bucketData).Bucket(itemEntity)
+		return items.ForEach(func(k, v []byte) error {
+			t.Errorf("Unexpected entry in table: %s/%s", k, v)
+			return nil
+		})
+	}); err != nil {
+		t.Fatalf("Error deleting from database: %s", err.Error())
 	}
 
 }

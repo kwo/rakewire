@@ -115,15 +115,22 @@ func kvGetFromIndex(name string, index string, keys []string, tx Transaction) (m
 
 func kvPut(id uint64, values map[string]string, b Bucket) error {
 
+	keys := [][]byte{}
+
 	// remove record keys not in new set
 	c := b.Cursor()
 	min := []byte(kvMinKey(id))
 	nxt := []byte(kvNxtKey(id))
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
 		if _, ok := values[kvKeyElement(k, 1)]; !ok {
-			if err := c.Delete(); err != nil {
-				return err
-			}
+			keys = append(keys, k)
+		}
+	}
+
+	// delete keys
+	for _, k := range keys {
+		if err := b.Delete(k); err != nil {
+			return err
 		}
 	}
 
@@ -232,13 +239,20 @@ func kvDelete(name string, value Object, tx Transaction) error {
 		return fmt.Errorf("Cannot delete %s with ID of 0", name)
 	}
 
+	keys := [][]byte{}
+
 	// delete data
 	b := tx.Bucket(bucketData).Bucket(name)
 	c := b.Cursor()
 	min := []byte(kvMinKey(value.getID()))
 	nxt := []byte(kvNxtKey(value.getID()))
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
-		if err := c.Delete(); err != nil {
+		keys = append(keys, k)
+	}
+
+	// delete keys
+	for _, k := range keys {
+		if err := b.Delete(k); err != nil {
 			return err
 		}
 	}

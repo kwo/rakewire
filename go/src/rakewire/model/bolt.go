@@ -158,14 +158,21 @@ func (z *boltContainer) Container(paths ...string) (Container, error) {
 
 func (z *boltContainer) Delete(id uint64) error {
 
+	keys := [][]byte{}
+
 	c := z.bucket.Cursor()
 	min := []byte(kvMinKey(id))
 	nxt := []byte(kvNxtKey(id))
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
-		if err := c.Delete(); err != nil {
+		keys = append(keys, k)
+		// do not delete in a cursor, it is buggy, sometimes advancing the position
+	} // for loop
+
+	for _, k := range keys {
+		if err := z.bucket.Delete(k); err != nil {
 			return err
 		}
-	} // for loop
+	}
 
 	return nil
 
@@ -250,15 +257,6 @@ func (z *boltContainer) NextID() (uint64, error) {
 func (z *boltContainer) Put(record Record) error {
 
 	id := record.GetID()
-
-	if id == 0 {
-		nxtID, err := z.NextID()
-		if err != nil {
-			return err
-		}
-		record.SetID(nxtID)
-		id = nxtID
-	}
 
 	for fieldname, v := range record {
 		key := kvBucketKeyEncode(id, fieldname)
