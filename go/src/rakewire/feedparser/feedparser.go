@@ -282,6 +282,9 @@ func (z *Parser) doStartFeedRSS(e *element, start *xml.StartElement) {
 	switch {
 	case e.Match(nsAtom, "link"):
 		key := e.Attr(nsNone, "rel")
+		if key == "" {
+			key = linkAlternate
+		}
 		value := makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 		z.feed.Links[key] = value
 	case e.Match(nsRSS, "copyright"):
@@ -327,6 +330,9 @@ func (z *Parser) doStartEntryAtom(e *element, start *xml.StartElement) {
 		z.entry.ID = z.makeText(e, start)
 	case e.Match(nsAtom, "link"):
 		key := e.Attr(nsNone, "rel")
+		if key == "" {
+			key = linkAlternate
+		}
 		value := makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 		z.entry.Links[key] = value
 	case e.Match(nsAtom, "published"):

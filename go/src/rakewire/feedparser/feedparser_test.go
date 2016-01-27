@@ -54,6 +54,20 @@ func TestStratechery(t *testing.T) {
 
 }
 
+func TestReddit(t *testing.T) {
+
+	t.SkipNow()
+
+	f := testURL(t, "https://www.reddit.com/r/NichtDerPostillon.rss")
+
+	// then
+
+	for _, entry := range f.Entries {
+		t.Logf("Entry: %s %s", entry.Title, entry.GetLinkAlternate())
+	}
+
+}
+
 func TestLinkWithoutRel(t *testing.T) {
 
 	// reference https://www.tbray.org/ongoing/ongoing.atom
