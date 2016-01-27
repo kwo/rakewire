@@ -23,11 +23,6 @@ func (z Record) GetID() uint64 {
 	return id
 }
 
-// SetID sets the primary key of the object.
-func (z Record) SetID(id uint64) {
-	z["ID"] = strconv.FormatUint(id, 10)
-}
-
 // OnRecord defines a function type that fires on a new Record
 type OnRecord func(Record) error
 
