@@ -118,28 +118,6 @@ func kvGetFromIndex(name string, index string, keys []string, tx Transaction) (m
 
 }
 
-// kvGetUniqueIDs: deprecated
-func kvGetUniqueIDs(b Bucket) ([]uint64, error) {
-
-	var result []uint64
-
-	var lastID uint64
-	err := b.ForEach(func(k, v []byte) error {
-		id, err := kvKeyElementID(k, 0)
-		if err != nil {
-			return err
-		}
-		if id != lastID {
-			result = append(result, id)
-			lastID = id
-		}
-		return nil
-	})
-
-	return result, err
-
-}
-
 func kvPut(id uint64, values map[string]string, b Bucket) error {
 
 	// remove record keys not in new set
