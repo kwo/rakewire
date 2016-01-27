@@ -95,7 +95,10 @@ func TestContainerIterate(t *testing.T) {
 	}
 
 	if err := database.Select(func(tx Transaction) error {
-		feeds := tx.Container("Data/Feed")
+		feeds, err := tx.Container("Data/Feed")
+		if err != nil {
+			return err
+		}
 		return feeds.Iterate(func(record Record) error {
 			for k, v := range record {
 				t.Logf("%s: %s", k, v)
