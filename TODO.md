@@ -11,7 +11,7 @@
   x rename FeedLog to Transmission
   x pull up rest api, fever api
   x create collection classes with groupby and sort functions
-  - add command-line flag to repair/compact database, remove cleanup api
+  x add command-line flag to repair/compact database, remove cleanup api
  - store config, tls keys in data file, eliminate config package
  - optimize entries
  - jwt authentication and basic auth
