@@ -178,44 +178,78 @@ func checkIntegrity(location string) error {
 	}
 	log.Printf("original database saved to %s\n", backupFilename)
 
-	oldDB, err := bolt.Open(backupFilename, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	oldBoltDB, err := bolt.Open(backupFilename, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return err
 	}
-	defer oldDB.Close()
+	defer oldBoltDB.Close()
 
-	newDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	newBoltDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return err
 	}
-	defer newDB.Close()
+	defer newBoltDB.Close()
 
 	// ensure correct buckets exist in new file
 	log.Print("ensuring database structure...")
-	if err := oldDB.Update(func(tx *bolt.Tx) error {
+	if err := oldBoltDB.Update(func(tx *bolt.Tx) error {
 		return checkSchema(tx)
 	}); err != nil {
-		oldDB.Close()
+		oldBoltDB.Close()
 		return err
 	}
-	if err := newDB.Update(func(tx *bolt.Tx) error {
+	if err := newBoltDB.Update(func(tx *bolt.Tx) error {
 		return checkSchema(tx)
 	}); err != nil {
-		newDB.Close()
+		newBoltDB.Close()
 		return err
 	}
 	log.Println("ensuring database structure...finished.")
 
+	oldDB := newBoltDatabase(oldBoltDB)
+	newDB := newBoltDatabase(newBoltDB)
+
 	// copy all kv pairs in data buckets to new file, only if they are valid, report invalid records
 	log.Println("migrating data...")
-	if err := copyContainers(newBoltDatabase(oldDB), newBoltDatabase(newDB)); err != nil {
+	if err := copyBuckets(oldDB, newDB); err != nil {
+		return err
+	}
+	if err := copyContainers(oldDB, newDB); err != nil {
 		return err
 	}
 	log.Println("migrating data...complete")
 
-	// TODO: copy config which is not record based, need new type - Field
+	log.Println("interrogating groups...")
+	if err := groupsRemoveWithoutUsers(newDB); err != nil {
+		return err
+	}
+	log.Println("interrogating groups...complete")
 
 	log.Println("checking database integrity...complete")
+
+	return nil
+
+}
+
+func copyBuckets(src, dst Database) error {
+
+	bucketNames := []string{"Config"}
+
+	for _, bucketName := range bucketNames {
+		log.Printf("  %s...", bucketName)
+		err := src.Select(func(srcTx Transaction) error {
+			srcBucket := srcTx.Bucket(bucketName)
+			return dst.Update(func(dstTx Transaction) error {
+				dstBucket := dstTx.Bucket(bucketName)
+				return srcBucket.ForEach(func(k, v []byte) error {
+					return dstBucket.Put(k, v)
+				})
+			})
+		})
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 
@@ -263,114 +297,55 @@ func copyContainers(src, dst Database) error {
 
 }
 
-func removeInvalidKeys(tx Transaction) error {
+func groupsRemoveWithoutUsers(db Database) error {
 
-	log.Printf("%-7s %-7s remove invalid items...", logInfo, logName)
+	return db.Update(func(tx Transaction) error {
 
-	if err := removeInvalidKeysForEntity(userEntity, &User{}, tx); err != nil {
-		return err
-	}
-
-	if err := removeInvalidKeysForEntity(groupEntity, &Group{}, tx); err != nil {
-		return err
-	}
-
-	if err := removeInvalidKeysForEntity(feedEntity, &Feed{}, tx); err != nil {
-		return err
-	}
-
-	if err := removeInvalidKeysForEntity(transmissionEntity, &Transmission{}, tx); err != nil {
-		return err
-	}
-
-	if err := removeInvalidKeysForEntity(itemEntity, &Item{}, tx); err != nil {
-		return err
-	}
-
-	if err := removeInvalidKeysForEntity(entryEntity, &Entry{}, tx); err != nil {
-		return err
-	}
-
-	if err := removeInvalidKeysForEntity(subscriptionEntity, &Subscription{}, tx); err != nil {
-		return err
-	}
-
-	log.Printf("%-7s %-7s remove invalid items complete", logInfo, logName)
-
-	return nil
-}
-
-func removeInvalidKeysForEntity(entityName string, dao Object, tx Transaction) error {
-
-	b := tx.Bucket(bucketData).Bucket(entityName)
-
-	invalidKeys := [][]byte{}
-	var lastID uint64
-	data := make(map[string]string)
-	keys := [][]byte{}
-	firstRow := false
-	err := b.ForEach(func(k, v []byte) error {
-
-		id, _, err := kvBucketKeyDecode(k)
+		userCache := make(map[uint64]Record)
+		users, err := tx.Container(bucketData, userEntity)
 		if err != nil {
-			invalidKeys = append(invalidKeys, k)
-			return nil
+			return err
 		}
-
-		if !firstRow {
-			lastID = id
-			firstRow = true
-		}
-
-		if id != lastID {
-
-			// deserialize dao
-			if err := dao.deserialize(data, true); err != nil {
-				if derr, ok := err.(*DeserializationError); ok {
-					if len(derr.Errors) > 0 || len(derr.MissingFieldnames) > 0 {
-						// invalid item, remove complete record, all keys
-						for _, key := range keys {
-							invalidKeys = append(invalidKeys, key)
-						}
-					} else if len(derr.UnknownFieldnames) > 0 {
-						// only remove unknown keys
-						for _, fieldname := range derr.UnknownFieldnames {
-							invalidKeys = append(invalidKeys, kvBucketKeyEncode(id, fieldname))
-						}
-					}
-				} else {
-					return err
+		userExists := func(userID uint64) bool {
+			if _, ok := userCache[userID]; !ok {
+				if u, err := users.Get(userID); err == nil {
+					userCache[userID] = u
 				}
 			}
+			u, _ := userCache[userID]
+			return u != nil
+		}
 
-			// reset
-			lastID = id
-			data = make(map[string]string)
-			keys = [][]byte{}
-			dao.clear()
+		badGroupIDs := []uint64{}
 
-		} // id switch
+		groups, err := tx.Container(bucketData, groupEntity)
+		if err != nil {
+			return err
+		}
 
-		data[kvKeyElement(k, 1)] = string(v)
-		keys = append(keys, k)
+		group := &Group{}
+		groups.Iterate(func(record Record) error {
+			group.clear()
+			if err := group.deserialize(record); err != nil {
+				return err
+			}
+			if !userExists(group.UserID) {
+				log.Printf("  group without user: %d %d %s", group.ID, group.UserID, group.Name)
+				badGroupIDs = append(badGroupIDs, group.ID)
+			}
+			return nil
+		})
+
+		// remove bad groups
+		for _, groupID := range badGroupIDs {
+			if err := groups.Delete(groupID); err != nil {
+				return err
+			}
+		}
 
 		return nil
 
 	})
-
-	if err != nil {
-		return err
-	}
-
-	// remove invalid keys
-	for _, key := range invalidKeys {
-		log.Printf("%-7s %-7s removing invalid item %s: %s", logDebug, logName, entityName, key)
-		if err := b.Delete(key); err != nil {
-			return err
-		}
-	}
-
-	return nil
 
 }
 
