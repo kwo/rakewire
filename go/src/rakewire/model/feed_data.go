@@ -13,28 +13,21 @@ func FeedsAll(tx Transaction) (Feeds, error) {
 
 	result := Feeds{}
 
-	bIndex := tx.Bucket(bucketIndex).Bucket(feedEntity).Bucket(feedIndexURL)
-	b := tx.Bucket(bucketData).Bucket(feedEntity)
-
-	c := bIndex.Cursor()
-	for k, v := c.First(); k != nil; k, v = c.Next() {
-
-		id, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		if data, ok := kvGet(id, b); ok {
-			f := &Feed{}
-			if err := f.deserialize(data); err != nil {
-				return nil, err
-			}
-			result = append(result, f)
-		}
-
+	cFeeds, err := tx.Container(bucketData, feedEntity)
+	if err != nil {
+		return nil, err
 	}
 
-	return result, nil
+	err = cFeeds.Iterate(func(record Record) error {
+		f := &Feed{}
+		if err := f.deserialize(record); err != nil {
+			return err
+		}
+		result = append(result, f)
+		return nil
+	})
+
+	return result, err
 
 }
 
