@@ -237,6 +237,18 @@ func checkIntegrity(location string) error {
 	}
 	log.Println("interrogating feeds...complete")
 
+	log.Println("interrogating items...")
+	if err := checkItems(newDB); err != nil {
+		return err
+	}
+	log.Println("interrogating items...complete")
+
+	log.Println("interrogating transmissions...")
+	if err := checkTransmissions(newDB); err != nil {
+		return err
+	}
+	log.Println("interrogating transmissions...complete")
+
 	log.Println("checking database integrity...complete")
 
 	return nil
@@ -416,6 +428,57 @@ func checkGroups(db Database) error {
 
 }
 
+func checkItems(db Database) error {
+
+	return db.Update(func(tx Transaction) error {
+
+		feedCache := make(map[uint64]Record)
+		feeds, err := tx.Container(bucketData, feedEntity)
+		if err != nil {
+			return err
+		}
+		feedExists := func(feedID uint64) bool {
+			if _, ok := feedCache[feedID]; !ok {
+				if u, err := feeds.Get(feedID); err == nil {
+					feedCache[feedID] = u
+				}
+			}
+			f, _ := feedCache[feedID]
+			return f != nil
+		}
+
+		badIDs := []uint64{}
+		items, err := tx.Container(bucketData, itemEntity)
+		if err != nil {
+			return err
+		}
+
+		item := &Item{}
+		items.Iterate(func(record Record) error {
+			item.clear()
+			if err := item.deserialize(record); err == nil {
+				if !feedExists(item.FeedID) {
+					log.Printf("  item without feed: %d (%d %s)", item.FeedID, item.ID, item.Title)
+					badIDs = append(badIDs, item.ID)
+				}
+			}
+			return nil
+		})
+
+		// remove bad items
+		for _, id := range badIDs {
+			// use container, because operating on database without indexes yet
+			if err := items.Delete(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
 func checkSubscriptions(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
@@ -528,6 +591,57 @@ func checkSubscriptions(db Database) error {
 		for _, subscription := range cleanedSubscriptions {
 			// use container, because operating on database without indexes yet
 			if err := subscriptions.Put(subscription.serialize()); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
+func checkTransmissions(db Database) error {
+
+	return db.Update(func(tx Transaction) error {
+
+		feedCache := make(map[uint64]Record)
+		feeds, err := tx.Container(bucketData, feedEntity)
+		if err != nil {
+			return err
+		}
+		feedExists := func(feedID uint64) bool {
+			if _, ok := feedCache[feedID]; !ok {
+				if u, err := feeds.Get(feedID); err == nil {
+					feedCache[feedID] = u
+				}
+			}
+			f, _ := feedCache[feedID]
+			return f != nil
+		}
+
+		badIDs := []uint64{}
+		transmissions, err := tx.Container(bucketData, transmissionEntity)
+		if err != nil {
+			return err
+		}
+
+		transmission := &Transmission{}
+		transmissions.Iterate(func(record Record) error {
+			transmission.clear()
+			if err := transmission.deserialize(record); err == nil {
+				if !feedExists(transmission.FeedID) {
+					log.Printf("  transmission without feed: %d (%d %s)", transmission.FeedID, transmission.ID, transmission.URL)
+					badIDs = append(badIDs, transmission.ID)
+				}
+			}
+			return nil
+		})
+
+		// remove bad transmissions
+		for _, id := range badIDs {
+			// use container, because operating on database without indexes yet
+			if err := transmissions.Delete(id); err != nil {
 				return err
 			}
 		}
