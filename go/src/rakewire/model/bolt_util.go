@@ -219,41 +219,35 @@ func checkIntegrity(location string) error {
 	}
 	log.Println("migrating data...complete")
 
-	log.Println("interrogating groups...")
-	if err := checkGroups(newDB); err != nil {
-		return err
-	}
-	log.Println("interrogating groups...complete")
-
-	log.Println("interrogating subscriptions...")
+	log.Println("validating data...")
 	if err := checkSubscriptions(newDB); err != nil {
 		return err
 	}
-	log.Println("interrogating subscriptions...complete")
-
-	log.Println("interrogating feeds...")
 	if err := checkFeeds(newDB); err != nil {
 		return err
 	}
-	log.Println("interrogating feeds...complete")
-
-	log.Println("interrogating items...")
+	if err := checkFeedDuplicates(newDB); err != nil {
+		return err
+	}
+	if err := checkGroups(newDB); err != nil {
+		return err
+	}
+	if err := checkSubscriptions(newDB); err != nil {
+		return err
+	}
+	if err := checkFeeds(newDB); err != nil {
+		return err
+	}
 	if err := checkItems(newDB); err != nil {
 		return err
 	}
-	log.Println("interrogating items...complete")
-
-	log.Println("interrogating transmissions...")
 	if err := checkTransmissions(newDB); err != nil {
 		return err
 	}
-	log.Println("interrogating transmissions...complete")
-
-	log.Println("interrogating entries...")
 	if err := checkEntries(newDB); err != nil {
 		return err
 	}
-	log.Println("interrogating entries...complete")
+	log.Println("validating data...complete")
 
 	log.Println("rebuilding indexes...")
 	if err := rebuildIndexes(newDB); err != nil {
@@ -335,6 +329,8 @@ func copyContainers(src, dst Database) error {
 
 func checkEntries(db Database) error {
 
+	log.Printf("  %s...\n", entryEntity)
+
 	return db.Update(func(tx Transaction) error {
 
 		userCache := make(map[uint64]Record)
@@ -394,13 +390,13 @@ func checkEntries(db Database) error {
 			entry.clear()
 			if err := entry.deserialize(record); err == nil {
 				if !userExists(entry.UserID) {
-					log.Printf("  entry without user: %d", entry.ID)
+					log.Printf("    entry without user: %d", entry.ID)
 					badIDs = append(badIDs, entry.ID)
 				} else if !itemExists(entry.ItemID) {
-					log.Printf("  entry without item: %d", entry.ID)
+					log.Printf("    entry without item: %d", entry.ID)
 					badIDs = append(badIDs, entry.ID)
 				} else if !subscriptionExists(entry.SubscriptionID) {
-					log.Printf("  entry without subscription: %d", entry.ID)
+					log.Printf("    entry without subscription: %d", entry.ID)
 					badIDs = append(badIDs, entry.ID)
 				}
 			}
@@ -421,7 +417,66 @@ func checkEntries(db Database) error {
 
 }
 
+func checkFeedDuplicates(db Database) error {
+
+	log.Printf("  %s duplicates...\n", feedEntity)
+
+	return db.Update(func(tx Transaction) error {
+
+		subscriptions, err := tx.Container(bucketData, subscriptionEntity)
+		if err != nil {
+			return err
+		}
+		findSubscriptions := func(feedID uint64) Subscriptions {
+			result := Subscriptions{}
+			subscriptions.Iterate(func(record Record) error {
+				subscription := &Subscription{}
+				if err := subscription.deserialize(record); err == nil {
+					if subscription.FeedID == feedID {
+						result = append(result, subscription)
+					}
+				}
+				return nil
+			})
+			return result
+		}
+
+		feeds, err := FeedsAll(tx)
+		if err != nil {
+			return err
+		}
+
+		feedsByURL := feeds.GroupAllByURL()
+		for url, feeds := range feedsByURL {
+			if feeds.Len() > 1 {
+				log.Printf("    multiple feeds for url: %s", url)
+
+				feeds.SortByID()
+				masterFeedID := feeds.First().ID
+
+				// find subscriptions for remaining feeds, update with master feedID
+				for _, feed := range feeds[1:] {
+					subs := findSubscriptions(feed.ID)
+					for _, s := range subs {
+						log.Printf("      updating subscription for url: %d", s.ID)
+						s.FeedID = masterFeedID
+						if err := subscriptions.Put(s.serialize()); err != nil {
+							return err
+						}
+					} // loop thru subscriptions
+				} // loop thru remaining feeds
+
+			} // multiple feeds for url
+		} // loop feeds by url
+
+		return nil
+	})
+
+}
+
 func checkFeeds(db Database) error {
+
+	log.Printf("  %s...\n", feedEntity)
 
 	return db.Update(func(tx Transaction) error {
 
@@ -437,7 +492,7 @@ func checkFeeds(db Database) error {
 				if err := subscription.deserialize(record); err == nil {
 					if subscription.FeedID == feedID {
 						result = true
-						return fmt.Errorf("found matching subscription: %d", subscription.ID)
+						return fmt.Errorf("    found matching subscription: %d", subscription.ID)
 					}
 				}
 				return nil
@@ -456,7 +511,7 @@ func checkFeeds(db Database) error {
 			feed.clear()
 			if err := feed.deserialize(record); err == nil {
 				if !subscriptionExists(feed.ID) {
-					log.Printf("  feed without subscription: %d %s", feed.ID, feed.Title)
+					log.Printf("    feed without subscription: %d %s", feed.ID, feed.Title)
 					badIDs = append(badIDs, feed.ID)
 				}
 			}
@@ -478,6 +533,8 @@ func checkFeeds(db Database) error {
 }
 
 func checkGroups(db Database) error {
+
+	log.Printf("  %s...\n", groupEntity)
 
 	return db.Update(func(tx Transaction) error {
 
@@ -508,7 +565,7 @@ func checkGroups(db Database) error {
 			group.clear()
 			if err := group.deserialize(record); err == nil {
 				if !userExists(group.UserID) {
-					log.Printf("  group without user: %d %d %s", group.ID, group.UserID, group.Name)
+					log.Printf("    group without user: %d %d %s", group.ID, group.UserID, group.Name)
 					badIDs = append(badIDs, group.ID)
 				}
 			}
@@ -529,6 +586,8 @@ func checkGroups(db Database) error {
 }
 
 func checkItems(db Database) error {
+
+	log.Printf("  %s...\n", itemEntity)
 
 	return db.Update(func(tx Transaction) error {
 
@@ -558,7 +617,7 @@ func checkItems(db Database) error {
 			item.clear()
 			if err := item.deserialize(record); err == nil {
 				if !feedExists(item.FeedID) {
-					log.Printf("  item without feed: %d (%d %s)", item.FeedID, item.ID, item.Title)
+					log.Printf("    item without feed: %d (%d %s)", item.FeedID, item.ID, item.Title)
 					badIDs = append(badIDs, item.ID)
 				}
 			}
@@ -580,6 +639,8 @@ func checkItems(db Database) error {
 }
 
 func checkSubscriptions(db Database) error {
+
+	log.Printf("  %s...\n", subscriptionEntity)
 
 	return db.Update(func(tx Transaction) error {
 
@@ -648,10 +709,10 @@ func checkSubscriptions(db Database) error {
 			subscription.clear()
 			if err := subscription.deserialize(record); err == nil {
 				if !userExists(subscription.UserID) {
-					log.Printf("  subscription without user: %d (%d %s)", subscription.UserID, subscription.ID, subscription.Title)
+					log.Printf("    subscription without user: %d (%d %s)", subscription.UserID, subscription.ID, subscription.Title)
 					badIDs = append(badIDs, subscription.ID)
 				} else if !feedExists(subscription.FeedID) {
-					log.Printf("  subscription without feed: %d (%d %s)", subscription.FeedID, subscription.ID, subscription.Title)
+					log.Printf("    subscription without feed: %d (%d %s)", subscription.FeedID, subscription.ID, subscription.Title)
 					badIDs = append(badIDs, subscription.ID)
 				} else {
 
@@ -659,7 +720,7 @@ func checkSubscriptions(db Database) error {
 					invalidGroupIDs := []uint64{}
 					for _, groupID := range subscription.GroupIDs {
 						if !groupExists(groupID, subscription.UserID) {
-							log.Printf("  subscription with invalid group: %d (%d %s)", groupID, subscription.ID, subscription.Title)
+							log.Printf("    subscription with invalid group: %d (%d %s)", groupID, subscription.ID, subscription.Title)
 							invalidGroupIDs = append(invalidGroupIDs, groupID)
 						}
 					}
@@ -671,7 +732,7 @@ func checkSubscriptions(db Database) error {
 					}
 
 					if len(subscription.GroupIDs) == 0 {
-						log.Printf("  subscription without groups: %d %s", subscription.ID, subscription.Title)
+						log.Printf("    subscription without groups: %d %s", subscription.ID, subscription.Title)
 					}
 
 				}
@@ -703,6 +764,8 @@ func checkSubscriptions(db Database) error {
 
 func checkTransmissions(db Database) error {
 
+	log.Printf("  %s...\n", transmissionEntity)
+
 	return db.Update(func(tx Transaction) error {
 
 		feedCache := make(map[uint64]Record)
@@ -731,7 +794,7 @@ func checkTransmissions(db Database) error {
 			transmission.clear()
 			if err := transmission.deserialize(record); err == nil {
 				if !feedExists(transmission.FeedID) {
-					log.Printf("  transmission without feed: %d (%d %s)", transmission.FeedID, transmission.ID, transmission.URL)
+					log.Printf("    transmission without feed: %d (%d %s)", transmission.FeedID, transmission.ID, transmission.URL)
 					badIDs = append(badIDs, transmission.ID)
 				}
 			}
