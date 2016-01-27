@@ -220,10 +220,16 @@ func checkIntegrity(location string) error {
 	log.Println("migrating data...complete")
 
 	log.Println("interrogating groups...")
-	if err := groupsRemoveWithoutUsers(newDB); err != nil {
+	if err := checkGroups(newDB); err != nil {
 		return err
 	}
 	log.Println("interrogating groups...complete")
+
+	log.Println("interrogating subscriptions...")
+	if err := checkSubscriptions(newDB); err != nil {
+		return err
+	}
+	log.Println("interrogating subscriptions...complete")
 
 	log.Println("checking database integrity...complete")
 
@@ -297,7 +303,7 @@ func copyContainers(src, dst Database) error {
 
 }
 
-func groupsRemoveWithoutUsers(db Database) error {
+func checkGroups(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
@@ -316,7 +322,7 @@ func groupsRemoveWithoutUsers(db Database) error {
 			return u != nil
 		}
 
-		badGroupIDs := []uint64{}
+		badIDs := []uint64{}
 
 		groups, err := tx.Container(bucketData, groupEntity)
 		if err != nil {
@@ -331,14 +337,137 @@ func groupsRemoveWithoutUsers(db Database) error {
 			}
 			if !userExists(group.UserID) {
 				log.Printf("  group without user: %d %d %s", group.ID, group.UserID, group.Name)
-				badGroupIDs = append(badGroupIDs, group.ID)
+				badIDs = append(badIDs, group.ID)
 			}
 			return nil
 		})
 
 		// remove bad groups
-		for _, groupID := range badGroupIDs {
-			if err := groups.Delete(groupID); err != nil {
+		for _, id := range badIDs {
+			if err := groups.Delete(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
+func checkSubscriptions(db Database) error {
+
+	return db.Update(func(tx Transaction) error {
+
+		userCache := make(map[uint64]Record)
+		users, err := tx.Container(bucketData, userEntity)
+		if err != nil {
+			return err
+		}
+		userExists := func(userID uint64) bool {
+			if _, ok := userCache[userID]; !ok {
+				if u, err := users.Get(userID); err == nil {
+					userCache[userID] = u
+				}
+			}
+			u, _ := userCache[userID]
+			return u != nil
+		}
+
+		feedCache := make(map[uint64]Record)
+		feeds, err := tx.Container(bucketData, feedEntity)
+		if err != nil {
+			return err
+		}
+		feedExists := func(feedID uint64) bool {
+			if _, ok := feedCache[feedID]; !ok {
+				if u, err := feeds.Get(feedID); err == nil {
+					feedCache[feedID] = u
+				}
+			}
+			f, _ := feedCache[feedID]
+			return f != nil
+		}
+
+		groupCache := make(map[uint64]*Group)
+		groups, err := tx.Container(bucketData, groupEntity)
+		if err != nil {
+			return err
+		}
+		groupExists := func(groupID, userID uint64) bool {
+			if _, ok := groupCache[groupID]; !ok {
+				if record, err := groups.Get(groupID); err == nil {
+					if record != nil {
+						g := &Group{}
+						if err := g.deserialize(record); err == nil {
+							groupCache[groupID] = g
+						}
+					} else {
+						groupCache[groupID] = nil
+					}
+				}
+			}
+			g, _ := groupCache[groupID]
+			return g != nil && g.UserID == userID
+		}
+
+		badIDs := []uint64{}
+		cleanedSubscriptions := Subscriptions{}
+
+		subscriptions, err := tx.Container(bucketData, subscriptionEntity)
+		if err != nil {
+			return err
+		}
+
+		subscription := &Subscription{}
+		subscriptions.Iterate(func(record Record) error {
+			subscription.clear()
+			if err := subscription.deserialize(record); err != nil {
+				return err
+			}
+			if !userExists(subscription.UserID) {
+				log.Printf("  subscription without user: %d (%d %s)", subscription.UserID, subscription.ID, subscription.Title)
+				badIDs = append(badIDs, subscription.ID)
+			} else if !feedExists(subscription.FeedID) {
+				log.Printf("  subscription without feed: %d (%d %s)", subscription.FeedID, subscription.ID, subscription.Title)
+				badIDs = append(badIDs, subscription.ID)
+			} else {
+
+				// remove invalid groups
+				invalidGroupIDs := []uint64{}
+				for _, groupID := range subscription.GroupIDs {
+					if !groupExists(groupID, subscription.UserID) {
+						log.Printf("  subscription with invalid group: %d (%d %s)", groupID, subscription.ID, subscription.Title)
+						invalidGroupIDs = append(invalidGroupIDs, groupID)
+					}
+				}
+				if len(invalidGroupIDs) > 0 {
+					for _, groupID := range invalidGroupIDs {
+						subscription.RemoveGroup(groupID)
+					}
+					cleanedSubscriptions = append(cleanedSubscriptions, subscription)
+				}
+
+				if len(subscription.GroupIDs) == 0 {
+					log.Printf("  subscription without groups: %d %s", subscription.ID, subscription.Title)
+				}
+
+			}
+			return nil
+		})
+
+		// remove bad subscriptions
+		for _, id := range badIDs {
+			// use container, because operating on database without indexes yet
+			if err := subscriptions.Delete(id); err != nil {
+				return err
+			}
+		}
+
+		// resave cleaned subscriptions
+		for _, subscription := range cleanedSubscriptions {
+			// use container, because operating on database without indexes yet
+			if err := subscriptions.Put(subscription.serialize()); err != nil {
 				return err
 			}
 		}
