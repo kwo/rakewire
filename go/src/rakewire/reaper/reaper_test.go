@@ -30,7 +30,7 @@ func TestReaper(t *testing.T) {
 	defer closeTestDatabase(t, database)
 
 	// create service
-	cfg := &Configuration{}
+	cfg := model.NewConfiguration()
 	r := NewService(cfg, database)
 
 	r.Start()

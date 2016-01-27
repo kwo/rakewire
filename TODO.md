@@ -4,14 +4,6 @@
 
 ### Immediate
 
- - code restructure
-  x move opml to model -> opml_db
-  x use manually managed transactions in database
-  x rename model elements: Feed/Item, Subscription/Entry
-  x rename FeedLog to Transmission
-  x pull up rest api, fever api
-  x create collection classes with groupby and sort functions
-  x add command-line flag to repair/compact database, remove cleanup api
  - store config, tls keys in data file, eliminate config package
  - optimize entries
  - jwt authentication and basic auth
@@ -19,7 +11,7 @@
    - add
    - remove
    - change password
- - add maintenance routine to remove feeds with no user feed
+ - add maintenance routine to remove feeds with no subscription
  - turn off logging to console, store in database, call via api
    - save to buffer, write to db every 5? seconds, api to filter entries by level and category
    - expire entries by level (TRACE/DEBUG after 10min, other after X days)

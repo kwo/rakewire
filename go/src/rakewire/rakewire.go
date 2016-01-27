@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"rakewire/config"
 	"rakewire/fetch"
 	"rakewire/httpd"
 	"rakewire/model"
@@ -34,41 +33,42 @@ var (
 
 func main() {
 
-	var checkDatabase = flag.Bool("check", false, "check database integrity and exit")
+	var flagFile = flag.String("f", "rakewire.db", "file to open as the rakewire database")
+	var flagCheckDatabase = flag.Bool("check", false, "check database integrity and exit")
 	flag.Parse()
 
-	cfg := config.GetConfig()
-	if cfg == nil {
-		log.Printf("abort! no config file found at %s\n", config.GetConfigFileLocation())
-		os.Exit(1)
-		return
-	}
-
-	// initialize logging
-	cfg.Logging.Init()
+	// FIXME: initialize logging
+	//cfg.Logging.Init()
 
 	log.Printf("Rakewire %s\n", model.Version)
 	log.Printf("Build Time: %s\n", model.BuildTime)
 	log.Printf("Build Hash: %s\n", model.BuildHash)
+	log.Printf("Database:   %s\n", *flagFile)
 
 	var err error
-	database, err = model.OpenDatabase(cfg.Database.Location, *checkDatabase)
-	if !*checkDatabase && err != nil {
+	database, err = model.OpenDatabase(*flagFile, *flagCheckDatabase)
+	if !*flagCheckDatabase && err != nil {
 		log.Printf("Cannot open database: %s", err.Error())
 		model.CloseDatabase(database)
 		return
-	} else if *checkDatabase {
+	} else if *flagCheckDatabase {
 		if err != nil {
 			log.Printf("Error checking database: %s", err.Error())
 		}
-		// exit application if running check
+		return // exit application if running check
+	}
+
+	cfg, err := loadConfiguration(database)
+	if err != nil {
+		log.Printf("Abort! Cannot load configuration: %s", err.Error())
+		model.CloseDatabase(database)
 		return
 	}
 
-	polld = pollfeed.NewService(&cfg.Poll, database)
-	reaperd = reaper.NewService(&cfg.Reaper, database)
-	fetchd := fetch.NewService(&cfg.Fetcher, polld.Output, reaperd.Input)
-	ws = httpd.NewService(&cfg.Httpd, database)
+	polld = pollfeed.NewService(cfg, database)
+	reaperd = reaper.NewService(cfg, database)
+	fetchd := fetch.NewService(cfg, polld.Output, reaperd.Input)
+	ws = httpd.NewService(cfg, database)
 
 	chErrors := make(chan error, 1)
 	for i := 0; i < 4; i++ {
@@ -120,4 +120,12 @@ func monitorShutdown(chErrors chan error) {
 
 	log.Printf("%-7s %-7s done", logInfo, logName)
 
+}
+
+func loadConfiguration(db model.Database) (*model.Configuration, error) {
+	cfg := model.NewConfiguration()
+	err := db.Select(func(tx model.Transaction) error {
+		return cfg.Load(tx)
+	})
+	return cfg, err
 }

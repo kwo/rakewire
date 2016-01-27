@@ -21,6 +21,23 @@ const (
 	logError = "[ERROR]"
 )
 
+const (
+	httpdAccessLevel        = "httpd.accesslevel"
+	httpdHost               = "httpd.host"
+	httpdPort               = "httpd.port"
+	httpdStaticLocal        = "httpd.staticlocal"
+	httpdTLSPrivate         = "httpd.tls.private"
+	httpdTLSPublic          = "httpd.tls.public"
+	httpdUseTLS             = "httpd.tls.active"
+	httpdAccessLevelDefault = "DEBUG"
+	httpdHostDefault        = "localhost"
+	httpdPortDefault        = 4444
+	httpdStaticLocalDefault = false
+	httpdTLSPrivateDefault  = ""
+	httpdTLSPublicDefault   = ""
+	httpdUseTLSDefault      = false
+)
+
 var (
 	// ErrRestart indicates that the service cannot be started because it is already running.
 	ErrRestart = errors.New("The service is already started")
@@ -29,22 +46,16 @@ var (
 // Service server
 type Service struct {
 	sync.Mutex
-	cfg      *Configuration
-	database model.Database
-	listener net.Listener
-	running  bool
-}
-
-// Configuration configuration
-type Configuration struct {
-	AccessLevel string
-	Address     string
-	Port        int
-	UseLocal    bool
-	Hostname    string
-	UseTLS      bool
-	TLSPublic   string
-	TLSPrivate  string
+	database    model.Database
+	listener    net.Listener
+	running     bool
+	accessLevel string
+	host        string
+	port        int
+	staticLocal bool
+	tlsPublic   string
+	tlsPrivate  string
+	useTLS      bool
 }
 
 const (
@@ -62,10 +73,16 @@ const (
 )
 
 // NewService creates a new httpd service.
-func NewService(cfg *Configuration, database model.Database) *Service {
+func NewService(cfg *model.Configuration, database model.Database) *Service {
 	return &Service{
-		cfg:      cfg,
-		database: database,
+		database:    database,
+		accessLevel: cfg.Get(httpdAccessLevel, httpdAccessLevelDefault),
+		host:        cfg.Get(httpdHost, httpdHostDefault),
+		port:        cfg.GetInt(httpdPort, httpdPortDefault),
+		tlsPublic:   cfg.Get(httpdTLSPublic, httpdTLSPublicDefault),
+		tlsPrivate:  cfg.Get(httpdTLSPrivate, httpdTLSPrivateDefault),
+		staticLocal: cfg.GetBool(httpdStaticLocal, httpdStaticLocalDefault),
+		useTLS:      cfg.GetBool(httpdUseTLS, httpdUseTLSDefault),
 	}
 }
 
@@ -84,17 +101,17 @@ func (z *Service) Start() error {
 		return errors.New("No database")
 	}
 
-	router, err := z.mainRouter(z.cfg.UseLocal)
+	router, err := z.mainRouter(z.staticLocal)
 	if err != nil {
 		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
 		return err
 	}
-	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter(z.cfg.AccessLevel))
+	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter(z.accessLevel))
 
 	// start http config
 
-	if z.cfg.UseTLS {
-		cert, err := tls.LoadX509KeyPair(z.cfg.TLSPublic, z.cfg.TLSPrivate)
+	if z.useTLS {
+		cert, err := tls.LoadX509KeyPair(z.tlsPublic, z.tlsPrivate)
 		if err != nil {
 			log.Printf("%-7s %-7s cannot start tls listener: %s", logError, logName, err.Error())
 			return err
@@ -102,13 +119,13 @@ func (z *Service) Start() error {
 		tlsConfig := &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		}
-		z.listener, err = tls.Listen("tcp", fmt.Sprintf("%s:%d", z.cfg.Address, z.cfg.Port), tlsConfig)
+		z.listener, err = tls.Listen("tcp", fmt.Sprintf("%s:%d", z.host, z.port), tlsConfig)
 		if err != nil {
 			log.Printf("%-7s %-7s cannot start tls listener: %s", logError, logName, err.Error())
 			return err
 		}
 	} else {
-		z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.cfg.Address, z.cfg.Port))
+		z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.host, z.port))
 		if err != nil {
 			log.Printf("%-7s %-7s cannot start listener: %s", logError, logName, err.Error())
 			return err
@@ -122,10 +139,10 @@ func (z *Service) Start() error {
 	go server.Serve(z.listener)
 
 	z.running = true
-	if z.cfg.UseTLS {
-		log.Printf("%-7s %-7s service started on https://%s:%d", logInfo, logName, z.cfg.Hostname, z.cfg.Port)
+	if z.useTLS {
+		log.Printf("%-7s %-7s service started on https://%s:%d", logInfo, logName, z.host, z.port)
 	} else {
-		log.Printf("%-7s %-7s service started on http://%s:%d", logInfo, logName, z.cfg.Address, z.cfg.Port)
+		log.Printf("%-7s %-7s service started on http://%s:%d", logInfo, logName, z.host, z.port)
 	}
 	return nil
 

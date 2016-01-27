@@ -9,7 +9,10 @@ import (
 )
 
 const (
-	defaultPollInterval = time.Minute * 1
+	pollInterval        = "poll.interval"
+	pollLimit           = "poll.limit"
+	pollIntervalDefault = time.Second * 5
+	pollLimitDefault    = 10
 )
 
 const (
@@ -20,12 +23,6 @@ const (
 	logWarn  = "[WARN]"
 	logError = "[ERROR]"
 )
-
-// Configuration for pump service
-type Configuration struct {
-	Interval string
-	Limit    int
-}
 
 // Service for pumping feeds between fetcher and database
 type Service struct {
@@ -42,17 +39,17 @@ type Service struct {
 }
 
 // NewService create a new service
-func NewService(cfg *Configuration, database model.Database) *Service {
+func NewService(cfg *model.Configuration, database model.Database) *Service {
 
-	interval, err := time.ParseDuration(cfg.Interval)
+	interval, err := time.ParseDuration(cfg.Get(pollInterval, pollIntervalDefault.String()))
 	if err != nil {
-		interval = defaultPollInterval
-		log.Printf("%-7s %-7s Bad or missing interval configuration parameter (%s), setting to default of %s.", logWarn, logName, cfg.Interval, defaultPollInterval.String())
+		interval = pollIntervalDefault
+		log.Printf("%-7s %-7s Bad or missing interval configuration parameter (%s), setting to default of %s.", logWarn, logName, pollInterval, pollIntervalDefault.String())
 	}
 
 	return &Service{
 		Output:       make(chan *model.Feed),
-		limit:        cfg.Limit,
+		limit:        cfg.GetInt(pollLimit, pollLimitDefault),
 		database:     database,
 		pollInterval: interval,
 		killsignal:   make(chan bool),

@@ -58,12 +58,6 @@
 			"revision": "3760e016850398b85094c4c99e955b8c3dea5711",
 			"branch": "master",
 			"path": "/blowfish"
-		},
-		{
-			"importpath": "gopkg.in/yaml.v2",
-			"repository": "https://gopkg.in/yaml.v2",
-			"revision": "f7716cbe52baa25d2e9b0d0da546fcf909fc16b4",
-			"branch": "v2"
 		}
 	]
 }

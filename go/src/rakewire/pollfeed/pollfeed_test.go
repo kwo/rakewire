@@ -24,9 +24,7 @@ func TestPoll(t *testing.T) {
 	defer closeTestDatabase(t, database)
 
 	// create service
-	cfg := &Configuration{
-		Interval: "1m",
-	}
+	cfg := model.NewConfiguration()
 	pf := NewService(cfg, database)
 	pf.pollInterval = 50 * time.Millisecond
 

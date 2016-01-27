@@ -6,19 +6,19 @@ import (
 
 // Configuration holds application configuration data
 type Configuration struct {
-	values map[string]string
+	values Record
 }
 
 // NewConfiguration creates a blank configuration
 func NewConfiguration() *Configuration {
 	return &Configuration{
-		values: make(map[string]string),
+		values: make(Record),
 	}
 }
 
 // Load reads configuration values from the database
 func (z *Configuration) Load(tx Transaction) error {
-	z.values = make(map[string]string)
+	z.values = make(Record)
 	b := tx.Bucket(bucketConfig)
 	return b.ForEach(func(k, v []byte) error {
 		z.values[string(k)] = string(v)

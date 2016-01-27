@@ -16,10 +16,6 @@ const (
 	logError = "[ERROR]"
 )
 
-// Configuration for reaper service
-type Configuration struct {
-}
-
 // Service for saving fetch responses back to the database
 type Service struct {
 	Input      chan *model.Feed
@@ -30,7 +26,7 @@ type Service struct {
 }
 
 // NewService create a new service
-func NewService(cfg *Configuration, database model.Database) *Service {
+func NewService(cfg *model.Configuration, database model.Database) *Service {
 
 	return &Service{
 		Input:      make(chan *model.Feed),

@@ -38,15 +38,12 @@ var (
 )
 
 var (
-	defaultTimeout = time.Second * 20
-	httpUserAgent  = "Rakewire " + model.Version
+	fetchTimeout        = "fetch.timeout"
+	fetchWorkers        = "fetch.workers"
+	fetchTimeoutDefault = time.Second * 20
+	fetchWorkersDefault = 10
+	httpUserAgent       = "Rakewire " + model.Version
 )
-
-// Configuration configuration
-type Configuration struct {
-	Workers int
-	Timeout string
-}
 
 // Service fetches feeds
 type Service struct {
@@ -60,15 +57,15 @@ type Service struct {
 }
 
 // NewService create new fetcher service
-func NewService(cfg *Configuration, input chan *model.Feed, output chan *model.Feed) *Service {
-	timeout, err := time.ParseDuration(cfg.Timeout)
+func NewService(cfg *model.Configuration, input chan *model.Feed, output chan *model.Feed) *Service {
+	timeout, err := time.ParseDuration(cfg.Get(fetchTimeout, fetchTimeoutDefault.String()))
 	if err != nil {
-		timeout = defaultTimeout
+		timeout = fetchTimeoutDefault
 	}
 	return &Service{
 		input:   input,
 		output:  output,
-		workers: cfg.Workers,
+		workers: cfg.GetInt(fetchWorkers, fetchWorkersDefault),
 		client:  newInternalClient(timeout),
 	}
 }
