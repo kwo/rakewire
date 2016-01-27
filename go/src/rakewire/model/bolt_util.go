@@ -231,6 +231,12 @@ func checkIntegrity(location string) error {
 	}
 	log.Println("interrogating subscriptions...complete")
 
+	log.Println("interrogating feeds...")
+	if err := checkFeeds(newDB); err != nil {
+		return err
+	}
+	log.Println("interrogating feeds...complete")
+
 	log.Println("checking database integrity...complete")
 
 	return nil
@@ -303,6 +309,62 @@ func copyContainers(src, dst Database) error {
 
 }
 
+func checkFeeds(db Database) error {
+
+	return db.Update(func(tx Transaction) error {
+
+		subscriptions, err := tx.Container(bucketData, subscriptionEntity)
+		if err != nil {
+			return err
+		}
+		subscriptionExists := func(feedID uint64) bool {
+			result := false
+			subscription := &Subscription{}
+			subscriptions.Iterate(func(record Record) error {
+				subscription.clear()
+				if err := subscription.deserialize(record); err == nil {
+					if subscription.FeedID == feedID {
+						result = true
+						return fmt.Errorf("found matching subscription: %d", subscription.ID)
+					}
+				}
+				return nil
+			})
+			return result
+		}
+
+		badIDs := []uint64{}
+		feeds, err := tx.Container(bucketData, feedEntity)
+		if err != nil {
+			return err
+		}
+
+		feed := &Feed{}
+		feeds.Iterate(func(record Record) error {
+			feed.clear()
+			if err := feed.deserialize(record); err == nil {
+				if !subscriptionExists(feed.ID) {
+					log.Printf("  feed without subscription: %d %s", feed.ID, feed.Title)
+					badIDs = append(badIDs, feed.ID)
+				}
+			}
+			return nil
+		})
+
+		// remove bad feeds
+		for _, id := range badIDs {
+			// use container, because operating on database without indexes yet
+			if err := feeds.Delete(id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
 func checkGroups(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
@@ -332,12 +394,11 @@ func checkGroups(db Database) error {
 		group := &Group{}
 		groups.Iterate(func(record Record) error {
 			group.clear()
-			if err := group.deserialize(record); err != nil {
-				return err
-			}
-			if !userExists(group.UserID) {
-				log.Printf("  group without user: %d %d %s", group.ID, group.UserID, group.Name)
-				badIDs = append(badIDs, group.ID)
+			if err := group.deserialize(record); err == nil {
+				if !userExists(group.UserID) {
+					log.Printf("  group without user: %d %d %s", group.ID, group.UserID, group.Name)
+					badIDs = append(badIDs, group.ID)
+				}
 			}
 			return nil
 		})
@@ -422,36 +483,35 @@ func checkSubscriptions(db Database) error {
 		subscription := &Subscription{}
 		subscriptions.Iterate(func(record Record) error {
 			subscription.clear()
-			if err := subscription.deserialize(record); err != nil {
-				return err
-			}
-			if !userExists(subscription.UserID) {
-				log.Printf("  subscription without user: %d (%d %s)", subscription.UserID, subscription.ID, subscription.Title)
-				badIDs = append(badIDs, subscription.ID)
-			} else if !feedExists(subscription.FeedID) {
-				log.Printf("  subscription without feed: %d (%d %s)", subscription.FeedID, subscription.ID, subscription.Title)
-				badIDs = append(badIDs, subscription.ID)
-			} else {
+			if err := subscription.deserialize(record); err == nil {
+				if !userExists(subscription.UserID) {
+					log.Printf("  subscription without user: %d (%d %s)", subscription.UserID, subscription.ID, subscription.Title)
+					badIDs = append(badIDs, subscription.ID)
+				} else if !feedExists(subscription.FeedID) {
+					log.Printf("  subscription without feed: %d (%d %s)", subscription.FeedID, subscription.ID, subscription.Title)
+					badIDs = append(badIDs, subscription.ID)
+				} else {
 
-				// remove invalid groups
-				invalidGroupIDs := []uint64{}
-				for _, groupID := range subscription.GroupIDs {
-					if !groupExists(groupID, subscription.UserID) {
-						log.Printf("  subscription with invalid group: %d (%d %s)", groupID, subscription.ID, subscription.Title)
-						invalidGroupIDs = append(invalidGroupIDs, groupID)
+					// remove invalid groups
+					invalidGroupIDs := []uint64{}
+					for _, groupID := range subscription.GroupIDs {
+						if !groupExists(groupID, subscription.UserID) {
+							log.Printf("  subscription with invalid group: %d (%d %s)", groupID, subscription.ID, subscription.Title)
+							invalidGroupIDs = append(invalidGroupIDs, groupID)
+						}
 					}
-				}
-				if len(invalidGroupIDs) > 0 {
-					for _, groupID := range invalidGroupIDs {
-						subscription.RemoveGroup(groupID)
+					if len(invalidGroupIDs) > 0 {
+						for _, groupID := range invalidGroupIDs {
+							subscription.RemoveGroup(groupID)
+						}
+						cleanedSubscriptions = append(cleanedSubscriptions, subscription)
 					}
-					cleanedSubscriptions = append(cleanedSubscriptions, subscription)
-				}
 
-				if len(subscription.GroupIDs) == 0 {
-					log.Printf("  subscription without groups: %d %s", subscription.ID, subscription.Title)
-				}
+					if len(subscription.GroupIDs) == 0 {
+						log.Printf("  subscription without groups: %d %s", subscription.ID, subscription.Title)
+					}
 
+				}
 			}
 			return nil
 		})
