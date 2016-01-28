@@ -17,7 +17,7 @@
 
  * add -check flag to check database integrity
  * Entry links default to alternate if rel missing
- * bugfix: remove Delete from Cursor
+ * bugfix major: remove Delete from Cursor, affected kvDelete
  * remove rest cleanup method
  * create collection classes
 
