@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"rakewire/fetch"
 	"rakewire/httpd"
 	"rakewire/logging"
@@ -34,6 +35,7 @@ var (
 
 func main() {
 
+	var flagVersion = flag.Bool("version", false, "print version and exit")
 	var flagFile = flag.String("f", "rakewire.db", "file to open as the rakewire database")
 	var flagCheckDatabase = flag.Bool("check", false, "check database integrity and exit")
 	flag.Parse()
@@ -41,12 +43,22 @@ func main() {
 	log.Printf("Rakewire %s\n", model.Version)
 	log.Printf("Build Time: %s\n", model.BuildTime)
 	log.Printf("Build Hash: %s\n", model.BuildHash)
-	log.Printf("Database:   %s\n", *flagFile)
 
-	var err error
-	database, err = model.OpenDatabase(*flagFile, *flagCheckDatabase)
-	if err != nil {
-		log.Println(err.Error())
+	if *flagVersion {
+		return
+	}
+
+	dbFile, errDbFile := filepath.Abs(*flagFile)
+	if errDbFile != nil {
+		log.Printf("Cannot find database file: %s\n", errDbFile.Error())
+		return
+	}
+
+	log.Printf("Database:   %s\n", dbFile)
+
+	database, errDb := model.OpenDatabase(dbFile, *flagCheckDatabase)
+	if errDb != nil {
+		log.Println(errDb.Error())
 		model.CloseDatabase(database)
 		return
 	}
@@ -54,9 +66,9 @@ func main() {
 		return
 	}
 
-	cfg, err := loadConfiguration(database)
-	if err != nil {
-		log.Printf("Abort! Cannot load configuration: %s", err.Error())
+	cfg, errCfg := loadConfiguration(database)
+	if errCfg != nil {
+		log.Printf("Abort! Cannot load configuration: %s", errCfg.Error())
 		model.CloseDatabase(database)
 		return
 	}
