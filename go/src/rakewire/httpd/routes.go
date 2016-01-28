@@ -30,6 +30,9 @@ func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
 		feverAPI.Router(),
 	)
 
+	// status api router
+	router.Path("/status").Methods(mGet).HandlerFunc(statusHandler)
+
 	// fs := Dir(useLocal, "/public")
 	// ofs := oneFS{name: "/index.html", root: fs}
 	//
@@ -50,30 +53,6 @@ func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
 
 	return router, nil
 
-}
-
-func sendOK(w http.ResponseWriter, req *http.Request) {
-	sendError(w, http.StatusOK)
-}
-
-func badMediaType(w http.ResponseWriter, req *http.Request) {
-	sendError(w, http.StatusUnsupportedMediaType)
-}
-
-func badRequest(w http.ResponseWriter, req *http.Request) {
-	sendError(w, http.StatusBadRequest)
-}
-
-func notFound(w http.ResponseWriter, req *http.Request) {
-	sendError(w, http.StatusNotFound)
-}
-
-func notSupported(w http.ResponseWriter, req *http.Request) {
-	sendError(w, http.StatusMethodNotAllowed)
-}
-
-func sendError(w http.ResponseWriter, code int) {
-	http.Error(w, http.StatusText(code), code)
 }
 
 type oneFS struct {

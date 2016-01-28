@@ -5,7 +5,7 @@
 ### Immediate
 
  - store config, tls keys in data file, eliminate config package
- - Home page plain text with app version build time hash
+   - tls
  - Schema version is app version in config
  - Fix logging
  - 1.6.0
