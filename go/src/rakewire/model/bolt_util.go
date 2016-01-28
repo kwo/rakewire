@@ -368,6 +368,8 @@ func copyContainers(src, dst Database) error {
 	containers[transmissionEntity] = &Transmission{}
 	containers[userEntity] = &User{}
 
+	var maxID uint64
+
 	for entityName, entity := range containers {
 		log.Printf("  %s...", entityName)
 		err := src.Select(func(srcTx Transaction) error {
@@ -380,14 +382,22 @@ func copyContainers(src, dst Database) error {
 				if err != nil {
 					return err
 				}
-				return srcContainer.Iterate(func(record Record) error {
+				err = srcContainer.Iterate(func(record Record) error {
 					entity.clear()
 					if err := entity.deserialize(record, true); err != nil {
 						log.Printf("Error in record (%d): %s", record.GetID(), err.Error())
 						return nil
 					}
+					if record.GetID() > maxID {
+						maxID = record.GetID()
+					}
 					return dstContainer.Put(record)
 				}, true)
+
+				if err != nil {
+					return err
+				}
+				return updateContainerNextID(dstContainer, maxID)
 			})
 		})
 		if err != nil {
@@ -941,5 +951,20 @@ func renameWithTimestamp(location string) (string, error) {
 	err := os.Rename(location, newFilename)
 
 	return newFilename, err
+
+}
+
+func updateContainerNextID(container Container, maxID uint64) error {
+
+	var id uint64
+	var err error
+
+	for id < maxID {
+		if id, err = container.NextID(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 
 }
