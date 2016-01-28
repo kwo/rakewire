@@ -215,7 +215,7 @@ func processFeedOKAndParse(feed *model.Feed, size int, xmlFeed *feedparser.Feed)
 	feed.Transmission.Generator = xmlFeed.Generator
 	feed.Transmission.Title = xmlFeed.Title
 	feed.Title = xmlFeed.Title
-	feed.SiteURL = xmlFeed.GetLinkAlternate()
+	feed.SiteURL = xmlFeed.LinkAlternate
 
 	// convert Items to Items
 	for _, xmlEntry := range xmlFeed.Entries {
@@ -223,7 +223,7 @@ func processFeedOKAndParse(feed *model.Feed, size int, xmlFeed *feedparser.Feed)
 		item.Created = xmlEntry.Created
 		item.Updated = xmlEntry.Updated
 		item.Title = xmlEntry.Title
-		item.URL = xmlEntry.GetLinkAlternate()
+		item.URL = xmlEntry.LinkAlternate
 		if len(xmlEntry.Authors) > 0 {
 			item.Author = xmlEntry.Authors[0]
 		}

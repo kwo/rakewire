@@ -18,31 +18,35 @@ import (
 
 // Feed feed
 type Feed struct {
-	Authors   []string
-	Entries   []*Entry
-	Flavor    string
-	Generator string
-	Icon      string
-	ID        string
-	Links     map[string]string
-	Rights    string
-	Subtitle  string
-	Title     string
-	Updated   time.Time
+	Authors       []string
+	Entries       []*Entry
+	Flavor        string
+	Generator     string
+	Icon          string
+	ID            string
+	Links         map[string]string
+	LinkAlternate string
+	LinkSelf      string
+	Rights        string
+	Subtitle      string
+	Title         string
+	Updated       time.Time
 }
 
 // Entry entry
 type Entry struct {
-	Authors      []string
-	Categories   []string
-	Content      string
-	Contributors []string
-	Created      time.Time
-	ID           string
-	Links        map[string]string
-	Summary      string
-	Title        string
-	Updated      time.Time
+	Authors       []string
+	Categories    []string
+	Content       string
+	Contributors  []string
+	Created       time.Time
+	ID            string
+	Links         map[string]string
+	LinkAlternate string
+	LinkSelf      string
+	Summary       string
+	Title         string
+	Updated       time.Time
 }
 
 func (z *Entry) hash() string {
@@ -96,26 +100,6 @@ const (
 )
 
 var rssPerson = regexp.MustCompile(`^(.+)\s+\((.+)\)$`)
-
-// GetLinkSelf returns the link to the feed, if available
-func (z *Feed) GetLinkSelf() string {
-	return z.Links[linkSelf]
-}
-
-// GetLinkAlternate returns the link to an alternate representation (HTML?) of the feed, if available
-func (z *Feed) GetLinkAlternate() string {
-	return z.Links[linkAlternate]
-}
-
-// GetLinkSelf returns the link to the entry, if available
-func (z *Entry) GetLinkSelf() string {
-	return z.Links[linkSelf]
-}
-
-// GetLinkAlternate returns the link to an alternate representation (HTML?) of the feed entry, if available
-func (z *Entry) GetLinkAlternate() string {
-	return z.Links[linkAlternate]
-}
 
 // NewParser returns a new parser
 func NewParser() *Parser {
@@ -261,9 +245,6 @@ func (z *Parser) doStartFeedAtom(e *element, start *xml.StartElement) {
 		z.feed.ID = z.makeText(e, start)
 	case e.Match(nsAtom, "link"):
 		key := e.Attr(nsNone, "rel")
-		if key == "" {
-			key = linkAlternate
-		}
 		value := makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 		z.feed.Links[key] = value
 	case e.Match(nsAtom, "rights"):
@@ -282,9 +263,6 @@ func (z *Parser) doStartFeedRSS(e *element, start *xml.StartElement) {
 	switch {
 	case e.Match(nsAtom, "link"):
 		key := e.Attr(nsNone, "rel")
-		if key == "" {
-			key = linkAlternate
-		}
 		value := makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 		z.feed.Links[key] = value
 	case e.Match(nsRSS, "copyright"):
@@ -330,9 +308,6 @@ func (z *Parser) doStartEntryAtom(e *element, start *xml.StartElement) {
 		z.entry.ID = z.makeText(e, start)
 	case e.Match(nsAtom, "link"):
 		key := e.Attr(nsNone, "rel")
-		if key == "" {
-			key = linkAlternate
-		}
 		value := makeURL(z.stack.Attr(nsXML, "base"), e.Attr(nsNone, "href"))
 		z.entry.Links[key] = value
 	case e.Match(nsAtom, "published"):
@@ -393,6 +368,11 @@ func (z *Parser) doEndFeedAtom(e *element) {
 	switch {
 	case e.Match(nsAtom, "feed"):
 		// finished: clean up atom feed here
+		z.feed.LinkSelf = z.feed.Links[linkSelf]
+		z.feed.LinkAlternate = z.feed.Links[linkAlternate]
+		if z.feed.LinkAlternate == "" {
+			z.feed.LinkAlternate = z.feed.Links[""]
+		}
 	}
 }
 
@@ -407,6 +387,11 @@ func (z *Parser) doEndFeedRSS(e *element) {
 		}
 		// finished: clean up rss feed here
 		z.feed.Flavor = flavorRSS + z.stack.Attr(nsRSS, "version")
+		z.feed.LinkSelf = z.feed.Links[linkSelf]
+		z.feed.LinkAlternate = z.feed.Links[linkAlternate]
+		if z.feed.LinkAlternate == "" {
+			z.feed.LinkAlternate = z.feed.Links[""]
+		}
 	}
 }
 
@@ -423,8 +408,16 @@ func (z *Parser) doEndEntryAtom(e *element) {
 		if z.entry.ID == empty {
 			z.entry.ID = z.entry.hash()
 		}
+
+		z.entry.LinkSelf = z.entry.Links[linkSelf]
+		z.entry.LinkAlternate = z.entry.Links[linkAlternate]
+		if z.entry.LinkAlternate == "" {
+			z.entry.LinkAlternate = z.entry.Links[""]
+		}
+
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
+
 	}
 }
 
@@ -445,6 +438,13 @@ func (z *Parser) doEndEntryRSS(e *element) {
 		if z.entry.ID == empty {
 			z.entry.ID = z.entry.hash()
 		}
+
+		z.entry.LinkSelf = z.entry.Links[linkSelf]
+		z.entry.LinkAlternate = z.entry.Links[linkAlternate]
+		if z.entry.LinkAlternate == "" {
+			z.entry.LinkAlternate = z.entry.Links[""]
+		}
+
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
 	}

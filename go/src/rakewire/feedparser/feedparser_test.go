@@ -63,7 +63,7 @@ func TestReddit(t *testing.T) {
 	// then
 
 	for _, entry := range f.Entries {
-		t.Logf("Entry: %s %s", entry.Title, entry.GetLinkAlternate())
+		t.Logf("Entry: %s %s", entry.Title, entry.LinkAlternate)
 	}
 
 }
@@ -106,12 +106,12 @@ func TestLinkWithoutRel(t *testing.T) {
 		t.Fatalf("bad entry count, expected: %d, actual: %d", 0, count)
 	}
 
-	htmlLink := feed.GetLinkAlternate()
+	htmlLink := feed.LinkAlternate
 	if htmlLink != "https://www.tbray.org/ongoing/" {
 		t.Errorf("Links without rel not being intrepreted as alternate link: expected: %s, actual: %s", "https://www.tbray.org/ongoing/", htmlLink)
 	}
 
-	selfLink := feed.GetLinkSelf()
+	selfLink := feed.LinkSelf
 	if selfLink != "https://www.tbray.org/ongoing/ongoing.atom" {
 		t.Errorf("Links without rel not being intrepreted as alternate link: expected: %s, actual: %s", "https://www.tbray.org/ongoing/ongoing.atom", htmlLink)
 	}
