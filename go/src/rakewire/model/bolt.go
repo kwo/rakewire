@@ -271,6 +271,10 @@ func (z *boltContainer) Put(record Record) error {
 
 	id := record.GetID()
 
+	if err := z.Delete(id); err != nil {
+		return err
+	}
+
 	for fieldname, v := range record {
 		key := kvBucketKeyEncode(id, fieldname)
 		value := []byte(v)
