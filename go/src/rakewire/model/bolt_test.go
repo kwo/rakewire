@@ -47,6 +47,18 @@ func closeTestDatabase(t *testing.T, d Database) {
 
 }
 
+func TestStat(t *testing.T) {
+
+	t.Parallel()
+
+	if status, err := os.Stat("gargemel"); err == nil {
+		t.Error("Expected error stat-ing nonexistent file, actial none")
+	} else if status != nil {
+		t.Errorf("Expected a nil status, actual: %v", status)
+	}
+
+}
+
 func TestRenameWithTimestamp(t *testing.T) {
 
 	t.Parallel()

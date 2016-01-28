@@ -47,15 +47,13 @@ func main() {
 
 	var err error
 	database, err = model.OpenDatabase(*flagFile, *flagCheckDatabase)
-	if !*flagCheckDatabase && err != nil {
-		log.Printf("Cannot open database: %s", err.Error())
+	if err != nil {
+		log.Println(err.Error())
 		model.CloseDatabase(database)
 		return
-	} else if *flagCheckDatabase {
-		if err != nil {
-			log.Printf("Error checking database: %s", err.Error())
-		}
-		return // exit application if running check
+	}
+	if database == nil {
+		return
 	}
 
 	cfg, err := loadConfiguration(database)

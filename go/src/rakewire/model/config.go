@@ -18,8 +18,11 @@ func NewConfiguration() *Configuration {
 
 // Load reads configuration values from the database
 func (z *Configuration) Load(tx Transaction) error {
-	z.values = make(Record)
 	b := tx.Bucket(bucketConfig)
+	if b == nil {
+		return nil
+	}
+	z.values = make(Record)
 	return b.ForEach(func(k, v []byte) error {
 		z.values[string(k)] = string(v)
 		return nil

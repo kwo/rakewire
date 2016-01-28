@@ -13,6 +13,12 @@ func OpenDatabase(location string, flags ...bool) (Database, error) {
 
 	flagCheckIntegrity := len(flags) > 0 && flags[0]
 
+	if upgrade, err := checkDatabaseVersion(location); err != nil {
+		return nil, err
+	} else if upgrade {
+		flagCheckIntegrity = true
+	}
+
 	if flagCheckIntegrity {
 		return nil, checkIntegrity(location)
 	}
@@ -22,15 +28,10 @@ func OpenDatabase(location string, flags ...bool) (Database, error) {
 		return nil, err
 	}
 
-	if err := boltDB.Update(func(tx *bolt.Tx) error {
-		if err := checkSchema(tx); err != nil {
-			return err
-		}
-		if err := upgradeSchema(tx); err != nil {
-			return err
-		}
-		return nil
-	}); err != nil {
+	err = boltDB.Update(func(tx *bolt.Tx) error {
+		return checkSchema(tx)
+	})
+	if err != nil {
 		boltDB.Close()
 		return nil, err
 	}
@@ -41,6 +42,10 @@ func OpenDatabase(location string, flags ...bool) (Database, error) {
 
 // CloseDatabase properly closes database resource
 func CloseDatabase(d Database) error {
+
+	if d == nil {
+		return nil
+	}
 
 	boltDB := d.(*boltDatabase).db
 
@@ -87,6 +92,9 @@ type boltTransaction struct {
 
 func (z *boltTransaction) Bucket(name string) Bucket {
 	bucket := z.tx.Bucket([]byte(name))
+	if bucket == nil {
+		return nil
+	}
 	return &boltBucket{bucket: bucket}
 }
 
@@ -96,11 +104,14 @@ func (z *boltTransaction) Container(paths ...string) (Container, error) {
 		names = append(names, strings.Split(path, ContainerSeparator)...)
 	}
 	var b *bolt.Bucket
-	for _, name := range names {
-		if b == nil {
+	for i, name := range names {
+		if i == 0 {
 			b = z.tx.Bucket([]byte(name))
 		} else {
 			b = b.Bucket([]byte(name))
+		}
+		if b == nil {
+			return nil, nil
 		}
 	}
 	return &boltContainer{bucket: b}, nil
@@ -112,6 +123,9 @@ type boltBucket struct {
 
 func (z *boltBucket) Bucket(name string) Bucket {
 	bucket := z.bucket.Bucket([]byte(name))
+	if bucket == nil {
+		return nil
+	}
 	return &boltBucket{bucket: bucket}
 }
 
@@ -152,6 +166,9 @@ func (z *boltContainer) Container(paths ...string) (Container, error) {
 	b := z.bucket
 	for _, name := range names {
 		b = b.Bucket([]byte(name))
+		if b == nil {
+			return nil, nil
+		}
 	}
 	return &boltContainer{bucket: b}, nil
 }

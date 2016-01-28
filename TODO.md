@@ -4,11 +4,9 @@
 
 ### Immediate
 
- - Schema version is app version in config
  - Fix logging
  - 1.6.0
  - eliminate ForEach
- - store subscription count in Feed
  - optimize entries
  - jwt authentication and basic auth
  - native api to manage users
@@ -41,6 +39,7 @@
   - add support for Hot Links to Fever API support
 
 ### Unsorted
+  - store subscription count in Feed
   - add subscribers count to user-agent when fetching
   - rackt redux (flux like state replay)
     - http://merrickchristensen.com/articles/single-state-tree.html
