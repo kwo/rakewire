@@ -23,6 +23,7 @@ const (
 
 const (
 	httpdAccessLevel        = "httpd.accesslevel"
+	httpdAddress            = "httpd.address"
 	httpdHost               = "httpd.host"
 	httpdPort               = "httpd.port"
 	httpdStaticLocal        = "httpd.staticlocal"
@@ -30,6 +31,7 @@ const (
 	httpdTLSPublic          = "httpd.tls.public"
 	httpdUseTLS             = "httpd.tls.active"
 	httpdAccessLevelDefault = "DEBUG"
+	httpdAddressDefault     = ""
 	httpdHostDefault        = "localhost"
 	httpdPortDefault        = 4444
 	httpdStaticLocalDefault = false
@@ -50,7 +52,8 @@ type Service struct {
 	listener    net.Listener
 	running     bool
 	accessLevel string
-	host        string
+	address     string // binding address, empty string means 0.0.0.0
+	host        string // discard requests not made to this host
 	port        int
 	staticLocal bool
 	tlsPublic   string
@@ -113,19 +116,19 @@ func (z *Service) Start() error {
 	if z.useTLS {
 		cert, err := tls.X509KeyPair([]byte(z.tlsPublic), []byte(z.tlsPrivate))
 		if err != nil {
-			log.Printf("%-7s %-7s cannot start tls listener: %s", logError, logName, err.Error())
+			log.Printf("%-7s %-7s cannot create tls key pair: %s", logError, logName, err.Error())
 			return err
 		}
 		tlsConfig := &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		}
-		z.listener, err = tls.Listen("tcp", fmt.Sprintf("%s:%d", z.host, z.port), tlsConfig)
+		z.listener, err = tls.Listen("tcp", fmt.Sprintf("%s:%d", z.address, z.port), tlsConfig)
 		if err != nil {
 			log.Printf("%-7s %-7s cannot start tls listener: %s", logError, logName, err.Error())
 			return err
 		}
 	} else {
-		z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.host, z.port))
+		z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.address, z.port))
 		if err != nil {
 			log.Printf("%-7s %-7s cannot start listener: %s", logError, logName, err.Error())
 			return err
@@ -140,9 +143,9 @@ func (z *Service) Start() error {
 
 	z.running = true
 	if z.useTLS {
-		log.Printf("%-7s %-7s service started on https://%s:%d", logInfo, logName, z.host, z.port)
+		log.Printf("%-7s %-7s service started on https://%s:%d", logInfo, logName, z.address, z.port)
 	} else {
-		log.Printf("%-7s %-7s service started on http://%s:%d", logInfo, logName, z.host, z.port)
+		log.Printf("%-7s %-7s service started on http://%s:%d", logInfo, logName, z.address, z.port)
 	}
 	return nil
 
