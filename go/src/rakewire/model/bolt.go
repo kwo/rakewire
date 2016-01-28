@@ -138,10 +138,6 @@ func (z *boltBucket) Delete(key []byte) error {
 	return z.bucket.Delete(key)
 }
 
-func (z *boltBucket) ForEach(fn func(key, value []byte) error) error {
-	return z.bucket.ForEach(fn)
-}
-
 func (z *boltBucket) Get(key []byte) []byte {
 	return z.bucket.Get(key)
 }
@@ -289,10 +285,6 @@ func (z *boltContainer) Put(record Record) error {
 
 type boltCursor struct {
 	cursor *bolt.Cursor
-}
-
-func (z *boltCursor) Delete() error {
-	return z.cursor.Delete()
 }
 
 func (z *boltCursor) First() ([]byte, []byte) {
