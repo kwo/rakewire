@@ -22,7 +22,6 @@
  - expire entries/items by date/feed size
 
 ### DevOps
- - run docker container as rakewire user
  - need automated, one-touch deployment script
  - need to remove pause from build, static should not be regenerated all the time
  - need to automatically bump version number
