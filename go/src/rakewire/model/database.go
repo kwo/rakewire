@@ -26,7 +26,6 @@ type Bucket interface {
 	Bucket(name string) Bucket
 	Cursor() Cursor
 	Delete(key []byte) error
-	ForEach(fn func(key, value []byte) error) error // deprecated
 	Get(key []byte) []byte
 	NextSequence() (uint64, error)
 	Put(key []byte, value []byte) error

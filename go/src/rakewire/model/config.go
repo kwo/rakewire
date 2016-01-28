@@ -22,11 +22,12 @@ func (z *Configuration) Load(tx Transaction) error {
 	if b == nil {
 		return nil
 	}
+	c := b.Cursor()
 	z.values = make(Record)
-	return b.ForEach(func(k, v []byte) error {
+	for k, v := c.First(); k != nil; k, v = c.Next() {
 		z.values[string(k)] = string(v)
-		return nil
-	})
+	}
+	return nil
 }
 
 // Save saves configuration values to the database

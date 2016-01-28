@@ -46,8 +46,8 @@ func TestKVDelete(t *testing.T) {
 	}
 
 	err = d.Select(func(tx Transaction) error {
-		b := tx.Bucket("Data").Bucket("Feed")
-		return b.ForEach(func(key, value []byte) error {
+		c := tx.Bucket("Data").Bucket("Feed").Cursor()
+		for key, value := c.First(); key != nil; key, value = c.Next() {
 			id, err := kvKeyElementID(key, 0)
 			if err != nil {
 				t.Errorf("Error parsing ID from key: %s", err.Error())
@@ -56,7 +56,8 @@ func TestKVDelete(t *testing.T) {
 			}
 			t.Logf("%s: %s", key, value)
 			return nil
-		})
+		}
+		return nil
 	})
 	if err != nil {
 		t.Errorf("Error viewing feed: %s", err.Error())

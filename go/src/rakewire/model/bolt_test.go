@@ -201,11 +201,11 @@ func TestContainerPutGetDelete(t *testing.T) {
 	}
 
 	if err := database.Select(func(tx Transaction) error {
-		items := tx.Bucket(bucketData).Bucket(itemEntity)
-		return items.ForEach(func(k, v []byte) error {
+		items := tx.Bucket(bucketData).Bucket(itemEntity).Cursor()
+		for k, v := items.First(); k != nil; k, v = items.Next() {
 			t.Errorf("Unexpected entry in table: %s/%s", k, v)
-			return nil
-		})
+		}
+		return nil
 	}); err != nil {
 		t.Fatalf("Error deleting from database: %s", err.Error())
 	}

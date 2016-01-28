@@ -4,7 +4,6 @@
 
 ### Immediate
 
- - eliminate ForEach
  - optimize entries
  - jwt authentication and basic auth
  - native api to manage users

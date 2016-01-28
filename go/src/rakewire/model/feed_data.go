@@ -159,25 +159,3 @@ func (feed *Feed) Delete(tx Transaction) error {
 	return kvDelete(feedEntity, feed, tx)
 
 }
-
-// FeedDuplicates finds duplicate feeds keyed by original feed.
-func FeedDuplicates(tx Transaction) (map[string][]uint64, error) {
-
-	result := make(map[string][]uint64)
-
-	b := tx.Bucket(bucketData).Bucket(feedEntity)
-	err := b.ForEach(func(k, v []byte) error {
-		if fieldName := kvKeyElement(k, 1); fieldName == "URL" {
-			id, err := kvKeyElementID(k, 0)
-			if err != nil {
-				return err
-			}
-			url := string(v)
-			result[url] = append(result[url], id)
-		}
-		return nil
-	})
-
-	return result, err
-
-}

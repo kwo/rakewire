@@ -339,9 +339,13 @@ func copyBuckets(src, dst Database) error {
 			srcBucket := srcTx.Bucket(bucketName)
 			return dst.Update(func(dstTx Transaction) error {
 				dstBucket := dstTx.Bucket(bucketName)
-				return srcBucket.ForEach(func(k, v []byte) error {
-					return dstBucket.Put(k, v)
-				})
+				srcCursor := srcBucket.Cursor()
+				for k, v := srcCursor.First(); k != nil; k, v = srcCursor.Next() {
+					if err := dstBucket.Put(k, v); err != nil {
+						return err
+					}
+				}
+				return nil
 			})
 		})
 		if err != nil {
