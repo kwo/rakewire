@@ -83,7 +83,7 @@ func TestBucketKeyEncodeDecode(t *testing.T) {
 
 }
 
-func Testdeserialize(t *testing.T) {
+func TestDeserialize(t *testing.T) {
 
 	g1 := NewGroup(3, "three")
 	g1.ID = 3
