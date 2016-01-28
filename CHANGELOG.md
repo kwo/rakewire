@@ -1,5 +1,10 @@
 # Rakewire Changelog
 
+## 1.6.2 2016-01-28
+
+ - Bugfix: reset bucket IDs after database check
+ - build scripts now append OS and ARCH
+
 ## 1.6.1 2016-01-28
 
  - Bugfix: add back httpd.address parameter to specify a binding address separate from the hostname
