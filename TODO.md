@@ -5,6 +5,11 @@
 ### Immediate
 
  - store config, tls keys in data file, eliminate config package
+ - Home page plain text with app version build time hash
+ - Schema version is app version in config
+ - Fix logging
+ - 1.6.0
+ - store subscription count in Feed
  - optimize entries
  - jwt authentication and basic auth
  - native api to manage users
