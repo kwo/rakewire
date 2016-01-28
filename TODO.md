@@ -4,7 +4,6 @@
 
 ### Immediate
 
- - 1.6.0
  - eliminate ForEach
  - optimize entries
  - jwt authentication and basic auth
