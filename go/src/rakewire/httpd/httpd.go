@@ -111,7 +111,7 @@ func (z *Service) Start() error {
 	// start http config
 
 	if z.useTLS {
-		cert, err := tls.LoadX509KeyPair(z.tlsPublic, z.tlsPrivate)
+		cert, err := tls.X509KeyPair([]byte(z.tlsPublic), []byte(z.tlsPrivate))
 		if err != nil {
 			log.Printf("%-7s %-7s cannot start tls listener: %s", logError, logName, err.Error())
 			return err

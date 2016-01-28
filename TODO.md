@@ -4,11 +4,10 @@
 
 ### Immediate
 
- - store config, tls keys in data file, eliminate config package
-   - tls
  - Schema version is app version in config
  - Fix logging
  - 1.6.0
+ - eliminate ForEach
  - store subscription count in Feed
  - optimize entries
  - jwt authentication and basic auth
