@@ -20,10 +20,10 @@
    - allow assigning polling frequency per hour/day for feed
 
  - expire entries/items by date/feed size
+ - filter httpd requests on hostname
 
 ### DevOps
  - need automated, one-touch deployment script
- - need to remove pause from build, static should not be regenerated all the time
  - need to automatically bump version number
  - need to restart rakewire without haproxy (docker 1.9 networking?)
 

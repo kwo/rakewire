@@ -9,5 +9,5 @@
 /web/public
 .DS_Store
 /NOTES.md
-/rakewire
+/rakewire-*
 /rakewire*.db

@@ -2,7 +2,7 @@ g.tools
 cd $PROJECT_HOME/go
 go generate ./src/rakewire/...
 
-read -p "Commit changes (or not) and press [Enter] to continue"
+eval $(go env)
 
 if [ "$1" = "linux" ]; then
 	export GOOS=linux
@@ -11,7 +11,7 @@ fi
 
 . $PROJECT_HOME/bin/b.vars
 
-go build -tags netgo -ldflags "$LDFLAGS" -o ../rakewire ./src/rakewire/rakewire.go
+go build -tags netgo -ldflags "$LDFLAGS" -o ../rakewire-${GOOS}-${GOARCH} ./src/rakewire/rakewire.go
 
 # Notes: inspect shared libraries
 # otool -L rakewire #OSX
