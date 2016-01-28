@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"rakewire/fetch"
 	"rakewire/httpd"
+	"rakewire/logging"
 	"rakewire/model"
 	"rakewire/pollfeed"
 	"rakewire/reaper"
@@ -37,9 +38,6 @@ func main() {
 	var flagCheckDatabase = flag.Bool("check", false, "check database integrity and exit")
 	flag.Parse()
 
-	// FIXME: initialize logging
-	//cfg.Logging.Init()
-
 	log.Printf("Rakewire %s\n", model.Version)
 	log.Printf("Build Time: %s\n", model.BuildTime)
 	log.Printf("Build Hash: %s\n", model.BuildHash)
@@ -62,6 +60,14 @@ func main() {
 		model.CloseDatabase(database)
 		return
 	}
+
+	// initialize logging
+	loggingConfiguration := &logging.Configuration{
+		File:    cfg.Get("logging.file", ""),
+		Level:   cfg.Get("logging.level", "WARN"),
+		NoColor: cfg.GetBool("logging.nocolor", false),
+	}
+	loggingConfiguration.Init()
 
 	polld = pollfeed.NewService(cfg, database)
 	reaperd = reaper.NewService(cfg, database)

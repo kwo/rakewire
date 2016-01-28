@@ -4,7 +4,6 @@
 
 ### Immediate
 
- - Fix logging
  - 1.6.0
  - eliminate ForEach
  - optimize entries
