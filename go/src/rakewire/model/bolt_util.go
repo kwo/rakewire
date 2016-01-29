@@ -959,7 +959,7 @@ func updateContainerNextID(container Container, maxID uint64) error {
 	var id uint64
 	var err error
 
-	for id < maxID {
+	for id <= maxID {
 		if id, err = container.NextID(); err != nil {
 			return err
 		}
