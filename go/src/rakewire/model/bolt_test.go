@@ -70,7 +70,9 @@ func TestRenameWithTimestamp(t *testing.T) {
 		t.Fatalf("Error touching file: %s", err.Error())
 	}
 
-	if newLocation, err := renameWithTimestamp(location); err != nil {
+	Version = "0.0.0"
+
+	if newLocation, err := renameWithVersionTimestamp(location); err != nil {
 		t.Errorf("Error renaming file: %s", err.Error())
 	} else {
 

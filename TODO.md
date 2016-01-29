@@ -4,6 +4,14 @@
 
 ### Immediate
 
+ - rectivate feed filter
+ - add uptime to /status
+ - database version comparasion should ignore patch level
+ - need report text on opml upload
+ - integrate boltview into rakewire for config
+ - make sequences less dependent on bolt native implementation
+   - calc highest on start, enter into an atomic uint64 - keep in memory
+ - bugfix: error when no db
  - optimize entries
  - jwt authentication and basic auth
  - native api to manage users
