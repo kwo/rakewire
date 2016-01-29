@@ -1,5 +1,12 @@
 # Rakewire Changelog
 
+## 1.7.0 2016-01-29
+
+ - add uptime to /status
+ - filter control characters from feeds
+ - report text on opml upload
+ - bugfix: increase buckets to +1 during integrity check
+
 ## 1.6.2 2016-01-28
 
  - Bugfix: reset bucket IDs after database check
