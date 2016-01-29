@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"fmt"
 	"github.com/gorilla/context"
 	"log"
 	"net/http"
@@ -40,8 +41,11 @@ func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
 
 	opml, err := model.OPMLParse(req.Body)
 	if err != nil {
-		log.Printf("%-7s %-7s Error parsing OPML: %s", logWarn, logName, err.Error())
+		message := fmt.Sprintf("Error parsing OPML: %s\n", err.Error())
+		log.Printf("%-7s %-7s %s", logWarn, logName, message)
+		w.Header().Set(hContentType, "text/plain")
 		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(message))
 		return
 	}
 
@@ -51,11 +55,16 @@ func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
 	})
 
 	if err != nil {
-		log.Printf("%-7s %-7s Error importing OPML: %s", logWarn, logName, err.Error())
+		message := fmt.Sprintf("Error importing OPML: %s\n", err.Error())
+		log.Printf("%-7s %-7s %s", logWarn, logName, message)
+		w.Header().Set(hContentType, "text/plain")
 		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(message))
 		return
 	}
 
+	w.Header().Set(hContentType, "text/plain")
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("OK\n"))
 
 }

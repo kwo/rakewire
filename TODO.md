@@ -4,8 +4,6 @@
 
 ### Immediate
 
- - database version comparasion should ignore patch level
- - need report text on opml upload
  - integrate boltview into rakewire for config
  - make sequences less dependent on bolt native implementation
    - calc highest on start, enter into an atomic uint64 - keep in memory
