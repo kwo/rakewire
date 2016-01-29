@@ -14,6 +14,7 @@ import (
 	"rakewire/pollfeed"
 	"rakewire/reaper"
 	"syscall"
+	"time"
 )
 
 const (
@@ -47,6 +48,8 @@ func main() {
 	if *flagVersion {
 		return
 	}
+
+	model.AppStart = time.Now()
 
 	dbFile, errDbFile := filepath.Abs(*flagFile)
 	if errDbFile != nil {

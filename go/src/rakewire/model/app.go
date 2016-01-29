@@ -1,5 +1,9 @@
 package model
 
+import (
+	"time"
+)
+
 const (
 	logName  = "[model]"
 	logTrace = "[TRACE]"
@@ -14,4 +18,5 @@ var (
 	BuildHash string
 	BuildTime string
 	Version   string
+	AppStart  time.Time
 )
