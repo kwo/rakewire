@@ -385,7 +385,7 @@ func copyContainers(src, dst Database) error {
 				err = srcContainer.Iterate(func(record Record) error {
 					entity.clear()
 					if err := entity.deserialize(record, true); err != nil {
-						log.Printf("Error in record (%d): %s", record.GetID(), err.Error())
+						log.Printf("  Error in record (%d): %s", record.GetID(), err.Error())
 						return nil
 					}
 					if record.GetID() > maxID {
@@ -397,7 +397,12 @@ func copyContainers(src, dst Database) error {
 				if err != nil {
 					return err
 				}
-				return updateContainerNextID(dstContainer, maxID)
+				if mID, err := updateContainerNextID(dstContainer, maxID); err == nil {
+					log.Printf("  maxID: %d", mID)
+				} else {
+					return err
+				}
+				return nil
 			})
 		})
 		if err != nil {
@@ -954,17 +959,17 @@ func backupDatabase(location string) (string, error) {
 
 }
 
-func updateContainerNextID(container Container, maxID uint64) error {
+func updateContainerNextID(container Container, maxID uint64) (uint64, error) {
 
 	var id uint64
 	var err error
 
 	for id <= maxID {
 		if id, err = container.NextID(); err != nil {
-			return err
+			return id, err
 		}
 	}
 
-	return nil
+	return id, nil
 
 }
