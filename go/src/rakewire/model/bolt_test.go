@@ -59,7 +59,7 @@ func TestStat(t *testing.T) {
 
 }
 
-func TestRenameWithTimestamp(t *testing.T) {
+func TestBackupDatabase(t *testing.T) {
 
 	t.Parallel()
 
@@ -70,9 +70,7 @@ func TestRenameWithTimestamp(t *testing.T) {
 		t.Fatalf("Error touching file: %s", err.Error())
 	}
 
-	Version = "0.0.0"
-
-	if newLocation, err := renameWithVersionTimestamp(location); err != nil {
+	if newLocation, err := backupDatabase(location); err != nil {
 		t.Errorf("Error renaming file: %s", err.Error())
 	} else {
 

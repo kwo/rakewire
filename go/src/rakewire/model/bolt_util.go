@@ -235,7 +235,7 @@ func checkIntegrity(location string) error {
 	log.Println("checking database integrity...")
 
 	// rename database file to backup name, create new file, open both files
-	backupFilename, err := renameWithVersionTimestamp(location)
+	backupFilename, err := backupDatabase(location)
 	if err != nil {
 		return err
 	}
@@ -938,7 +938,7 @@ func rebuildIndexes(db Database) error {
 
 }
 
-func renameWithVersionTimestamp(location string) (string, error) {
+func backupDatabase(location string) (string, error) {
 
 	now := time.Now().Truncate(time.Second)
 	timestamp := now.Format("20060102150405")
@@ -947,7 +947,7 @@ func renameWithVersionTimestamp(location string) (string, error) {
 	ext := filepath.Ext(location)
 	filename := strings.TrimSuffix(filepath.Base(location), ext)
 
-	newFilename := fmt.Sprintf("%s%s%s-%s-%s%s", dir, string(os.PathSeparator), filename, Version, timestamp, ext)
+	newFilename := fmt.Sprintf("%s%s%s-%s%s", dir, string(os.PathSeparator), filename, timestamp, ext)
 	err := os.Rename(location, newFilename)
 
 	return newFilename, err
