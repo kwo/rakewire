@@ -1,8 +1,29 @@
 package model
 
-// DatabaseConfiguration configuration for service.
-type DatabaseConfiguration struct {
-	Location string
+import (
+	"strconv"
+)
+
+// Record defines a group of key-value pairs that can create a new Object
+type Record map[string]string
+
+// GetID return the primary key of the object.
+func (z Record) GetID() uint64 {
+	id, _ := strconv.ParseUint(z["ID"], 10, 64)
+	return id
+}
+
+// OnRecord defines a function type that fires on a new Record
+type OnRecord func(Record) error
+
+// Object defines the functions necessary for objects to be persisted to the database
+type Object interface {
+	getID() uint64
+	setID(id uint64)
+	clear()
+	serialize(...bool) Record
+	deserialize(Record, ...bool) error
+	indexKeys() map[string][]string
 }
 
 // ContainerSeparator specified the separator character for container names
