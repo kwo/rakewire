@@ -4,7 +4,6 @@
 
 ### Immediate
 
- - rectivate feed filter
  - database version comparasion should ignore patch level
  - need report text on opml upload
  - integrate boltview into rakewire for config

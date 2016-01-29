@@ -5,9 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"fmt"
-	"github.com/paulrosania/go-charset/charset"
-	// required by go-charset
-	_ "github.com/paulrosania/go-charset/data"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -107,12 +104,10 @@ func NewParser() *Parser {
 }
 
 // Parse feed
-func (z *Parser) Parse(reader io.ReadCloser, contentType string) (*Feed, error) {
-
-	//reader := NewFilterReader(reader0)
+func (z *Parser) Parse(reader io.Reader, contentType string) (*Feed, error) {
 
 	z.decoder = xml.NewDecoder(reader)
-	z.decoder.CharsetReader = charset.NewReader
+	z.decoder.CharsetReader = NewFilterCharsetReader
 	z.decoder.Strict = false
 
 	z.stack = &elements{}
@@ -200,7 +195,10 @@ Loop:
 	if exitError != nil {
 		ioutil.ReadAll(reader)
 	}
-	reader.Close()
+
+	if closer, ok := reader.(io.Closer); ok {
+		closer.Close()
+	}
 
 	if exitError == nil && z.feed == nil {
 		exitError = fmt.Errorf("Cannot parse feed")
