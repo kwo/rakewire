@@ -13,12 +13,6 @@ func OpenDatabase(location string, flags ...bool) (Database, error) {
 
 	flagCheckIntegrity := len(flags) > 0 && flags[0]
 
-	if upgrade, err := checkDatabaseVersion(location); err != nil {
-		return nil, err
-	} else if upgrade {
-		flagCheckIntegrity = true
-	}
-
 	if flagCheckIntegrity {
 		return nil, checkIntegrity(location)
 	}

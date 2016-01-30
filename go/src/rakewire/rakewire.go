@@ -64,8 +64,7 @@ func main() {
 		log.Println(errDb.Error())
 		model.CloseDatabase(database)
 		return
-	}
-	if database == nil {
+	} else if database == nil {
 		return
 	}
 

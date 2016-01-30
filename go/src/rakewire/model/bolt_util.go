@@ -3,7 +3,6 @@ package model
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
-	semver "github.com/hashicorp/go-version"
 	"log"
 	"os"
 	"path/filepath"
@@ -17,58 +16,6 @@ const (
 	bucketData   = "Data"
 	bucketIndex  = "Index"
 )
-
-func checkDatabaseVersion(location string) (bool, error) {
-
-	upgrade := false
-
-	// if file does not yet exist, return nil
-	if _, err := os.Stat(location); err != nil {
-		return upgrade, err
-	}
-
-	boltDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
-	if err != nil {
-		return upgrade, err
-	}
-	defer boltDB.Close()
-
-	err = boltDB.View(func(tx *bolt.Tx) error {
-
-		cfg := NewConfiguration()
-		if err := cfg.Load(&boltTransaction{tx: tx}); err != nil {
-			return err
-		}
-
-		dbVersion, err := semver.NewVersion(cfg.Get("db.version", "0.0.0"))
-		if err != nil {
-			return err
-		}
-
-		// this is to help with testing, when Version might not be set
-		version := Version
-		if version == "" {
-			version = "0.0.0"
-		}
-
-		appVersion, err := semver.NewVersion(version)
-		if err != nil {
-			return err
-		}
-
-		if dbVersion.GreaterThan(appVersion) {
-			return fmt.Errorf("Error database version %s, rakewire version %s", dbVersion.String(), appVersion.String())
-		}
-
-		upgrade = appVersion.GreaterThan(dbVersion)
-
-		return nil
-
-	})
-
-	return upgrade, err
-
-}
 
 func updateDatabaseVersion(db Database, version string) error {
 

@@ -32,12 +32,6 @@
 			"branch": "master"
 		},
 		{
-			"importpath": "github.com/hashicorp/go-version",
-			"repository": "https://github.com/hashicorp/go-version",
-			"revision": "7e3c02b30806fa5779d3bdfc152ce4c6f40e7b38",
-			"branch": "master"
-		},
-		{
 			"importpath": "github.com/paulrosania/go-charset/charset",
 			"repository": "https://github.com/paulrosania/go-charset",
 			"revision": "621bb39fcc835dce592e682f5073025d0169587b",
