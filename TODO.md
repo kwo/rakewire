@@ -4,10 +4,8 @@
 
 ### Immediate
 
- - integrate boltview into rakewire for config
  - make sequences less dependent on bolt native implementation
    - calc highest on start, enter into an atomic uint64 - keep in memory
- - bugfix: error when no db
  - optimize entries
  - jwt authentication and basic auth
  - native api to manage users
@@ -39,6 +37,7 @@
   - add support for Hot Links to Fever API support
 
 ### Unsorted
+  - integrate boltview into rakewire for config
   - store subscription count in Feed
   - add subscribers count to user-agent when fetching
   - rackt redux (flux like state replay)
