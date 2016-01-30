@@ -315,9 +315,8 @@ func copyContainers(src, dst Database) error {
 	containers[transmissionEntity] = &Transmission{}
 	containers[userEntity] = &User{}
 
-	var maxID uint64
-
 	for entityName, entity := range containers {
+		var maxID uint64
 		log.Printf("  %s...", entityName)
 		err := src.Select(func(srcTx Transaction) error {
 			srcContainer, err := srcTx.Container(bucketData, entityName)
