@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"github.com/boltdb/bolt"
+	semver "github.com/hashicorp/go-version"
 	"log"
 	"os"
 	"path/filepath"
@@ -12,9 +13,10 @@ import (
 
 // top level buckets
 const (
-	bucketConfig = "Config"
-	bucketData   = "Data"
-	bucketIndex  = "Index"
+	bucketConfig    = "Config"
+	bucketData      = "Data"
+	bucketIndex     = "Index"
+	databaseVersion = "db.version"
 )
 
 func updateDatabaseVersion(db Database, version string) error {
@@ -26,7 +28,7 @@ func updateDatabaseVersion(db Database, version string) error {
 			return err
 		}
 
-		cfg.Set("db.version", version)
+		cfg.Set(databaseVersion, version)
 		return cfg.Save(tx)
 
 	})
@@ -174,6 +176,35 @@ func checkSchema(tx *bolt.Tx) error {
 	}
 
 	return nil
+
+}
+
+// Returns 0.0.0 if an error occurs
+func getDatabaseVersion(location string) string {
+
+	version := "0.0.0"
+
+	boltDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if boltDB != nil {
+		defer boltDB.Close()
+	}
+	if err == nil {
+		boltDB.View(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte(bucketConfig))
+			if b != nil {
+				ver := b.Get([]byte(databaseVersion))
+				if ver != nil && len(ver) > 0 {
+					versionStr := string(ver)
+					if _, err := semver.NewVersion(versionStr); err == nil {
+						version = versionStr
+					}
+				}
+			}
+			return nil
+		})
+	}
+
+	return version
 
 }
 

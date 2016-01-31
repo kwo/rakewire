@@ -39,6 +39,7 @@ func main() {
 	var flagVersion = flag.Bool("version", false, "print version and exit")
 	var flagFile = flag.String("f", "rakewire.db", "file to open as the rakewire database")
 	var flagCheckDatabase = flag.Bool("check", false, "check database integrity and exit")
+	var flagCheckDatabaseIf = flag.Bool("checkif", false, "check database integrity if version differs then exit")
 	flag.Parse()
 
 	log.Printf("Rakewire %s\n", model.Version)
@@ -59,7 +60,19 @@ func main() {
 
 	log.Printf("Database:   %s\n", dbFile)
 
-	database, errDb := model.OpenDatabase(dbFile, *flagCheckDatabase)
+	if *flagCheckDatabase {
+		if err := model.CheckDatabaseIntegrity(dbFile); err != nil {
+			os.Exit(1)
+		}
+		return
+	} else if *flagCheckDatabaseIf {
+		if err := model.CheckDatabaseIntegrityIf(dbFile); err != nil {
+			os.Exit(1)
+		}
+		return
+	}
+
+	database, errDb := model.OpenDatabase(dbFile)
 	if errDb != nil {
 		log.Println(errDb.Error())
 		model.CloseDatabase(database)

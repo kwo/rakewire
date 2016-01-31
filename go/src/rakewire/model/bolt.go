@@ -3,19 +3,14 @@ package model
 import (
 	"bytes"
 	"github.com/boltdb/bolt"
+	semver "github.com/hashicorp/go-version"
 	"strings"
 	"sync"
 	"time"
 )
 
 // OpenDatabase opens the database at the specified location
-func OpenDatabase(location string, flags ...bool) (Database, error) {
-
-	flagCheckIntegrity := len(flags) > 0 && flags[0]
-
-	if flagCheckIntegrity {
-		return nil, checkIntegrity(location)
-	}
+func OpenDatabase(location string) (Database, error) {
 
 	boltDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
@@ -49,6 +44,31 @@ func CloseDatabase(d Database) error {
 
 	return nil
 
+}
+
+// CheckDatabaseIntegrity checks the database integrity.
+func CheckDatabaseIntegrity(location string) error {
+	return checkIntegrity(location)
+}
+
+// CheckDatabaseIntegrityIf checks the database integrity only if the database version differs from the app version.
+func CheckDatabaseIntegrityIf(location string) error {
+
+	dbVersion, err := semver.NewVersion(getDatabaseVersion(location))
+	if err != nil {
+		return err
+	}
+
+	appVersion, err := semver.NewVersion(Version)
+	if err != nil {
+		return err
+	}
+
+	if dbVersion.LessThan(appVersion) {
+		return checkIntegrity(location)
+	}
+
+	return nil
 }
 
 func newBoltDatabase(boltDB *bolt.DB) Database {

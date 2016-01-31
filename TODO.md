@@ -4,8 +4,6 @@
 
 ### Immediate
 
- - make sequences less dependent on bolt native implementation
-   - calc highest on start, enter into an atomic uint64 - keep in memory
  - optimize entries
  - jwt authentication and basic auth
  - native api to manage users
