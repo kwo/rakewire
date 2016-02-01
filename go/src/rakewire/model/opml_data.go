@@ -229,17 +229,6 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 			}
 		}
 
-		// remove unused groups // TODO: remove unused groups can be done in maintenance thread
-		uniqueGroups := collectGroups(subscriptions)
-		for _, group := range groupsByName {
-			if _, ok := uniqueGroups[group.ID]; !ok {
-				log.Printf("%-7s %-7s removing group: %s", logDebug, logName, group.Name)
-				if err := group.Delete(tx); err != nil {
-					return err
-				}
-			}
-		}
-
 	}
 
 	return nil
