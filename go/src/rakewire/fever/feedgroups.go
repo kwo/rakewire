@@ -23,7 +23,7 @@ func (z *API) getFeeds(userID uint64, tx model.Transaction) ([]*Feed, []*FeedGro
 		feed := &Feed{
 			ID:          mFeed.ID,
 			Title:       mFeed.Title,
-			FaviconID:   0, // TODO: favicon ID
+			FaviconID:   0,
 			URL:         mFeed.Feed.URL,
 			SiteURL:     mFeed.Feed.SiteURL,
 			IsSpark:     0,
