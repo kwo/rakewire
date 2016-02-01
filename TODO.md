@@ -21,13 +21,6 @@
  - expire entries/items by date/feed size
  - filter httpd requests on hostname
 
-### DevOps
- - need automated, one-touch deployment script
- - need to automatically bump version number
- - need to restart rakewire without haproxy (docker 1.9 networking?)
-
-
-
 ### Goals
   x Save Feed Entries
   x implememt Fever API
