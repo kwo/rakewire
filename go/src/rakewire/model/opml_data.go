@@ -38,8 +38,6 @@ func OPMLExport(user *User, tx Transaction) (*OPML, error) {
 
 		category := categories[group.Name]
 
-		// TODO: if all outlines in a group are autoread/autostar assign to group and remove from outlines
-
 		for _, subscription := range subscriptions1 {
 
 			flags := ""
