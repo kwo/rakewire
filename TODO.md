@@ -14,7 +14,6 @@
  - turn off logging to console, store in database, call via api
    - save to buffer, write to db every 5? seconds, api to filter entries by level and category
    - expire entries by level (TRACE/DEBUG after 10min, other after X days)
-   x remove command-line flags
 
  - create feed item frequency graph per feed for one week
    - allow assigning polling frequency per hour/day for feed
