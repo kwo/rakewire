@@ -1,5 +1,4 @@
 cd $PROJECT_HOME/go
-. $PROJECT_HOME/bin/b.vars
-g.tools
+. $PROJECT_HOME/bin/b.init
 go generate ./src/rakewire/...
 go run -tags netgo -ldflags "$LDFLAGS" ./src/rakewire/rakewire.go -f $PROJECT_HOME/rakewire.db $*

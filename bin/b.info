@@ -1,8 +1,0 @@
-DB=~/.rakewire/data.db
-FEEDCOUNT=`boltview $DB Data:Feed|grep ID | wc -l`
-OLDEST=`boltview $DB Data:Transmission|grep StartTime | awk '{print $3}'|sort|head -n 1`
-STATUS=`boltview ~/.rakewire/data.db Data:Transmission|grep "Result " | awk '{print $3}' | sort | uniq -c | sort`
-echo "First:  $OLDEST"
-echo "Count:  $FEEDCOUNT"
-echo "Status:"
-echo "$STATUS"

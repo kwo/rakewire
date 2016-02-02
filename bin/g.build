@@ -1,15 +1,9 @@
-g.tools
+g.init
 cd $PROJECT_HOME/go
 go generate ./src/rakewire/...
 
 eval $(go env)
-
-if [ "$1" = "linux" ]; then
-	export GOOS=linux
-	export GOARCH=amd64
-fi
-
-. $PROJECT_HOME/bin/b.vars
+. $PROJECT_HOME/bin/b.init
 
 go build -tags netgo -ldflags "$LDFLAGS" -o ../rakewire-${GOOS}-${GOARCH} ./src/rakewire/rakewire.go
 
