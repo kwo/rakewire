@@ -1,0 +1,32 @@
+hash: 57f7b62b670783cba5fe217271c85c8edf9b8b94f9e457ff3462bce5a2d2f340
+updated: 2016-02-04T17:25:38.069393493+01:00
+imports:
+- name: github.com/boltdb/bolt
+  version: ee4a0888a9abe7eefe5a0992ca4cb06864839873
+- name: github.com/gorilla/context
+  version: 1c83b3eabd45b6d76072b66b746c20815fb2872d
+- name: github.com/gorilla/handlers
+  version: b3aff83722cb2ae031a70cae984650e3a16cd20e
+- name: github.com/gorilla/mux
+  version: 26a6070f849969ba72b72256e9f14cf519751690
+- name: github.com/hashicorp/go-version
+  version: 7e3c02b30806fa5779d3bdfc152ce4c6f40e7b38
+- name: github.com/paulrosania/go-charset
+  version: 621bb39fcc835dce592e682f5073025d0169587b
+  subpackages:
+  - charset
+  - data
+- name: golang.org/x/crypto
+  version: 1f22c0103821b9390939b6776727195525381532
+  subpackages:
+  - bcrypt
+  - blowfish
+  - nacl/secretbox
+  - salsa20/salsa
+  - poly1305
+  - openpgp/armor
+  - openpgp/errors
+  - openpgp/packet
+  - openpgp/s2k
+  - pkcs12/internal/rc2
+devImports: []

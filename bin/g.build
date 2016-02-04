@@ -5,7 +5,7 @@ go generate ./src/rakewire/...
 eval $(go env)
 . $PROJECT_HOME/bin/b.init
 
-go build -tags netgo -ldflags "$LDFLAGS" -o ../rakewire-${GOOS}-${GOARCH} ./src/rakewire/rakewire.go
+go build -tags netgo -ldflags "$LDFLAGS" -o ./bin/rakewire-${GOOS}-${GOARCH} ./src/rakewire/rakewire.go
 
 # Notes: inspect shared libraries
 # otool -L rakewire #OSX
