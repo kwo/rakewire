@@ -62,11 +62,13 @@ func main() {
 
 	if *flagCheckDatabase {
 		if err := model.CheckDatabaseIntegrity(dbFile); err != nil {
+			log.Printf("Error: %s\n", err.Error())
 			os.Exit(1)
 		}
 		return
 	} else if *flagCheckDatabaseIf {
 		if err := model.CheckDatabaseIntegrityIf(dbFile); err != nil {
+			log.Printf("Error: %s\n", err.Error())
 			os.Exit(1)
 		}
 		return
