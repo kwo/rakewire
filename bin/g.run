@@ -1,4 +1,4 @@
 cd $PROJECT_HOME/go
 . $PROJECT_HOME/bin/b.init
-go generate ./src/rakewire/...
+go generate $(go list ./src/... | grep -v /vendor/)
 go run -tags netgo -ldflags "$LDFLAGS" ./src/rakewire/rakewire.go -f $PROJECT_HOME/rakewire.db $*

@@ -1,2 +1,0 @@
-cd $PROJECT_HOME/go
-gb vendor update --all

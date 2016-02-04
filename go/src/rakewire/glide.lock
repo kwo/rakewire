@@ -1,6 +1,8 @@
-hash: 57f7b62b670783cba5fe217271c85c8edf9b8b94f9e457ff3462bce5a2d2f340
-updated: 2016-02-04T17:25:38.069393493+01:00
+hash: 5ab4a5d5a0e3a6a64cf244a8a620eb54d5c7add26b1bc1761fbe811b02b66c6b
+updated: 2016-02-04T20:39:32.815218293+01:00
 imports:
+- name: github.com/antonholmquist/jason
+  version: 45d2bc81fe7570f04969728f3a941216fc565b61
 - name: github.com/boltdb/bolt
   version: ee4a0888a9abe7eefe5a0992ca4cb06864839873
 - name: github.com/gorilla/context

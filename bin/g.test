@@ -1,4 +1,4 @@
 cd $PROJECT_HOME/go
-g.tools
-go generate ./src/rakewire/...
-go test $* ./src/...
+g.init
+go generate $(go list ./src/... | grep -v /vendor/)
+go test $*  $(go list ./src/... | grep -v /vendor/)

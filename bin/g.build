@@ -1,6 +1,6 @@
 g.init
 cd $PROJECT_HOME/go
-go generate ./src/rakewire/...
+go generate $(go list ./src/... | grep -v /vendor/)
 
 eval $(go env)
 . $PROJECT_HOME/bin/b.init

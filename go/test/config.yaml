@@ -1,9 +1,0 @@
-httpd:
-  port: 4444
-
-database:
-  location: "/Users/karl/.rakewire/data.db"
-
-fetcher:
-  workers: 10
-  timeout: "10s"
