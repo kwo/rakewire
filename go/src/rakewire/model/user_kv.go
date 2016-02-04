@@ -30,6 +30,9 @@ var (
 	userAllFields = []string{
 		userID, userUsername, userPasswordHash, userFeverHash,
 	}
+	userAllIndexes = []string{
+		userIndexFeverHash, userIndexUsername,
+	}
 )
 
 // Users is a collection of User elements

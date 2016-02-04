@@ -39,6 +39,9 @@ var (
 	feedAllFields = []string{
 		feedID, feedURL, feedSiteURL, feedETag, feedLastModified, feedLastUpdated, feedNextFetch, feedNotes, feedTitle, feedStatus, feedStatusMessage, feedStatusSince,
 	}
+	feedAllIndexes = []string{
+		feedIndexNextFetch, feedIndexURL,
+	}
 )
 
 // Feeds is a collection of Feed elements

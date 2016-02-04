@@ -38,6 +38,9 @@ var (
 	{{$structure.NameLower}}AllFields = []string{
 	  {{range $index, $field := .Fields}}{{$structure.NameLower}}{{.Name}},{{end}}
 	}
+	{{$structure.NameLower}}AllIndexes = []string{
+	  {{range $index, $field := .Indexes}}{{$structure.NameLower}}Index{{$index}},{{end}}
+	}
 )
 
 // {{$structure.NamePlural}} is a collection of {{$structure.Name}} elements

@@ -45,6 +45,9 @@ var (
 	transmissionAllFields = []string{
 		transmissionID, transmissionFeedID, transmissionDuration, transmissionResult, transmissionResultMessage, transmissionStartTime, transmissionURL, transmissionContentLength, transmissionContentType, transmissionETag, transmissionLastModified, transmissionStatusCode, transmissionUsesGzip, transmissionFlavor, transmissionGenerator, transmissionTitle, transmissionLastUpdated, transmissionItemCount, transmissionNewItems,
 	}
+	transmissionAllIndexes = []string{
+		transmissionIndexFeedTime, transmissionIndexTime,
+	}
 )
 
 // Transmissions is a collection of Transmission elements

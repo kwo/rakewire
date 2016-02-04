@@ -27,6 +27,9 @@ var (
 	groupAllFields = []string{
 		groupID, groupUserID, groupName,
 	}
+	groupAllIndexes = []string{
+		groupIndexUserGroup,
+	}
 )
 
 // Groups is a collection of Group elements

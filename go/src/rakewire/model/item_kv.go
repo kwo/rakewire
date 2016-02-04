@@ -34,6 +34,9 @@ var (
 	itemAllFields = []string{
 		itemID, itemGUID, itemFeedID, itemCreated, itemUpdated, itemURL, itemAuthor, itemTitle, itemContent,
 	}
+	itemAllIndexes = []string{
+		itemIndexGUID,
+	}
 )
 
 // Items is a collection of Item elements

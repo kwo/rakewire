@@ -34,6 +34,9 @@ var (
 	entryAllFields = []string{
 		entryID, entryUserID, entryItemID, entrySubscriptionID, entryUpdated, entryIsRead, entryIsStar,
 	}
+	entryAllIndexes = []string{
+		entryIndexRead, entryIndexStar, entryIndexUser,
+	}
 )
 
 // Entries is a collection of Entry elements

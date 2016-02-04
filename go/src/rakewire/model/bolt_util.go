@@ -40,140 +40,37 @@ func checkSchema(tx *bolt.Tx) error {
 	var b *bolt.Bucket
 
 	// top level
-	_, err := tx.CreateBucketIfNotExists([]byte(bucketConfig))
+	bConfig, err := tx.CreateBucketIfNotExists([]byte(bucketConfig))
 	if err != nil {
 		return err
 	}
-	bucketData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
+	bData, err := tx.CreateBucketIfNotExists([]byte(bucketData))
 	if err != nil {
 		return err
 	}
-	bucketIndex, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
-	if err != nil {
-		return err
-	}
-
-	// data
-	b, err = bucketData.CreateBucketIfNotExists([]byte(userEntity))
+	bIndex, err := tx.CreateBucketIfNotExists([]byte(bucketIndex))
 	if err != nil {
 		return err
 	}
 
-	b, err = bucketData.CreateBucketIfNotExists([]byte(groupEntity))
-	if err != nil {
-		return err
-	}
-
-	b, err = bucketData.CreateBucketIfNotExists([]byte(feedEntity))
-	if err != nil {
-		return err
-	}
-
-	b, err = bucketData.CreateBucketIfNotExists([]byte(transmissionEntity))
-	if err != nil {
-		return err
-	}
-
-	b, err = bucketData.CreateBucketIfNotExists([]byte(itemEntity))
-	if err != nil {
-		return err
-	}
-
-	b, err = bucketData.CreateBucketIfNotExists([]byte(entryEntity))
-	if err != nil {
-		return err
-	}
-
-	b, err = bucketData.CreateBucketIfNotExists([]byte(subscriptionEntity))
-	if err != nil {
-		return err
-	}
-
-	// indexes
-
-	user := NewUser("")
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(userEntity))
-	if err != nil {
-		return err
-	}
-	for k := range user.indexKeys() {
-		_, err = b.CreateBucketIfNotExists([]byte(k))
-		if err != nil {
+	// data & indexes
+	for entityName, entityIndexes := range allEntities {
+		if err := addEntryIfNotExists(bConfig, "sequence."+strings.ToLower(entityName), "0"); err != nil {
 			return err
 		}
-	}
-
-	group := NewGroup(0, "")
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(groupEntity))
-	if err != nil {
-		return err
-	}
-	for k := range group.indexKeys() {
-		_, err = b.CreateBucketIfNotExists([]byte(k))
-		if err != nil {
+		if _, err = bData.CreateBucketIfNotExists([]byte(entityName)); err != nil {
 			return err
 		}
-	}
-
-	feed := NewFeed("")
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(feedEntity))
-	if err != nil {
-		return err
-	}
-	for k := range feed.indexKeys() {
-		_, err = b.CreateBucketIfNotExists([]byte(k))
-		if err != nil {
+		if b, err = bIndex.CreateBucketIfNotExists([]byte(entityName)); err == nil {
+			for _, indexName := range entityIndexes {
+				if _, err = b.CreateBucketIfNotExists([]byte(indexName)); err != nil {
+					return err
+				}
+			} // entityIndexes
+		} else {
 			return err
 		}
-	}
-
-	transmission := NewTransmission(feed.ID)
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(transmissionEntity))
-	if err != nil {
-		return err
-	}
-	for k := range transmission.indexKeys() {
-		_, err = b.CreateBucketIfNotExists([]byte(k))
-		if err != nil {
-			return err
-		}
-	}
-
-	item := NewItem(feed.ID, "")
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(itemEntity))
-	if err != nil {
-		return err
-	}
-	for k := range item.indexKeys() {
-		_, err = b.CreateBucketIfNotExists([]byte(k))
-		if err != nil {
-			return err
-		}
-	}
-
-	ue := Entry{}
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(entryEntity))
-	if err != nil {
-		return err
-	}
-	for k := range ue.indexKeys() {
-		_, err = b.CreateBucketIfNotExists([]byte(k))
-		if err != nil {
-			return err
-		}
-	}
-
-	uf := NewSubscription(user.ID, feed.ID)
-	b, err = bucketIndex.CreateBucketIfNotExists([]byte(subscriptionEntity))
-	if err != nil {
-		return err
-	}
-	for k := range uf.indexKeys() {
-		_, err = b.CreateBucketIfNotExists([]byte(k))
-		if err != nil {
-			return err
-		}
-	}
+	} // allEntities
 
 	return nil
 
@@ -302,6 +199,19 @@ func checkIntegrity(location string) error {
 	}
 
 	log.Println("checking database integrity...complete")
+
+	return nil
+
+}
+
+func addEntryIfNotExists(b *bolt.Bucket, key, value string) error {
+
+	v := b.Get([]byte(key))
+	if v == nil || len(v) == 0 {
+		if err := b.Put([]byte(key), []byte(value)); err != nil {
+			return err
+		}
+	}
 
 	return nil
 

@@ -37,6 +37,9 @@ var (
 	subscriptionAllFields = []string{
 		subscriptionID, subscriptionUserID, subscriptionFeedID, subscriptionGroupIDs, subscriptionDateAdded, subscriptionTitle, subscriptionNotes, subscriptionAutoRead, subscriptionAutoStar,
 	}
+	subscriptionAllIndexes = []string{
+		subscriptionIndexFeed, subscriptionIndexUser,
+	}
 )
 
 // Subscriptions is a collection of Subscription elements

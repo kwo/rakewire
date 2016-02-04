@@ -4,6 +4,18 @@ import (
 	"strconv"
 )
 
+var (
+	allEntities = map[string][]string{
+		entryEntity:        entryAllIndexes,
+		feedEntity:         feedAllIndexes,
+		groupEntity:        groupAllIndexes,
+		itemEntity:         itemAllIndexes,
+		subscriptionEntity: subscriptionAllIndexes,
+		transmissionEntity: transmissionAllIndexes,
+		userEntity:         userAllIndexes,
+	}
+)
+
 // Record defines a group of key-value pairs that can create a new Object
 type Record map[string]string
 
