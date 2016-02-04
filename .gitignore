@@ -1,13 +1,10 @@
-/.vscode
 /go/bin
 /go/depgraph.svg
 /go/pkg
+/go/src/tools/vendor
+/go/src/rakewire/vendor
 /go/test/*.db
-/go/vendor/bin
-/go/vendor/pkg
 /web/node_modules
 /web/public
-.DS_Store
 /NOTES.md
-/rakewire-*
 /rakewire*.db
