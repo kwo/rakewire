@@ -1,3 +1,3 @@
 docker run --rm -ti -v $(pwd):/mnt karlostendorf/golang sh -c "cd /mnt && . bashrc && g.build"
-cp -v $PROJECT_HOME/rakewire-linux-amd64 $HOME/projects/docker/rakewire
-docker run --rm -ti -v $(pwd):/mnt karlostendorf/alpine /mnt/rakewire-linux-amd64 -version
+cp -v $PROJECT_HOME/go/bin/rakewire-linux-amd64 $HOME/projects/docker/rakewire
+docker run --rm -ti -v $(pwd):/mnt karlostendorf/alpine /mnt/go/bin/rakewire-linux-amd64 -version
