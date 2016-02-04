@@ -219,7 +219,7 @@ func checkIntegrity(location string) error {
 	}
 	log.Printf("original database saved to %s\n", backupFilename)
 
-	oldBoltDB, err := bolt.Open(backupFilename, 0600, &bolt.Options{Timeout: 1 * time.Second})
+	oldBoltDB, err := bolt.Open(backupFilename, 0400, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return err
 	}
