@@ -211,7 +211,6 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 		if err != nil {
 			return err
 		}
-		_, subscriptionDuplicates := groupSubscriptionsByURL(subscriptions)
 		for _, subscription := range subscriptions {
 			if _, ok := outlinesByURL[subscription.Feed.URL]; !ok {
 				log.Printf("%-7s %-7s removing subscription: %s", logDebug, logName, subscription.Feed.URL)
@@ -220,6 +219,7 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 				}
 			}
 		}
+		_, subscriptionDuplicates := groupSubscriptionsByURL(subscriptions)
 		for _, subscription := range subscriptionDuplicates {
 			log.Printf("%-7s %-7s removing duplicate subscription: %s", logDebug, logName, subscription.Feed.URL)
 			if err := subscription.Delete(tx); err != nil {
