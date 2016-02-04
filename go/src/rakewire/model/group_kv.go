@@ -160,6 +160,10 @@ func (z *Group) indexKeys() map[string][]string {
 	return result
 }
 
+func newGroupID(tx Transaction) (string, error) {
+	return kvNextID(groupEntity, tx)
+}
+
 // GroupByID groups elements in the Groups collection by ID
 func (z Groups) GroupByID() map[uint64]*Group {
 	result := make(map[uint64]*Group)

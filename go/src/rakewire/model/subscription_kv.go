@@ -279,3 +279,7 @@ func (z *Subscription) indexKeys() map[string][]string {
 
 	return result
 }
+
+func newSubscriptionID(tx Transaction) (string, error) {
+	return kvNextID(subscriptionEntity, tx)
+}

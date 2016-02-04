@@ -273,6 +273,10 @@ func (z *Feed) indexKeys() map[string][]string {
 	return result
 }
 
+func newFeedID(tx Transaction) (string, error) {
+	return kvNextID(feedEntity, tx)
+}
+
 // GroupAllByURL groups collections of elements in Feeds by URL
 func (z Feeds) GroupAllByURL() map[string]Feeds {
 	result := make(map[string]Feeds)

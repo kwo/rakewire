@@ -141,6 +141,11 @@ func (z *{{.Name}}) indexKeys() map[string][]string {
 	return result
 }
 
+func new{{.Name}}ID(tx Transaction) (string, error) {
+	return kvNextID({{.NameLower}}Entity, tx)
+}
+
+
 {{$struct := .}}
 {{range $index, $field := .Fields}}
 	{{if .GroupBy}}
