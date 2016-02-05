@@ -37,6 +37,17 @@ func NewFeed(url string) *Feed {
 	}
 }
 
+func (z *Feed) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+	if z.ID == 0 {
+		if id, err := fn(feedEntity, tx); err == nil {
+			z.ID = id
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
 // AddItem to the feed
 func (z *Feed) AddItem(guID string) *Item {
 	item := NewItem(z.ID, guID)

@@ -29,6 +29,17 @@ func NewSubscription(userID, feedID uint64) *Subscription {
 	}
 }
 
+func (z *Subscription) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+	if z.ID == 0 {
+		if id, err := fn(subscriptionEntity, tx); err == nil {
+			z.ID = id
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
 // AddGroup adds the subscription to the given group.
 func (z *Subscription) AddGroup(groupID uint64) {
 	if !z.HasGroup(groupID) {

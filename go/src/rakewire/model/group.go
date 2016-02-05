@@ -16,3 +16,14 @@ func NewGroup(userID uint64, name string) *Group {
 		Name:   name,
 	}
 }
+
+func (z *Group) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+	if z.ID == 0 {
+		if id, err := fn(groupEntity, tx); err == nil {
+			z.ID = id
+		} else {
+			return err
+		}
+	}
+	return nil
+}

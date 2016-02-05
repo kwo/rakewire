@@ -29,6 +29,17 @@ func NewItem(feedID uint64, guID string) *Item {
 	}
 }
 
+func (z *Item) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+	if z.ID == 0 {
+		if id, err := fn(itemEntity, tx); err == nil {
+			z.ID = id
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
 // Hash generated a fingerprint for the item to test if it has been updated or not.
 func (z *Item) Hash() string {
 	hash := sha256.New()

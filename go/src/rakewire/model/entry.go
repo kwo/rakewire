@@ -17,3 +17,14 @@ type Entry struct {
 	IsStar         bool      `kv:"Star:2"`
 	Item           *Item     `kv:"-"`
 }
+
+func (z *Entry) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+	if z.ID == 0 {
+		if id, err := fn(entryEntity, tx); err == nil {
+			z.ID = id
+		} else {
+			return err
+		}
+	}
+	return nil
+}

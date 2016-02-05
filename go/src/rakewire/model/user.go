@@ -23,6 +23,17 @@ func NewUser(username string) *User {
 	}
 }
 
+func (z *User) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+	if z.ID == 0 {
+		if id, err := fn(userEntity, tx); err == nil {
+			z.ID = id
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
 // SetPassword updates the password hashes.
 func (z *User) SetPassword(password string) error {
 

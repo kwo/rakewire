@@ -28,10 +28,13 @@ func (z Record) GetID() uint64 {
 // OnRecord defines a function type that fires on a new Record
 type OnRecord func(Record) error
 
+// OnRecord defines a function type that fires on a new Record
+type fnNextID func(string, Transaction) (uint64, error)
+
 // Object defines the functions necessary for objects to be persisted to the database
 type Object interface {
 	getID() uint64
-	setID(id uint64)
+	setIDIfNecessary(fnNextID, Transaction) error
 	clear()
 	serialize(...bool) Record
 	deserialize(Record, ...bool) error

@@ -44,3 +44,14 @@ func NewTransmission(feedID uint64) *Transmission {
 		FeedID: feedID,
 	}
 }
+
+func (z *Transmission) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+	if z.ID == 0 {
+		if id, err := fn(transmissionEntity, tx); err == nil {
+			z.ID = id
+		} else {
+			return err
+		}
+	}
+	return nil
+}

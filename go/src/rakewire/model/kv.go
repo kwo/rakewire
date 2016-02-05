@@ -129,12 +129,8 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 
 	b := tx.Bucket(bucketData).Bucket(entityName)
 
-	if value.getID() == 0 {
-		id, err := kvNextID(entityName, tx)
-		if err != nil {
-			return err
-		}
-		value.setID(id)
+	if err := value.setIDIfNecessary(kvNextID, tx); err != nil {
+		return err
 	}
 
 	oldValues, update := kvGet(value.getID(), b)
