@@ -230,10 +230,6 @@ func (z *Item) indexKeys() map[string][]string {
 	return result
 }
 
-func newItemID(tx Transaction) (string, error) {
-	return kvNextID(itemEntity, tx)
-}
-
 // GroupByGUID groups elements in the Items collection by GUID
 func (z Items) GroupByGUID() map[string]*Item {
 	result := make(map[string]*Item)

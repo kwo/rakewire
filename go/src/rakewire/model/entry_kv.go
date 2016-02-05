@@ -268,7 +268,3 @@ func (z *Entry) indexKeys() map[string][]string {
 
 	return result
 }
-
-func newEntryID(tx Transaction) (string, error) {
-	return kvNextID(entryEntity, tx)
-}

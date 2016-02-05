@@ -165,10 +165,6 @@ func (z *User) indexKeys() map[string][]string {
 	return result
 }
 
-func newUserID(tx Transaction) (string, error) {
-	return kvNextID(userEntity, tx)
-}
-
 // GroupByUsername groups elements in the Users collection by Username
 func (z Users) GroupByUsername() map[string]*User {
 	result := make(map[string]*User)

@@ -156,10 +156,6 @@ func (z *boltBucket) Get(key []byte) []byte {
 	return z.bucket.Get(key)
 }
 
-func (z *boltBucket) NextSequence() (uint64, error) {
-	return z.bucket.NextSequence()
-}
-
 func (z *boltBucket) Put(key, value []byte) error {
 	return z.bucket.Put(key, value)
 }
@@ -275,10 +271,6 @@ func (z *boltContainer) Iterate(onRecord OnRecord, flags ...bool) error {
 
 	return nil
 
-}
-
-func (z *boltContainer) NextID() (uint64, error) {
-	return z.bucket.NextSequence()
 }
 
 func (z *boltContainer) Put(record Record) error {

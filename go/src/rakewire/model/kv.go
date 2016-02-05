@@ -125,12 +125,12 @@ func kvPut(id uint64, values map[string]string, b Bucket) error {
 
 }
 
-func kvSave(name string, value Object, tx Transaction) error {
+func kvSave(entityName string, value Object, tx Transaction) error {
 
-	b := tx.Bucket(bucketData).Bucket(name)
+	b := tx.Bucket(bucketData).Bucket(entityName)
 
 	if value.getID() == 0 {
-		id, err := b.NextSequence()
+		id, err := kvNextID(entityName, tx)
 		if err != nil {
 			return err
 		}
@@ -166,7 +166,7 @@ func kvSave(name string, value Object, tx Transaction) error {
 	}
 
 	// save indexes
-	if err := kvSaveIndexes(name, value.getID(), newIndexes, oldIndexes, tx); err != nil {
+	if err := kvSaveIndexes(entityName, value.getID(), newIndexes, oldIndexes, tx); err != nil {
 		return err
 	}
 
@@ -249,7 +249,7 @@ func kvDelete(name string, value Object, tx Transaction) error {
 
 }
 
-func kvNextID(entityName string, tx Transaction) (string, error) {
+func kvNextID(entityName string, tx Transaction) (uint64, error) {
 
 	entryName := "sequence." + strings.ToLower(entityName)
 
@@ -258,13 +258,13 @@ func kvNextID(entityName string, tx Transaction) (string, error) {
 	// get previous value
 	idBytes := b.Get([]byte(entryName))
 	if idBytes == nil {
-		return "", fmt.Errorf("No sequence found for %s", entityName)
+		return 0, fmt.Errorf("No sequence found for %s", entityName)
 	}
 
 	// turn into a uint64
 	id, err := strconv.ParseUint(string(idBytes), 10, 64)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	// increment
@@ -275,13 +275,10 @@ func kvNextID(entityName string, tx Transaction) (string, error) {
 
 	// save back to database
 	if err := b.Put([]byte(entryName), []byte(idStr)); err != nil {
-		return "", err
+		return 0, err
 	}
 
-	// format id as sequence string
-	result := kvKey(id)
-
-	return result, nil
+	return id, nil
 
 }
 

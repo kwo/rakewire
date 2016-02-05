@@ -60,7 +60,6 @@ type Bucket interface {
 	Cursor() Cursor
 	Delete(key []byte) error
 	Get(key []byte) []byte
-	NextSequence() (uint64, error)
 	Put(key []byte, value []byte) error
 }
 
@@ -70,7 +69,6 @@ type Container interface {
 	Delete(id uint64) error
 	Get(id uint64) (Record, error)
 	Iterate(onRecord OnRecord, flags ...bool) error
-	NextID() (uint64, error)
 	Put(record Record) error
 }
 

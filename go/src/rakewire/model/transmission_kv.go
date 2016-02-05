@@ -377,7 +377,3 @@ func (z *Transmission) indexKeys() map[string][]string {
 
 	return result
 }
-
-func newTransmissionID(tx Transaction) (string, error) {
-	return kvNextID(transmissionEntity, tx)
-}
