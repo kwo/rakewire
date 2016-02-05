@@ -10,15 +10,15 @@ import (
 
 // Item from a feed
 type Item struct {
-	ID      uint64    `json:"id"`
-	GUID    string    `json:"-" kv:"+groupby,GUID:2"`
-	FeedID  uint64    `json:"feedId" kv:"+required,+groupall,GUID:1"`
-	Created time.Time `json:"created"`
-	Updated time.Time `json:"updated"`
-	URL     string    `json:"url"`
-	Author  string    `json:"author"`
-	Title   string    `json:"title"`
-	Content string    `json:"contents"`
+	ID      uint64
+	GUID    string `kv:"+groupby,GUID:2"`
+	FeedID  uint64 `kv:"+required,+groupall,GUID:1"`
+	Created time.Time
+	Updated time.Time
+	URL     string
+	Author  string
+	Title   string
+	Content string
 }
 
 // NewItem instantiate a new Item object

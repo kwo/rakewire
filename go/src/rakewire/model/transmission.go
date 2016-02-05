@@ -8,25 +8,25 @@ import (
 
 // Transmission represents an attempted HTTP request to a feed
 type Transmission struct {
-	ID            uint64        `json:"id" kv:"Time:2"`
-	FeedID        uint64        `json:"feedId" kv:"+required,FeedTime:1"`
-	Duration      time.Duration `json:"duration"`
-	Result        string        `json:"result"`
-	ResultMessage string        `json:"resultMessage"`
-	StartTime     time.Time     `json:"startTime" kv:"Time:1,FeedTime:2"`
-	URL           string        `json:"url"`
-	ContentLength int           `json:"contentLength"`
-	ContentType   string        `json:"contentType"`
-	ETag          string        `json:"etag"`
-	LastModified  time.Time     `json:"lastModified"`
-	StatusCode    int           `json:"statusCode"`
-	UsesGzip      bool          `json:"gzip"`
-	Flavor        string        `json:"flavor"`
-	Generator     string        `json:"generator"`
-	Title         string        `json:"title"`
-	LastUpdated   time.Time     `json:"lastUpdated"`
-	ItemCount     int           `json:"itemCount"`
-	NewItems      int           `json:"newItems"`
+	ID            uint64 `kv:"Time:2"`
+	FeedID        uint64 `kv:"+required,FeedTime:1"`
+	Duration      time.Duration
+	Result        string
+	ResultMessage string
+	StartTime     time.Time `kv:"Time:1,FeedTime:2"`
+	URL           string
+	ContentLength int
+	ContentType   string
+	ETag          string
+	LastModified  time.Time
+	StatusCode    int
+	UsesGzip      bool
+	Flavor        string
+	Generator     string
+	Title         string
+	LastUpdated   time.Time
+	ItemCount     int
+	NewItems      int
 }
 
 // FetchResults

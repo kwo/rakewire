@@ -1,7 +1,6 @@
 package model
 
 import (
-	"encoding/json"
 	"testing"
 	"time"
 )
@@ -43,24 +42,6 @@ func TestTransmissionSerialize(t *testing.T) {
 		t.Fatalf("Transmission deserialize returned an error: %s", err.Error())
 	}
 	validateTransmission(t, fl2)
-
-}
-
-func TestTransmissionJSON(t *testing.T) {
-
-	t.Parallel()
-
-	fl := getNewTransmission()
-	validateTransmission(t, fl)
-
-	data, err := json.Marshal(fl)
-	assertNoError(t, err)
-	assertNotNil(t, data)
-
-	fl2 := &Transmission{}
-	err = json.Unmarshal(data, fl2)
-	assertNoError(t, err)
-	validateTransmission(t, fl)
 
 }
 

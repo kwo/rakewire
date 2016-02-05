@@ -1,7 +1,6 @@
 package model
 
 import (
-	"encoding/json"
 	"testing"
 	"time"
 )
@@ -36,46 +35,6 @@ func TestFeedSerial(t *testing.T) {
 	err := f2.deserialize(data)
 	assertNoError(t, err)
 	validateFeed(t, f2)
-
-}
-
-func TestFeedJSON(t *testing.T) {
-
-	t.Parallel()
-
-	f := getNewFeed()
-	validateFeed(t, f)
-
-	data, err := json.Marshal(f)
-	assertNoError(t, err)
-	assertNotNil(t, data)
-
-	f2 := &Feed{}
-	err = json.Unmarshal(data, f2)
-	assertNoError(t, err)
-	validateFeed(t, f2)
-
-}
-
-func TestFeedsJSON(t *testing.T) {
-
-	t.Parallel()
-
-	f := getNewFeed()
-	validateFeed(t, f)
-
-	var feeds []*Feed
-	feeds = append(feeds, f)
-
-	data, err := json.Marshal(&feeds)
-	assertNoError(t, err)
-	assertNotNil(t, data)
-
-	var feeds2 []*Feed
-	err = json.Unmarshal(data, &feeds2)
-	assertNoError(t, err)
-	assertEqual(t, 1, len(feeds2))
-	validateFeed(t, feeds2[0])
 
 }
 
