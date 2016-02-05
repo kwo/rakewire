@@ -315,14 +315,6 @@ func kvBucketKeyDecode(key []byte) (uint64, string, error) {
 	return id, fields[1], err
 }
 
-func kvIndexKeyEncode(fields ...string) []byte {
-	return []byte(kvKeys(fields))
-}
-
-func kvIndexKeyDecode(key []byte) []string {
-	return strings.Split(string(key), chSep)
-}
-
 func isStringInArray(a string, b []string) bool {
 	for _, x := range b {
 		if a == x {
