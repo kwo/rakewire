@@ -19,7 +19,7 @@ func NewGroup(userID uint64, name string) *Group {
 
 func (z *Group) setIDIfNecessary(fn fnNextID, tx Transaction) error {
 	if z.ID == 0 {
-		if id, err := fn(groupEntity, tx); err == nil {
+		if id, _, err := fn(groupEntity, tx); err == nil {
 			z.ID = id
 		} else {
 			return err

@@ -31,7 +31,7 @@ func NewItem(feedID uint64, guID string) *Item {
 
 func (z *Item) setIDIfNecessary(fn fnNextID, tx Transaction) error {
 	if z.ID == 0 {
-		if id, err := fn(itemEntity, tx); err == nil {
+		if id, _, err := fn(itemEntity, tx); err == nil {
 			z.ID = id
 		} else {
 			return err

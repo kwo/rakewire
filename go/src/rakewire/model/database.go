@@ -29,7 +29,7 @@ func (z Record) GetID() uint64 {
 type OnRecord func(Record) error
 
 // OnRecord defines a function type that fires on a new Record
-type fnNextID func(string, Transaction) (uint64, error)
+type fnNextID func(string, Transaction) (uint64, string, error)
 
 // Object defines the functions necessary for objects to be persisted to the database
 type Object interface {

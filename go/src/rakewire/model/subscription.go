@@ -31,7 +31,7 @@ func NewSubscription(userID, feedID uint64) *Subscription {
 
 func (z *Subscription) setIDIfNecessary(fn fnNextID, tx Transaction) error {
 	if z.ID == 0 {
-		if id, err := fn(subscriptionEntity, tx); err == nil {
+		if id, _, err := fn(subscriptionEntity, tx); err == nil {
 			z.ID = id
 		} else {
 			return err

@@ -245,7 +245,7 @@ func kvDelete(name string, value Object, tx Transaction) error {
 
 }
 
-func kvNextID(entityName string, tx Transaction) (uint64, error) {
+func kvNextID(entityName string, tx Transaction) (uint64, string, error) {
 
 	entryName := "sequence." + strings.ToLower(entityName)
 
@@ -254,27 +254,27 @@ func kvNextID(entityName string, tx Transaction) (uint64, error) {
 	// get previous value
 	idBytes := b.Get([]byte(entryName))
 	if idBytes == nil {
-		return 0, fmt.Errorf("No sequence found for %s", entityName)
+		return 0, "", fmt.Errorf("No sequence found for %s", entityName)
 	}
 
 	// turn into a uint64
 	id, err := strconv.ParseUint(string(idBytes), 10, 64)
 	if err != nil {
-		return 0, err
+		return 0, "", err
 	}
 
 	// increment
 	id++
 
 	// format as string
-	idStr := strconv.FormatUint(id, 10)
+	idStr := kvKey(id)
 
 	// save back to database
 	if err := b.Put([]byte(entryName), []byte(idStr)); err != nil {
-		return 0, err
+		return 0, "", err
 	}
 
-	return id, nil
+	return id, idStr, nil
 
 }
 

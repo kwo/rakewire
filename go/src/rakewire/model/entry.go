@@ -20,7 +20,7 @@ type Entry struct {
 
 func (z *Entry) setIDIfNecessary(fn fnNextID, tx Transaction) error {
 	if z.ID == 0 {
-		if id, err := fn(entryEntity, tx); err == nil {
+		if id, _, err := fn(entryEntity, tx); err == nil {
 			z.ID = id
 		} else {
 			return err
