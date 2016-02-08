@@ -5,5 +5,5 @@ if [ -z "$MYGOAPP" ]; then
 	export PATH=$PROJECT_HOME/bin:$GOBIN:$PROJECT_HOME/web/node_modules/.bin:$PATH
 	export GO15VENDOREXPERIMENT=1
 	export MYGOAPP=1
-	echo "`basename $(pwd)` configured"
+	echo "Rakewire configured"
 fi
