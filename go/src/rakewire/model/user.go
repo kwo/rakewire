@@ -23,9 +23,9 @@ func NewUser(username string) *User {
 	}
 }
 
-func (z *User) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+func (z *User) setIDIfNecessary(fn fnUniqueID) error {
 	if z.ID == 0 {
-		if id, _, err := fn(userEntity, tx); err == nil {
+		if id, _, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err

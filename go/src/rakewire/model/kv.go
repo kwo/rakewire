@@ -129,7 +129,11 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 
 	b := tx.Bucket(bucketData).Bucket(entityName)
 
-	if err := value.setIDIfNecessary(kvNextID, tx); err != nil {
+	fn := func() (uint64, string, error) {
+		return kvNextID(entityName, tx)
+	}
+
+	if err := value.setIDIfNecessary(fn); err != nil {
 		return err
 	}
 

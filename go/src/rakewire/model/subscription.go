@@ -29,9 +29,9 @@ func NewSubscription(userID, feedID uint64) *Subscription {
 	}
 }
 
-func (z *Subscription) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+func (z *Subscription) setIDIfNecessary(fn fnUniqueID) error {
 	if z.ID == 0 {
-		if id, _, err := fn(subscriptionEntity, tx); err == nil {
+		if id, _, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err

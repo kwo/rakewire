@@ -29,9 +29,9 @@ func NewItem(feedID uint64, guID string) *Item {
 	}
 }
 
-func (z *Item) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+func (z *Item) setIDIfNecessary(fn fnUniqueID) error {
 	if z.ID == 0 {
-		if id, _, err := fn(itemEntity, tx); err == nil {
+		if id, _, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err

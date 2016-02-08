@@ -32,9 +32,9 @@ func NewFeed(url string) *Feed {
 	}
 }
 
-func (z *Feed) setIDIfNecessary(fn fnNextID, tx Transaction) error {
+func (z *Feed) setIDIfNecessary(fn fnUniqueID) error {
 	if z.ID == 0 {
-		if id, _, err := fn(feedEntity, tx); err == nil {
+		if id, _, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err
