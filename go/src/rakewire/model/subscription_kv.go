@@ -97,15 +97,15 @@ func (z *Subscription) serialize(flags ...bool) Record {
 	result := make(map[string]string)
 
 	if flagNoZeroCheck || z.ID != 0 {
-		result[subscriptionID] = fmt.Sprintf("%05d", z.ID)
+		result[subscriptionID] = fmt.Sprintf("%010d", z.ID)
 	}
 
 	if flagNoZeroCheck || z.UserID != 0 {
-		result[subscriptionUserID] = fmt.Sprintf("%05d", z.UserID)
+		result[subscriptionUserID] = fmt.Sprintf("%010d", z.UserID)
 	}
 
 	if flagNoZeroCheck || z.FeedID != 0 {
-		result[subscriptionFeedID] = fmt.Sprintf("%05d", z.FeedID)
+		result[subscriptionFeedID] = fmt.Sprintf("%010d", z.FeedID)
 	}
 
 	if flagNoZeroCheck || len(z.GroupIDs) > 0 {

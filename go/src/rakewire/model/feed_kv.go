@@ -102,7 +102,7 @@ func (z *Feed) serialize(flags ...bool) Record {
 	result := make(map[string]string)
 
 	if flagNoZeroCheck || z.ID != 0 {
-		result[feedID] = fmt.Sprintf("%05d", z.ID)
+		result[feedID] = fmt.Sprintf("%010d", z.ID)
 	}
 
 	if flagNoZeroCheck || z.URL != "" {

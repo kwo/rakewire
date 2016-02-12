@@ -81,11 +81,11 @@ func (z *Group) serialize(flags ...bool) Record {
 	result := make(map[string]string)
 
 	if flagNoZeroCheck || z.ID != 0 {
-		result[groupID] = fmt.Sprintf("%05d", z.ID)
+		result[groupID] = fmt.Sprintf("%010d", z.ID)
 	}
 
 	if flagNoZeroCheck || z.UserID != 0 {
-		result[groupUserID] = fmt.Sprintf("%05d", z.UserID)
+		result[groupUserID] = fmt.Sprintf("%010d", z.UserID)
 	}
 
 	if flagNoZeroCheck || z.Name != "" {

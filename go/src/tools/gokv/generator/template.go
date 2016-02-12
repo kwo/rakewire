@@ -263,7 +263,7 @@ var tplSerializeBool = `func(value {{.Type}}) string {
 }(z.{{.Name}})`
 var tplSerializeFloat = `fmt.Sprintf("%f", z.{{.Name}})`
 var tplSerializeInt = `fmt.Sprintf("%d", z.{{.Name}})`
-var tplSerializeIntKey = `fmt.Sprintf("%05d", z.{{.Name}})`
+var tplSerializeIntKey = `fmt.Sprintf("%010d", z.{{.Name}})`
 var tplSerializeTime = `z.{{.Name}}.UTC().Format(time.RFC3339)`
 var tplSerializeDuration = `z.{{.Name}}.String()`
 var tplSerializeIntArray = `func(values {{.Type}}) string {

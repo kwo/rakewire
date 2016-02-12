@@ -92,19 +92,19 @@ func (z *Entry) serialize(flags ...bool) Record {
 	result := make(map[string]string)
 
 	if flagNoZeroCheck || z.ID != 0 {
-		result[entryID] = fmt.Sprintf("%05d", z.ID)
+		result[entryID] = fmt.Sprintf("%010d", z.ID)
 	}
 
 	if flagNoZeroCheck || z.UserID != 0 {
-		result[entryUserID] = fmt.Sprintf("%05d", z.UserID)
+		result[entryUserID] = fmt.Sprintf("%010d", z.UserID)
 	}
 
 	if flagNoZeroCheck || z.ItemID != 0 {
-		result[entryItemID] = fmt.Sprintf("%05d", z.ItemID)
+		result[entryItemID] = fmt.Sprintf("%010d", z.ItemID)
 	}
 
 	if flagNoZeroCheck || z.SubscriptionID != 0 {
-		result[entrySubscriptionID] = fmt.Sprintf("%05d", z.SubscriptionID)
+		result[entrySubscriptionID] = fmt.Sprintf("%010d", z.SubscriptionID)
 	}
 
 	if flagNoZeroCheck || !z.Updated.IsZero() {

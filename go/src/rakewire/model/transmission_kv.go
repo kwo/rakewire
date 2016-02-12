@@ -115,11 +115,11 @@ func (z *Transmission) serialize(flags ...bool) Record {
 	result := make(map[string]string)
 
 	if flagNoZeroCheck || z.ID != 0 {
-		result[transmissionID] = fmt.Sprintf("%05d", z.ID)
+		result[transmissionID] = fmt.Sprintf("%010d", z.ID)
 	}
 
 	if flagNoZeroCheck || z.FeedID != 0 {
-		result[transmissionFeedID] = fmt.Sprintf("%05d", z.FeedID)
+		result[transmissionFeedID] = fmt.Sprintf("%010d", z.FeedID)
 	}
 
 	if flagNoZeroCheck || z.Duration != 0 {

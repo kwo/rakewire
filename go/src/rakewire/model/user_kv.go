@@ -85,7 +85,7 @@ func (z *User) serialize(flags ...bool) Record {
 	result := make(map[string]string)
 
 	if flagNoZeroCheck || z.ID != 0 {
-		result[userID] = fmt.Sprintf("%05d", z.ID)
+		result[userID] = fmt.Sprintf("%010d", z.ID)
 	}
 
 	if flagNoZeroCheck || z.Username != "" {

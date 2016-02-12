@@ -299,7 +299,7 @@ func kvNxtKey(id uint64) string {
 }
 
 func kvKey(id uint64) string {
-	return fmt.Sprintf("%05d", id)
+	return fmt.Sprintf("%010d", id)
 }
 
 func kvKeys(elements []string) string {

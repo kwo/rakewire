@@ -94,7 +94,7 @@ func (z *Item) serialize(flags ...bool) Record {
 	result := make(map[string]string)
 
 	if flagNoZeroCheck || z.ID != 0 {
-		result[itemID] = fmt.Sprintf("%05d", z.ID)
+		result[itemID] = fmt.Sprintf("%010d", z.ID)
 	}
 
 	if flagNoZeroCheck || z.GUID != "" {
@@ -102,7 +102,7 @@ func (z *Item) serialize(flags ...bool) Record {
 	}
 
 	if flagNoZeroCheck || z.FeedID != 0 {
-		result[itemFeedID] = fmt.Sprintf("%05d", z.FeedID)
+		result[itemFeedID] = fmt.Sprintf("%010d", z.FeedID)
 	}
 
 	if flagNoZeroCheck || !z.Created.IsZero() {
