@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/signal"
@@ -40,6 +41,7 @@ func main() {
 	var flagFile = flag.String("f", "rakewire.db", "file to open as the rakewire database")
 	var flagCheckDatabase = flag.Bool("check", false, "check database integrity and exit")
 	var flagCheckDatabaseIf = flag.Bool("checkif", false, "check database integrity if version differs then exit")
+	var flagPidFile = flag.String("pidfile", "/var/run/rakewire.pid", "PID file")
 	flag.Parse()
 
 	log.Printf("Rakewire %s\n", model.Version)
@@ -123,11 +125,13 @@ func main() {
 	}
 
 	// we want this to run in the main goroutine
-	monitorShutdown(chErrors)
+	monitorShutdown(chErrors, *flagPidFile)
 
 }
 
-func monitorShutdown(chErrors chan error) {
+func monitorShutdown(chErrors chan error, pidFile string) {
+
+	pidFileWrite(pidFile)
 
 	chSignals := make(chan os.Signal, 1)
 	signal.Notify(chSignals, syscall.SIGINT, syscall.SIGTERM)
@@ -151,6 +155,8 @@ func monitorShutdown(chErrors chan error) {
 		log.Printf("%-7s %-7s Error closing database: %s", logWarn, logName, err.Error())
 	}
 
+	pidFileRemove(pidFile)
+
 	log.Printf("%-7s %-7s done", logInfo, logName)
 
 }
@@ -161,4 +167,16 @@ func loadConfiguration(db model.Database) (*model.Configuration, error) {
 		return cfg.Load(tx)
 	})
 	return cfg, err
+}
+
+func pidFileWrite(pidFile string) {
+	if err := ioutil.WriteFile(pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), os.FileMode(int(0644))); err != nil {
+		log.Printf("%-7s %-7s Cannot write pid file: %s", logError, logName, err.Error())
+	}
+}
+
+func pidFileRemove(pidFile string) {
+	if err := os.Remove(pidFile); err != nil {
+		log.Printf("%-7s %-7s Cannot remove pid file: %s", logError, logName, err.Error())
+	}
 }
