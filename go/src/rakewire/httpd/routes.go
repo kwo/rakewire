@@ -10,25 +10,31 @@ import (
 	"rakewire/rest"
 )
 
-func (z *Service) mainRouter(useLocal bool) (*mux.Router, error) {
+func (z *Service) mainRouter(flags ...bool) (*mux.Router, error) {
+
+	flagStatusOnly := len(flags) > 0 && flags[0]
 
 	router := mux.NewRouter()
 
-	// rest api router
-	restPrefix := "/api"
-	restAPI := rest.NewAPI(restPrefix, z.database)
-	router.PathPrefix(restPrefix).Handler(
-		middleware.Adapt(restAPI.Router(), middleware.BasicAuth(&middleware.BasicAuthOptions{
-			Database: z.database, Realm: "Rakewire",
-		})),
-	)
+	if !flagStatusOnly {
 
-	// fever api router
-	feverPrefix := "/fever/"
-	feverAPI := fever.NewAPI(feverPrefix, z.database)
-	router.PathPrefix(feverPrefix).Handler(
-		feverAPI.Router(),
-	)
+		// rest api router
+		restPrefix := "/api"
+		restAPI := rest.NewAPI(restPrefix, z.database)
+		router.PathPrefix(restPrefix).Handler(
+			middleware.Adapt(restAPI.Router(), middleware.BasicAuth(&middleware.BasicAuthOptions{
+				Database: z.database, Realm: "Rakewire",
+			})),
+		)
+
+		// fever api router
+		feverPrefix := "/fever/"
+		feverAPI := fever.NewAPI(feverPrefix, z.database)
+		router.PathPrefix(feverPrefix).Handler(
+			feverAPI.Router(),
+		)
+
+	}
 
 	// status api router
 	router.Path("/status").Methods(mGet).HandlerFunc(statusHandler)

@@ -26,15 +26,15 @@ const (
 	httpdAddress            = "httpd.address"
 	httpdHost               = "httpd.host"
 	httpdPort               = "httpd.port"
-	httpdStaticLocal        = "httpd.staticlocal"
+	httpdTLSPort            = "httpd.tls.port"
 	httpdTLSPrivate         = "httpd.tls.private"
 	httpdTLSPublic          = "httpd.tls.public"
 	httpdUseTLS             = "httpd.tls.active"
 	httpdAccessLevelDefault = "DEBUG"
 	httpdAddressDefault     = ""
 	httpdHostDefault        = "localhost"
-	httpdPortDefault        = 4444
-	httpdStaticLocalDefault = false
+	httpdPortDefault        = 8888
+	httpdTLSPortDefault     = 4444
 	httpdTLSPrivateDefault  = ""
 	httpdTLSPublicDefault   = ""
 	httpdUseTLSDefault      = false
@@ -50,12 +50,13 @@ type Service struct {
 	sync.Mutex
 	database    model.Database
 	listener    net.Listener
+	tlsListener net.Listener
 	running     bool
 	accessLevel string
 	address     string // binding address, empty string means 0.0.0.0
 	host        string // discard requests not made to this host
 	port        int
-	staticLocal bool
+	tlsPort     int
 	tlsPublic   string
 	tlsPrivate  string
 	useTLS      bool
@@ -82,9 +83,9 @@ func NewService(cfg *model.Configuration, database model.Database) *Service {
 		accessLevel: cfg.Get(httpdAccessLevel, httpdAccessLevelDefault),
 		host:        cfg.Get(httpdHost, httpdHostDefault),
 		port:        cfg.GetInt(httpdPort, httpdPortDefault),
+		tlsPort:     cfg.GetInt(httpdTLSPort, httpdTLSPortDefault),
 		tlsPublic:   cfg.Get(httpdTLSPublic, httpdTLSPublicDefault),
 		tlsPrivate:  cfg.Get(httpdTLSPrivate, httpdTLSPrivateDefault),
-		staticLocal: cfg.GetBool(httpdStaticLocal, httpdStaticLocalDefault),
 		useTLS:      cfg.GetBool(httpdUseTLS, httpdUseTLSDefault),
 	}
 }
@@ -104,49 +105,82 @@ func (z *Service) Start() error {
 		return errors.New("No database")
 	}
 
-	router, err := z.mainRouter(z.staticLocal)
+	if z.useTLS {
+		if err := z.startHTTPS(); err != nil {
+			return err
+		}
+	}
+
+	if err := z.startHTTP(); err != nil {
+		return err
+	}
+
+	z.running = true
+
+	return nil
+
+}
+
+func (z *Service) startHTTP() error {
+
+	restrictToStatusOnly := z.useTLS
+	router, err := z.mainRouter(restrictToStatusOnly)
 	if err != nil {
 		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
 		return err
 	}
+
 	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter(z.accessLevel))
 
-	// start http config
+	z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.address, z.port))
+	if err != nil {
+		log.Printf("%-7s %-7s cannot start listener: %s", logError, logName, err.Error())
+		return err
+	}
 
-	if z.useTLS {
-		cert, err := tls.X509KeyPair([]byte(z.tlsPublic), []byte(z.tlsPrivate))
-		if err != nil {
-			log.Printf("%-7s %-7s cannot create tls key pair: %s", logError, logName, err.Error())
-			return err
-		}
-		tlsConfig := &tls.Config{
-			Certificates: []tls.Certificate{cert},
-		}
-		z.listener, err = tls.Listen("tcp", fmt.Sprintf("%s:%d", z.address, z.port), tlsConfig)
-		if err != nil {
-			log.Printf("%-7s %-7s cannot start tls listener: %s", logError, logName, err.Error())
-			return err
-		}
-	} else {
-		z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.address, z.port))
-		if err != nil {
-			log.Printf("%-7s %-7s cannot start listener: %s", logError, logName, err.Error())
-			return err
-		}
+	server := http.Server{
+		Handler: mainHandler,
+	}
+	go server.Serve(z.listener)
+
+	log.Printf("%-7s %-7s service started on http://%s:%d", logInfo, logName, z.address, z.port)
+
+	return nil
+
+}
+
+func (z *Service) startHTTPS() error {
+
+	router, err := z.mainRouter()
+	if err != nil {
+		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
+		return err
+	}
+
+	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter(z.accessLevel))
+
+	cert, err := tls.X509KeyPair([]byte(z.tlsPublic), []byte(z.tlsPrivate))
+	if err != nil {
+		log.Printf("%-7s %-7s cannot create tls key pair: %s", logError, logName, err.Error())
+		return err
+	}
+	tlsConfig := &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+	z.tlsListener, err = tls.Listen("tcp", fmt.Sprintf("%s:%d", z.address, z.tlsPort), tlsConfig)
+	if err != nil {
+		log.Printf("%-7s %-7s cannot start tls listener: %s", logError, logName, err.Error())
+		return err
 	}
 
 	server := http.Server{
 		Handler: mainHandler,
 	}
 
-	go server.Serve(z.listener)
+	go server.Serve(z.tlsListener)
 
-	z.running = true
-	if z.useTLS {
-		log.Printf("%-7s %-7s service started on https://%s:%d", logInfo, logName, z.address, z.port)
-	} else {
-		log.Printf("%-7s %-7s service started on http://%s:%d", logInfo, logName, z.address, z.port)
-	}
+	log.Printf("%-7s %-7s service started on https://%s:%d", logInfo, logName, z.host, z.tlsPort)
+
 	return nil
 
 }
