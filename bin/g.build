@@ -1,12 +1,4 @@
-g.init
 cd $PROJECT_HOME/go
-go generate $(go list ./src/... | grep -v /vendor/)
-
 eval $(go env)
 . $PROJECT_HOME/bin/b.init
-
 go build -tags netgo -ldflags "$LDFLAGS" -o ./bin/rakewire-${GOOS}-${GOARCH} ./src/rakewire/rakewire.go
-
-# Notes: inspect shared libraries
-# otool -L rakewire #OSX
-# ldd rakewire #linux
