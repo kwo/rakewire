@@ -1,5 +1,20 @@
 # Rakewire Changelog
 
+## 1.9.0 2016-02-16
+
+ - Run service on http port and optionally https port.
+   If https is enabled, the http version of the API will only serve the status page.
+   Change made to help in using consul to monitor program.
+
+## 1.8.0 2016-02-14
+
+ - Add pid file.
+ - Replace BoltDB NextSequence with setIDIfNecessary functions using counters in the Config bucket.
+ - Add -checkif flag to perform integrity check only if version (minor) has changed.
+ - Remove crud from opml import: no longer remove unused groups.
+ - Remove obsoleted test directory
+ - Migrate to vendor folder from gb vendoring
+
 ## 1.7.0 2016-01-29
 
  - add uptime to /status
