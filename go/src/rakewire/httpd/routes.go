@@ -16,28 +16,29 @@ func (z *Service) mainRouter(flags ...bool) (*mux.Router, error) {
 
 	router := mux.NewRouter()
 
-	if !flagStatusOnly {
+	// status api router
+	router.Path("/").Methods(mGet).HandlerFunc(statusHandler)
+	router.Path("/status").Methods(mGet).HandlerFunc(statusHandler)
 
-		// rest api router
-		restPrefix := "/api"
-		restAPI := rest.NewAPI(restPrefix, z.database)
-		router.PathPrefix(restPrefix).Handler(
-			middleware.Adapt(restAPI.Router(), middleware.BasicAuth(&middleware.BasicAuthOptions{
-				Database: z.database, Realm: "Rakewire",
-			})),
-		)
-
-		// fever api router
-		feverPrefix := "/fever/"
-		feverAPI := fever.NewAPI(feverPrefix, z.database)
-		router.PathPrefix(feverPrefix).Handler(
-			feverAPI.Router(),
-		)
-
+	if flagStatusOnly {
+		return router, nil
 	}
 
-	// status api router
-	router.Path("/status").Methods(mGet).HandlerFunc(statusHandler)
+	// rest api router
+	restPrefix := "/api"
+	restAPI := rest.NewAPI(restPrefix, z.database)
+	router.PathPrefix(restPrefix).Handler(
+		middleware.Adapt(restAPI.Router(), middleware.BasicAuth(&middleware.BasicAuthOptions{
+			Database: z.database, Realm: "Rakewire",
+		})),
+	)
+
+	// fever api router
+	feverPrefix := "/fever/"
+	feverAPI := fever.NewAPI(feverPrefix, z.database)
+	router.PathPrefix(feverPrefix).Handler(
+		feverAPI.Router(),
+	)
 
 	// fs := Dir(useLocal, "/public")
 	// ofs := oneFS{name: "/index.html", root: fs}

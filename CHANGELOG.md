@@ -1,5 +1,9 @@
 # Rakewire Changelog
 
+## 1.9.1 2016-02-17
+
+ - add status handler to home page (temporairly) to return 200 for health checks
+
 ## 1.9.0 2016-02-16
 
  - Run service on http port and optionally https port.
