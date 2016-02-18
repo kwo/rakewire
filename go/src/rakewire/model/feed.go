@@ -10,7 +10,7 @@ import (
 type Feed struct {
 	Transmission  *Transmission `kv:"-"`
 	Items         []*Item       `kv:"-"`
-	ID            uint64        `kv:"NextFetch:2"`
+	ID            string        `kv:"NextFetch:2"`
 	URL           string        `kv:"+required,+groupall,URL:1:lower"`
 	SiteURL       string
 	ETag          string
@@ -33,8 +33,8 @@ func NewFeed(url string) *Feed {
 }
 
 func (z *Feed) setIDIfNecessary(fn fnUniqueID) error {
-	if z.ID == 0 {
-		if id, _, err := fn(); err == nil {
+	if z.ID == "0" {
+		if _, id, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err

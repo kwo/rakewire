@@ -10,7 +10,7 @@ import (
 
 //User defines a system user
 type User struct {
-	ID           uint64
+	ID           string
 	Username     string `kv:"+required,+groupby,Username:1:lower"`
 	PasswordHash string
 	FeverHash    string `kv:"FeverHash:1"`
@@ -24,8 +24,8 @@ func NewUser(username string) *User {
 }
 
 func (z *User) setIDIfNecessary(fn fnUniqueID) error {
-	if z.ID == 0 {
-		if id, _, err := fn(); err == nil {
+	if z.ID == "0" {
+		if _, id, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err

@@ -10,9 +10,9 @@ import (
 
 // Item from a feed
 type Item struct {
-	ID      uint64
+	ID      string
 	GUID    string `kv:"+groupby,GUID:2"`
-	FeedID  uint64 `kv:"+required,+groupall,GUID:1"`
+	FeedID  string `kv:"+required,+groupall,GUID:1"`
 	Created time.Time
 	Updated time.Time
 	URL     string
@@ -22,7 +22,7 @@ type Item struct {
 }
 
 // NewItem instantiate a new Item object
-func NewItem(feedID uint64, guID string) *Item {
+func NewItem(feedID string, guID string) *Item {
 	return &Item{
 		FeedID: feedID,
 		GUID:   guID,
@@ -30,8 +30,8 @@ func NewItem(feedID uint64, guID string) *Item {
 }
 
 func (z *Item) setIDIfNecessary(fn fnUniqueID) error {
-	if z.ID == 0 {
-		if id, _, err := fn(); err == nil {
+	if z.ID == "0" {
+		if _, id, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err

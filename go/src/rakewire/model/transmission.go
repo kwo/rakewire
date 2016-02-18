@@ -8,8 +8,8 @@ import (
 
 // Transmission represents an attempted HTTP request to a feed
 type Transmission struct {
-	ID            uint64 `kv:"Time:2"`
-	FeedID        uint64 `kv:"+required,FeedTime:1"`
+	ID            string `kv:"Time:2"`
+	FeedID        string `kv:"+required,FeedTime:1"`
 	Duration      time.Duration
 	Result        string
 	ResultMessage string
@@ -39,15 +39,15 @@ const (
 )
 
 // NewTransmission instantiates a new Transmission with the required fields set.
-func NewTransmission(feedID uint64) *Transmission {
+func NewTransmission(feedID string) *Transmission {
 	return &Transmission{
 		FeedID: feedID,
 	}
 }
 
 func (z *Transmission) setIDIfNecessary(fn fnUniqueID) error {
-	if z.ID == 0 {
-		if id, _, err := fn(); err == nil {
+	if z.ID == "0" {
+		if _, id, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err
