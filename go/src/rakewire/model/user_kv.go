@@ -62,11 +62,6 @@ func (z *User) getID() string {
 	return z.ID
 }
 
-// setID sets the primary key of the object.
-func (z *User) setID(id string) {
-	z.ID = id
-}
-
 // Clear reset all fields to zero/empty
 func (z *User) clear() {
 	z.ID = ""

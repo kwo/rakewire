@@ -73,11 +73,6 @@ func (z *{{.Name}}) getID() string {
 	return z.ID
 }
 
-// setID sets the primary key of the object.
-func (z *{{.Name}}) setID(id string) {
-	z.ID = id
-}
-
 // Clear reset all fields to zero/empty
 func (z *{{.Name}}) clear() {
 {{range $index, $field := .Fields}}z.{{.Name}} = {{.EmptyValue}}

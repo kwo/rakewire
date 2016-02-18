@@ -68,11 +68,6 @@ func (z *Subscription) getID() string {
 	return z.ID
 }
 
-// setID sets the primary key of the object.
-func (z *Subscription) setID(id string) {
-	z.ID = id
-}
-
 // Clear reset all fields to zero/empty
 func (z *Subscription) clear() {
 	z.ID = ""

@@ -59,11 +59,6 @@ func (z *Group) getID() string {
 	return z.ID
 }
 
-// setID sets the primary key of the object.
-func (z *Group) setID(id string) {
-	z.ID = id
-}
-
 // Clear reset all fields to zero/empty
 func (z *Group) clear() {
 	z.ID = ""

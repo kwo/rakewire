@@ -71,11 +71,6 @@ func (z *Feed) getID() string {
 	return z.ID
 }
 
-// setID sets the primary key of the object.
-func (z *Feed) setID(id string) {
-	z.ID = id
-}
-
 // Clear reset all fields to zero/empty
 func (z *Feed) clear() {
 	z.ID = ""

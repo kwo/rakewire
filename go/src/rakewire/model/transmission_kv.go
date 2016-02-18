@@ -77,11 +77,6 @@ func (z *Transmission) getID() string {
 	return z.ID
 }
 
-// setID sets the primary key of the object.
-func (z *Transmission) setID(id string) {
-	z.ID = id
-}
-
 // Clear reset all fields to zero/empty
 func (z *Transmission) clear() {
 	z.ID = ""
