@@ -7,12 +7,15 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
 	empty = ""
 	chSep = "|"
 	chMax = "~"
+	fmtTime = time.RFC3339
+	fmtUint = "%010d"
 )
 
 // NewDeserializationError returns a new DeserializationError or nil of all arrays are empty.

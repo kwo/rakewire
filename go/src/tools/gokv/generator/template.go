@@ -207,7 +207,7 @@ var tplDeserializeUint = `func (fieldName string, values map[string]string, erro
 var tplDeserializeTime = `func (fieldName string, values map[string]string, errors []error) time.Time {
 	result := time.Time{}
 	if value, ok := values[fieldName]; ok {
-		t, err := time.Parse(time.RFC3339, value)
+		t, err := time.Parse(fmtTime, value)
 		if err != nil {
 			errors = append(errors, err)
 		} else {
@@ -267,8 +267,8 @@ var tplSerializeBool = `func(value {{.Type}}) string {
 }(z.{{.Name}})`
 var tplSerializeFloat = `fmt.Sprintf("%f", z.{{.Name}})`
 var tplSerializeInt = `fmt.Sprintf("%d", z.{{.Name}})`
-var tplSerializeIntKey = `fmt.Sprintf("%010d", z.{{.Name}})`
-var tplSerializeTime = `z.{{.Name}}.UTC().Format(time.RFC3339)`
+var tplSerializeIntKey = `fmt.Sprintf(fmtUint, z.{{.Name}})`
+var tplSerializeTime = `z.{{.Name}}.UTC().Format(fmtTime)`
 var tplSerializeDuration = `z.{{.Name}}.String()`
 var tplSerializeIntArray = `func(values {{.Type}}) string {
 	var buffer bytes.Buffer

@@ -111,15 +111,15 @@ func (z *Feed) serialize(flags ...bool) Record {
 	}
 
 	if flagNoZeroCheck || !z.LastModified.IsZero() {
-		result[feedLastModified] = z.LastModified.UTC().Format(time.RFC3339)
+		result[feedLastModified] = z.LastModified.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || !z.LastUpdated.IsZero() {
-		result[feedLastUpdated] = z.LastUpdated.UTC().Format(time.RFC3339)
+		result[feedLastUpdated] = z.LastUpdated.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || !z.NextFetch.IsZero() {
-		result[feedNextFetch] = z.NextFetch.UTC().Format(time.RFC3339)
+		result[feedNextFetch] = z.NextFetch.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || z.Notes != "" {
@@ -139,7 +139,7 @@ func (z *Feed) serialize(flags ...bool) Record {
 	}
 
 	if flagNoZeroCheck || !z.StatusSince.IsZero() {
-		result[feedStatusSince] = z.StatusSince.UTC().Format(time.RFC3339)
+		result[feedStatusSince] = z.StatusSince.UTC().Format(fmtTime)
 	}
 
 	return result
@@ -173,7 +173,7 @@ func (z *Feed) deserialize(values Record, flags ...bool) error {
 	z.LastModified = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
@@ -186,7 +186,7 @@ func (z *Feed) deserialize(values Record, flags ...bool) error {
 	z.LastUpdated = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
@@ -199,7 +199,7 @@ func (z *Feed) deserialize(values Record, flags ...bool) error {
 	z.NextFetch = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
@@ -220,7 +220,7 @@ func (z *Feed) deserialize(values Record, flags ...bool) error {
 	z.StatusSince = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {

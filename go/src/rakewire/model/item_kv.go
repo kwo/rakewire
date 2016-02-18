@@ -99,11 +99,11 @@ func (z *Item) serialize(flags ...bool) Record {
 	}
 
 	if flagNoZeroCheck || !z.Created.IsZero() {
-		result[itemCreated] = z.Created.UTC().Format(time.RFC3339)
+		result[itemCreated] = z.Created.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || !z.Updated.IsZero() {
-		result[itemUpdated] = z.Updated.UTC().Format(time.RFC3339)
+		result[itemUpdated] = z.Updated.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || z.URL != "" {
@@ -151,7 +151,7 @@ func (z *Item) deserialize(values Record, flags ...bool) error {
 	z.Created = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
@@ -164,7 +164,7 @@ func (z *Item) deserialize(values Record, flags ...bool) error {
 	z.Updated = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {

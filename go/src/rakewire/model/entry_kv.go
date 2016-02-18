@@ -101,7 +101,7 @@ func (z *Entry) serialize(flags ...bool) Record {
 	}
 
 	if flagNoZeroCheck || !z.Updated.IsZero() {
-		result[entryUpdated] = z.Updated.UTC().Format(time.RFC3339)
+		result[entryUpdated] = z.Updated.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || z.IsRead {
@@ -161,7 +161,7 @@ func (z *Entry) deserialize(values Record, flags ...bool) error {
 	z.Updated = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {

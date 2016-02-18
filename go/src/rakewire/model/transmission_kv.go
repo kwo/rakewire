@@ -128,7 +128,7 @@ func (z *Transmission) serialize(flags ...bool) Record {
 	}
 
 	if flagNoZeroCheck || !z.StartTime.IsZero() {
-		result[transmissionStartTime] = z.StartTime.UTC().Format(time.RFC3339)
+		result[transmissionStartTime] = z.StartTime.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || z.URL != "" {
@@ -148,7 +148,7 @@ func (z *Transmission) serialize(flags ...bool) Record {
 	}
 
 	if flagNoZeroCheck || !z.LastModified.IsZero() {
-		result[transmissionLastModified] = z.LastModified.UTC().Format(time.RFC3339)
+		result[transmissionLastModified] = z.LastModified.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || z.StatusCode != 0 {
@@ -177,7 +177,7 @@ func (z *Transmission) serialize(flags ...bool) Record {
 	}
 
 	if flagNoZeroCheck || !z.LastUpdated.IsZero() {
-		result[transmissionLastUpdated] = z.LastUpdated.UTC().Format(time.RFC3339)
+		result[transmissionLastUpdated] = z.LastUpdated.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || z.ItemCount != 0 {
@@ -232,7 +232,7 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 	z.StartTime = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
@@ -260,7 +260,7 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 	z.LastModified = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
@@ -295,7 +295,7 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 	z.LastUpdated = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {

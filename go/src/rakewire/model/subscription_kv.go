@@ -107,7 +107,7 @@ func (z *Subscription) serialize(flags ...bool) Record {
 	}
 
 	if flagNoZeroCheck || !z.DateAdded.IsZero() {
-		result[subscriptionDateAdded] = z.DateAdded.UTC().Format(time.RFC3339)
+		result[subscriptionDateAdded] = z.DateAdded.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || z.Title != "" {
@@ -177,7 +177,7 @@ func (z *Subscription) deserialize(values Record, flags ...bool) error {
 	z.DateAdded = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
-			t, err := time.Parse(time.RFC3339, value)
+			t, err := time.Parse(fmtTime, value)
 			if err != nil {
 				errors = append(errors, err)
 			} else {
