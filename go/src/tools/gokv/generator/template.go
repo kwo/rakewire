@@ -237,6 +237,15 @@ var tplDeserializeDuration = `func (fieldName string, values map[string]string, 
 }({{.StructNameLower}}{{.Name}}, values, errors)
 `
 
+var tplDeserializeStringArray = `func (fieldName string, values map[string]string, errors []error) {{.Type}} {
+	var result {{.Type}}
+	if value, ok := values[fieldName]; ok {
+		result = strings.Fields(value)
+	}
+	return result
+}({{.StructNameLower}}{{.Name}}, values, errors)
+`
+
 var tplDeserializeUintArray = `func (fieldName string, values map[string]string, errors []error) {{.Type}} {
 	var result {{.Type}}
 	if value, ok := values[fieldName]; ok {
@@ -275,6 +284,9 @@ var tplSerializeIntArray = `func(values {{.Type}}) string {
 		buffer.WriteString(fmt.Sprintf("%d", value))
 	}
 	return buffer.String()
+}(z.{{.Name}})`
+var tplSerializeStringArray = `func(values {{.Type}}) string {
+	return strings.Join(values, " ")
 }(z.{{.Name}})`
 
 var tplZeroTestDefault = `z.{{.Name}} != {{.EmptyValue}}`

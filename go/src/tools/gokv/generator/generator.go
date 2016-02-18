@@ -189,6 +189,13 @@ func (z *FieldInfo) Finalize(s *StructInfo) error {
 		s.Imports["bytes"] = true
 		s.Imports["strings"] = true
 
+	case "[]string":
+		z.EmptyValue = "[]string{}"
+		z.ZeroTest = executeTemplate("ZeroTestArray", z)
+		z.SerializeCommand = executeTemplate("SerializeStringArray", z)
+		z.DeserializeCommand = executeTemplate("DeserializeStringArray", z)
+		s.Imports["strings"] = true
+
 	default:
 		fmt.Printf("Unknown type %s, field: %s, struct: %s\n", z.Type, z.Name, z.StructName)
 		z.EmptyValue = "0"
@@ -212,6 +219,7 @@ func Generate(filename, kvFilename string) error {
 	templates["DeserializeUint"] = template.Must(template.New("DeserializeUint").Parse(tplDeserializeUint))
 	templates["DeserializeTime"] = template.Must(template.New("DeserializeTime").Parse(tplDeserializeTime))
 	templates["DeserializeDuration"] = template.Must(template.New("DeserializeDuration").Parse(tplDeserializeDuration))
+	templates["DeserializeStringArray"] = template.Must(template.New("DeserializeStringArray").Parse(tplDeserializeStringArray))
 	templates["DeserializeUintArray"] = template.Must(template.New("DeserializeUintArray").Parse(tplDeserializeUintArray))
 
 	templates["SerializeDefault"] = template.Must(template.New("SerializeDefault").Parse(tplSerializeDefault))
@@ -222,6 +230,7 @@ func Generate(filename, kvFilename string) error {
 	templates["SerializeTime"] = template.Must(template.New("SerializeTime").Parse(tplSerializeTime))
 	templates["SerializeDuration"] = template.Must(template.New("SerializeDuration").Parse(tplSerializeDuration))
 	templates["SerializeIntArray"] = template.Must(template.New("SerializeIntArray").Parse(tplSerializeIntArray))
+	templates["SerializeStringArray"] = template.Must(template.New("SerializeStringArray").Parse(tplSerializeStringArray))
 
 	templates["ZeroTestDefault"] = template.Must(template.New("ZeroTestDefault").Parse(tplZeroTestDefault))
 	templates["ZeroTestBool"] = template.Must(template.New("ZeroTestBool").Parse(tplZeroTestBool))
@@ -234,9 +243,7 @@ func Generate(filename, kvFilename string) error {
 	}
 
 	imports := make(map[string]bool)
-	imports["fmt"] = true
 	imports["sort"] = true
-	imports["strconv"] = true
 	for _, s := range structInfos {
 		for k := range s.Imports {
 			imports[k] = true
