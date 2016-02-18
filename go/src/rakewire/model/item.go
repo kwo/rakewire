@@ -30,7 +30,7 @@ func NewItem(feedID string, guID string) *Item {
 }
 
 func (z *Item) setIDIfNecessary(fn fnUniqueID) error {
-	if z.ID == "0" {
+	if z.ID == empty {
 		if _, id, err := fn(); err == nil {
 			z.ID = id
 		} else {
