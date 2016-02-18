@@ -12,6 +12,7 @@ import (
 const (
 	empty = ""
 	chSep = "|"
+	chMax = "~"
 )
 
 // NewDeserializationError returns a new DeserializationError or nil of all arrays are empty.
@@ -317,6 +318,10 @@ func kvBucketKeyDecode(key []byte) (uint64, string, error) {
 		err = fmt.Errorf("Invalid key, must have two fields: %s", key)
 	}
 	return id, fields[1], err
+}
+
+func kvMinMaxKeys(id string) ([]byte, []byte) {
+	return []byte(id), []byte(id + chMax)
 }
 
 func isStringInArray(a string, b []string) bool {

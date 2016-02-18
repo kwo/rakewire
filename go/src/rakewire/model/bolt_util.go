@@ -257,7 +257,6 @@ func copyContainers(src, dst Database) error {
 	containers[userEntity] = &User{}
 
 	for entityName, entity := range containers {
-		var maxID uint64
 		log.Printf("  %s...", entityName)
 		err := src.Select(func(srcTx Transaction) error {
 			srcContainer, err := srcTx.Container(bucketData, entityName)
@@ -274,9 +273,6 @@ func copyContainers(src, dst Database) error {
 					if err := entity.deserialize(record, true); err != nil {
 						log.Printf("  Error in record (%d): %s", record.GetID(), err.Error())
 						return nil
-					}
-					if record.GetID() > maxID {
-						maxID = record.GetID()
 					}
 					return dstContainer.Put(record)
 				}, true)
@@ -297,12 +293,12 @@ func checkEntries(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		userCache := make(map[uint64]Record)
+		userCache := make(map[string]Record)
 		users, err := tx.Container(bucketData, userEntity)
 		if err != nil {
 			return err
 		}
-		userExists := func(userID uint64) bool {
+		userExists := func(userID string) bool {
 			if _, ok := userCache[userID]; !ok {
 				if u, err := users.Get(userID); err == nil {
 					userCache[userID] = u
@@ -312,12 +308,12 @@ func checkEntries(db Database) error {
 			return u != nil
 		}
 
-		itemCache := make(map[uint64]Record)
+		itemCache := make(map[string]Record)
 		items, err := tx.Container(bucketData, itemEntity)
 		if err != nil {
 			return err
 		}
-		itemExists := func(itemID uint64) bool {
+		itemExists := func(itemID string) bool {
 			if _, ok := itemCache[itemID]; !ok {
 				if i, err := items.Get(itemID); err == nil {
 					itemCache[itemID] = i
@@ -327,12 +323,12 @@ func checkEntries(db Database) error {
 			return i != nil
 		}
 
-		subscriptionCache := make(map[uint64]Record)
+		subscriptionCache := make(map[string]Record)
 		subscriptions, err := tx.Container(bucketData, subscriptionEntity)
 		if err != nil {
 			return err
 		}
-		subscriptionExists := func(subscriptionID uint64) bool {
+		subscriptionExists := func(subscriptionID string) bool {
 			if _, ok := subscriptionCache[subscriptionID]; !ok {
 				if s, err := subscriptions.Get(subscriptionID); err == nil {
 					subscriptionCache[subscriptionID] = s
@@ -342,7 +338,7 @@ func checkEntries(db Database) error {
 			return s != nil
 		}
 
-		badIDs := []uint64{}
+		badIDs := []string{}
 
 		entries, err := tx.Container(bucketData, entryEntity)
 		if err != nil {
@@ -391,7 +387,7 @@ func checkFeedDuplicates(db Database) error {
 		if err != nil {
 			return err
 		}
-		findSubscriptions := func(feedID uint64) Subscriptions {
+		findSubscriptions := func(feedID string) Subscriptions {
 			result := Subscriptions{}
 			subscriptions.Iterate(func(record Record) error {
 				subscription := &Subscription{}
@@ -448,7 +444,7 @@ func checkFeeds(db Database) error {
 		if err != nil {
 			return err
 		}
-		subscriptionExists := func(feedID uint64) bool {
+		subscriptionExists := func(feedID string) bool {
 			result := false
 			subscription := &Subscription{}
 			subscriptions.Iterate(func(record Record) error {
@@ -464,7 +460,7 @@ func checkFeeds(db Database) error {
 			return result
 		}
 
-		badIDs := []uint64{}
+		badIDs := []string{}
 		feeds, err := tx.Container(bucketData, feedEntity)
 		if err != nil {
 			return err
@@ -502,12 +498,12 @@ func checkGroups(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		userCache := make(map[uint64]Record)
+		userCache := make(map[string]Record)
 		users, err := tx.Container(bucketData, userEntity)
 		if err != nil {
 			return err
 		}
-		userExists := func(userID uint64) bool {
+		userExists := func(userID string) bool {
 			if _, ok := userCache[userID]; !ok {
 				if u, err := users.Get(userID); err == nil {
 					userCache[userID] = u
@@ -517,7 +513,7 @@ func checkGroups(db Database) error {
 			return u != nil
 		}
 
-		badIDs := []uint64{}
+		badIDs := []string{}
 
 		groups, err := tx.Container(bucketData, groupEntity)
 		if err != nil {
@@ -555,12 +551,12 @@ func checkItems(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		feedCache := make(map[uint64]Record)
+		feedCache := make(map[string]Record)
 		feeds, err := tx.Container(bucketData, feedEntity)
 		if err != nil {
 			return err
 		}
-		feedExists := func(feedID uint64) bool {
+		feedExists := func(feedID string) bool {
 			if _, ok := feedCache[feedID]; !ok {
 				if u, err := feeds.Get(feedID); err == nil {
 					feedCache[feedID] = u
@@ -570,7 +566,7 @@ func checkItems(db Database) error {
 			return f != nil
 		}
 
-		badIDs := []uint64{}
+		badIDs := []string{}
 		items, err := tx.Container(bucketData, itemEntity)
 		if err != nil {
 			return err
@@ -608,12 +604,12 @@ func checkSubscriptions(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		userCache := make(map[uint64]Record)
+		userCache := make(map[string]Record)
 		users, err := tx.Container(bucketData, userEntity)
 		if err != nil {
 			return err
 		}
-		userExists := func(userID uint64) bool {
+		userExists := func(userID string) bool {
 			if _, ok := userCache[userID]; !ok {
 				if u, err := users.Get(userID); err == nil {
 					userCache[userID] = u
@@ -623,12 +619,12 @@ func checkSubscriptions(db Database) error {
 			return u != nil
 		}
 
-		feedCache := make(map[uint64]Record)
+		feedCache := make(map[string]Record)
 		feeds, err := tx.Container(bucketData, feedEntity)
 		if err != nil {
 			return err
 		}
-		feedExists := func(feedID uint64) bool {
+		feedExists := func(feedID string) bool {
 			if _, ok := feedCache[feedID]; !ok {
 				if u, err := feeds.Get(feedID); err == nil {
 					feedCache[feedID] = u
@@ -638,12 +634,12 @@ func checkSubscriptions(db Database) error {
 			return f != nil
 		}
 
-		groupCache := make(map[uint64]*Group)
+		groupCache := make(map[string]*Group)
 		groups, err := tx.Container(bucketData, groupEntity)
 		if err != nil {
 			return err
 		}
-		groupExists := func(groupID, userID uint64) bool {
+		groupExists := func(groupID, userID string) bool {
 			if _, ok := groupCache[groupID]; !ok {
 				if record, err := groups.Get(groupID); err == nil {
 					if record != nil {
@@ -660,7 +656,7 @@ func checkSubscriptions(db Database) error {
 			return g != nil && g.UserID == userID
 		}
 
-		badIDs := []uint64{}
+		badIDs := []string{}
 		cleanedSubscriptions := Subscriptions{}
 
 		subscriptions, err := tx.Container(bucketData, subscriptionEntity)
@@ -681,7 +677,7 @@ func checkSubscriptions(db Database) error {
 				} else {
 
 					// remove invalid groups
-					invalidGroupIDs := []uint64{}
+					invalidGroupIDs := []string{}
 					for _, groupID := range subscription.GroupIDs {
 						if !groupExists(groupID, subscription.UserID) {
 							log.Printf("    subscription with invalid group: %d (%d %s)", groupID, subscription.ID, subscription.Title)
@@ -732,12 +728,12 @@ func checkTransmissions(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		feedCache := make(map[uint64]Record)
+		feedCache := make(map[string]Record)
 		feeds, err := tx.Container(bucketData, feedEntity)
 		if err != nil {
 			return err
 		}
-		feedExists := func(feedID uint64) bool {
+		feedExists := func(feedID string) bool {
 			if _, ok := feedCache[feedID]; !ok {
 				if u, err := feeds.Get(feedID); err == nil {
 					feedCache[feedID] = u
@@ -747,7 +743,7 @@ func checkTransmissions(db Database) error {
 			return f != nil
 		}
 
-		badIDs := []uint64{}
+		badIDs := []string{}
 		transmissions, err := tx.Container(bucketData, transmissionEntity)
 		if err != nil {
 			return err

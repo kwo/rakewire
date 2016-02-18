@@ -1,9 +1,5 @@
 package model
 
-import (
-	"strconv"
-)
-
 var (
 	allEntities = map[string][]string{
 		entryEntity:        entryAllIndexes,
@@ -20,9 +16,8 @@ var (
 type Record map[string]string
 
 // GetID return the primary key of the object.
-func (z Record) GetID() uint64 {
-	id, _ := strconv.ParseUint(z["ID"], 10, 64)
-	return id
+func (z Record) GetID() string {
+	return z["ID"]
 }
 
 // OnRecord defines a function type that fires on a new Record
@@ -69,8 +64,8 @@ type Bucket interface {
 // Container operate on records
 type Container interface {
 	Container(paths ...string) (Container, error)
-	Delete(id uint64) error
-	Get(id uint64) (Record, error)
+	Delete(id string) error
+	Get(id string) (Record, error)
 	Iterate(onRecord OnRecord, flags ...bool) error
 	Put(record Record) error
 }

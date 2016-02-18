@@ -179,14 +179,13 @@ func (z *boltContainer) Container(paths ...string) (Container, error) {
 	return &boltContainer{bucket: b}, nil
 }
 
-func (z *boltContainer) Delete(id uint64) error {
+func (z *boltContainer) Delete(id string) error {
 
 	keys := [][]byte{}
 
 	c := z.bucket.Cursor()
-	min := []byte(kvMinKey(id))
-	nxt := []byte(kvNxtKey(id))
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
+	min, max := kvMinMaxKeys(id)
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
 		keys = append(keys, k)
 		// do not delete in a cursor, it is buggy, sometimes advancing the position
 	} // for loop
@@ -201,15 +200,14 @@ func (z *boltContainer) Delete(id uint64) error {
 
 }
 
-func (z *boltContainer) Get(id uint64) (Record, error) {
+func (z *boltContainer) Get(id string) (Record, error) {
 
 	found := false
 	record := make(Record)
 
 	c := z.bucket.Cursor()
-	min := []byte(kvMinKey(id))
-	nxt := []byte(kvNxtKey(id))
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+	min, max := kvMinMaxKeys(id)
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		// assume proper key format of ID/fieldname
 		_, fieldname, _ := kvBucketKeyDecode(k)
 		record[fieldname] = string(v)
