@@ -1,6 +1,0 @@
-hash: c79ed12358d86205dc68de1335c4474c8db750304a2dc4d0af0308816737efdc
-updated: 2016-02-04T17:24:33.474141757+01:00
-imports:
-- name: github.com/mjibson/esc
-  version: 7ca1b447a6a65d8f8056a305758bc8d281c65517
-devImports: []
