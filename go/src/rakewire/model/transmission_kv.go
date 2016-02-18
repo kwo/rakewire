@@ -6,9 +6,7 @@ package model
  */
 
 import (
-	"fmt"
 	"sort"
-	"strconv"
 	"time"
 )
 
@@ -75,19 +73,19 @@ func (z Transmissions) Reverse() {
 }
 
 // getID return the primary key of the object.
-func (z *Transmission) getID() uint64 {
+func (z *Transmission) getID() string {
 	return z.ID
 }
 
 // setID sets the primary key of the object.
-func (z *Transmission) setID(id uint64) {
+func (z *Transmission) setID(id string) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
 func (z *Transmission) clear() {
-	z.ID = 0
-	z.FeedID = 0
+	z.ID = ""
+	z.FeedID = ""
 	z.Duration = 0
 	z.Result = ""
 	z.ResultMessage = ""
@@ -114,12 +112,12 @@ func (z *Transmission) serialize(flags ...bool) Record {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != 0 {
-		result[transmissionID] = fmt.Sprintf("%010d", z.ID)
+	if flagNoZeroCheck || z.ID != "" {
+		result[transmissionID] = z.ID
 	}
 
-	if flagNoZeroCheck || z.FeedID != 0 {
-		result[transmissionFeedID] = fmt.Sprintf("%010d", z.FeedID)
+	if flagNoZeroCheck || z.FeedID != "" {
+		result[transmissionFeedID] = z.FeedID
 	}
 
 	if flagNoZeroCheck || z.Duration != 0 {
@@ -207,29 +205,15 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 	var missing []string
 	var unknown []string
 
-	z.ID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(transmissionID, values, errors)
+	z.ID = values[transmissionID]
 
-	if !(z.ID != 0) {
+	if !(z.ID != "") {
 		missing = append(missing, transmissionID)
 	}
 
-	z.FeedID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(transmissionFeedID, values, errors)
+	z.FeedID = values[transmissionFeedID]
 
-	if !(z.FeedID != 0) {
+	if !(z.FeedID != "") {
 		missing = append(missing, transmissionFeedID)
 	}
 

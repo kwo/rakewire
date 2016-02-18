@@ -6,9 +6,7 @@ package model
  */
 
 import (
-	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -69,18 +67,18 @@ func (z Feeds) Reverse() {
 }
 
 // getID return the primary key of the object.
-func (z *Feed) getID() uint64 {
+func (z *Feed) getID() string {
 	return z.ID
 }
 
 // setID sets the primary key of the object.
-func (z *Feed) setID(id uint64) {
+func (z *Feed) setID(id string) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
 func (z *Feed) clear() {
-	z.ID = 0
+	z.ID = ""
 	z.URL = ""
 	z.SiteURL = ""
 	z.ETag = ""
@@ -101,8 +99,8 @@ func (z *Feed) serialize(flags ...bool) Record {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != 0 {
-		result[feedID] = fmt.Sprintf("%010d", z.ID)
+	if flagNoZeroCheck || z.ID != "" {
+		result[feedID] = z.ID
 	}
 
 	if flagNoZeroCheck || z.URL != "" {
@@ -161,16 +159,9 @@ func (z *Feed) deserialize(values Record, flags ...bool) error {
 	var missing []string
 	var unknown []string
 
-	z.ID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(feedID, values, errors)
+	z.ID = values[feedID]
 
-	if !(z.ID != 0) {
+	if !(z.ID != "") {
 		missing = append(missing, feedID)
 	}
 

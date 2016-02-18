@@ -6,9 +6,7 @@ package model
  */
 
 import (
-	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 )
 
@@ -60,18 +58,18 @@ func (z Users) Reverse() {
 }
 
 // getID return the primary key of the object.
-func (z *User) getID() uint64 {
+func (z *User) getID() string {
 	return z.ID
 }
 
 // setID sets the primary key of the object.
-func (z *User) setID(id uint64) {
+func (z *User) setID(id string) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
 func (z *User) clear() {
-	z.ID = 0
+	z.ID = ""
 	z.Username = ""
 	z.PasswordHash = ""
 	z.FeverHash = ""
@@ -84,8 +82,8 @@ func (z *User) serialize(flags ...bool) Record {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != 0 {
-		result[userID] = fmt.Sprintf("%010d", z.ID)
+	if flagNoZeroCheck || z.ID != "" {
+		result[userID] = z.ID
 	}
 
 	if flagNoZeroCheck || z.Username != "" {
@@ -112,16 +110,9 @@ func (z *User) deserialize(values Record, flags ...bool) error {
 	var missing []string
 	var unknown []string
 
-	z.ID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(userID, values, errors)
+	z.ID = values[userID]
 
-	if !(z.ID != 0) {
+	if !(z.ID != "") {
 		missing = append(missing, userID)
 	}
 

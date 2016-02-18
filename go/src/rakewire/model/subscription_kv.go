@@ -6,10 +6,7 @@ package model
  */
 
 import (
-	"bytes"
-	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -67,21 +64,21 @@ func (z Subscriptions) Reverse() {
 }
 
 // getID return the primary key of the object.
-func (z *Subscription) getID() uint64 {
+func (z *Subscription) getID() string {
 	return z.ID
 }
 
 // setID sets the primary key of the object.
-func (z *Subscription) setID(id uint64) {
+func (z *Subscription) setID(id string) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
 func (z *Subscription) clear() {
-	z.ID = 0
-	z.UserID = 0
-	z.FeedID = 0
-	z.GroupIDs = []uint64{}
+	z.ID = ""
+	z.UserID = ""
+	z.FeedID = ""
+	z.GroupIDs = []string{}
 	z.DateAdded = time.Time{}
 	z.Title = ""
 	z.Notes = ""
@@ -96,28 +93,21 @@ func (z *Subscription) serialize(flags ...bool) Record {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != 0 {
-		result[subscriptionID] = fmt.Sprintf("%010d", z.ID)
+	if flagNoZeroCheck || z.ID != "" {
+		result[subscriptionID] = z.ID
 	}
 
-	if flagNoZeroCheck || z.UserID != 0 {
-		result[subscriptionUserID] = fmt.Sprintf("%010d", z.UserID)
+	if flagNoZeroCheck || z.UserID != "" {
+		result[subscriptionUserID] = z.UserID
 	}
 
-	if flagNoZeroCheck || z.FeedID != 0 {
-		result[subscriptionFeedID] = fmt.Sprintf("%010d", z.FeedID)
+	if flagNoZeroCheck || z.FeedID != "" {
+		result[subscriptionFeedID] = z.FeedID
 	}
 
 	if flagNoZeroCheck || len(z.GroupIDs) > 0 {
-		result[subscriptionGroupIDs] = func(values []uint64) string {
-			var buffer bytes.Buffer
-			for i, value := range values {
-				if i > 0 {
-					buffer.WriteString(" ")
-				}
-				buffer.WriteString(fmt.Sprintf("%d", value))
-			}
-			return buffer.String()
+		result[subscriptionGroupIDs] = func(values []string) string {
+			return strings.Join(values, " ")
 		}(z.GroupIDs)
 	}
 
@@ -163,57 +153,28 @@ func (z *Subscription) deserialize(values Record, flags ...bool) error {
 	var missing []string
 	var unknown []string
 
-	z.ID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(subscriptionID, values, errors)
+	z.ID = values[subscriptionID]
 
-	if !(z.ID != 0) {
+	if !(z.ID != "") {
 		missing = append(missing, subscriptionID)
 	}
 
-	z.UserID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(subscriptionUserID, values, errors)
+	z.UserID = values[subscriptionUserID]
 
-	if !(z.UserID != 0) {
+	if !(z.UserID != "") {
 		missing = append(missing, subscriptionUserID)
 	}
 
-	z.FeedID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(subscriptionFeedID, values, errors)
+	z.FeedID = values[subscriptionFeedID]
 
-	if !(z.FeedID != 0) {
+	if !(z.FeedID != "") {
 		missing = append(missing, subscriptionFeedID)
 	}
 
-	z.GroupIDs = func(fieldName string, values map[string]string, errors []error) []uint64 {
-		var result []uint64
+	z.GroupIDs = func(fieldName string, values map[string]string, errors []error) []string {
+		var result []string
 		if value, ok := values[fieldName]; ok {
-			elements := strings.Fields(value)
-			for _, element := range elements {
-				value, err := strconv.ParseUint(element, 10, 64)
-				if err != nil {
-					errors = append(errors, err)
-					break
-				}
-				result = append(result, value)
-			}
+			result = strings.Fields(value)
 		}
 		return result
 	}(subscriptionGroupIDs, values, errors)

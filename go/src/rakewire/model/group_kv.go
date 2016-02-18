@@ -6,9 +6,7 @@ package model
  */
 
 import (
-	"fmt"
 	"sort"
-	"strconv"
 )
 
 // index names
@@ -57,19 +55,19 @@ func (z Groups) Reverse() {
 }
 
 // getID return the primary key of the object.
-func (z *Group) getID() uint64 {
+func (z *Group) getID() string {
 	return z.ID
 }
 
 // setID sets the primary key of the object.
-func (z *Group) setID(id uint64) {
+func (z *Group) setID(id string) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
 func (z *Group) clear() {
-	z.ID = 0
-	z.UserID = 0
+	z.ID = ""
+	z.UserID = ""
 	z.Name = ""
 
 }
@@ -80,12 +78,12 @@ func (z *Group) serialize(flags ...bool) Record {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != 0 {
-		result[groupID] = fmt.Sprintf("%010d", z.ID)
+	if flagNoZeroCheck || z.ID != "" {
+		result[groupID] = z.ID
 	}
 
-	if flagNoZeroCheck || z.UserID != 0 {
-		result[groupUserID] = fmt.Sprintf("%010d", z.UserID)
+	if flagNoZeroCheck || z.UserID != "" {
+		result[groupUserID] = z.UserID
 	}
 
 	if flagNoZeroCheck || z.Name != "" {
@@ -104,29 +102,15 @@ func (z *Group) deserialize(values Record, flags ...bool) error {
 	var missing []string
 	var unknown []string
 
-	z.ID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(groupID, values, errors)
+	z.ID = values[groupID]
 
-	if !(z.ID != 0) {
+	if !(z.ID != "") {
 		missing = append(missing, groupID)
 	}
 
-	z.UserID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(groupUserID, values, errors)
+	z.UserID = values[groupUserID]
 
-	if !(z.UserID != 0) {
+	if !(z.UserID != "") {
 		missing = append(missing, groupUserID)
 	}
 
@@ -164,8 +148,8 @@ func (z *Group) indexKeys() map[string][]string {
 }
 
 // GroupByID groups elements in the Groups collection by ID
-func (z Groups) GroupByID() map[uint64]*Group {
-	result := make(map[uint64]*Group)
+func (z Groups) GroupByID() map[string]*Group {
+	result := make(map[string]*Group)
 	for _, group := range z {
 		result[group.ID] = group
 	}

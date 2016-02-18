@@ -69,12 +69,12 @@ func (z {{$structure.NamePlural}} ) Reverse() {
 
 
 // getID return the primary key of the object.
-func (z *{{.Name}}) getID() uint64 {
+func (z *{{.Name}}) getID() string {
 	return z.ID
 }
 
 // setID sets the primary key of the object.
-func (z *{{.Name}}) setID(id uint64) {
+func (z *{{.Name}}) setID(id string) {
 	z.ID = id
 }
 

@@ -33,7 +33,7 @@ type fnUniqueID func() (uint64, string, error)
 
 // Object defines the functions necessary for objects to be persisted to the database
 type Object interface {
-	getID() uint64
+	getID() string
 	setIDIfNecessary(fnUniqueID) error
 	clear()
 	serialize(...bool) Record

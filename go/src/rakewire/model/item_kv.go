@@ -6,9 +6,7 @@ package model
  */
 
 import (
-	"fmt"
 	"sort"
-	"strconv"
 	"time"
 )
 
@@ -64,20 +62,20 @@ func (z Items) Reverse() {
 }
 
 // getID return the primary key of the object.
-func (z *Item) getID() uint64 {
+func (z *Item) getID() string {
 	return z.ID
 }
 
 // setID sets the primary key of the object.
-func (z *Item) setID(id uint64) {
+func (z *Item) setID(id string) {
 	z.ID = id
 }
 
 // Clear reset all fields to zero/empty
 func (z *Item) clear() {
-	z.ID = 0
+	z.ID = ""
 	z.GUID = ""
-	z.FeedID = 0
+	z.FeedID = ""
 	z.Created = time.Time{}
 	z.Updated = time.Time{}
 	z.URL = ""
@@ -93,16 +91,16 @@ func (z *Item) serialize(flags ...bool) Record {
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
 	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != 0 {
-		result[itemID] = fmt.Sprintf("%010d", z.ID)
+	if flagNoZeroCheck || z.ID != "" {
+		result[itemID] = z.ID
 	}
 
 	if flagNoZeroCheck || z.GUID != "" {
 		result[itemGUID] = z.GUID
 	}
 
-	if flagNoZeroCheck || z.FeedID != 0 {
-		result[itemFeedID] = fmt.Sprintf("%010d", z.FeedID)
+	if flagNoZeroCheck || z.FeedID != "" {
+		result[itemFeedID] = z.FeedID
 	}
 
 	if flagNoZeroCheck || !z.Created.IsZero() {
@@ -141,31 +139,17 @@ func (z *Item) deserialize(values Record, flags ...bool) error {
 	var missing []string
 	var unknown []string
 
-	z.ID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(itemID, values, errors)
+	z.ID = values[itemID]
 
-	if !(z.ID != 0) {
+	if !(z.ID != "") {
 		missing = append(missing, itemID)
 	}
 
 	z.GUID = values[itemGUID]
 
-	z.FeedID = func(fieldName string, values map[string]string, errors []error) uint64 {
-		result, err := strconv.ParseUint(values[fieldName], 10, 64)
-		if err != nil {
-			errors = append(errors, err)
-			return 0
-		}
-		return uint64(result)
-	}(itemFeedID, values, errors)
+	z.FeedID = values[itemFeedID]
 
-	if !(z.FeedID != 0) {
+	if !(z.FeedID != "") {
 		missing = append(missing, itemFeedID)
 	}
 
@@ -240,8 +224,8 @@ func (z Items) GroupByGUID() map[string]*Item {
 }
 
 // GroupAllByFeedID groups collections of elements in Items by FeedID
-func (z Items) GroupAllByFeedID() map[uint64]Items {
-	result := make(map[uint64]Items)
+func (z Items) GroupAllByFeedID() map[string]Items {
+	result := make(map[string]Items)
 	for _, item := range z {
 		a := result[item.FeedID]
 		a = append(a, item)
