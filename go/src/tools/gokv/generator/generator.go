@@ -150,6 +150,8 @@ func (z *FieldInfo) Finalize(s *StructInfo) error {
 		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
 		z.SerializeCommand = executeTemplate("SerializeInt", z)
 		z.DeserializeCommand = executeTemplate("DeserializeInt", z)
+		s.Imports["fmt"] = true
+		s.Imports["strconv"] = true
 
 	case "uint", "uint8", "uint16", "uint32":
 		z.EmptyValue = "0"
