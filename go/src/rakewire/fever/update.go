@@ -60,7 +60,7 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string, tx 
 		if pAs != "read" {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		if err := model.EntriesUpdateReadByFeed(userID, id, maxTime, true, tx); err != nil {
+		if err := model.EntriesUpdateReadByFeed(userID, idStr, maxTime, true, tx); err != nil {
 			return err
 		}
 
@@ -68,7 +68,7 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string, tx 
 		if pAs != "read" {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		if err := model.EntriesUpdateReadByGroup(userID, id, maxTime, true, tx); err != nil {
+		if err := model.EntriesUpdateReadByGroup(userID, idStr, maxTime, true, tx); err != nil {
 			return err
 		}
 

@@ -7,11 +7,11 @@ import (
 
 func TestGUID(t *testing.T) {
 
-	e := NewItem(123, "guid")
-	if e.ID != 0 {
+	e := NewItem(kvKeyUintEncode(123), "guid")
+	if e.ID != empty {
 		t.Error("item.ID cannot be set by factory method")
 	}
-	if e.FeedID != 123 {
+	if e.FeedID != kvKeyUintEncode(123) {
 		t.Error("item.feedID not set correctly by factory method")
 	}
 	if e.GUID != "guid" {
@@ -25,7 +25,7 @@ func TestItemHash(t *testing.T) {
 	e := &Item{}
 	lastHash := e.Hash()
 
-	e.ID = 1
+	e.ID = kvKeyUintEncode(1)
 	if h := e.Hash(); h != lastHash {
 		t.Fatal("ID should not be part of item hash")
 	}
@@ -35,7 +35,7 @@ func TestItemHash(t *testing.T) {
 		t.Fatal("guID should not be part of item hash")
 	}
 
-	e.FeedID = 123
+	e.FeedID = kvKeyUintEncode(123)
 	if h := e.Hash(); h != lastHash {
 		t.Fatal("guID should not be part of item hash")
 	}
@@ -82,8 +82,8 @@ func TestItemHash(t *testing.T) {
 
 func TestItemHashEmpty(t *testing.T) {
 
-	e1 := NewItem(123, "guID")
-	e2 := NewItem(123, "guID")
+	e1 := NewItem(kvKeyUintEncode(123), "guID")
+	e2 := NewItem(kvKeyUintEncode(123), "guID")
 
 	h1 := e1.Hash()
 	h2 := e2.Hash()

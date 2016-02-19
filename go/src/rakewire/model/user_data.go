@@ -35,7 +35,7 @@ func UserByUsername(username string, tx Transaction) (user *User, err error) {
 func (z *User) Save(tx Transaction) error {
 
 	// new user, check for unique username
-	if z.getID() == 0 {
+	if z.getID() == empty {
 		indexName := userIndexUsername
 		if _, ok := kvGetFromIndex(userEntity, indexName, z.indexKeys()[indexName], tx); ok {
 			return fmt.Errorf("Cannot save user, username is already taken: %s", strings.ToLower(z.Username))

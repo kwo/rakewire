@@ -2,13 +2,15 @@ package model
 
 import (
 	"bytes"
-	"strconv"
 )
 
 // ItemsByGUIDs retrieves items for specific GUIDs
-func ItemsByGUIDs(feedID uint64, guIDs []string, tx Transaction) (Items, error) {
+func ItemsByGUIDs(feedID string, guIDs []string, tx Transaction) (Items, error) {
 
 	items := Items{}
+
+	// item index GUID = FeedID|GUID : ItemID
+	//min, max := kvKeyMinMax(feedID)
 
 	e := &Item{}
 	e.FeedID = feedID
@@ -33,33 +35,21 @@ func ItemsByGUIDs(feedID uint64, guIDs []string, tx Transaction) (Items, error) 
 }
 
 // ItemsByFeed retrieves items for the given feed
-func ItemsByFeed(feedID uint64, tx Transaction) (Items, error) {
+func ItemsByFeed(feedID string, tx Transaction) (Items, error) {
 
 	items := Items{}
 
-	// define index keys
-	e := &Item{}
-	e.FeedID = feedID
-	minKeys := e.indexKeys()[itemIndexGUID]
-	e.FeedID = feedID + 1
-	nxtKeys := e.indexKeys()[itemIndexGUID]
-
+	// item index GUID = FeedID|GUID : ItemID
+	min, max := kvKeyMinMax(feedID)
 	bIndex := tx.Bucket(bucketIndex).Bucket(itemEntity).Bucket(itemIndexGUID)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
-	min := []byte(kvKeys(minKeys))
-	nxt := []byte(kvKeys(nxtKeys))
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
-		//log.Printf("%-7s %-7s user items get unread: %s: %s", logDebug, logName, k, v)
+		itemID := string(v)
 
-		id, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		if data, ok := kvGet(id, bItem); ok {
+		if data, ok := kvGet(itemID, bItem); ok {
 			item := &Item{}
 			if err := item.deserialize(data); err != nil {
 				return nil, err

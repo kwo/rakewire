@@ -2,36 +2,25 @@ package model
 
 import (
 	"bytes"
-	"strconv"
 )
 
 // SubscriptionsByUser retrieves the subscriptions belonging to the user with the Feed populated.
-func SubscriptionsByUser(userID uint64, tx Transaction) (Subscriptions, error) {
+func SubscriptionsByUser(userID string, tx Transaction) (Subscriptions, error) {
 
 	result := Subscriptions{}
 
-	// define index keys
-	uf := &Subscription{}
-	uf.UserID = userID
-	minKeys := uf.indexKeys()[subscriptionIndexUser]
-	uf.UserID = userID + 1
-	nxtKeys := uf.indexKeys()[subscriptionIndexUser]
-
+	// subscription index user = UserID|FeedID : SubscriptionID
+	min, max := kvKeyMinMax(userID)
 	bIndex := tx.Bucket(bucketIndex).Bucket(subscriptionEntity).Bucket(subscriptionIndexUser)
 	bSubscription := tx.Bucket(bucketData).Bucket(subscriptionEntity)
 	bFeed := tx.Bucket(bucketData).Bucket(feedEntity)
 
 	c := bIndex.Cursor()
-	min := []byte(kvKeys(minKeys))
-	nxt := []byte(kvKeys(nxtKeys))
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
-		id, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return nil, err
-		}
+		subscriptionID := string(v)
 
-		if data, ok := kvGet(id, bSubscription); ok {
+		if data, ok := kvGet(subscriptionID, bSubscription); ok {
 			uf := &Subscription{}
 			if err := uf.deserialize(data); err != nil {
 				return nil, err
@@ -53,32 +42,22 @@ func SubscriptionsByUser(userID uint64, tx Transaction) (Subscriptions, error) {
 }
 
 // SubscriptionsByFeed retrieves the subscriptions associated with the feed.
-func SubscriptionsByFeed(feedID uint64, tx Transaction) (Subscriptions, error) {
+func SubscriptionsByFeed(feedID string, tx Transaction) (Subscriptions, error) {
 
 	result := Subscriptions{}
 
-	// define index keys
-	uf := &Subscription{}
-	uf.FeedID = feedID
-	minKeys := uf.indexKeys()[subscriptionIndexFeed]
-	uf.FeedID = feedID + 1
-	nxtKeys := uf.indexKeys()[subscriptionIndexFeed]
-
+	// subscription index feed = FeedID|UserID : SubscriptionID
+	min, max := kvKeyMinMax(feedID)
 	bIndex := tx.Bucket(bucketIndex).Bucket(subscriptionEntity).Bucket(subscriptionIndexFeed)
 	bSubscription := tx.Bucket(bucketData).Bucket(subscriptionEntity)
 	bFeed := tx.Bucket(bucketData).Bucket(feedEntity)
 
 	c := bIndex.Cursor()
-	min := []byte(kvKeys(minKeys))
-	nxt := []byte(kvKeys(nxtKeys))
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
-		id, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return nil, err
-		}
+		subscriptionID := string(v)
 
-		if data, ok := kvGet(id, bSubscription); ok {
+		if data, ok := kvGet(subscriptionID, bSubscription); ok {
 			uf := &Subscription{}
 			if err := uf.deserialize(data); err != nil {
 				return nil, err

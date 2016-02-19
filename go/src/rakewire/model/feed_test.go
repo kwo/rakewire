@@ -14,7 +14,7 @@ func TestNewFeed(t *testing.T) {
 	assertEqual(t, "http://localhost/", f.URL)
 	assertNotNil(t, f.NextFetch)
 	assertNotNil(t, f.ID)
-	if f.ID != 0 {
+	if f.ID != empty {
 		t.Errorf("f.ID not equal, expected: %d, actual: %d", 0, f.ID)
 	}
 
@@ -25,7 +25,7 @@ func TestFeedSerial(t *testing.T) {
 	t.Parallel()
 
 	f := getNewFeed()
-	f.ID = 1
+	f.ID = kvKeyUintEncode(1)
 	validateFeed(t, f)
 
 	data := f.serialize()

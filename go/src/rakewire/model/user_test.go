@@ -10,7 +10,7 @@ func TestUserPassword(t *testing.T) {
 	password := "abcedfghijklmnopqrstuvwxyz"
 
 	u := NewUser(username)
-	if u.ID != 0 {
+	if u.ID != empty {
 		t.Error("User ID not set properly by factory method")
 	}
 	if u.Username != username {

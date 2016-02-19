@@ -3,7 +3,6 @@ package model
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"sort"
 	"strconv"
 	"strings"
@@ -11,9 +10,9 @@ import (
 )
 
 const (
-	empty = ""
-	chSep = "|"
-	chMax = "~"
+	empty   = ""
+	chSep   = "|" // must come after any valid key character (no closing braces in keys)
+	chMax   = "~" // must come after separator character
 	fmtTime = time.RFC3339
 	fmtUint = "%010d"
 )
@@ -53,17 +52,16 @@ func (z DeserializationError) Error() string {
 	return message
 }
 
-func kvGet(id uint64, b Bucket) (map[string]string, bool) {
+func kvGet(id string, b Bucket) (map[string]string, bool) {
 
 	found := false
 	result := make(map[string]string)
 
 	c := b.Cursor()
-	min := []byte(kvMinKey(id))
-	nxt := []byte(kvNxtKey(id))
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+	min, max := kvKeyMinMax(id)
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		// assume proper key format of ID/fieldname
-		result[kvKeyElement(k, 1)] = string(v)
+		result[kvKeyDecode(k)[1]] = string(v)
 		found = true
 	} // for loop
 
@@ -71,40 +69,29 @@ func kvGet(id uint64, b Bucket) (map[string]string, bool) {
 
 }
 
-func kvGetFromIndex(name string, index string, keys []string, tx Transaction) (map[string]string, bool) {
+func kvGetFromIndex(name, index string, keys []string, tx Transaction) (map[string]string, bool) {
 
 	bIndex := tx.Bucket(bucketIndex).Bucket(name).Bucket(index)
+	id := string(bIndex.Get(kvKeyEncode(keys...)))
 
-	keyStr := kvKeys(keys)
-	idStr := string(bIndex.Get([]byte(keyStr)))
-
-	if idStr != empty {
-
-		id, err := strconv.ParseUint(idStr, 10, 64)
-		if err != nil {
-			log.Printf("%-7s %-7s error parsing index value: %s", logWarn, logName, idStr)
-			return nil, false
-		}
-
+	if id != empty {
 		b := tx.Bucket(bucketData).Bucket(name)
 		return kvGet(id, b)
-
 	}
 
 	return nil, false
 
 }
 
-func kvPut(id uint64, values map[string]string, b Bucket) error {
+func kvPut(id string, record Record, b Bucket) error {
 
 	keys := [][]byte{}
 
 	// remove record keys not in new set
 	c := b.Cursor()
-	min := []byte(kvMinKey(id))
-	nxt := []byte(kvNxtKey(id))
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
-		if _, ok := values[kvKeyElement(k, 1)]; !ok {
+	min, max := kvKeyMinMax(id)
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
+		if _, ok := record[kvKeyDecode(k)[1]]; !ok {
 			keys = append(keys, k)
 		}
 	}
@@ -117,9 +104,10 @@ func kvPut(id uint64, values map[string]string, b Bucket) error {
 	}
 
 	// add new records
-	for fieldName := range values {
-		key := []byte(kvKey(id) + chSep + fieldName)
-		value := []byte(values[fieldName])
+	for fieldName := range record {
+
+		key := kvKeyEncode(id, fieldName)
+		value := []byte(record[fieldName])
 		if err := b.Put(key, value); err != nil {
 			return err
 		}
@@ -178,20 +166,19 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 
 }
 
-func kvSaveIndexes(name string, id uint64, newIndexes map[string][]string, oldIndexes map[string][]string, tx Transaction) error {
+func kvSaveIndexes(name string, id string, newIndexes map[string][]string, oldIndexes map[string][]string, tx Transaction) error {
 
-	pkey := strconv.FormatUint(id, 10)
 	indexBucket := tx.Bucket(bucketIndex).Bucket(name)
 
 	// delete outdated indexes
 	for indexName := range oldIndexes {
 		oldIndexElements := oldIndexes[indexName]
 		newIndexElements := newIndexes[indexName]
-		oldKeyStr := kvKeys(oldIndexElements)
-		newKeyStr := kvKeys(newIndexElements)
-		if oldKeyStr != newKeyStr {
+		oldKey := kvKeyEncode(oldIndexElements...)
+		newKey := kvKeyEncode(newIndexElements...)
+		if !bytes.Equal(oldKey, newKey) {
 			b := indexBucket.Bucket(indexName)
-			if err := b.Delete([]byte(oldKeyStr)); err != nil {
+			if err := b.Delete(oldKey); err != nil {
 				return err
 			}
 		}
@@ -201,11 +188,11 @@ func kvSaveIndexes(name string, id uint64, newIndexes map[string][]string, oldIn
 	for indexName := range newIndexes {
 		newIndexElements := newIndexes[indexName]
 		oldIndexElements := oldIndexes[indexName]
-		newKeyStr := kvKeys(newIndexElements)
-		oldKeyStr := kvKeys(oldIndexElements)
-		if newKeyStr != oldKeyStr {
+		newKey := kvKeyEncode(newIndexElements...)
+		oldKey := kvKeyEncode(oldIndexElements...)
+		if !bytes.Equal(oldKey, newKey) {
 			b := indexBucket.Bucket(indexName)
-			if err := b.Put([]byte(newKeyStr), []byte(pkey)); err != nil {
+			if err := b.Put(newKey, []byte(id)); err != nil {
 				return err
 			}
 		}
@@ -217,18 +204,17 @@ func kvSaveIndexes(name string, id uint64, newIndexes map[string][]string, oldIn
 
 func kvDelete(name string, value Object, tx Transaction) error {
 
-	if value.getID() == 0 {
-		return fmt.Errorf("Cannot delete %s with ID of 0", name)
+	if value.getID() == empty {
+		return fmt.Errorf("Cannot delete %s with blank ID", name)
 	}
 
 	keys := [][]byte{}
-
-	// delete data
 	b := tx.Bucket(bucketData).Bucket(name)
+
+	// collect keys
 	c := b.Cursor()
-	min := []byte(kvMinKey(value.getID()))
-	nxt := []byte(kvNxtKey(value.getID()))
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
+	min, max := kvKeyMinMax(value.getID())
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
 		keys = append(keys, k)
 	}
 
@@ -243,8 +229,8 @@ func kvDelete(name string, value Object, tx Transaction) error {
 	indexBucket := tx.Bucket(bucketIndex).Bucket(name)
 	for indexName, indexElements := range value.indexKeys() {
 		b := indexBucket.Bucket(indexName)
-		keyStr := kvKeys(indexElements)
-		if err := b.Delete([]byte(keyStr)); err != nil {
+		key := kvKeyEncode(indexElements...)
+		if err := b.Delete(key); err != nil {
 			return err
 		}
 	}
@@ -275,7 +261,7 @@ func kvNextID(entityName string, tx Transaction) (uint64, string, error) {
 	id++
 
 	// format as string
-	idStr := kvKey(id)
+	idStr := kvKeyUintEncode(id)
 
 	// save back to database
 	if err := b.Put([]byte(entryName), []byte(idStr)); err != nil {
@@ -286,45 +272,43 @@ func kvNextID(entityName string, tx Transaction) (uint64, string, error) {
 
 }
 
-func kvKeyElement(k []byte, index int) string {
-	return strings.Split(string(k), chSep)[index]
+func kvKeyEncode(values ...string) []byte {
+	return []byte(strings.Join(values, chSep))
 }
 
-func kvKeyElementID(k []byte, index int) (uint64, error) {
-	return strconv.ParseUint(kvKeyElement(k, index), 10, 64)
+func kvKeyDecode(value []byte) []string {
+	return strings.Split(string(value), chSep)
 }
 
-func kvMinKey(id uint64) string {
-	return kvKey(id)
+func kvKeyMax(values ...string) []byte {
+	return []byte(strings.Join(values, chSep) + chMax)
 }
 
-func kvNxtKey(id uint64) string {
-	return kvKey(id + 1)
+func kvKeyMinMax(id string) ([]byte, []byte) {
+	return kvKeyEncode(id), kvKeyMax(id)
 }
 
-func kvKey(id uint64) string {
-	return fmt.Sprintf("%010d", id)
-}
-
-func kvKeys(elements []string) string {
-	return strings.Join(elements, chSep)
-}
-
-func kvBucketKeyEncode(id uint64, fieldname string) []byte {
-	return []byte(kvKeys([]string{kvKey(id), fieldname}))
-}
-
-func kvBucketKeyDecode(key []byte) (uint64, string, error) {
-	fields := strings.Split(string(key), chSep)
-	id, err := strconv.ParseUint(fields[0], 10, 64)
-	if len(fields) != 2 {
-		err = fmt.Errorf("Invalid key, must have two fields: %s", key)
+func kvKeyBoolEncode(value bool) string {
+	if value {
+		return "1"
 	}
-	return id, fields[1], err
+	return "0"
 }
 
-func kvMinMaxKeys(id string) ([]byte, []byte) {
-	return []byte(id), []byte(id + chMax)
+func kvKeyTimeEncode(value time.Time) string {
+	return value.UTC().Format(fmtTime)
+}
+
+func kvKeyTimeDecode(value string) (time.Time, error) {
+	return time.Parse(fmtTime, value)
+}
+
+func kvKeyUintEncode(id uint64) string {
+	return fmt.Sprintf(fmtUint, id)
+}
+
+func kvKeyUintDecode(id string) (uint64, error) {
+	return strconv.ParseUint(id, 10, 64)
 }
 
 func isStringInArray(a string, b []string) bool {

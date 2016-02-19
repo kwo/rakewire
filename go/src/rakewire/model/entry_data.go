@@ -2,7 +2,6 @@ package model
 
 import (
 	"bytes"
-	"strconv"
 	"time"
 )
 
@@ -26,30 +25,17 @@ func EntriesAddNew(allItems Items, tx Transaction) error {
 
 	for feedID, items := range keyedItems {
 
-		// define index keys
-		uf := &Subscription{}
-		uf.FeedID = feedID
-		minKeys := uf.indexKeys()[subscriptionIndexFeed]
-		uf.FeedID++
-		nxtKeys := uf.indexKeys()[subscriptionIndexFeed]
-
+		// subscription Feed index = FeedID|UserID : SubscriptionID
+		min, max := kvKeyMinMax(feedID)
 		bIndex := tx.Bucket(bucketIndex).Bucket(subscriptionEntity).Bucket(subscriptionIndexFeed)
 		bSubscription := tx.Bucket(bucketData).Bucket(subscriptionEntity)
 
 		c := bIndex.Cursor()
-		min := []byte(kvKeys(minKeys))
-		nxt := []byte(kvKeys(nxtKeys))
-		for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+		for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
-			userID, err := kvKeyElementID(k, 1)
-			if err != nil {
-				return err
-			}
-
-			subscriptionID, err := strconv.ParseUint(string(v), 10, 64)
-			if err != nil {
-				return err
-			}
+			keys := kvKeyDecode(k)
+			userID := keys[1]
+			subscriptionID := string(v)
 
 			subscription := &Subscription{}
 			if data, ok := kvGet(subscriptionID, bSubscription); ok {
@@ -81,23 +67,16 @@ func EntriesAddNew(allItems Items, tx Transaction) error {
 }
 
 // EntryTotalByUser retrieves the total count of items for the user.
-func EntryTotalByUser(userID uint64, tx Transaction) uint {
+func EntryTotalByUser(userID string, tx Transaction) uint {
 
 	var result uint
 
-	// define index keys
-	ue := &Entry{}
-	ue.UserID = userID
-	minKeys := ue.indexKeys()[entryIndexUser]
-	ue.UserID = userID + 1
-	nxtKeys := ue.indexKeys()[entryIndexUser]
-
+	// entry User index = UserID|EntryID : EntryID
+	min, max := kvKeyMinMax(userID)
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexUser)
 
 	c := bIndex.Cursor()
-	min := []byte(kvKeys(minKeys))
-	nxt := []byte(kvKeys(nxtKeys))
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
 		result++
 	} // loop
 
@@ -106,39 +85,23 @@ func EntryTotalByUser(userID uint64, tx Transaction) uint {
 }
 
 // EntriesStarredByUser retrieves starred user items for a user.
-func EntriesStarredByUser(userID uint64, tx Transaction) (Entries, error) {
+func EntriesStarredByUser(userID string, tx Transaction) (Entries, error) {
 
 	entries := Entries{}
 
-	// define index keys
-	ue := &Entry{}
-	ue.UserID = userID
-	ue.IsStar = true
-	minKeys := ue.indexKeys()[entryIndexStar]
-	ue.UserID = userID + 1
-	ue.IsStar = false
-	nxtKeys := ue.indexKeys()[entryIndexStar]
-
+	// entry Star index = UserID|IsStar|Updated|EntryID : EntryID
+	min, max := kvKeyMinMax(userID)
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexStar)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
-	min := []byte(kvKeys(minKeys))
-	nxt := []byte(kvKeys(nxtKeys))
-	// log.Printf("%-7s %-7s user items get unread min: %s", logDebug, logName, min)
-	// log.Printf("%-7s %-7s user items get unread max: %s", logDebug, logName, nxt)
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+		//keys := kvKeyDecode(k)
+		entryID := string(v)
 
-		//log.Printf("%-7s %-7s user items get unread: %s: %s", logDebug, logName, k, v)
-
-		id, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		if data, ok := kvGet(id, bEntry); ok {
+		if data, ok := kvGet(entryID, bEntry); ok {
 			entry := &Entry{}
 			if err := entry.deserialize(data); err != nil {
 				return nil, err
@@ -160,37 +123,23 @@ func EntriesStarredByUser(userID uint64, tx Transaction) (Entries, error) {
 }
 
 // EntriesUnreadByUser retrieves unread user items for a user.
-func EntriesUnreadByUser(userID uint64, tx Transaction) (Entries, error) {
+func EntriesUnreadByUser(userID string, tx Transaction) (Entries, error) {
 
 	entries := Entries{}
 
-	// define index keys
-	ue := &Entry{}
-	ue.UserID = userID
-	minKeys := ue.indexKeys()[entryIndexRead]
-	ue.IsRead = true
-	nxtKeys := ue.indexKeys()[entryIndexRead]
-
+	// entry Read index = UserID|IsRead|Updated|EntryID : EntryID
+	min, max := kvKeyMinMax(userID)
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexRead)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
-	min := []byte(kvKeys(minKeys))
-	nxt := []byte(kvKeys(nxtKeys))
-	//log.Printf("%-7s %-7s user items get unread min: %s", logDebug, logName, min)
-	//log.Printf("%-7s %-7s user items get unread max: %s", logDebug, logName, nxt)
 
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
-		//log.Printf("%-7s %-7s user items get unread: %s: %s", logDebug, logName, k, v)
+		entryID := string(v)
 
-		id, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		if data, ok := kvGet(id, bEntry); ok {
+		if data, ok := kvGet(entryID, bEntry); ok {
 			entry := &Entry{}
 			if err := entry.deserialize(data); err != nil {
 				return nil, err
@@ -212,7 +161,7 @@ func EntriesUnreadByUser(userID uint64, tx Transaction) (Entries, error) {
 }
 
 // EntriesByUser retrieves the specific user items for a user.
-func EntriesByUser(userID uint64, ids []uint64, tx Transaction) (Entries, error) {
+func EntriesByUser(userID string, ids []string, tx Transaction) (Entries, error) {
 
 	entries := Entries{}
 
@@ -243,40 +192,28 @@ func EntriesByUser(userID uint64, ids []uint64, tx Transaction) (Entries, error)
 }
 
 // EntriesGetAll retrieves the all entries for a user.
-func EntriesGetAll(userID uint64, tx Transaction) (Entries, error) {
-	return EntriesGetNext(userID, 0, 0, tx)
+func EntriesGetAll(userID string, tx Transaction) (Entries, error) {
+	return EntriesGetNext(userID, "0", 0, tx)
 }
 
 // EntriesGetNext retrieves the next X user items for a user.
-func EntriesGetNext(userID uint64, minID uint64, count int, tx Transaction) (Entries, error) {
+func EntriesGetNext(userID, minID string, count int, tx Transaction) (Entries, error) {
 
 	entries := Entries{}
 
-	// define index keys
-	ue := &Entry{}
-	ue.UserID = userID
-	ue.ID = minID + 1 // minID is exclusive, cursor, inclusive
-	minKeys := ue.indexKeys()[entryIndexUser]
-	ue.UserID = userID + 1
-	nxtKeys := ue.indexKeys()[entryIndexUser]
-
+	// entry User index = UserID|EntryID : EntryID
+	min := kvKeyMax(userID, minID) // minID is exclusive, cursor, inclusive
+	max := kvKeyMax(userID)
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexUser)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
-	min := []byte(kvKeys(minKeys))
-	nxt := []byte(kvKeys(nxtKeys))
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
-		//log.Printf("%-7s %-7s user items get unread: %s: %s", logDebug, logName, k, v)
+		entryID := string(v)
 
-		id, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		if data, ok := kvGet(id, bEntry); ok {
+		if data, ok := kvGet(entryID, bEntry); ok {
 			entry := &Entry{}
 			if err := entry.deserialize(data); err != nil {
 				return nil, err
@@ -302,32 +239,26 @@ func EntriesGetNext(userID uint64, minID uint64, count int, tx Transaction) (Ent
 }
 
 // EntriesGetPrev retrieves the previous X user items for a user.
-func EntriesGetPrev(userID uint64, maxID uint64, count int, tx Transaction) (Entries, error) {
+func EntriesGetPrev(userID, maxID string, count int, tx Transaction) (Entries, error) {
 
 	entries := Entries{}
 
-	// define index keys
-	ue := &Entry{}
-	ue.UserID = userID
-	ue.ID = maxID - 1 // maxID is exclusive, cursor, inclusive
-	maxKeys := ue.indexKeys()[entryIndexUser]
-	ue.ID = 0
-	minKeys := ue.indexKeys()[entryIndexUser]
+	// maxID is exclusive, cursor, inclusive
+	if maxIDUnit64, err := kvKeyUintDecode(maxID); err == nil {
+		maxIDUnit64--
+		maxID = kvKeyUintEncode(maxIDUnit64)
+	} else {
+		return nil, err
+	}
 
+	// entry User index = UserID|EntryID : EntryID
+	min := kvKeyEncode(userID)
+	max := kvKeyEncode(userID, maxID) // maxID is exclusive, cursor, inclusive
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexUser)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
-	// for k, v := c.First(); k != nil; k, v = c.Next() {
-	// 	log.Printf("%-7s %-7s user items get prev: %s: %s", logDebug, logName, k, v)
-	// }
-
-	min := []byte(kvKeys(minKeys))
-	max := []byte(kvKeys(maxKeys))
-	// log.Printf("%-7s %-7s user items get prev min: %s", logDebug, logName, min)
-	// log.Printf("%-7s %-7s user items get prev max: %s", logDebug, logName, max)
-
 	seekBack := func(key []byte) ([]byte, []byte) {
 		k, v := c.Seek(key)
 		if k == nil {
@@ -338,14 +269,9 @@ func EntriesGetPrev(userID uint64, maxID uint64, count int, tx Transaction) (Ent
 
 	for k, v := seekBack(max); k != nil && bytes.Compare(k, min) >= 0; k, v = c.Prev() {
 
-		//log.Printf("%-7s %-7s user items get prev: %s: %s", logDebug, logName, k, v)
+		entryID := string(v)
 
-		id, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		if data, ok := kvGet(id, bEntry); ok {
+		if data, ok := kvGet(entryID, bEntry); ok {
 			entry := &Entry{}
 			if err := entry.deserialize(data); err != nil {
 				return nil, err
@@ -370,37 +296,22 @@ func EntriesGetPrev(userID uint64, maxID uint64, count int, tx Transaction) (Ent
 
 }
 
-// EntriesUpdateReadByFeed updated the read flag of user items
-func EntriesUpdateReadByFeed(userID, subscriptionID uint64, maxTime time.Time, read bool, tx Transaction) error {
+// EntriesUpdateReadByFeed updated the read flag of user items.
+// MaxTime prevents marking new, not yet synced, entries from being marked as read.
+func EntriesUpdateReadByFeed(userID, subscriptionID string, maxTime time.Time, read bool, tx Transaction) error {
 
-	var idCache []uint64
+	var idCache []string
 
-	// define index keys
-	ue := &Entry{}
-	ue.UserID = userID
-	ue.IsRead = !read
-	minKeys := ue.indexKeys()[entryIndexRead]
-	ue.Updated = maxTime.Add(1 * time.Second).Truncate(time.Second)
-	nxtKeys := ue.indexKeys()[entryIndexRead]
-
+	// entry Read index = UserID|IsRead|Updated|EntryID : EntryID
+	min := kvKeyEncode(userID, kvKeyBoolEncode(!read))
+	max := kvKeyEncode(userID, kvKeyBoolEncode(!read), kvKeyTimeEncode(maxTime))
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexRead)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 
 	c := bIndex.Cursor()
-	min := []byte(kvKeys(minKeys))
-	nxt := []byte(kvKeys(nxtKeys))
-	//log.Printf("%-7s %-7s EntryUpdateReadByFeed min: %s", logDebug, logName, min)
-	//log.Printf("%-7s %-7s EntryUpdateReadByFeed max: %s", logDebug, logName, nxt)
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
-		//log.Printf("%-7s %-7s EntryUpdateReadByFeed %s: %s", logTrace, logName, k, v)
-
-		id, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return err
-		}
-
-		idCache = append(idCache, id)
-
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+		entryID := string(v)
+		idCache = append(idCache, entryID)
 	} // cursor
 
 	for _, id := range idCache {
@@ -411,7 +322,8 @@ func EntriesUpdateReadByFeed(userID, subscriptionID uint64, maxTime time.Time, r
 				return err
 			}
 
-			if subscriptionID == 0 || entry.SubscriptionID == subscriptionID { // additional filter not in index
+			// subscriptionID 0: denotes "Kindling" or all subscriptions
+			if subscriptionID == "0" || entry.SubscriptionID == subscriptionID { // additional filter not in index
 				entry.IsRead = read
 				if err := kvSave(entryEntity, entry, tx); err != nil {
 					return err
@@ -426,36 +338,20 @@ func EntriesUpdateReadByFeed(userID, subscriptionID uint64, maxTime time.Time, r
 }
 
 // EntriesUpdateStarByFeed updated the star flag of user items
-func EntriesUpdateStarByFeed(userID, subscriptionID uint64, maxTime time.Time, star bool, tx Transaction) error {
+func EntriesUpdateStarByFeed(userID, subscriptionID string, maxTime time.Time, star bool, tx Transaction) error {
 
-	var idCache []uint64
+	var idCache []string
 
-	// define index keys
-	ue := &Entry{}
-	ue.UserID = userID
-	ue.IsStar = !star
-	minKeys := ue.indexKeys()[entryIndexStar]
-	ue.Updated = maxTime.Add(1 * time.Second).Truncate(time.Second)
-	nxtKeys := ue.indexKeys()[entryIndexStar]
-
+	// entry Star index = UserID|IsStar|Updated|EntryID : EntryID
+	min := kvKeyEncode(userID, kvKeyBoolEncode(!star))
+	max := kvKeyEncode(userID, kvKeyBoolEncode(!star), kvKeyTimeEncode(maxTime))
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexStar)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 
 	c := bIndex.Cursor()
-	min := []byte(kvKeys(minKeys))
-	nxt := []byte(kvKeys(nxtKeys))
-	//log.Printf("%-7s %-7s EntryUpdateReadByFeed min: %s", logDebug, logName, min)
-	//log.Printf("%-7s %-7s EntryUpdateReadByFeed max: %s", logDebug, logName, nxt)
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
-		//log.Printf("%-7s %-7s EntryUpdateReadByFeed %s: %s", logTrace, logName, k, v)
-
-		id, err := strconv.ParseUint(string(v), 10, 64)
-		if err != nil {
-			return err
-		}
-
-		idCache = append(idCache, id)
-
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+		entryID := string(v)
+		idCache = append(idCache, entryID)
 	} // cursor
 
 	for _, id := range idCache {
@@ -466,7 +362,8 @@ func EntriesUpdateStarByFeed(userID, subscriptionID uint64, maxTime time.Time, s
 				return err
 			}
 
-			if subscriptionID == 0 || entry.SubscriptionID == subscriptionID { // additional filter not in index
+			// subscriptionID 0: denotes "Kindling" or all subscriptions
+			if subscriptionID == "0" || entry.SubscriptionID == subscriptionID { // additional filter not in index
 				entry.IsStar = star
 				if err := kvSave(entryEntity, entry, tx); err != nil {
 					return err
@@ -481,14 +378,14 @@ func EntriesUpdateStarByFeed(userID, subscriptionID uint64, maxTime time.Time, s
 }
 
 // EntriesUpdateReadByGroup updated the read flag of user items
-func EntriesUpdateReadByGroup(userID, groupID uint64, maxTime time.Time, read bool, tx Transaction) error {
+func EntriesUpdateReadByGroup(userID, groupID string, maxTime time.Time, read bool, tx Transaction) error {
 
 	subscriptions, err := SubscriptionsByUser(userID, tx)
 	if err != nil {
 		return err
 	}
 	for _, uf := range subscriptions {
-		if groupID == 0 || uf.HasGroup(groupID) {
+		if groupID == "0" || uf.HasGroup(groupID) {
 			if err := EntriesUpdateReadByFeed(userID, uf.ID, maxTime, read, tx); err != nil {
 				return err
 			}
@@ -500,14 +397,14 @@ func EntriesUpdateReadByGroup(userID, groupID uint64, maxTime time.Time, read bo
 }
 
 // EntriesUpdateStarByGroup updated the star flag of user items
-func EntriesUpdateStarByGroup(userID, groupID uint64, maxTime time.Time, star bool, tx Transaction) error {
+func EntriesUpdateStarByGroup(userID, groupID string, maxTime time.Time, star bool, tx Transaction) error {
 
 	subscriptions, err := SubscriptionsByUser(userID, tx)
 	if err != nil {
 		return err
 	}
 	for _, uf := range subscriptions {
-		if groupID == 0 || uf.HasGroup(groupID) {
+		if groupID == "0" || uf.HasGroup(groupID) {
 			if err := EntriesUpdateStarByFeed(userID, uf.ID, maxTime, star, tx); err != nil {
 				return err
 			}

@@ -105,9 +105,9 @@ func OPMLExport(user *User, tx Transaction) (*OPML, error) {
 }
 
 // OPMLImport OPML document into database
-func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
+func OPMLImport(userID string, opml *OPML, replace bool, tx Transaction) error {
 
-	log.Printf("%-7s %-7s importing opml for user %d, replace: %t", logDebug, logName, userID, replace)
+	log.Printf("%-7s %-7s importing opml for user %s, replace: %t", logDebug, logName, userID, replace)
 
 	flatOPML := OPMLFlatten(opml.Body.Outlines)
 
@@ -133,7 +133,7 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 		return err
 	}
 	for _, subscription := range subscriptions {
-		subscription.GroupIDs = []uint64{}
+		subscription.GroupIDs = []string{}
 		subscription.AutoRead = false
 		subscription.AutoStar = false
 	}
@@ -233,7 +233,7 @@ func OPMLImport(userID uint64, opml *OPML, replace bool, tx Transaction) error {
 
 }
 
-func groupSubscriptionsByGroup(subscriptions Subscriptions, groups map[uint64]*Group) map[*Group]Subscriptions {
+func groupSubscriptionsByGroup(subscriptions Subscriptions, groups map[string]*Group) map[*Group]Subscriptions {
 
 	result := make(map[*Group]Subscriptions)
 	for _, subscription := range subscriptions {
@@ -258,8 +258,8 @@ func groupSubscriptionsByURL(subscriptions Subscriptions) (map[string]*Subscript
 	return result, duplicates
 }
 
-func collectGroups(subscriptions Subscriptions) map[uint64]int {
-	result := make(map[uint64]int)
+func collectGroups(subscriptions Subscriptions) map[string]int {
+	result := make(map[string]int)
 	for _, subscription := range subscriptions {
 		for _, groupID := range subscription.GroupIDs {
 			result[groupID] = result[groupID] + 1

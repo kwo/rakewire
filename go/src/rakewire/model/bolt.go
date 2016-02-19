@@ -184,7 +184,7 @@ func (z *boltContainer) Delete(id string) error {
 	keys := [][]byte{}
 
 	c := z.bucket.Cursor()
-	min, max := kvMinMaxKeys(id)
+	min, max := kvKeyMinMax(id)
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
 		keys = append(keys, k)
 		// do not delete in a cursor, it is buggy, sometimes advancing the position
@@ -206,10 +206,10 @@ func (z *boltContainer) Get(id string) (Record, error) {
 	record := make(Record)
 
 	c := z.bucket.Cursor()
-	min, max := kvMinMaxKeys(id)
+	min, max := kvKeyMinMax(id)
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		// assume proper key format of ID/fieldname
-		_, fieldname, _ := kvBucketKeyDecode(k)
+		fieldname := kvKeyDecode(k)[1]
 		record[fieldname] = string(v)
 		found = true
 	} // for loop
@@ -224,18 +224,17 @@ func (z *boltContainer) Get(id string) (Record, error) {
 
 func (z *boltContainer) Iterate(onRecord OnRecord, flags ...bool) error {
 
-	flagIgnoreBaddies := len(flags) > 0 && flags[0]
+	//flagIgnoreBaddies := len(flags) > 0 && flags[0]
 
 	firstRow := false
-	var lastID uint64
+	var lastID string
 	record := make(Record)
 
 	err := z.bucket.ForEach(func(key, value []byte) error {
 
-		id, fieldname, err := kvBucketKeyDecode(key)
-		if err != nil && !flagIgnoreBaddies {
-			return err
-		}
+		elements := kvKeyDecode(key)
+		id := elements[0]
+		fieldname := elements[1]
 
 		if !firstRow {
 			lastID = id
@@ -280,7 +279,7 @@ func (z *boltContainer) Put(record Record) error {
 	}
 
 	for fieldname, v := range record {
-		key := kvBucketKeyEncode(id, fieldname)
+		key := kvKeyEncode(id, fieldname)
 		value := []byte(v)
 		if err := z.bucket.Put(key, value); err != nil {
 			return err

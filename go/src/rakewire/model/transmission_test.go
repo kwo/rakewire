@@ -9,17 +9,17 @@ func TestNewTransmission(t *testing.T) {
 
 	t.Parallel()
 
-	fl := NewTransmission(123)
+	fl := NewTransmission(kvKeyUintEncode(123))
 
 	if fl == nil {
 		t.Fatalf("Transmission factory not returning a valid transmission")
 	}
 
-	if fl.ID != 0 {
-		t.Errorf("Factory method should not set th ID, expected %d, actual %d", 0, fl.ID)
+	if fl.ID != empty {
+		t.Errorf("Factory method should not set th ID, expected empty, actual %d", fl.ID)
 	}
 
-	if fl.FeedID != 123 {
+	if fl.FeedID != kvKeyUintEncode(123) {
 		t.Errorf("Factory method not setting FeedID properly, expected %s, actual %s", "123", fl.FeedID)
 	}
 
@@ -49,8 +49,8 @@ func getNewTransmission() *Transmission {
 
 	dt := time.Date(2015, time.November, 26, 13, 55, 0, 0, time.Local)
 
-	fl := NewTransmission(123)
-	fl.ID = 1
+	fl := NewTransmission(kvKeyUintEncode(123))
+	fl.ID = kvKeyUintEncode(1)
 	fl.ContentLength = 0
 	fl.ContentType = "text/plain"
 	fl.Duration = 6 * time.Second
@@ -78,7 +78,7 @@ func validateTransmission(t *testing.T, fl *Transmission) {
 
 	assertNotNil(t, fl)
 
-	if fl.ID != 1 {
+	if fl.ID != kvKeyUintEncode(1) {
 		t.Errorf("Transmission ID incorrect, expected %d, actual %d", 0, fl.ID)
 	}
 
@@ -86,7 +86,7 @@ func validateTransmission(t *testing.T, fl *Transmission) {
 	assertEqual(t, "text/plain", fl.ContentType)
 	assertEqual(t, 6*time.Second, fl.Duration)
 	assertEqual(t, "etag", fl.ETag)
-	if fl.FeedID != 123 {
+	if fl.FeedID != kvKeyUintEncode(123) {
 		t.Errorf("FeedIDs do not match, expected %d, actual %d", 123, fl.FeedID)
 	}
 	assertEqual(t, "flavor", fl.Flavor)

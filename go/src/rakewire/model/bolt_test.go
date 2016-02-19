@@ -140,9 +140,9 @@ func TestContainerPutGetDelete(t *testing.T) {
 
 		for i := 1; i < 10; i++ {
 			item := &Item{}
-			item.FeedID = 3
+			item.FeedID = kvKeyUintEncode(3)
 			item.GUID = fmt.Sprintf("localhost%d", i)
-			item.ID = uint64(i)
+			item.ID = kvKeyUintEncode(uint64(i))
 			if err := items.Put(item.serialize()); err != nil {
 				return err
 			}
@@ -163,7 +163,7 @@ func TestContainerPutGetDelete(t *testing.T) {
 
 		for i := 1; i < 10; i++ {
 			item := &Item{}
-			record, err := items.Get(uint64(i))
+			record, err := items.Get(kvKeyUintEncode(uint64(i)))
 			if err != nil {
 				return err
 			}
@@ -189,7 +189,7 @@ func TestContainerPutGetDelete(t *testing.T) {
 		}
 
 		for i := 1; i < 10; i++ {
-			if err := items.Delete(uint64(i)); err != nil {
+			if err := items.Delete(kvKeyUintEncode(uint64(i))); err != nil {
 				return err
 			}
 		}

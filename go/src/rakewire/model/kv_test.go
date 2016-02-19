@@ -48,10 +48,8 @@ func TestKVDelete(t *testing.T) {
 	err = d.Select(func(tx Transaction) error {
 		c := tx.Bucket("Data").Bucket("Feed").Cursor()
 		for key, value := c.First(); key != nil; key, value = c.Next() {
-			id, err := kvKeyElementID(key, 0)
-			if err != nil {
-				t.Errorf("Error parsing ID from key: %s", err.Error())
-			} else if id == 3 {
+			id := kvKeyDecode(key)[0]
+			if id == kvKeyUintEncode(3) {
 				t.Error("Deleted feed ID still present in bucket")
 			}
 			t.Logf("%s: %s", key, value)
@@ -65,28 +63,10 @@ func TestKVDelete(t *testing.T) {
 
 }
 
-func TestBucketKeyEncodeDecode(t *testing.T) {
-
-	key := kvBucketKeyEncode(24, "hello")
-	t.Logf("key: %s", key)
-
-	id, field, err := kvBucketKeyDecode(key)
-	if err != nil {
-		t.Fatalf("Error decoding bucket key: %s", err.Error())
-	}
-	if id != 24 {
-		t.Errorf("Expected %d, actual %d", 24, id)
-	}
-	if field != "hello" {
-		t.Errorf("Expected %s, actual %s", "world", field)
-	}
-
-}
-
 func TestDeserialize(t *testing.T) {
 
-	g1 := NewGroup(3, "three")
-	g1.ID = 3
+	g1 := NewGroup(kvKeyUintEncode(3), "three")
+	g1.ID = kvKeyUintEncode(3)
 	values := g1.serialize()
 
 	g2 := &Group{}
