@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"rakewire/model"
+	"strings"
 )
 
 // http://feedafever.com/api
@@ -117,22 +118,23 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 
 				case "items":
 					rsp.ItemCount = model.EntryTotalByUser(user.ID, tx)
-					if id := parseID(req.URL.Query(), "since_id"); id > 0 {
+					if id := req.URL.Query().Get("since_id"); len(id) > 0 {
 						items, err := z.getItemsNext(user.ID, id, tx)
 						if err == nil {
 							rsp.Items = items
 						} else {
 							log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
 						}
-					} else if id := parseID(req.URL.Query(), "max_id"); id > 0 {
+					} else if id := req.URL.Query().Get("max_id"); len(id) > 0 {
 						items, err := z.getItemsPrev(user.ID, id, tx)
 						if err == nil {
 							rsp.Items = items
 						} else {
 							log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
 						}
-					} else if ids := parseIDArray(req.URL.Query(), "with_ids"); ids != nil {
-						items, err := z.getItemsByIds(user.ID, ids, tx)
+					} else if ids := req.URL.Query().Get("with_ids"); len(ids) > 0 {
+						idArray := strings.Split(ids, ",")
+						items, err := z.getItemsByIds(user.ID, idArray, tx)
 						if err == nil {
 							rsp.Items = items
 						} else {

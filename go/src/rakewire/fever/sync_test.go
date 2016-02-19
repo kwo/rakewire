@@ -20,16 +20,13 @@ func TestUnreadIDs(t *testing.T) {
 	var user *model.User
 	err := database.Select(func(tx model.Transaction) error {
 		u, err := model.UserByUsername(testUsername, tx)
-		if err != nil {
-			return err
+		if err == nil && u != nil {
+			user = u
 		}
-		user = u
-		return nil
+		return err
 	})
 	if err != nil {
-		t.Fatalf("Error: %s", err.Error())
-	} else if user == nil {
-		t.Fatal("User not found")
+		t.Fatalf("Cannot get user: %s", err.Error())
 	}
 
 	var expectedNumberItems = 24

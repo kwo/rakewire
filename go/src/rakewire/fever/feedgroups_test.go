@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/antonholmquist/jason"
 	"rakewire/model"
-	"strconv"
 	"strings"
 	"testing"
 )
@@ -92,11 +91,12 @@ func TestGroups(t *testing.T) {
 					t.Fatalf("bad FeedIDs size, expected %d elements, actual %d", 2, len(feedIDElements))
 				} else {
 					for j, feedIDElement := range feedIDElements {
-						feedID, err := strconv.Atoi(feedIDElement)
-						if err != nil {
+						feedID := decodeID(feedIDElement)
+						if feedID == 0 {
 							t.Errorf("Invalid FeedID: %s", err.Error())
 						}
-						if uint64(feedID) != mSubscriptions[(j*2)+i].ID {
+						feedIDStr := fmt.Sprintf("%010d", feedID)
+						if feedIDStr != mSubscriptions[(j*2)+i].ID {
 							t.Errorf("FeedID mismatch, expected %d, actual %d", mSubscriptions[(j*2)+i].ID, feedID)
 						}
 					}
@@ -157,7 +157,7 @@ func TestFeeds(t *testing.T) {
 		for i, feed := range feeds {
 			if id, err := feed.GetInt64("id"); err != nil {
 				t.Errorf("Cannot retrieve feed.id: %s", err.Error())
-			} else if uint64(id) != mSubscriptions[i].ID {
+			} else if fmt.Sprintf("%010d", id) != mSubscriptions[i].ID {
 				t.Errorf("feed.id mimatch, expected %d, actual %d", id, mSubscriptions[i].ID)
 			}
 			if title, err := feed.GetString("title"); err != nil {
@@ -189,11 +189,12 @@ func TestFeeds(t *testing.T) {
 					t.Fatalf("bad FeedIDs size, expected %d elements, actual %d", 2, len(feedIDElements))
 				} else {
 					for j, feedIDElement := range feedIDElements {
-						feedID, err := strconv.Atoi(feedIDElement)
-						if err != nil {
+						feedID := decodeID(feedIDElement)
+						if feedID == 0 {
 							t.Errorf("Invalid FeedID: %s", err.Error())
 						}
-						if uint64(feedID) != mSubscriptions[(j*2)+i].ID {
+						feedIDStr := fmt.Sprintf("%010d", feedID)
+						if feedIDStr != mSubscriptions[(j*2)+i].ID {
 							t.Errorf("FeedID mismatch, expected %d, actual %d", mSubscriptions[(j*2)+i].ID, feedID)
 						}
 					}

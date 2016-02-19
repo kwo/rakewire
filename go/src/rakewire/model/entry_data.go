@@ -89,16 +89,16 @@ func EntriesStarredByUser(userID string, tx Transaction) (Entries, error) {
 
 	entries := Entries{}
 
-	// entry Star index = UserID|IsStar|Updated|EntryID : EntryID
-	min, max := kvKeyMinMax(userID)
+	// entry index Star = UserID|IsStar|Updated|EntryID : EntryID
+	min := kvKeyEncode(userID, kvKeyBoolEncode(false))
+	nxt := kvKeyEncode(userID, kvKeyBoolEncode(true))
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexStar)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 
-		//keys := kvKeyDecode(k)
 		entryID := string(v)
 
 		if data, ok := kvGet(entryID, bEntry); ok {
@@ -128,14 +128,14 @@ func EntriesUnreadByUser(userID string, tx Transaction) (Entries, error) {
 	entries := Entries{}
 
 	// entry Read index = UserID|IsRead|Updated|EntryID : EntryID
-	min, max := kvKeyMinMax(userID)
+	min := kvKeyEncode(userID, kvKeyBoolEncode(false))
+	nxt := kvKeyEncode(userID, kvKeyBoolEncode(true))
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexRead)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
-
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 
 		entryID := string(v)
 
@@ -193,7 +193,7 @@ func EntriesByUser(userID string, ids []string, tx Transaction) (Entries, error)
 
 // EntriesGetAll retrieves the all entries for a user.
 func EntriesGetAll(userID string, tx Transaction) (Entries, error) {
-	return EntriesGetNext(userID, "0", 0, tx)
+	return EntriesGetNext(userID, kvKeyUintEncode(0), 0, tx)
 }
 
 // EntriesGetNext retrieves the next X user items for a user.
@@ -323,7 +323,7 @@ func EntriesUpdateReadByFeed(userID, subscriptionID string, maxTime time.Time, r
 			}
 
 			// subscriptionID 0: denotes "Kindling" or all subscriptions
-			if subscriptionID == "0" || entry.SubscriptionID == subscriptionID { // additional filter not in index
+			if subscriptionID == kvKeyUintEncode(0) || entry.SubscriptionID == subscriptionID { // additional filter not in index
 				entry.IsRead = read
 				if err := kvSave(entryEntity, entry, tx); err != nil {
 					return err
@@ -342,7 +342,7 @@ func EntriesUpdateStarByFeed(userID, subscriptionID string, maxTime time.Time, s
 
 	var idCache []string
 
-	// entry Star index = UserID|IsStar|Updated|EntryID : EntryID
+	// entry index Star = UserID|IsStar|Updated|EntryID : EntryID
 	min := kvKeyEncode(userID, kvKeyBoolEncode(!star))
 	max := kvKeyEncode(userID, kvKeyBoolEncode(!star), kvKeyTimeEncode(maxTime))
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexStar)
@@ -363,7 +363,7 @@ func EntriesUpdateStarByFeed(userID, subscriptionID string, maxTime time.Time, s
 			}
 
 			// subscriptionID 0: denotes "Kindling" or all subscriptions
-			if subscriptionID == "0" || entry.SubscriptionID == subscriptionID { // additional filter not in index
+			if subscriptionID == kvKeyUintEncode(0) || entry.SubscriptionID == subscriptionID { // additional filter not in index
 				entry.IsStar = star
 				if err := kvSave(entryEntity, entry, tx); err != nil {
 					return err
@@ -385,7 +385,7 @@ func EntriesUpdateReadByGroup(userID, groupID string, maxTime time.Time, read bo
 		return err
 	}
 	for _, uf := range subscriptions {
-		if groupID == "0" || uf.HasGroup(groupID) {
+		if groupID == kvKeyUintEncode(0) || uf.HasGroup(groupID) {
 			if err := EntriesUpdateReadByFeed(userID, uf.ID, maxTime, read, tx); err != nil {
 				return err
 			}
@@ -404,7 +404,7 @@ func EntriesUpdateStarByGroup(userID, groupID string, maxTime time.Time, star bo
 		return err
 	}
 	for _, uf := range subscriptions {
-		if groupID == "0" || uf.HasGroup(groupID) {
+		if groupID == kvKeyUintEncode(0) || uf.HasGroup(groupID) {
 			if err := EntriesUpdateStarByFeed(userID, uf.ID, maxTime, star, tx); err != nil {
 				return err
 			}

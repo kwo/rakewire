@@ -2,11 +2,10 @@ package fever
 
 import (
 	"rakewire/model"
-	"strconv"
 	"strings"
 )
 
-func (z *API) getFeeds(userID uint64, tx model.Transaction) ([]*Feed, []*FeedGroup, error) {
+func (z *API) getFeeds(userID string, tx model.Transaction) ([]*Feed, []*FeedGroup, error) {
 
 	mGroups, err := model.GroupsByUser(userID, tx)
 	if err != nil {
@@ -21,7 +20,7 @@ func (z *API) getFeeds(userID uint64, tx model.Transaction) ([]*Feed, []*FeedGro
 	feeds := []*Feed{}
 	for _, mFeed := range mFeeds {
 		feed := &Feed{
-			ID:          mFeed.ID,
+			ID:          decodeID(mFeed.ID),
 			Title:       mFeed.Title,
 			FaviconID:   0,
 			URL:         mFeed.Feed.URL,
@@ -38,7 +37,7 @@ func (z *API) getFeeds(userID uint64, tx model.Transaction) ([]*Feed, []*FeedGro
 
 }
 
-func (z *API) getGroups(userID uint64, tx model.Transaction) ([]*Group, []*FeedGroup, error) {
+func (z *API) getGroups(userID string, tx model.Transaction) ([]*Group, []*FeedGroup, error) {
 
 	mGroups, err := model.GroupsByUser(userID, tx)
 	if err != nil {
@@ -53,7 +52,7 @@ func (z *API) getGroups(userID uint64, tx model.Transaction) ([]*Group, []*FeedG
 	groups := []*Group{}
 	for _, mGroup := range mGroups {
 		group := &Group{
-			ID:    mGroup.ID,
+			ID:    decodeID(mGroup.ID),
 			Title: mGroup.Name,
 		}
 		groups = append(groups, group)
@@ -67,7 +66,7 @@ func (z *API) getGroups(userID uint64, tx model.Transaction) ([]*Group, []*FeedG
 
 func makeFeedGroups(mGroups []*model.Group, mFeeds []*model.Subscription) []*FeedGroup {
 
-	contains := func(i uint64, a []uint64) bool {
+	contains := func(i string, a []string) bool {
 		for _, x := range a {
 			if x == i {
 				return true
@@ -81,12 +80,11 @@ func makeFeedGroups(mGroups []*model.Group, mFeeds []*model.Subscription) []*Fee
 		feedIDs := []string{}
 		for _, mFeed := range mFeeds {
 			if contains(mGroup.ID, mFeed.GroupIDs) {
-				feedID := strconv.Itoa(int(mFeed.ID))
-				feedIDs = append(feedIDs, feedID)
+				feedIDs = append(feedIDs, mFeed.ID)
 			}
 		}
 		feedGroup := &FeedGroup{
-			GroupID: mGroup.ID,
+			GroupID: decodeID(mGroup.ID),
 			FeedIDs: strings.Join(feedIDs, ","),
 		}
 		feedGroups = append(feedGroups, feedGroup)

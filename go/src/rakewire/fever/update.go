@@ -7,15 +7,10 @@ import (
 	"time"
 )
 
-func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string, tx model.Transaction) error {
+func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx model.Transaction) error {
 
 	if idStr == "-1" {
 		return fmt.Errorf("sparks not supported")
-	}
-
-	id, err := strconv.ParseUint(idStr, 10, 64)
-	if err != nil {
-		return err
 	}
 
 	maxTime := time.Time{}
@@ -30,7 +25,7 @@ func (z *API) updateItems(userID uint64, mark, pAs, idStr, beforeStr string, tx 
 	switch mark {
 	case "item":
 
-		items, err := model.EntriesByUser(userID, []uint64{id}, tx)
+		items, err := model.EntriesByUser(userID, []string{idStr}, tx)
 		if err != nil {
 			return err
 		}

@@ -4,7 +4,7 @@ import (
 	"rakewire/model"
 )
 
-func (z *API) getItemsAll(userID uint64, tx model.Transaction) ([]*Item, error) {
+func (z *API) getItemsAll(userID string, tx model.Transaction) ([]*Item, error) {
 
 	entries, err := model.EntriesGetAll(userID, tx)
 	if err != nil {
@@ -20,7 +20,12 @@ func (z *API) getItemsAll(userID uint64, tx model.Transaction) ([]*Item, error) 
 
 }
 
-func (z *API) getItemsNext(userID uint64, minID uint64, tx model.Transaction) ([]*Item, error) {
+func (z *API) getItemsNext(userID, minID0 string, tx model.Transaction) ([]*Item, error) {
+
+	minID, err := encodeID(minID0)
+	if err != nil {
+		return nil, err
+	}
 
 	entries, err := model.EntriesGetNext(userID, minID, 50, tx)
 	if err != nil {
@@ -36,7 +41,12 @@ func (z *API) getItemsNext(userID uint64, minID uint64, tx model.Transaction) ([
 
 }
 
-func (z *API) getItemsPrev(userID uint64, maxID uint64, tx model.Transaction) ([]*Item, error) {
+func (z *API) getItemsPrev(userID, maxID0 string, tx model.Transaction) ([]*Item, error) {
+
+	maxID, err := encodeID(maxID0)
+	if err != nil {
+		return nil, err
+	}
 
 	entries, err := model.EntriesGetPrev(userID, maxID, 50, tx)
 	if err != nil {
@@ -52,7 +62,16 @@ func (z *API) getItemsPrev(userID uint64, maxID uint64, tx model.Transaction) ([
 
 }
 
-func (z *API) getItemsByIds(userID uint64, ids []uint64, tx model.Transaction) ([]*Item, error) {
+func (z *API) getItemsByIds(userID string, ids0 []string, tx model.Transaction) ([]*Item, error) {
+
+	ids := []string{}
+	for _, id0 := range ids0 {
+		id, err := encodeID(id0)
+		if err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
 
 	entries, err := model.EntriesByUser(userID, ids, tx)
 	if err != nil {
@@ -70,8 +89,8 @@ func (z *API) getItemsByIds(userID uint64, ids []uint64, tx model.Transaction) (
 
 func toItem(entry *model.Entry) *Item {
 	return &Item{
-		ID:             entry.ID,
-		SubscriptionID: entry.SubscriptionID,
+		ID:             decodeID(entry.ID),
+		SubscriptionID: decodeID(entry.SubscriptionID),
 		Title:          entry.Item.Title,
 		Author:         entry.Item.Author,
 		HTML:           entry.Item.Content,
