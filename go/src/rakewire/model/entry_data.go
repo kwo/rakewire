@@ -90,14 +90,14 @@ func EntriesStarredByUser(userID string, tx Transaction) (Entries, error) {
 	entries := Entries{}
 
 	// entry index Star = UserID|IsStar|Updated|EntryID : EntryID
-	min := kvKeyEncode(userID, kvKeyBoolEncode(false))
-	nxt := kvKeyEncode(userID, kvKeyBoolEncode(true))
+	min := kvKeyEncode(userID, kvKeyBoolEncode(true))
+	max := kvKeyMax(userID, kvKeyBoolEncode(true))
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexStar)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
 	c := bIndex.Cursor()
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 
 		entryID := string(v)
 

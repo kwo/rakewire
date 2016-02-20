@@ -182,7 +182,7 @@ func populateDatabase(tx model.Transaction) error {
 	}
 	now := time.Now().Truncate(time.Second)
 	tRead := now.Add(-6 * 24 * time.Hour).Add(1 * time.Second)
-	tStar := now.Add(-2 * 24 * time.Hour).Add(1 * time.Second)
+	tStar := now.Add(-8 * 24 * time.Hour).Add(1 * time.Second)
 	for _, ue := range entries {
 		ue.IsRead = ue.Updated.Before(tRead)
 		ue.IsStar = ue.Updated.Before(tStar)
