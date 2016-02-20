@@ -17,7 +17,7 @@ func (z *API) getSavedItemIDs(userID string, tx model.Transaction) (string, erro
 
 	idArray := []string{}
 	for _, entry := range entries {
-		idArray = append(idArray, strconv.FormatUint(decodeID(entry.ID), 10))
+		idArray = append(idArray, strconv.FormatUint(parseID(entry.ID), 10))
 	}
 
 	return strings.Join(idArray, ","), nil
@@ -34,7 +34,7 @@ func (z *API) getUnreadItemIDs(userID string, tx model.Transaction) (string, err
 
 	idArray := []string{}
 	for _, entry := range entries {
-		idArray = append(idArray, strconv.FormatUint(decodeID(entry.ID), 10))
+		idArray = append(idArray, strconv.FormatUint(parseID(entry.ID), 10))
 	}
 
 	return strings.Join(idArray, ","), nil

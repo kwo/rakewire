@@ -91,7 +91,7 @@ func TestGroups(t *testing.T) {
 					t.Fatalf("bad FeedIDs size, expected %d elements, actual %d", 2, len(feedIDElements))
 				} else {
 					for j, feedIDElement := range feedIDElements {
-						feedID := decodeID(feedIDElement)
+						feedID := parseID(feedIDElement)
 						if feedID == 0 {
 							t.Errorf("Invalid FeedID: %s", err.Error())
 						}
@@ -189,7 +189,7 @@ func TestFeeds(t *testing.T) {
 					t.Fatalf("bad FeedIDs size, expected %d elements, actual %d", 2, len(feedIDElements))
 				} else {
 					for j, feedIDElement := range feedIDElements {
-						feedID := decodeID(feedIDElement)
+						feedID := parseID(feedIDElement)
 						if feedID == 0 {
 							t.Errorf("Invalid FeedID: %s", err.Error())
 						}

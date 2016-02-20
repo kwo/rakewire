@@ -20,7 +20,7 @@ func (z *API) getFeeds(userID string, tx model.Transaction) ([]*Feed, []*FeedGro
 	feeds := []*Feed{}
 	for _, mFeed := range mFeeds {
 		feed := &Feed{
-			ID:          decodeID(mFeed.ID),
+			ID:          parseID(mFeed.ID),
 			Title:       mFeed.Title,
 			FaviconID:   0,
 			URL:         mFeed.Feed.URL,
@@ -52,7 +52,7 @@ func (z *API) getGroups(userID string, tx model.Transaction) ([]*Group, []*FeedG
 	groups := []*Group{}
 	for _, mGroup := range mGroups {
 		group := &Group{
-			ID:    decodeID(mGroup.ID),
+			ID:    parseID(mGroup.ID),
 			Title: mGroup.Name,
 		}
 		groups = append(groups, group)
@@ -80,11 +80,11 @@ func makeFeedGroups(mGroups []*model.Group, mFeeds []*model.Subscription) []*Fee
 		feedIDs := []string{}
 		for _, mFeed := range mFeeds {
 			if contains(mGroup.ID, mFeed.GroupIDs) {
-				feedIDs = append(feedIDs, mFeed.ID)
+				feedIDs = append(feedIDs, decodeID(mFeed.ID))
 			}
 		}
 		feedGroup := &FeedGroup{
-			GroupID: decodeID(mGroup.ID),
+			GroupID: parseID(mGroup.ID),
 			FeedIDs: strings.Join(feedIDs, ","),
 		}
 		feedGroups = append(feedGroups, feedGroup)
