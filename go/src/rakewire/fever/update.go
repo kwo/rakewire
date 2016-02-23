@@ -25,7 +25,7 @@ func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx 
 	switch mark {
 	case "item":
 
-		items, err := model.EntriesByUser(userID, []string{idStr}, tx)
+		items, err := model.EntriesByUser(userID, []string{encodeID(idStr)}, tx)
 		if err != nil {
 			return err
 		}
@@ -55,7 +55,8 @@ func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx 
 		if pAs != "read" {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		if err := model.EntriesUpdateReadByFeed(userID, idStr, maxTime, true, tx); err != nil {
+		// TODO: first query then use EntriesSave to mark
+		if err := model.EntriesUpdateReadByFeed(userID, encodeID(idStr), maxTime, true, tx); err != nil {
 			return err
 		}
 
@@ -63,7 +64,8 @@ func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx 
 		if pAs != "read" {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		if err := model.EntriesUpdateReadByGroup(userID, idStr, maxTime, true, tx); err != nil {
+		// TODO: first query then use EntriesSave to mark
+		if err := model.EntriesUpdateReadByGroup(userID, encodeID(idStr), maxTime, true, tx); err != nil {
 			return err
 		}
 
