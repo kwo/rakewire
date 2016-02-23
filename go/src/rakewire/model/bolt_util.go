@@ -799,7 +799,7 @@ func rebuildIndexes(db Database) error {
 				if err := entity.deserialize(record); err != nil {
 					return err
 				}
-				if err := kvSaveIndexes(entityName, entity.getID(), entity.indexKeys(), nil, tx); err != nil {
+				if err := kvSaveIndexes(entityName, entity.getID(), entity.serializeIndexes(), nil, tx); err != nil {
 					return err
 				}
 				return nil

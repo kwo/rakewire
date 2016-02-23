@@ -262,6 +262,32 @@ func (z *Feed) indexKeys() map[string][]string {
 	return result
 }
 
+// serializeIndexes returns all index records
+func (z *Feed) serializeIndexes() map[string]Record {
+
+	result := make(map[string]Record)
+
+	data := z.serialize(true)
+
+	var keys []string
+
+	keys = []string{}
+
+	keys = append(keys, data[feedNextFetch])
+
+	keys = append(keys, data[feedID])
+
+	result[feedIndexNextFetch] = Record{string(kvKeyEncode(keys...)): data[feedID]}
+
+	keys = []string{}
+
+	keys = append(keys, strings.ToLower(data[feedURL]))
+
+	result[feedIndexURL] = Record{string(kvKeyEncode(keys...)): data[feedID]}
+
+	return result
+}
+
 // GroupAllByURL groups collections of elements in Feeds by URL
 func (z Feeds) GroupAllByURL() map[string]Feeds {
 	result := make(map[string]Feeds)

@@ -131,7 +131,7 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 
 	oldValues, update := kvGet(value.getID(), b)
 	newValues := value.serialize()
-	newIndexes := value.indexKeys()
+	newIndexes := value.serializeIndexes()
 
 	// save item
 	if err := kvPut(value.getID(), newValues, b); err != nil {
@@ -139,7 +139,7 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 	}
 
 	// create old index values
-	oldIndexes := make(map[string][]string)
+	oldIndexes := make(map[string]Record)
 
 	if update {
 
@@ -147,7 +147,7 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 		if err := value.deserialize(oldValues); err != nil {
 			return err
 		}
-		oldIndexes = value.indexKeys()
+		oldIndexes = value.serializeIndexes()
 
 		// put new values back
 		value.clear()
@@ -166,33 +166,27 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 
 }
 
-func kvSaveIndexes(name string, id string, newIndexes map[string][]string, oldIndexes map[string][]string, tx Transaction) error {
+func kvSaveIndexes(name string, id string, newIndexes map[string]Record, oldIndexes map[string]Record, tx Transaction) error {
 
 	indexBucket := tx.Bucket(bucketIndex).Bucket(name)
 
-	// delete outdated indexes
+	// delete old indexes
 	for indexName := range oldIndexes {
-		oldIndexElements := oldIndexes[indexName]
-		newIndexElements := newIndexes[indexName]
-		oldKey := kvKeyEncode(oldIndexElements...)
-		newKey := kvKeyEncode(newIndexElements...)
-		if !bytes.Equal(oldKey, newKey) {
-			b := indexBucket.Bucket(indexName)
-			if err := b.Delete(oldKey); err != nil {
+		oldIndexRecord := oldIndexes[indexName]
+		b := indexBucket.Bucket(indexName)
+		for key := range oldIndexRecord {
+			if err := b.Delete([]byte(key)); err != nil {
 				return err
 			}
 		}
 	}
 
-	// add updated indexes
+	// add new indexes
 	for indexName := range newIndexes {
-		newIndexElements := newIndexes[indexName]
-		oldIndexElements := oldIndexes[indexName]
-		newKey := kvKeyEncode(newIndexElements...)
-		oldKey := kvKeyEncode(oldIndexElements...)
-		if !bytes.Equal(oldKey, newKey) {
-			b := indexBucket.Bucket(indexName)
-			if err := b.Put(newKey, []byte(id)); err != nil {
+		newIndexRecord := newIndexes[indexName]
+		b := indexBucket.Bucket(indexName)
+		for key, value := range newIndexRecord {
+			if err := b.Put([]byte(key), []byte(value)); err != nil {
 				return err
 			}
 		}
@@ -227,11 +221,12 @@ func kvDelete(name string, value Object, tx Transaction) error {
 
 	// delete indexes
 	indexBucket := tx.Bucket(bucketIndex).Bucket(name)
-	for indexName, indexElements := range value.indexKeys() {
+	for indexName, record := range value.serializeIndexes() {
 		b := indexBucket.Bucket(indexName)
-		key := kvKeyEncode(indexElements...)
-		if err := b.Delete(key); err != nil {
-			return err
+		for key := range record {
+			if err := b.Delete([]byte(key)); err != nil {
+				return err
+			}
 		}
 	}
 

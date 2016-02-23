@@ -139,6 +139,28 @@ func (z *{{.Name}}) indexKeys() map[string][]string {
 	return result
 }
 
+// serializeIndexes returns all index records
+func (z *{{.Name}}) serializeIndexes() map[string]Record {
+	{{$struct := .}}
+	result := make(map[string]Record)
+	{{if ne (len .Indexes) 0}}
+	data := z.serialize(true)
+	{{end}}
+	var keys []string
+	{{range $name, $fields := .Indexes}}
+		keys = []string{}
+		{{range $index, $f := $fields}}
+			{{if eq $f.Filter "lower"}}
+				keys = append(keys, strings.ToLower(data[{{$struct.NameLower}}{{$f.Field}}]))
+			{{else}}
+				keys = append(keys, data[{{$struct.NameLower}}{{$f.Field}}])
+			{{end}}
+		{{end}}
+		result[{{$struct.NameLower}}Index{{$name}}] = Record{string(kvKeyEncode(keys...)): data[{{$struct.NameLower}}ID] }
+	{{end}}
+	return result
+}
+
 {{$struct := .}}
 {{range $index, $field := .Fields}}
 	{{if .GroupBy}}

@@ -18,6 +18,17 @@ type Entry struct {
 	Item           *Item     `kv:"-"`
 }
 
+// NewEntry returns a new Entry object
+func NewEntry(userID, itemID, subscriptionID string) *Entry {
+
+	return &Entry{
+		UserID:         userID,
+		ItemID:         itemID,
+		SubscriptionID: subscriptionID,
+	}
+
+}
+
 func (z *Entry) setIDIfNecessary(fn fnUniqueID) error {
 	if z.ID == empty {
 		if _, id, err := fn(); err == nil {

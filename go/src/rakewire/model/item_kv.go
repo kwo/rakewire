@@ -209,6 +209,26 @@ func (z *Item) indexKeys() map[string][]string {
 	return result
 }
 
+// serializeIndexes returns all index records
+func (z *Item) serializeIndexes() map[string]Record {
+
+	result := make(map[string]Record)
+
+	data := z.serialize(true)
+
+	var keys []string
+
+	keys = []string{}
+
+	keys = append(keys, data[itemFeedID])
+
+	keys = append(keys, data[itemGUID])
+
+	result[itemIndexGUID] = Record{string(kvKeyEncode(keys...)): data[itemID]}
+
+	return result
+}
+
 // GroupByGUID groups elements in the Items collection by GUID
 func (z Items) GroupByGUID() map[string]*Item {
 	result := make(map[string]*Item)

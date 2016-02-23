@@ -151,6 +151,30 @@ func (z *User) indexKeys() map[string][]string {
 	return result
 }
 
+// serializeIndexes returns all index records
+func (z *User) serializeIndexes() map[string]Record {
+
+	result := make(map[string]Record)
+
+	data := z.serialize(true)
+
+	var keys []string
+
+	keys = []string{}
+
+	keys = append(keys, data[userFeverHash])
+
+	result[userIndexFeverHash] = Record{string(kvKeyEncode(keys...)): data[userID]}
+
+	keys = []string{}
+
+	keys = append(keys, strings.ToLower(data[userUsername]))
+
+	result[userIndexUsername] = Record{string(kvKeyEncode(keys...)): data[userID]}
+
+	return result
+}
+
 // GroupByUsername groups elements in the Users collection by Username
 func (z Users) GroupByUsername() map[string]*User {
 	result := make(map[string]*User)

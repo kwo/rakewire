@@ -33,7 +33,7 @@ type Object interface {
 	clear()
 	serialize(...bool) Record
 	deserialize(Record, ...bool) error
-	indexKeys() map[string][]string
+	serializeIndexes() map[string]Record
 }
 
 // ContainerSeparator specified the separator character for container names

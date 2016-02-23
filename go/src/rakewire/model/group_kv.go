@@ -142,6 +142,26 @@ func (z *Group) indexKeys() map[string][]string {
 	return result
 }
 
+// serializeIndexes returns all index records
+func (z *Group) serializeIndexes() map[string]Record {
+
+	result := make(map[string]Record)
+
+	data := z.serialize(true)
+
+	var keys []string
+
+	keys = []string{}
+
+	keys = append(keys, data[groupUserID])
+
+	keys = append(keys, data[groupName])
+
+	result[groupIndexUserGroup] = Record{string(kvKeyEncode(keys...)): data[groupID]}
+
+	return result
+}
+
 // GroupByID groups elements in the Groups collection by ID
 func (z Groups) GroupByID() map[string]*Group {
 	result := make(map[string]*Group)

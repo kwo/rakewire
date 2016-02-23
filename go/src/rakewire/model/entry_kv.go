@@ -233,3 +233,47 @@ func (z *Entry) indexKeys() map[string][]string {
 
 	return result
 }
+
+// serializeIndexes returns all index records
+func (z *Entry) serializeIndexes() map[string]Record {
+
+	result := make(map[string]Record)
+
+	data := z.serialize(true)
+
+	var keys []string
+
+	keys = []string{}
+
+	keys = append(keys, data[entryUserID])
+
+	keys = append(keys, data[entryIsRead])
+
+	keys = append(keys, data[entryUpdated])
+
+	keys = append(keys, data[entryID])
+
+	result[entryIndexRead] = Record{string(kvKeyEncode(keys...)): data[entryID]}
+
+	keys = []string{}
+
+	keys = append(keys, data[entryUserID])
+
+	keys = append(keys, data[entryIsStar])
+
+	keys = append(keys, data[entryUpdated])
+
+	keys = append(keys, data[entryID])
+
+	result[entryIndexStar] = Record{string(kvKeyEncode(keys...)): data[entryID]}
+
+	keys = []string{}
+
+	keys = append(keys, data[entryUserID])
+
+	keys = append(keys, data[entryID])
+
+	result[entryIndexUser] = Record{string(kvKeyEncode(keys...)): data[entryID]}
+
+	return result
+}

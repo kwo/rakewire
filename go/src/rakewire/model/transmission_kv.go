@@ -358,3 +358,31 @@ func (z *Transmission) indexKeys() map[string][]string {
 
 	return result
 }
+
+// serializeIndexes returns all index records
+func (z *Transmission) serializeIndexes() map[string]Record {
+
+	result := make(map[string]Record)
+
+	data := z.serialize(true)
+
+	var keys []string
+
+	keys = []string{}
+
+	keys = append(keys, data[transmissionFeedID])
+
+	keys = append(keys, data[transmissionStartTime])
+
+	result[transmissionIndexFeedTime] = Record{string(kvKeyEncode(keys...)): data[transmissionID]}
+
+	keys = []string{}
+
+	keys = append(keys, data[transmissionStartTime])
+
+	keys = append(keys, data[transmissionID])
+
+	result[transmissionIndexTime] = Record{string(kvKeyEncode(keys...)): data[transmissionID]}
+
+	return result
+}

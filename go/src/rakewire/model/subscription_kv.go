@@ -238,3 +238,31 @@ func (z *Subscription) indexKeys() map[string][]string {
 
 	return result
 }
+
+// serializeIndexes returns all index records
+func (z *Subscription) serializeIndexes() map[string]Record {
+
+	result := make(map[string]Record)
+
+	data := z.serialize(true)
+
+	var keys []string
+
+	keys = []string{}
+
+	keys = append(keys, data[subscriptionFeedID])
+
+	keys = append(keys, data[subscriptionUserID])
+
+	result[subscriptionIndexFeed] = Record{string(kvKeyEncode(keys...)): data[subscriptionID]}
+
+	keys = []string{}
+
+	keys = append(keys, data[subscriptionUserID])
+
+	keys = append(keys, data[subscriptionFeedID])
+
+	result[subscriptionIndexUser] = Record{string(kvKeyEncode(keys...)): data[subscriptionID]}
+
+	return result
+}
