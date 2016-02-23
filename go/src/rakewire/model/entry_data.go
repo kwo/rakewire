@@ -25,7 +25,7 @@ func EntriesAddNew(allItems Items, tx Transaction) error {
 
 	for feedID, items := range keyedItems {
 
-		// subscription Feed index = FeedID|UserID : SubscriptionID
+		// subscription index Feed = FeedID|UserID : SubscriptionID
 		min, max := kvKeyMinMax(feedID)
 		bIndex := tx.Bucket(bucketIndex).Bucket(subscriptionEntity).Bucket(subscriptionIndexFeed)
 		bSubscription := tx.Bucket(bucketData).Bucket(subscriptionEntity)
