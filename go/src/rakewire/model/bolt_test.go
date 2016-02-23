@@ -108,10 +108,7 @@ func TestContainerIterate(t *testing.T) {
 	}
 
 	if err := database.Select(func(tx Transaction) error {
-		feeds, err := tx.Container("Data/Feed")
-		if err != nil {
-			return err
-		}
+		feeds := tx.Bucket("Data", "Feed")
 		return feeds.Iterate(func(record Record) error {
 			for k, v := range record {
 				t.Logf("%s: %s", k, v)
@@ -133,17 +130,14 @@ func TestContainerPutGetDelete(t *testing.T) {
 
 	if err := database.Update(func(tx Transaction) error {
 
-		items, err := tx.Container(bucketData, itemEntity)
-		if err != nil {
-			return err
-		}
+		items := tx.Bucket(bucketData, itemEntity)
 
 		for i := 1; i < 10; i++ {
 			item := &Item{}
 			item.FeedID = kvKeyUintEncode(3)
 			item.GUID = fmt.Sprintf("localhost%d", i)
 			item.ID = kvKeyUintEncode(uint64(i))
-			if err := items.Put(item.serialize()); err != nil {
+			if err := items.PutRecord(item.serialize()); err != nil {
 				return err
 			}
 		}
@@ -156,14 +150,11 @@ func TestContainerPutGetDelete(t *testing.T) {
 
 	if err := database.Select(func(tx Transaction) error {
 
-		items, err := tx.Container(bucketData, itemEntity)
-		if err != nil {
-			return err
-		}
+		items := tx.Bucket(bucketData, itemEntity)
 
 		for i := 1; i < 10; i++ {
 			item := &Item{}
-			record, err := items.Get(kvKeyUintEncode(uint64(i)))
+			record, err := items.GetRecord(kvKeyUintEncode(uint64(i)))
 			if err != nil {
 				return err
 			}
@@ -183,10 +174,7 @@ func TestContainerPutGetDelete(t *testing.T) {
 
 	if err := database.Update(func(tx Transaction) error {
 
-		items, err := tx.Container(bucketData, itemEntity)
-		if err != nil {
-			return err
-		}
+		items := tx.Bucket(bucketData, itemEntity)
 
 		for i := 1; i < 10; i++ {
 			if err := items.Delete(kvKeyUintEncode(uint64(i))); err != nil {

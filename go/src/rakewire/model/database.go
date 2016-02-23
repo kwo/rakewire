@@ -48,26 +48,19 @@ type Database interface {
 
 // Transaction represents an atomic operation to the database
 type Transaction interface {
-	Bucket(name string) Bucket
-	Container(paths ...string) (Container, error)
+	Bucket(name ...string) Bucket
 }
 
 // Bucket holds key-values
 type Bucket interface {
-	Bucket(name string) Bucket
+	Bucket(name ...string) Bucket
 	Cursor() Cursor
 	Delete(id string) error
 	Get(key []byte) []byte
 	Put(key []byte, value []byte) error
-}
-
-// Container operate on records
-type Container interface {
-	Container(paths ...string) (Container, error)
-	Delete(id string) error
-	Get(id string) (Record, error)
-	Iterate(onRecord OnRecord, flags ...bool) error
-	Put(record Record) error
+	GetRecord(id string) (Record, error)
+	PutRecord(record Record) error
+	Iterate(onRecord OnRecord) error
 }
 
 // Cursor loops through values in a bucket

@@ -259,23 +259,17 @@ func copyContainers(src, dst Database) error {
 	for entityName, entity := range containers {
 		log.Printf("  %s...", entityName)
 		err := src.Select(func(srcTx Transaction) error {
-			srcContainer, err := srcTx.Container(bucketData, entityName)
-			if err != nil {
-				return err
-			}
+			srcBucket := srcTx.Bucket(bucketData, entityName)
 			return dst.Update(func(dstTx Transaction) error {
-				dstContainer, err := dstTx.Container(bucketData, entityName)
-				if err != nil {
-					return err
-				}
-				return srcContainer.Iterate(func(record Record) error {
+				dstBucket := dstTx.Bucket(bucketData, entityName)
+				return srcBucket.Iterate(func(record Record) error {
 					entity.clear()
 					if err := entity.deserialize(record, true); err != nil {
 						log.Printf("  Error in record (%d): %s", record.GetID(), err.Error())
 						return nil
 					}
-					return dstContainer.Put(record)
-				}, true)
+					return dstBucket.PutRecord(record)
+				})
 			})
 		})
 		if err != nil {
@@ -294,13 +288,10 @@ func checkEntries(db Database) error {
 	return db.Update(func(tx Transaction) error {
 
 		userCache := make(map[string]Record)
-		users, err := tx.Container(bucketData, userEntity)
-		if err != nil {
-			return err
-		}
+		users := tx.Bucket(bucketData, userEntity)
 		userExists := func(userID string) bool {
 			if _, ok := userCache[userID]; !ok {
-				if u, err := users.Get(userID); err == nil {
+				if u, err := users.GetRecord(userID); err == nil {
 					userCache[userID] = u
 				}
 			}
@@ -309,13 +300,10 @@ func checkEntries(db Database) error {
 		}
 
 		itemCache := make(map[string]Record)
-		items, err := tx.Container(bucketData, itemEntity)
-		if err != nil {
-			return err
-		}
+		items := tx.Bucket(bucketData, itemEntity)
 		itemExists := func(itemID string) bool {
 			if _, ok := itemCache[itemID]; !ok {
-				if i, err := items.Get(itemID); err == nil {
+				if i, err := items.GetRecord(itemID); err == nil {
 					itemCache[itemID] = i
 				}
 			}
@@ -324,13 +312,10 @@ func checkEntries(db Database) error {
 		}
 
 		subscriptionCache := make(map[string]Record)
-		subscriptions, err := tx.Container(bucketData, subscriptionEntity)
-		if err != nil {
-			return err
-		}
+		subscriptions := tx.Bucket(bucketData, subscriptionEntity)
 		subscriptionExists := func(subscriptionID string) bool {
 			if _, ok := subscriptionCache[subscriptionID]; !ok {
-				if s, err := subscriptions.Get(subscriptionID); err == nil {
+				if s, err := subscriptions.GetRecord(subscriptionID); err == nil {
 					subscriptionCache[subscriptionID] = s
 				}
 			}
@@ -340,10 +325,7 @@ func checkEntries(db Database) error {
 
 		badIDs := []string{}
 
-		entries, err := tx.Container(bucketData, entryEntity)
-		if err != nil {
-			return err
-		}
+		entries := tx.Bucket(bucketData, entryEntity)
 
 		entry := &Entry{}
 		entries.Iterate(func(record Record) error {
@@ -383,10 +365,7 @@ func checkFeedDuplicates(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		subscriptions, err := tx.Container(bucketData, subscriptionEntity)
-		if err != nil {
-			return err
-		}
+		subscriptions := tx.Bucket(bucketData, subscriptionEntity)
 		findSubscriptions := func(feedID string) Subscriptions {
 			result := Subscriptions{}
 			subscriptions.Iterate(func(record Record) error {
@@ -420,7 +399,7 @@ func checkFeedDuplicates(db Database) error {
 					for _, s := range subs {
 						log.Printf("      updating subscription for url: %d", s.ID)
 						s.FeedID = masterFeedID
-						if err := subscriptions.Put(s.serialize()); err != nil {
+						if err := subscriptions.PutRecord(s.serialize()); err != nil {
 							return err
 						}
 					} // loop thru subscriptions
@@ -440,10 +419,7 @@ func checkFeeds(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		subscriptions, err := tx.Container(bucketData, subscriptionEntity)
-		if err != nil {
-			return err
-		}
+		subscriptions := tx.Bucket(bucketData, subscriptionEntity)
 		subscriptionExists := func(feedID string) bool {
 			result := false
 			subscription := &Subscription{}
@@ -461,10 +437,7 @@ func checkFeeds(db Database) error {
 		}
 
 		badIDs := []string{}
-		feeds, err := tx.Container(bucketData, feedEntity)
-		if err != nil {
-			return err
-		}
+		feeds := tx.Bucket(bucketData, feedEntity)
 
 		feed := &Feed{}
 		feeds.Iterate(func(record Record) error {
@@ -499,13 +472,10 @@ func checkGroups(db Database) error {
 	return db.Update(func(tx Transaction) error {
 
 		userCache := make(map[string]Record)
-		users, err := tx.Container(bucketData, userEntity)
-		if err != nil {
-			return err
-		}
+		users := tx.Bucket(bucketData, userEntity)
 		userExists := func(userID string) bool {
 			if _, ok := userCache[userID]; !ok {
-				if u, err := users.Get(userID); err == nil {
+				if u, err := users.GetRecord(userID); err == nil {
 					userCache[userID] = u
 				}
 			}
@@ -515,10 +485,7 @@ func checkGroups(db Database) error {
 
 		badIDs := []string{}
 
-		groups, err := tx.Container(bucketData, groupEntity)
-		if err != nil {
-			return err
-		}
+		groups := tx.Bucket(bucketData, groupEntity)
 
 		group := &Group{}
 		groups.Iterate(func(record Record) error {
@@ -552,13 +519,10 @@ func checkItems(db Database) error {
 	return db.Update(func(tx Transaction) error {
 
 		feedCache := make(map[string]Record)
-		feeds, err := tx.Container(bucketData, feedEntity)
-		if err != nil {
-			return err
-		}
+		feeds := tx.Bucket(bucketData, feedEntity)
 		feedExists := func(feedID string) bool {
 			if _, ok := feedCache[feedID]; !ok {
-				if u, err := feeds.Get(feedID); err == nil {
+				if u, err := feeds.GetRecord(feedID); err == nil {
 					feedCache[feedID] = u
 				}
 			}
@@ -567,10 +531,7 @@ func checkItems(db Database) error {
 		}
 
 		badIDs := []string{}
-		items, err := tx.Container(bucketData, itemEntity)
-		if err != nil {
-			return err
-		}
+		items := tx.Bucket(bucketData, itemEntity)
 
 		item := &Item{}
 		items.Iterate(func(record Record) error {
@@ -605,13 +566,10 @@ func checkSubscriptions(db Database) error {
 	return db.Update(func(tx Transaction) error {
 
 		userCache := make(map[string]Record)
-		users, err := tx.Container(bucketData, userEntity)
-		if err != nil {
-			return err
-		}
+		users := tx.Bucket(bucketData, userEntity)
 		userExists := func(userID string) bool {
 			if _, ok := userCache[userID]; !ok {
-				if u, err := users.Get(userID); err == nil {
+				if u, err := users.GetRecord(userID); err == nil {
 					userCache[userID] = u
 				}
 			}
@@ -620,13 +578,10 @@ func checkSubscriptions(db Database) error {
 		}
 
 		feedCache := make(map[string]Record)
-		feeds, err := tx.Container(bucketData, feedEntity)
-		if err != nil {
-			return err
-		}
+		feeds := tx.Bucket(bucketData, feedEntity)
 		feedExists := func(feedID string) bool {
 			if _, ok := feedCache[feedID]; !ok {
-				if u, err := feeds.Get(feedID); err == nil {
+				if u, err := feeds.GetRecord(feedID); err == nil {
 					feedCache[feedID] = u
 				}
 			}
@@ -635,13 +590,10 @@ func checkSubscriptions(db Database) error {
 		}
 
 		groupCache := make(map[string]*Group)
-		groups, err := tx.Container(bucketData, groupEntity)
-		if err != nil {
-			return err
-		}
+		groups := tx.Bucket(bucketData, groupEntity)
 		groupExists := func(groupID, userID string) bool {
 			if _, ok := groupCache[groupID]; !ok {
-				if record, err := groups.Get(groupID); err == nil {
+				if record, err := groups.GetRecord(groupID); err == nil {
 					if record != nil {
 						g := &Group{}
 						if err := g.deserialize(record); err == nil {
@@ -659,10 +611,7 @@ func checkSubscriptions(db Database) error {
 		badIDs := []string{}
 		cleanedSubscriptions := Subscriptions{}
 
-		subscriptions, err := tx.Container(bucketData, subscriptionEntity)
-		if err != nil {
-			return err
-		}
+		subscriptions := tx.Bucket(bucketData, subscriptionEntity)
 
 		subscription := &Subscription{}
 		subscriptions.Iterate(func(record Record) error {
@@ -711,7 +660,7 @@ func checkSubscriptions(db Database) error {
 		// resave cleaned subscriptions
 		for _, subscription := range cleanedSubscriptions {
 			// use container, because operating on database without indexes yet
-			if err := subscriptions.Put(subscription.serialize()); err != nil {
+			if err := subscriptions.PutRecord(subscription.serialize()); err != nil {
 				return err
 			}
 		}
@@ -729,13 +678,10 @@ func checkTransmissions(db Database) error {
 	return db.Update(func(tx Transaction) error {
 
 		feedCache := make(map[string]Record)
-		feeds, err := tx.Container(bucketData, feedEntity)
-		if err != nil {
-			return err
-		}
+		feeds := tx.Bucket(bucketData, feedEntity)
 		feedExists := func(feedID string) bool {
 			if _, ok := feedCache[feedID]; !ok {
-				if u, err := feeds.Get(feedID); err == nil {
+				if u, err := feeds.GetRecord(feedID); err == nil {
 					feedCache[feedID] = u
 				}
 			}
@@ -744,10 +690,7 @@ func checkTransmissions(db Database) error {
 		}
 
 		badIDs := []string{}
-		transmissions, err := tx.Container(bucketData, transmissionEntity)
-		if err != nil {
-			return err
-		}
+		transmissions := tx.Bucket(bucketData, transmissionEntity)
 
 		transmission := &Transmission{}
 		transmissions.Iterate(func(record Record) error {
@@ -790,10 +733,7 @@ func rebuildIndexes(db Database) error {
 		log.Printf("  %s...", entityName)
 
 		err := db.Update(func(tx Transaction) error {
-			container, err := tx.Container(bucketData, entityName)
-			if err != nil {
-				return err
-			}
+			container := tx.Bucket(bucketData, entityName)
 			return container.Iterate(func(record Record) error {
 				entity.clear()
 				if err := entity.deserialize(record); err != nil {

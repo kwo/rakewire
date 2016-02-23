@@ -12,12 +12,8 @@ func FeedsAll(tx Transaction) (Feeds, error) {
 
 	result := Feeds{}
 
-	cFeeds, err := tx.Container(bucketData, feedEntity)
-	if err != nil {
-		return nil, err
-	}
-
-	err = cFeeds.Iterate(func(record Record) error {
+	cFeeds := tx.Bucket(bucketData, feedEntity)
+	err := cFeeds.Iterate(func(record Record) error {
 		f := &Feed{}
 		if err := f.deserialize(record); err != nil {
 			return err

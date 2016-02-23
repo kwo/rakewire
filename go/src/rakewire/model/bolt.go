@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/boltdb/bolt"
 	semver "github.com/hashicorp/go-version"
-	"strings"
 	"sync"
 	"time"
 )
@@ -104,19 +103,7 @@ type boltTransaction struct {
 	tx *bolt.Tx
 }
 
-func (z *boltTransaction) Bucket(name string) Bucket {
-	bucket := z.tx.Bucket([]byte(name))
-	if bucket == nil {
-		return nil
-	}
-	return &boltBucket{bucket: bucket}
-}
-
-func (z *boltTransaction) Container(paths ...string) (Container, error) {
-	names := []string{}
-	for _, path := range paths {
-		names = append(names, strings.Split(path, ContainerSeparator)...)
-	}
+func (z *boltTransaction) Bucket(names ...string) Bucket {
 	var b *bolt.Bucket
 	for i, name := range names {
 		if i == 0 {
@@ -125,22 +112,25 @@ func (z *boltTransaction) Container(paths ...string) (Container, error) {
 			b = b.Bucket([]byte(name))
 		}
 		if b == nil {
-			return nil, nil
+			return nil
 		}
 	}
-	return &boltContainer{bucket: b}, nil
+	return &boltBucket{bucket: b}
 }
 
 type boltBucket struct {
 	bucket *bolt.Bucket
 }
 
-func (z *boltBucket) Bucket(name string) Bucket {
-	bucket := z.bucket.Bucket([]byte(name))
-	if bucket == nil {
-		return nil
+func (z *boltBucket) Bucket(names ...string) Bucket {
+	b := z.bucket
+	for _, name := range names {
+		b = b.Bucket([]byte(name))
+		if b == nil {
+			return nil
+		}
 	}
-	return &boltBucket{bucket: bucket}
+	return &boltBucket{bucket: b}
 }
 
 func (z *boltBucket) Cursor() Cursor {
@@ -173,51 +163,7 @@ func (z *boltBucket) Get(key []byte) []byte {
 	return z.bucket.Get(key)
 }
 
-func (z *boltBucket) Put(key, value []byte) error {
-	return z.bucket.Put(key, value)
-}
-
-type boltContainer struct {
-	bucket *bolt.Bucket
-}
-
-func (z *boltContainer) Container(paths ...string) (Container, error) {
-	names := []string{}
-	for _, path := range paths {
-		names = append(names, strings.Split(path, ContainerSeparator)...)
-	}
-	b := z.bucket
-	for _, name := range names {
-		b = b.Bucket([]byte(name))
-		if b == nil {
-			return nil, nil
-		}
-	}
-	return &boltContainer{bucket: b}, nil
-}
-
-func (z *boltContainer) Delete(id string) error {
-
-	keys := [][]byte{}
-
-	c := z.bucket.Cursor()
-	min, max := kvKeyMinMax(id)
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
-		keys = append(keys, k)
-		// do not delete in a cursor, it is buggy, sometimes advancing the position
-	} // for loop
-
-	for _, k := range keys {
-		if err := z.bucket.Delete(k); err != nil {
-			return err
-		}
-	}
-
-	return nil
-
-}
-
-func (z *boltContainer) Get(id string) (Record, error) {
+func (z *boltBucket) GetRecord(id string) (Record, error) {
 
 	found := false
 	record := make(Record)
@@ -239,9 +185,31 @@ func (z *boltContainer) Get(id string) (Record, error) {
 
 }
 
-func (z *boltContainer) Iterate(onRecord OnRecord, flags ...bool) error {
+func (z *boltBucket) Put(key, value []byte) error {
+	return z.bucket.Put(key, value)
+}
 
-	//flagIgnoreBaddies := len(flags) > 0 && flags[0]
+func (z *boltBucket) PutRecord(record Record) error {
+
+	id := record.GetID()
+
+	if err := z.Delete(id); err != nil {
+		return err
+	}
+
+	for fieldname, v := range record {
+		key := kvKeyEncode(id, fieldname)
+		value := []byte(v)
+		if err := z.bucket.Put(key, value); err != nil {
+			return err
+		}
+	}
+
+	return nil
+
+}
+
+func (z *boltBucket) Iterate(onRecord OnRecord) error {
 
 	firstRow := false
 	var lastID string
@@ -279,26 +247,6 @@ func (z *boltContainer) Iterate(onRecord OnRecord, flags ...bool) error {
 	// fire last one
 	if len(record) > 0 {
 		if err := onRecord(record); err != nil {
-			return err
-		}
-	}
-
-	return nil
-
-}
-
-func (z *boltContainer) Put(record Record) error {
-
-	id := record.GetID()
-
-	if err := z.Delete(id); err != nil {
-		return err
-	}
-
-	for fieldname, v := range record {
-		key := kvKeyEncode(id, fieldname)
-		value := []byte(v)
-		if err := z.bucket.Put(key, value); err != nil {
 			return err
 		}
 	}
