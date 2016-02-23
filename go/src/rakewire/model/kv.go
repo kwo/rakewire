@@ -85,14 +85,15 @@ func kvGetFromIndex(name, index string, keys []string, tx Transaction) (map[stri
 
 func kvPut(id string, record Record, b Bucket) error {
 
-	keys := [][]byte{}
+	keys := []string{}
 
 	// remove record keys not in new set
 	c := b.Cursor()
 	min, max := kvKeyMinMax(id)
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
-		if _, ok := record[kvKeyDecode(k)[1]]; !ok {
-			keys = append(keys, k)
+		fieldname := kvKeyDecode(k)[1]
+		if _, ok := record[fieldname]; !ok {
+			keys = append(keys, string(k))
 		}
 	}
 
@@ -175,7 +176,7 @@ func kvSaveIndexes(name string, id string, newIndexes map[string]Record, oldInde
 		oldIndexRecord := oldIndexes[indexName]
 		b := indexBucket.Bucket(indexName)
 		for key := range oldIndexRecord {
-			if err := b.Delete([]byte(key)); err != nil {
+			if err := b.Delete(key); err != nil {
 				return err
 			}
 		}
@@ -202,14 +203,14 @@ func kvDelete(name string, value Object, tx Transaction) error {
 		return fmt.Errorf("Cannot delete %s with blank ID", name)
 	}
 
-	keys := [][]byte{}
+	keys := []string{}
 	b := tx.Bucket(bucketData).Bucket(name)
 
 	// collect keys
 	c := b.Cursor()
 	min, max := kvKeyMinMax(value.getID())
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
-		keys = append(keys, k)
+		keys = append(keys, string(k))
 	}
 
 	// delete keys
@@ -224,7 +225,7 @@ func kvDelete(name string, value Object, tx Transaction) error {
 	for indexName, record := range value.serializeIndexes() {
 		b := indexBucket.Bucket(indexName)
 		for key := range record {
-			if err := b.Delete([]byte(key)); err != nil {
+			if err := b.Delete(key); err != nil {
 				return err
 			}
 		}

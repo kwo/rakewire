@@ -148,8 +148,25 @@ func (z *boltBucket) Cursor() Cursor {
 	return &boltCursor{cursor: cursor}
 }
 
-func (z *boltBucket) Delete(key []byte) error {
-	return z.bucket.Delete(key)
+func (z *boltBucket) Delete(id string) error {
+
+	keys := [][]byte{}
+
+	c := z.bucket.Cursor()
+	min, max := kvKeyMinMax(id)
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
+		keys = append(keys, k)
+		// do not delete in a cursor, it is buggy, sometimes advancing the position
+	} // for loop
+
+	for _, k := range keys {
+		if err := z.bucket.Delete(k); err != nil {
+			return err
+		}
+	}
+
+	return nil
+
 }
 
 func (z *boltBucket) Get(key []byte) []byte {

@@ -56,7 +56,7 @@ type Transaction interface {
 type Bucket interface {
 	Bucket(name string) Bucket
 	Cursor() Cursor
-	Delete(key []byte) error
+	Delete(id string) error
 	Get(key []byte) []byte
 	Put(key []byte, value []byte) error
 }
