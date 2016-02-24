@@ -30,7 +30,6 @@ type fnUniqueID func() (uint64, string, error)
 type Object interface {
 	getID() string
 	setIDIfNecessary(fnUniqueID) error
-	clear()
 	serialize(...bool) Record
 	deserialize(Record, ...bool) error
 	serializeIndexes() map[string]Record

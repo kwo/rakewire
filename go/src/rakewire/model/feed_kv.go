@@ -149,6 +149,7 @@ func (z *Feed) serialize(flags ...bool) Record {
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
 func (z *Feed) deserialize(values Record, flags ...bool) error {
 	flagUnknownCheck := len(flags) > 0 && flags[0]
+	z.clear()
 
 	var errors []error
 	var missing []string

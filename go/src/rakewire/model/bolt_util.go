@@ -247,7 +247,6 @@ func copyContainers(src, dst Database) error {
 			return dst.Update(func(dstTx Transaction) error {
 				dstBucket := dstTx.Bucket(bucketData, entityName)
 				return srcBucket.Iterate(func(record Record) error {
-					entity.clear()
 					if err := entity.deserialize(record, true); err != nil {
 						log.Printf("  Error in record (%d): %s", record.GetID(), err.Error())
 						return nil
@@ -719,7 +718,6 @@ func rebuildIndexes(db Database) error {
 		err := db.Update(func(tx Transaction) error {
 			container := tx.Bucket(bucketData, entityName)
 			return container.Iterate(func(record Record) error {
-				entity.clear()
 				if err := entity.deserialize(record); err != nil {
 					return err
 				}

@@ -78,14 +78,12 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 
 	if oldValues != nil {
 
-		value.clear()
 		if err := value.deserialize(oldValues); err != nil {
 			return err
 		}
 		oldIndexes = value.serializeIndexes()
 
 		// put new values back
-		value.clear()
 		if err := value.deserialize(newValues); err != nil {
 			return err
 		}
