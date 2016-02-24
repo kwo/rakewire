@@ -20,6 +20,8 @@ func TestEntryIndexes(t *testing.T) {
 
 	for k, record := range indexes {
 
+		t.Logf("%s: %v", k, record)
+
 		if len(record) != 1 {
 			t.Errorf("invalid number of record entries, expected %d, actual %d", 1, len(record))
 		}
@@ -27,7 +29,7 @@ func TestEntryIndexes(t *testing.T) {
 		switch k {
 
 		case entryIndexRead:
-			expectedKey := "0000000002|0|" + updatedStr + "|0000000001"
+			expectedKey := "0000000002.0." + updatedStr + ".0000000001"
 			for key, value := range record {
 				if key != expectedKey {
 					t.Errorf("bad index key for %s: expected %s, actual %s", k, expectedKey, key)
@@ -38,7 +40,7 @@ func TestEntryIndexes(t *testing.T) {
 			}
 
 		case entryIndexStar:
-			expectedKey := "0000000002|0|" + updatedStr + "|0000000001"
+			expectedKey := "0000000002.0." + updatedStr + ".0000000001"
 			for key, value := range record {
 				if key != expectedKey {
 					t.Errorf("bad index key for %s: expected %s, actual %s", k, expectedKey, key)
@@ -49,7 +51,7 @@ func TestEntryIndexes(t *testing.T) {
 			}
 
 		case entryIndexUser:
-			expectedKey := "0000000002|0000000001"
+			expectedKey := "0000000002.0000000001"
 			for key, value := range record {
 				if key != expectedKey {
 					t.Errorf("bad index key for %s: expected %s, actual %s", k, expectedKey, key)

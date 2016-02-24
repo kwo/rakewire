@@ -40,7 +40,7 @@ func checkSchema(tx *bolt.Tx) error {
 	var b *bolt.Bucket
 
 	// top level
-	bConfig, err := tx.CreateBucketIfNotExists([]byte(bucketConfig))
+	_, err := tx.CreateBucketIfNotExists([]byte(bucketConfig))
 	if err != nil {
 		return err
 	}
@@ -55,9 +55,6 @@ func checkSchema(tx *bolt.Tx) error {
 
 	// data & indexes
 	for entityName, entityIndexes := range allEntities {
-		if err := addEntryIfNotExists(bConfig, "sequence."+strings.ToLower(entityName), "0"); err != nil {
-			return err
-		}
 		if _, err = bData.CreateBucketIfNotExists([]byte(entityName)); err != nil {
 			return err
 		}
@@ -199,19 +196,6 @@ func checkIntegrity(location string) error {
 	}
 
 	log.Println("checking database integrity...complete")
-
-	return nil
-
-}
-
-func addEntryIfNotExists(b *bolt.Bucket, key, value string) error {
-
-	v := b.Get([]byte(key))
-	if v == nil || len(v) == 0 {
-		if err := b.Put([]byte(key), []byte(value)); err != nil {
-			return err
-		}
-	}
 
 	return nil
 

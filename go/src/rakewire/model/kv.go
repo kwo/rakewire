@@ -11,9 +11,9 @@ import (
 
 const (
 	empty   = ""
-	chSep   = "|" // must come after any valid key character (no closing braces in keys)
+	chSep   = "." // must not be a valid key character
 	chMax   = "~" // must come after separator character
-	fmtTime = time.RFC3339
+	fmtTime = "20060102150405Z0700"
 	fmtUint = "%010d"
 )
 
@@ -237,18 +237,21 @@ func kvDelete(name string, value Object, tx Transaction) error {
 
 func kvNextID(entityName string, tx Transaction) (uint64, string, error) {
 
-	entryName := "sequence." + strings.ToLower(entityName)
-
+	idStr := "0"
+	key := "sequence"
 	b := tx.Bucket(bucketConfig)
 
 	// get previous value
-	idBytes := b.Get([]byte(entryName))
-	if idBytes == nil {
-		return 0, "", fmt.Errorf("No sequence found for %s", entityName)
+	record := b.GetRecord(key)
+	if record == nil {
+		record = make(Record)
+	}
+	if value, ok := record[entityName]; ok {
+		idStr = string(value)
 	}
 
 	// turn into a uint64
-	id, err := strconv.ParseUint(string(idBytes), 10, 64)
+	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
 		return 0, "", err
 	}
@@ -257,10 +260,11 @@ func kvNextID(entityName string, tx Transaction) (uint64, string, error) {
 	id++
 
 	// format as string
-	idStr := kvKeyUintEncode(id)
+	idStr = kvKeyUintEncode(id)
 
 	// save back to database
-	if err := b.Put([]byte(entryName), []byte(idStr)); err != nil {
+	record[entityName] = idStr
+	if err := b.PutRecord(key, record); err != nil {
 		return 0, "", err
 	}
 

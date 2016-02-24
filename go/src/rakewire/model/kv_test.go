@@ -90,3 +90,15 @@ func TestDeserialize(t *testing.T) {
 	}
 
 }
+
+func TestTimeFormat(t *testing.T) {
+
+	dt := time.Date(2016, time.February, 24, 10, 48, 23, 34, time.Local)
+
+	value := dt.UTC().Format(fmtTime)
+	expectedVaue := "20160224094823Z"
+	if value != expectedVaue {
+		t.Errorf("time format mismatch, expected %s, actual %s", expectedVaue, value)
+	}
+
+}
