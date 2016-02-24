@@ -1,7 +1,6 @@
 package model
 
 import (
-	"bytes"
 	"strings"
 )
 
@@ -47,22 +46,16 @@ func ItemsByFeed(feedID string, tx Transaction) (Items, error) {
 	bIndex := tx.Bucket(bucketIndex).Bucket(itemEntity).Bucket(itemIndexGUID)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
-	c := bIndex.Cursor()
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-
-		itemID := string(v)
-
-		if data, ok := kvGet(itemID, bItem); ok {
-			item := &Item{}
-			if err := item.deserialize(data); err != nil {
-				return nil, err
-			}
-			items = append(items, item)
+	err := bIndex.IterateIndex(bItem, min, max, func(record Record) error {
+		item := &Item{}
+		if err := item.deserialize(record); err != nil {
+			return err
 		}
+		items = append(items, item)
+		return nil
+	})
 
-	} // loop
-
-	return items, nil
+	return items, err
 
 }
 

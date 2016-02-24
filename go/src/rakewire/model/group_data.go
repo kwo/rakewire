@@ -8,10 +8,10 @@ import (
 
 // GroupByID retrieves a single group.
 func GroupByID(groupID string, tx Transaction) (group *Group, err error) {
-	b := tx.Bucket(bucketData).Bucket(groupEntity)
-	if values, ok := kvGet(groupID, b); ok {
+	b := tx.Bucket(bucketData, groupEntity)
+	if record := b.GetRecord(groupID); record != nil {
 		group = &Group{}
-		err = group.deserialize(values)
+		err = group.deserialize(record)
 	}
 	return
 }
@@ -22,16 +22,16 @@ func GroupsByUser(userID string, tx Transaction) (Groups, error) {
 	result := Groups{}
 
 	// group index UserGroup = UserID|Name : GroupID
-	min, max := kvKeyMinMax(userID)
+	min, max := kvKeyMinMax2(userID)
 	bIndex := tx.Bucket(bucketIndex).Bucket(groupEntity).Bucket(groupIndexUserGroup)
 	b := tx.Bucket(bucketData).Bucket(groupEntity)
 
 	c := bIndex.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		groupID := string(v)
-		if data, ok := kvGet(groupID, b); ok {
+		if record := b.GetRecord(groupID); record != nil {
 			g := &Group{}
-			if err := g.deserialize(data); err != nil {
+			if err := g.deserialize(record); err != nil {
 				return nil, err
 			}
 			result = append(result, g)
@@ -50,7 +50,7 @@ func GroupByName(userID, groupName string, tx Transaction) (group *Group, err er
 
 	key := kvKeyEncode(userID, strings.ToLower(groupName))
 
-	if record := bIndex.GetIndex(bGroup, string(key)); record != nil {
+	if record := bIndex.GetIndex(bGroup, key); record != nil {
 		group = &Group{}
 		err = group.deserialize(record)
 	}

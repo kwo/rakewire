@@ -1,7 +1,6 @@
 package model
 
 import (
-	"bytes"
 	"time"
 )
 
@@ -14,29 +13,23 @@ func TransmissionsByFeed(feedID string, since time.Duration, tx Transaction) (Tr
 	// transmission index FeedTime = FeedID|StartTime : TransmissionID
 	now := time.Now().Truncate(time.Second)
 	min := kvKeyEncode(feedID, kvKeyTimeEncode(now.Add(-since)))
-	max := kvKeyEncode(feedID, kvKeyTimeEncode(now.Add(1*time.Minute))) // max later than now
-	bIndex := tx.Bucket(bucketIndex).Bucket(transmissionEntity).Bucket(transmissionIndexFeedTime)
-	b := tx.Bucket(bucketData).Bucket(transmissionEntity)
+	max := kvKeyEncode(feedID, kvKeyTimeEncode(now))
+	bIndex := tx.Bucket(bucketIndex, transmissionEntity, transmissionIndexFeedTime)
+	bTransmission := tx.Bucket(bucketData, transmissionEntity)
 
-	c := bIndex.Cursor()
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-
-		transmissionID := string(v)
-
-		if data, ok := kvGet(transmissionID, b); ok {
-			transmission := &Transmission{}
-			if err := transmission.deserialize(data); err != nil {
-				return nil, err
-			}
-			transmissions = append(transmissions, transmission)
+	err := bIndex.IterateIndex(bTransmission, min, max, func(record Record) error {
+		transmission := &Transmission{}
+		if err := transmission.deserialize(record); err != nil {
+			return err
 		}
-
-	}
+		transmissions = append(transmissions, transmission)
+		return nil
+	})
 
 	// reverse order of result
 	transmissions.Reverse()
 
-	return transmissions, nil
+	return transmissions, err
 
 }
 

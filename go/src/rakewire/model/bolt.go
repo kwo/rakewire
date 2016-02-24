@@ -144,7 +144,7 @@ func (z *boltBucket) Delete(id string) error {
 
 	c := z.bucket.Cursor()
 	min, max := kvKeyMinMax(id)
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
+	for k, _ := c.Seek([]byte(min)); k != nil && bytes.Compare(k, []byte(max)) <= 0; k, _ = c.Next() {
 		keys = append(keys, k)
 		// do not delete in a cursor, it is buggy, sometimes advancing the position
 	} // for loop
@@ -178,18 +178,18 @@ func (z *boltBucket) GetRecord(id string) Record {
 
 	c := z.bucket.Cursor()
 	min, max := kvKeyMinMax(id)
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+	for k, v := c.Seek([]byte(min)); k != nil && bytes.Compare(k, []byte(max)) <= 0; k, v = c.Next() {
 		// assume proper key format of ID/fieldname
 		fieldname := kvKeyDecode(k)[1]
 		record[fieldname] = string(v)
 		found = true
 	} // for loop
 
-	if found {
-		return record
+	if !found {
+		return nil
 	}
 
-	return nil
+	return record
 
 }
 
@@ -204,7 +204,7 @@ func (z *boltBucket) PutRecord(id string, record Record) error {
 	}
 
 	for fieldname, v := range record {
-		key := kvKeyEncode(id, fieldname)
+		key := []byte(kvKeyEncode(id, fieldname))
 		value := []byte(v)
 		if err := z.bucket.Put(key, value); err != nil {
 			return err
@@ -263,11 +263,15 @@ func (z *boltBucket) Iterate(onRecord OnRecord) error {
 
 func (z *boltBucket) IterateIndex(b Bucket, minID, maxID string, onRecord OnRecord) error {
 
-	c := z.bucket.Cursor()
 	min := []byte(minID)
 	max := []byte(maxID)
+	c := z.bucket.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-		onRecord(b.GetRecord(string(v)))
+		if record := b.GetRecord(string(v)); record != nil {
+			if err := onRecord(record); err != nil {
+				return err
+			}
+		}
 	} // for loop
 
 	return nil

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 	"time"
@@ -29,38 +28,35 @@ func FeedsAll(tx Transaction) (Feeds, error) {
 // FeedsFetch get feeds to be fetched within the given max time parameter.
 func FeedsFetch(maxTime time.Time, tx Transaction) (Feeds, error) {
 
-	result := Feeds{}
+	feeds := Feeds{}
 
 	// feed index NextFetch = NextFetch|FeedID : FeedID
 	if maxTime.IsZero() {
 		maxTime = time.Now()
 	}
 	max := kvKeyMax(kvKeyTimeEncode(maxTime))
-	bIndex := tx.Bucket(bucketIndex).Bucket(feedEntity).Bucket(feedIndexNextFetch)
-	b := tx.Bucket(bucketData).Bucket(feedEntity)
+	bIndex := tx.Bucket(bucketIndex, feedEntity, feedIndexNextFetch)
+	bFeed := tx.Bucket(bucketData, feedEntity)
 
-	c := bIndex.Cursor()
-	for k, v := c.First(); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-		feedID := string(v)
-		if data, ok := kvGet(feedID, b); ok {
-			f := &Feed{}
-			if err := f.deserialize(data); err != nil {
-				return nil, err
-			}
-			result = append(result, f)
+	err := bIndex.IterateIndex(bFeed, "", max, func(record Record) error {
+		feed := &Feed{}
+		if err := feed.deserialize(record); err != nil {
+			return err
 		}
-	}
+		feeds = append(feeds, feed)
+		return nil
+	})
 
-	return result, nil
+	return feeds, err
 
 }
 
 // FeedByID return feed given id
 func FeedByID(id string, tx Transaction) (feed *Feed, err error) {
-	b := tx.Bucket(bucketData).Bucket(feedEntity)
-	if data, ok := kvGet(id, b); ok {
+	b := tx.Bucket(bucketData, feedEntity)
+	if record := b.GetRecord(id); record != nil {
 		feed = &Feed{}
-		err = feed.deserialize(data)
+		err = feed.deserialize(record)
 	}
 	return
 }

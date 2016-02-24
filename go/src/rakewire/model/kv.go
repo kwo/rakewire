@@ -52,58 +52,6 @@ func (z DeserializationError) Error() string {
 	return message
 }
 
-func kvGet(id string, b Bucket) (map[string]string, bool) {
-
-	found := false
-	result := make(map[string]string)
-
-	c := b.Cursor()
-	min, max := kvKeyMinMax(id)
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-		// assume proper key format of ID/fieldname
-		result[kvKeyDecode(k)[1]] = string(v)
-		found = true
-	} // for loop
-
-	return result, found
-
-}
-
-func kvPut(id string, record Record, b Bucket) error {
-
-	keys := []string{}
-
-	// remove record keys not in new set
-	c := b.Cursor()
-	min, max := kvKeyMinMax(id)
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
-		fieldname := kvKeyDecode(k)[1]
-		if _, ok := record[fieldname]; !ok {
-			keys = append(keys, string(k))
-		}
-	}
-
-	// delete keys
-	for _, k := range keys {
-		if err := b.Delete(k); err != nil {
-			return err
-		}
-	}
-
-	// add new records
-	for fieldName := range record {
-
-		key := kvKeyEncode(id, fieldName)
-		value := []byte(record[fieldName])
-		if err := b.Put(key, value); err != nil {
-			return err
-		}
-	} // for loop object fields
-
-	return nil
-
-}
-
 func kvSave(entityName string, value Object, tx Transaction) error {
 
 	b := tx.Bucket(bucketData).Bucket(entityName)
@@ -116,19 +64,19 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 		return err
 	}
 
-	oldValues, update := kvGet(value.getID(), b)
+	oldValues := b.GetRecord(value.getID())
 	newValues := value.serialize()
 	newIndexes := value.serializeIndexes()
 
 	// save item
-	if err := kvPut(value.getID(), newValues, b); err != nil {
+	if err := b.PutRecord(value.getID(), newValues); err != nil {
 		return err
 	}
 
 	// create old index values
 	oldIndexes := make(map[string]Record)
 
-	if update {
+	if oldValues != nil {
 
 		value.clear()
 		if err := value.deserialize(oldValues); err != nil {
@@ -194,7 +142,7 @@ func kvDelete(name string, value Object, tx Transaction) error {
 
 	// collect keys
 	c := b.Cursor()
-	min, max := kvKeyMinMax(value.getID())
+	min, max := kvKeyMinMax2(value.getID())
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
 		keys = append(keys, string(k))
 	}
@@ -258,20 +206,32 @@ func kvNextID(entityName string, tx Transaction) (uint64, string, error) {
 
 }
 
-func kvKeyEncode(values ...string) []byte {
-	return []byte(strings.Join(values, chSep))
+func kvKeyEncode(values ...string) string {
+	return strings.Join(values, chSep)
+}
+
+func kvKeyEncode2(values ...string) []byte {
+	return []byte(kvKeyEncode(values...))
 }
 
 func kvKeyDecode(value []byte) []string {
 	return strings.Split(string(value), chSep)
 }
 
-func kvKeyMax(values ...string) []byte {
-	return []byte(strings.Join(values, chSep) + chMax)
+func kvKeyMax(values ...string) string {
+	return strings.Join(values, chSep) + chMax
 }
 
-func kvKeyMinMax(id string) ([]byte, []byte) {
+func kvKeyMax2(values ...string) []byte {
+	return []byte(kvKeyMax(values...))
+}
+
+func kvKeyMinMax(id string) (string, string) {
 	return kvKeyEncode(id), kvKeyMax(id)
+}
+
+func kvKeyMinMax2(id string) ([]byte, []byte) {
+	return []byte(kvKeyEncode(id)), []byte(kvKeyMax(id))
 }
 
 func kvKeyBoolEncode(value bool) string {

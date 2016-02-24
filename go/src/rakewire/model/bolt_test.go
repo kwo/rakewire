@@ -10,40 +10,10 @@ import (
 
 func TestBoltDB(t *testing.T) {
 
+	t.Parallel()
+
 	db := openTestDatabase(t)
 	closeTestDatabase(t, db)
-
-}
-
-func openTestDatabase(t *testing.T) Database {
-
-	f, err := ioutil.TempFile("", "bolt-")
-	if err != nil {
-		t.Fatalf("Cannot acquire temp file: %s", err.Error())
-	}
-	f.Close()
-	location := f.Name()
-
-	boltDB, err := OpenDatabase(location)
-	if err != nil {
-		t.Fatalf("Cannot open database: %s", err.Error())
-	}
-
-	return boltDB
-
-}
-
-func closeTestDatabase(t *testing.T, d Database) {
-
-	location := d.Location()
-
-	if err := CloseDatabase(d); err != nil {
-		t.Errorf("Cannot close database: %s", err.Error())
-	}
-
-	if err := os.Remove(location); err != nil {
-		t.Errorf("Cannot remove temp file: %s", err.Error())
-	}
 
 }
 
@@ -92,7 +62,7 @@ func TestBackupDatabase(t *testing.T) {
 
 }
 
-func TestContainerIterate(t *testing.T) {
+func TestBucketIterate(t *testing.T) {
 
 	t.Parallel()
 
@@ -108,10 +78,15 @@ func TestContainerIterate(t *testing.T) {
 	}
 
 	if err := database.Select(func(tx Transaction) error {
-		feeds := tx.Bucket("Data", "Feed")
+		feeds := tx.Bucket(bucketData, feedEntity)
 		return feeds.Iterate(func(record Record) error {
+			counter := 0
 			for k, v := range record {
 				t.Logf("%s: %s", k, v)
+				counter++
+			}
+			if counter != 3 {
+				t.Errorf("Invalid number of entries in record, expected %d, actual %d", 3, counter)
 			}
 			return nil
 		})
@@ -121,7 +96,60 @@ func TestContainerIterate(t *testing.T) {
 
 }
 
-func TestContainerPutGetDelete(t *testing.T) {
+func TestBucketIndexIterate(t *testing.T) {
+
+	t.Parallel()
+
+	database := openTestDatabase(t, true)
+	defer closeTestDatabase(t, database)
+
+	if err := database.Select(func(tx Transaction) error {
+
+		user, err := UserByUsername(testUsername, tx)
+		if err != nil {
+			return err
+		}
+
+		expectedEntryCount := 40
+		entryCount := 0
+
+		bEntries := tx.Bucket(bucketData, entryEntity)
+		if err := bEntries.Iterate(func(record Record) error {
+			//t.Logf("entry bucket: %v", record)
+			entryCount++
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if entryCount != expectedEntryCount {
+			t.Errorf("Wrong number of entries, expected %d, actual %d", expectedEntryCount, entryCount)
+		}
+
+		entryCount = 0
+		min, max := kvKeyMinMax(user.ID)
+		bIndex := tx.Bucket(bucketIndex, entryEntity, entryIndexUser)
+		if err := bIndex.IterateIndex(bEntries, min, max, func(record Record) error {
+			//t.Logf("entry index:  %v", record)
+			entryCount++
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		if entryCount != expectedEntryCount {
+			t.Errorf("Wrong number of entries in index, expected %d, actual %d", expectedEntryCount, entryCount)
+		}
+
+		return nil
+
+	}); err != nil {
+		t.Fatalf("Error selecting database: %s", err.Error())
+	}
+
+}
+
+func TestBucketPutGetDeleteRecord(t *testing.T) {
 
 	t.Parallel()
 

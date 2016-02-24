@@ -66,3 +66,38 @@ func TestEntryIndexes(t *testing.T) {
 	}
 
 }
+
+func TestEntriesGetAll(t *testing.T) {
+
+	t.Parallel()
+
+	database := openTestDatabase(t, true)
+	defer closeTestDatabase(t, database)
+
+	err := database.Select(func(tx Transaction) error {
+
+		user, err := UserByUsername(testUsername, tx)
+		if err != nil {
+			return err
+		}
+
+		entries, err := EntriesGetAll(user.ID, tx)
+		if err != nil {
+			return err
+		}
+
+		if entries == nil {
+			t.Error("Nil entries")
+		} else if len(entries) == 0 {
+			t.Error("Zero entries")
+		}
+
+		return nil
+
+	})
+
+	if err != nil {
+		t.Errorf("Error when selecting from database: %s", err.Error())
+	}
+
+}
