@@ -118,27 +118,6 @@ func (z *{{.Name}}) deserialize(values Record, flags ...bool) error {
 	return newDeserializationError({{$struct.NameLower}}Entity, errors, missing, unknown)
 }
 
-// IndexKeys returns the keys of all indexes for this object.
-func (z *{{.Name}}) indexKeys() map[string][]string {
-	{{$struct := .}}
-	result := make(map[string][]string)
-	{{if ne (len .Indexes) 0}}
-	data := z.serialize(true)
-	{{end}}
-	{{range $name, $fields := .Indexes}}
-	result[{{$structure.NameLower}}Index{{$name}}] = []string{
-		{{range $index, $f := $fields}}
-			{{if eq $f.Filter "lower"}}
-				strings.ToLower(data[{{$struct.NameLower}}{{$f.Field}}]),
-			{{else}}
-				data[{{$struct.NameLower}}{{$f.Field}}],
-			{{end}}
-	  {{end}}
-	}
-	{{end}}
-	return result
-}
-
 // serializeIndexes returns all index records
 func (z *{{.Name}}) serializeIndexes() map[string]Record {
 	{{$struct := .}}

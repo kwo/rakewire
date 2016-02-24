@@ -131,26 +131,6 @@ func (z *User) deserialize(values Record, flags ...bool) error {
 	return newDeserializationError(userEntity, errors, missing, unknown)
 }
 
-// IndexKeys returns the keys of all indexes for this object.
-func (z *User) indexKeys() map[string][]string {
-
-	result := make(map[string][]string)
-
-	data := z.serialize(true)
-
-	result[userIndexFeverHash] = []string{
-
-		data[userFeverHash],
-	}
-
-	result[userIndexUsername] = []string{
-
-		strings.ToLower(data[userUsername]),
-	}
-
-	return result
-}
-
 // serializeIndexes returns all index records
 func (z *User) serializeIndexes() map[string]Record {
 

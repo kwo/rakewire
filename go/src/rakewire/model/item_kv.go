@@ -192,23 +192,6 @@ func (z *Item) deserialize(values Record, flags ...bool) error {
 	return newDeserializationError(itemEntity, errors, missing, unknown)
 }
 
-// IndexKeys returns the keys of all indexes for this object.
-func (z *Item) indexKeys() map[string][]string {
-
-	result := make(map[string][]string)
-
-	data := z.serialize(true)
-
-	result[itemIndexGUID] = []string{
-
-		data[itemFeedID],
-
-		data[itemGUID],
-	}
-
-	return result
-}
-
 // serializeIndexes returns all index records
 func (z *Item) serializeIndexes() map[string]Record {
 

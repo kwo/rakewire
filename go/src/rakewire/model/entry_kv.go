@@ -195,45 +195,6 @@ func (z *Entry) deserialize(values Record, flags ...bool) error {
 	return newDeserializationError(entryEntity, errors, missing, unknown)
 }
 
-// IndexKeys returns the keys of all indexes for this object.
-func (z *Entry) indexKeys() map[string][]string {
-
-	result := make(map[string][]string)
-
-	data := z.serialize(true)
-
-	result[entryIndexRead] = []string{
-
-		data[entryUserID],
-
-		data[entryIsRead],
-
-		data[entryUpdated],
-
-		data[entryID],
-	}
-
-	result[entryIndexStar] = []string{
-
-		data[entryUserID],
-
-		data[entryIsStar],
-
-		data[entryUpdated],
-
-		data[entryID],
-	}
-
-	result[entryIndexUser] = []string{
-
-		data[entryUserID],
-
-		data[entryID],
-	}
-
-	return result
-}
-
 // serializeIndexes returns all index records
 func (z *Entry) serializeIndexes() map[string]Record {
 

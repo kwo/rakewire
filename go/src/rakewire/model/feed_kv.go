@@ -240,28 +240,6 @@ func (z *Feed) deserialize(values Record, flags ...bool) error {
 	return newDeserializationError(feedEntity, errors, missing, unknown)
 }
 
-// IndexKeys returns the keys of all indexes for this object.
-func (z *Feed) indexKeys() map[string][]string {
-
-	result := make(map[string][]string)
-
-	data := z.serialize(true)
-
-	result[feedIndexNextFetch] = []string{
-
-		data[feedNextFetch],
-
-		data[feedID],
-	}
-
-	result[feedIndexURL] = []string{
-
-		strings.ToLower(data[feedURL]),
-	}
-
-	return result
-}
-
 // serializeIndexes returns all index records
 func (z *Feed) serializeIndexes() map[string]Record {
 

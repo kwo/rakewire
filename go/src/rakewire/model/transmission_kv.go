@@ -335,30 +335,6 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 	return newDeserializationError(transmissionEntity, errors, missing, unknown)
 }
 
-// IndexKeys returns the keys of all indexes for this object.
-func (z *Transmission) indexKeys() map[string][]string {
-
-	result := make(map[string][]string)
-
-	data := z.serialize(true)
-
-	result[transmissionIndexFeedTime] = []string{
-
-		data[transmissionFeedID],
-
-		data[transmissionStartTime],
-	}
-
-	result[transmissionIndexTime] = []string{
-
-		data[transmissionStartTime],
-
-		data[transmissionID],
-	}
-
-	return result
-}
-
 // serializeIndexes returns all index records
 func (z *Transmission) serializeIndexes() map[string]Record {
 

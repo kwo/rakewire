@@ -215,30 +215,6 @@ func (z *Subscription) deserialize(values Record, flags ...bool) error {
 	return newDeserializationError(subscriptionEntity, errors, missing, unknown)
 }
 
-// IndexKeys returns the keys of all indexes for this object.
-func (z *Subscription) indexKeys() map[string][]string {
-
-	result := make(map[string][]string)
-
-	data := z.serialize(true)
-
-	result[subscriptionIndexFeed] = []string{
-
-		data[subscriptionFeedID],
-
-		data[subscriptionUserID],
-	}
-
-	result[subscriptionIndexUser] = []string{
-
-		data[subscriptionUserID],
-
-		data[subscriptionFeedID],
-	}
-
-	return result
-}
-
 // serializeIndexes returns all index records
 func (z *Subscription) serializeIndexes() map[string]Record {
 

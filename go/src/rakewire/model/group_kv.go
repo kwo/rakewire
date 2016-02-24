@@ -126,23 +126,6 @@ func (z *Group) deserialize(values Record, flags ...bool) error {
 	return newDeserializationError(groupEntity, errors, missing, unknown)
 }
 
-// IndexKeys returns the keys of all indexes for this object.
-func (z *Group) indexKeys() map[string][]string {
-
-	result := make(map[string][]string)
-
-	data := z.serialize(true)
-
-	result[groupIndexUserGroup] = []string{
-
-		data[groupUserID],
-
-		strings.ToLower(data[groupName]),
-	}
-
-	return result
-}
-
 // serializeIndexes returns all index records
 func (z *Group) serializeIndexes() map[string]Record {
 
