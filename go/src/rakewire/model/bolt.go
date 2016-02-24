@@ -163,7 +163,19 @@ func (z *boltBucket) Get(key []byte) []byte {
 	return z.bucket.Get(key)
 }
 
-func (z *boltBucket) GetRecord(id string) (Record, error) {
+// GetIndex retrieves a Record from the given bucket looking up its ID in the current index bucket.
+func (z *boltBucket) GetIndex(b Bucket, id string) Record {
+
+	value := z.bucket.Get([]byte(id))
+	if value != nil {
+		return b.GetRecord(string(value))
+	}
+
+	return nil
+
+}
+
+func (z *boltBucket) GetRecord(id string) Record {
 
 	found := false
 	record := make(Record)
@@ -178,10 +190,10 @@ func (z *boltBucket) GetRecord(id string) (Record, error) {
 	} // for loop
 
 	if found {
-		return record, nil
+		return record
 	}
 
-	return nil, nil
+	return nil
 
 }
 
@@ -189,9 +201,7 @@ func (z *boltBucket) Put(key, value []byte) error {
 	return z.bucket.Put(key, value)
 }
 
-func (z *boltBucket) PutRecord(record Record) error {
-
-	id := record.GetID()
+func (z *boltBucket) PutRecord(id string, record Record) error {
 
 	if err := z.Delete(id); err != nil {
 		return err
@@ -250,6 +260,19 @@ func (z *boltBucket) Iterate(onRecord OnRecord) error {
 			return err
 		}
 	}
+
+	return nil
+
+}
+
+func (z *boltBucket) IterateIndex(b Bucket, minID, maxID string, onRecord OnRecord) error {
+
+	c := z.bucket.Cursor()
+	min := []byte(minID)
+	max := []byte(maxID)
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+		onRecord(b.GetRecord(string(v)))
+	} // for loop
 
 	return nil
 

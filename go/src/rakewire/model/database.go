@@ -56,11 +56,13 @@ type Bucket interface {
 	Bucket(name ...string) Bucket
 	Cursor() Cursor
 	Delete(id string) error
+	GetIndex(b Bucket, id string) Record
+	GetRecord(id string) Record
+	PutRecord(id string, record Record) error
+	Iterate(onRecord OnRecord) error
+	IterateIndex(b Bucket, minID, maxID string, onRecord OnRecord) error
 	Get(key []byte) []byte
 	Put(key []byte, value []byte) error
-	GetRecord(id string) (Record, error)
-	PutRecord(record Record) error
-	Iterate(onRecord OnRecord) error
 }
 
 // Cursor loops through values in a bucket

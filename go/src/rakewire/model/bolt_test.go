@@ -137,7 +137,7 @@ func TestContainerPutGetDelete(t *testing.T) {
 			item.FeedID = kvKeyUintEncode(3)
 			item.GUID = fmt.Sprintf("localhost%d", i)
 			item.ID = kvKeyUintEncode(uint64(i))
-			if err := items.PutRecord(item.serialize()); err != nil {
+			if err := items.PutRecord(item.getID(), item.serialize()); err != nil {
 				return err
 			}
 		}
@@ -154,10 +154,7 @@ func TestContainerPutGetDelete(t *testing.T) {
 
 		for i := 1; i < 10; i++ {
 			item := &Item{}
-			record, err := items.GetRecord(kvKeyUintEncode(uint64(i)))
-			if err != nil {
-				return err
-			}
+			record := items.GetRecord(kvKeyUintEncode(uint64(i)))
 			if err := item.deserialize(record); err != nil {
 				return err
 			}
