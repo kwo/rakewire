@@ -64,41 +64,44 @@ func (z *User) getID() string {
 
 // Clear reset all fields to zero/empty
 func (z *User) clear() {
-	z.ID = ""
-	z.Username = ""
-	z.PasswordHash = ""
-	z.FeverHash = ""
+	z.ID = empty
+	z.Username = empty
+	z.PasswordHash = empty
+	z.FeverHash = empty
 
 }
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
 func (z *User) serialize(flags ...bool) Record {
-	flagNoZeroCheck := len(flags) > 0 && flags[0]
-	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != "" {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
+	result := make(Record)
+
+	if flagNoZeroCheck || z.ID != empty {
 		result[userID] = z.ID
 	}
 
-	if flagNoZeroCheck || z.Username != "" {
+	if flagNoZeroCheck || z.Username != empty {
 		result[userUsername] = z.Username
 	}
 
-	if flagNoZeroCheck || z.PasswordHash != "" {
+	if flagNoZeroCheck || z.PasswordHash != empty {
 		result[userPasswordHash] = z.PasswordHash
 	}
 
-	if flagNoZeroCheck || z.FeverHash != "" {
+	if flagNoZeroCheck || z.FeverHash != empty {
 		result[userFeverHash] = z.FeverHash
 	}
 
 	return result
+
 }
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
 func (z *User) deserialize(values Record, flags ...bool) error {
+
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 	z.clear()
 
@@ -107,19 +110,16 @@ func (z *User) deserialize(values Record, flags ...bool) error {
 	var unknown []string
 
 	z.ID = values[userID]
-
-	if !(z.ID != "") {
+	if !(z.ID != empty) {
 		missing = append(missing, userID)
 	}
 
 	z.Username = values[userUsername]
-
-	if !(z.Username != "") {
+	if !(z.Username != empty) {
 		missing = append(missing, userUsername)
 	}
 
 	z.PasswordHash = values[userPasswordHash]
-
 	z.FeverHash = values[userFeverHash]
 
 	if flagUnknownCheck {
@@ -129,31 +129,28 @@ func (z *User) deserialize(values Record, flags ...bool) error {
 			}
 		}
 	}
+
 	return newDeserializationError(userEntity, errors, missing, unknown)
+
 }
 
 // serializeIndexes returns all index records
 func (z *User) serializeIndexes() map[string]Record {
 
 	result := make(map[string]Record)
-
 	data := z.serialize(true)
-
 	var keys []string
 
 	keys = []string{}
-
 	keys = append(keys, data[userFeverHash])
-
 	result[userIndexFeverHash] = Record{string(kvKeyEncode(keys...)): data[userID]}
 
 	keys = []string{}
-
 	keys = append(keys, strings.ToLower(data[userUsername]))
-
 	result[userIndexUsername] = Record{string(kvKeyEncode(keys...)): data[userID]}
 
 	return result
+
 }
 
 // GroupByUsername groups elements in the Users collection by Username

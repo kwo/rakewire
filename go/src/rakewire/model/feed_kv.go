@@ -73,17 +73,17 @@ func (z *Feed) getID() string {
 
 // Clear reset all fields to zero/empty
 func (z *Feed) clear() {
-	z.ID = ""
-	z.URL = ""
-	z.SiteURL = ""
-	z.ETag = ""
+	z.ID = empty
+	z.URL = empty
+	z.SiteURL = empty
+	z.ETag = empty
 	z.LastModified = time.Time{}
 	z.LastUpdated = time.Time{}
 	z.NextFetch = time.Time{}
-	z.Notes = ""
-	z.Title = ""
-	z.Status = ""
-	z.StatusMessage = ""
+	z.Notes = empty
+	z.Title = empty
+	z.Status = empty
+	z.StatusMessage = empty
 	z.StatusSince = time.Time{}
 
 }
@@ -91,22 +91,23 @@ func (z *Feed) clear() {
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
 func (z *Feed) serialize(flags ...bool) Record {
-	flagNoZeroCheck := len(flags) > 0 && flags[0]
-	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != "" {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
+	result := make(Record)
+
+	if flagNoZeroCheck || z.ID != empty {
 		result[feedID] = z.ID
 	}
 
-	if flagNoZeroCheck || z.URL != "" {
+	if flagNoZeroCheck || z.URL != empty {
 		result[feedURL] = z.URL
 	}
 
-	if flagNoZeroCheck || z.SiteURL != "" {
+	if flagNoZeroCheck || z.SiteURL != empty {
 		result[feedSiteURL] = z.SiteURL
 	}
 
-	if flagNoZeroCheck || z.ETag != "" {
+	if flagNoZeroCheck || z.ETag != empty {
 		result[feedETag] = z.ETag
 	}
 
@@ -122,19 +123,19 @@ func (z *Feed) serialize(flags ...bool) Record {
 		result[feedNextFetch] = z.NextFetch.UTC().Format(fmtTime)
 	}
 
-	if flagNoZeroCheck || z.Notes != "" {
+	if flagNoZeroCheck || z.Notes != empty {
 		result[feedNotes] = z.Notes
 	}
 
-	if flagNoZeroCheck || z.Title != "" {
+	if flagNoZeroCheck || z.Title != empty {
 		result[feedTitle] = z.Title
 	}
 
-	if flagNoZeroCheck || z.Status != "" {
+	if flagNoZeroCheck || z.Status != empty {
 		result[feedStatus] = z.Status
 	}
 
-	if flagNoZeroCheck || z.StatusMessage != "" {
+	if flagNoZeroCheck || z.StatusMessage != empty {
 		result[feedStatusMessage] = z.StatusMessage
 	}
 
@@ -143,11 +144,13 @@ func (z *Feed) serialize(flags ...bool) Record {
 	}
 
 	return result
+
 }
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
 func (z *Feed) deserialize(values Record, flags ...bool) error {
+
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 	z.clear()
 
@@ -156,21 +159,17 @@ func (z *Feed) deserialize(values Record, flags ...bool) error {
 	var unknown []string
 
 	z.ID = values[feedID]
-
-	if !(z.ID != "") {
+	if !(z.ID != empty) {
 		missing = append(missing, feedID)
 	}
 
 	z.URL = values[feedURL]
-
-	if !(z.URL != "") {
+	if !(z.URL != empty) {
 		missing = append(missing, feedURL)
 	}
 
 	z.SiteURL = values[feedSiteURL]
-
 	z.ETag = values[feedETag]
-
 	z.LastModified = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
@@ -211,13 +210,9 @@ func (z *Feed) deserialize(values Record, flags ...bool) error {
 	}(feedNextFetch, values, errors)
 
 	z.Notes = values[feedNotes]
-
 	z.Title = values[feedTitle]
-
 	z.Status = values[feedStatus]
-
 	z.StatusMessage = values[feedStatusMessage]
-
 	z.StatusSince = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
@@ -238,33 +233,29 @@ func (z *Feed) deserialize(values Record, flags ...bool) error {
 			}
 		}
 	}
+
 	return newDeserializationError(feedEntity, errors, missing, unknown)
+
 }
 
 // serializeIndexes returns all index records
 func (z *Feed) serializeIndexes() map[string]Record {
 
 	result := make(map[string]Record)
-
 	data := z.serialize(true)
-
 	var keys []string
 
 	keys = []string{}
-
 	keys = append(keys, data[feedNextFetch])
-
 	keys = append(keys, data[feedID])
-
 	result[feedIndexNextFetch] = Record{string(kvKeyEncode(keys...)): data[feedID]}
 
 	keys = []string{}
-
 	keys = append(keys, strings.ToLower(data[feedURL]))
-
 	result[feedIndexURL] = Record{string(kvKeyEncode(keys...)): data[feedID]}
 
 	return result
+
 }
 
 // GroupAllByURL groups collections of elements in Feeds by URL

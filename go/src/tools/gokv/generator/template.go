@@ -82,33 +82,39 @@ func (z *{{.Name}}) clear() {
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
 func (z *{{.Name}}) serialize(flags ...bool) Record {
+
 	flagNoZeroCheck := len(flags) > 0 && flags[0]
-	result := make(map[string]string)
+	result := make(Record)
 	{{range $index, $field := .Fields}}
 		if flagNoZeroCheck || {{.ZeroTest}} {
 			result[{{$structure.NameLower}}{{.Name}}] = {{.SerializeCommand}}
 		}
 	{{end}}
 	return result
+
 }
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
 func (z *{{.Name}}) deserialize(values Record, flags ...bool) error {
+
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 	z.clear()
+
 	{{$struct := .}}
 	var errors []error
 	var missing []string
 	var unknown []string
-	{{range $index, $field := .Fields}}
+
+	{{range $index, $field := .Fields -}}
 		z.{{.Name}} = {{.DeserializeCommand}}
-		{{if .Required}}
+		{{- if .Required}}
 		if !({{.ZeroTest}}) {
 			missing = append(missing, {{$struct.NameLower}}{{.Name}})
 		}
 		{{end}}
 	{{end}}
+
 	if flagUnknownCheck {
 		for fieldname := range values {
 			if !isStringInArray(fieldname, {{$struct.NameLower}}AllFields) {
@@ -116,29 +122,32 @@ func (z *{{.Name}}) deserialize(values Record, flags ...bool) error {
 			}
 		}
 	}
+
 	return newDeserializationError({{$struct.NameLower}}Entity, errors, missing, unknown)
+
 }
 
 // serializeIndexes returns all index records
 func (z *{{.Name}}) serializeIndexes() map[string]Record {
 	{{$struct := .}}
 	result := make(map[string]Record)
-	{{if ne (len .Indexes) 0}}
+	{{- if ne (len .Indexes) 0 }}
 	data := z.serialize(true)
-	{{end}}
+	{{- end }}
 	var keys []string
-	{{range $name, $fields := .Indexes}}
+	{{ range $name, $fields := .Indexes }}
 		keys = []string{}
-		{{range $index, $f := $fields}}
-			{{if eq $f.Filter "lower"}}
+		{{ range $index, $f := $fields }}
+			{{- if eq $f.Filter "lower" -}}
 				keys = append(keys, strings.ToLower(data[{{$struct.NameLower}}{{$f.Field}}]))
-			{{else}}
+			{{ else -}}
 				keys = append(keys, data[{{$struct.NameLower}}{{$f.Field}}])
-			{{end}}
-		{{end}}
+			{{ end -}}
+		{{ end -}}
 		result[{{$struct.NameLower}}Index{{$name}}] = Record{string(kvKeyEncode(keys...)): data[{{$struct.NameLower}}ID] }
-	{{end}}
+	{{ end }}
 	return result
+
 }
 
 {{$struct := .}}

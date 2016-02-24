@@ -68,10 +68,10 @@ func (z *Entry) getID() string {
 
 // Clear reset all fields to zero/empty
 func (z *Entry) clear() {
-	z.ID = ""
-	z.UserID = ""
-	z.ItemID = ""
-	z.SubscriptionID = ""
+	z.ID = empty
+	z.UserID = empty
+	z.ItemID = empty
+	z.SubscriptionID = empty
 	z.Updated = time.Time{}
 	z.IsRead = false
 	z.IsStar = false
@@ -81,22 +81,23 @@ func (z *Entry) clear() {
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
 func (z *Entry) serialize(flags ...bool) Record {
-	flagNoZeroCheck := len(flags) > 0 && flags[0]
-	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != "" {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
+	result := make(Record)
+
+	if flagNoZeroCheck || z.ID != empty {
 		result[entryID] = z.ID
 	}
 
-	if flagNoZeroCheck || z.UserID != "" {
+	if flagNoZeroCheck || z.UserID != empty {
 		result[entryUserID] = z.UserID
 	}
 
-	if flagNoZeroCheck || z.ItemID != "" {
+	if flagNoZeroCheck || z.ItemID != empty {
 		result[entryItemID] = z.ItemID
 	}
 
-	if flagNoZeroCheck || z.SubscriptionID != "" {
+	if flagNoZeroCheck || z.SubscriptionID != empty {
 		result[entrySubscriptionID] = z.SubscriptionID
 	}
 
@@ -123,11 +124,13 @@ func (z *Entry) serialize(flags ...bool) Record {
 	}
 
 	return result
+
 }
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
 func (z *Entry) deserialize(values Record, flags ...bool) error {
+
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 	z.clear()
 
@@ -136,26 +139,22 @@ func (z *Entry) deserialize(values Record, flags ...bool) error {
 	var unknown []string
 
 	z.ID = values[entryID]
-
-	if !(z.ID != "") {
+	if !(z.ID != empty) {
 		missing = append(missing, entryID)
 	}
 
 	z.UserID = values[entryUserID]
-
-	if !(z.UserID != "") {
+	if !(z.UserID != empty) {
 		missing = append(missing, entryUserID)
 	}
 
 	z.ItemID = values[entryItemID]
-
-	if !(z.ItemID != "") {
+	if !(z.ItemID != empty) {
 		missing = append(missing, entryItemID)
 	}
 
 	z.SubscriptionID = values[entrySubscriptionID]
-
-	if !(z.SubscriptionID != "") {
+	if !(z.SubscriptionID != empty) {
 		missing = append(missing, entrySubscriptionID)
 	}
 
@@ -193,49 +192,37 @@ func (z *Entry) deserialize(values Record, flags ...bool) error {
 			}
 		}
 	}
+
 	return newDeserializationError(entryEntity, errors, missing, unknown)
+
 }
 
 // serializeIndexes returns all index records
 func (z *Entry) serializeIndexes() map[string]Record {
 
 	result := make(map[string]Record)
-
 	data := z.serialize(true)
-
 	var keys []string
 
 	keys = []string{}
-
 	keys = append(keys, data[entryUserID])
-
 	keys = append(keys, data[entryIsRead])
-
 	keys = append(keys, data[entryUpdated])
-
 	keys = append(keys, data[entryID])
-
 	result[entryIndexRead] = Record{string(kvKeyEncode(keys...)): data[entryID]}
 
 	keys = []string{}
-
 	keys = append(keys, data[entryUserID])
-
 	keys = append(keys, data[entryIsStar])
-
 	keys = append(keys, data[entryUpdated])
-
 	keys = append(keys, data[entryID])
-
 	result[entryIndexStar] = Record{string(kvKeyEncode(keys...)): data[entryID]}
 
 	keys = []string{}
-
 	keys = append(keys, data[entryUserID])
-
 	keys = append(keys, data[entryID])
-
 	result[entryIndexUser] = Record{string(kvKeyEncode(keys...)): data[entryID]}
 
 	return result
+
 }

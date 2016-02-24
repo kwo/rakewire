@@ -134,7 +134,7 @@ func (z *FieldInfo) Finalize(s *StructInfo) error {
 
 	switch z.Type {
 	case "string":
-		z.EmptyValue = "\"\""
+		z.EmptyValue = "empty"
 		z.ZeroTest = executeTemplate("ZeroTestDefault", z)
 		z.SerializeCommand = executeTemplate("SerializeDefault", z)
 		z.DeserializeCommand = executeTemplate("DeserializeDefault", z)

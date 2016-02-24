@@ -62,36 +62,39 @@ func (z *Group) getID() string {
 
 // Clear reset all fields to zero/empty
 func (z *Group) clear() {
-	z.ID = ""
-	z.UserID = ""
-	z.Name = ""
+	z.ID = empty
+	z.UserID = empty
+	z.Name = empty
 
 }
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
 func (z *Group) serialize(flags ...bool) Record {
-	flagNoZeroCheck := len(flags) > 0 && flags[0]
-	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != "" {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
+	result := make(Record)
+
+	if flagNoZeroCheck || z.ID != empty {
 		result[groupID] = z.ID
 	}
 
-	if flagNoZeroCheck || z.UserID != "" {
+	if flagNoZeroCheck || z.UserID != empty {
 		result[groupUserID] = z.UserID
 	}
 
-	if flagNoZeroCheck || z.Name != "" {
+	if flagNoZeroCheck || z.Name != empty {
 		result[groupName] = z.Name
 	}
 
 	return result
+
 }
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
 func (z *Group) deserialize(values Record, flags ...bool) error {
+
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 	z.clear()
 
@@ -100,20 +103,17 @@ func (z *Group) deserialize(values Record, flags ...bool) error {
 	var unknown []string
 
 	z.ID = values[groupID]
-
-	if !(z.ID != "") {
+	if !(z.ID != empty) {
 		missing = append(missing, groupID)
 	}
 
 	z.UserID = values[groupUserID]
-
-	if !(z.UserID != "") {
+	if !(z.UserID != empty) {
 		missing = append(missing, groupUserID)
 	}
 
 	z.Name = values[groupName]
-
-	if !(z.Name != "") {
+	if !(z.Name != empty) {
 		missing = append(missing, groupName)
 	}
 
@@ -124,27 +124,25 @@ func (z *Group) deserialize(values Record, flags ...bool) error {
 			}
 		}
 	}
+
 	return newDeserializationError(groupEntity, errors, missing, unknown)
+
 }
 
 // serializeIndexes returns all index records
 func (z *Group) serializeIndexes() map[string]Record {
 
 	result := make(map[string]Record)
-
 	data := z.serialize(true)
-
 	var keys []string
 
 	keys = []string{}
-
 	keys = append(keys, data[groupUserID])
-
 	keys = append(keys, strings.ToLower(data[groupName]))
-
 	result[groupIndexUserGroup] = Record{string(kvKeyEncode(keys...)): data[groupID]}
 
 	return result
+
 }
 
 // GroupByID groups elements in the Groups collection by ID

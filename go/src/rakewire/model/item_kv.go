@@ -68,33 +68,34 @@ func (z *Item) getID() string {
 
 // Clear reset all fields to zero/empty
 func (z *Item) clear() {
-	z.ID = ""
-	z.GUID = ""
-	z.FeedID = ""
+	z.ID = empty
+	z.GUID = empty
+	z.FeedID = empty
 	z.Created = time.Time{}
 	z.Updated = time.Time{}
-	z.URL = ""
-	z.Author = ""
-	z.Title = ""
-	z.Content = ""
+	z.URL = empty
+	z.Author = empty
+	z.Title = empty
+	z.Content = empty
 
 }
 
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
 func (z *Item) serialize(flags ...bool) Record {
-	flagNoZeroCheck := len(flags) > 0 && flags[0]
-	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != "" {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
+	result := make(Record)
+
+	if flagNoZeroCheck || z.ID != empty {
 		result[itemID] = z.ID
 	}
 
-	if flagNoZeroCheck || z.GUID != "" {
+	if flagNoZeroCheck || z.GUID != empty {
 		result[itemGUID] = z.GUID
 	}
 
-	if flagNoZeroCheck || z.FeedID != "" {
+	if flagNoZeroCheck || z.FeedID != empty {
 		result[itemFeedID] = z.FeedID
 	}
 
@@ -106,28 +107,30 @@ func (z *Item) serialize(flags ...bool) Record {
 		result[itemUpdated] = z.Updated.UTC().Format(fmtTime)
 	}
 
-	if flagNoZeroCheck || z.URL != "" {
+	if flagNoZeroCheck || z.URL != empty {
 		result[itemURL] = z.URL
 	}
 
-	if flagNoZeroCheck || z.Author != "" {
+	if flagNoZeroCheck || z.Author != empty {
 		result[itemAuthor] = z.Author
 	}
 
-	if flagNoZeroCheck || z.Title != "" {
+	if flagNoZeroCheck || z.Title != empty {
 		result[itemTitle] = z.Title
 	}
 
-	if flagNoZeroCheck || z.Content != "" {
+	if flagNoZeroCheck || z.Content != empty {
 		result[itemContent] = z.Content
 	}
 
 	return result
+
 }
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
 func (z *Item) deserialize(values Record, flags ...bool) error {
+
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 	z.clear()
 
@@ -136,16 +139,13 @@ func (z *Item) deserialize(values Record, flags ...bool) error {
 	var unknown []string
 
 	z.ID = values[itemID]
-
-	if !(z.ID != "") {
+	if !(z.ID != empty) {
 		missing = append(missing, itemID)
 	}
 
 	z.GUID = values[itemGUID]
-
 	z.FeedID = values[itemFeedID]
-
-	if !(z.FeedID != "") {
+	if !(z.FeedID != empty) {
 		missing = append(missing, itemFeedID)
 	}
 
@@ -176,11 +176,8 @@ func (z *Item) deserialize(values Record, flags ...bool) error {
 	}(itemUpdated, values, errors)
 
 	z.URL = values[itemURL]
-
 	z.Author = values[itemAuthor]
-
 	z.Title = values[itemTitle]
-
 	z.Content = values[itemContent]
 
 	if flagUnknownCheck {
@@ -190,27 +187,25 @@ func (z *Item) deserialize(values Record, flags ...bool) error {
 			}
 		}
 	}
+
 	return newDeserializationError(itemEntity, errors, missing, unknown)
+
 }
 
 // serializeIndexes returns all index records
 func (z *Item) serializeIndexes() map[string]Record {
 
 	result := make(map[string]Record)
-
 	data := z.serialize(true)
-
 	var keys []string
 
 	keys = []string{}
-
 	keys = append(keys, data[itemFeedID])
-
 	keys = append(keys, data[itemGUID])
-
 	result[itemIndexGUID] = Record{string(kvKeyEncode(keys...)): data[itemID]}
 
 	return result
+
 }
 
 // GroupByGUID groups elements in the Items collection by GUID

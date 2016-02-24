@@ -70,13 +70,13 @@ func (z *Subscription) getID() string {
 
 // Clear reset all fields to zero/empty
 func (z *Subscription) clear() {
-	z.ID = ""
-	z.UserID = ""
-	z.FeedID = ""
+	z.ID = empty
+	z.UserID = empty
+	z.FeedID = empty
 	z.GroupIDs = []string{}
 	z.DateAdded = time.Time{}
-	z.Title = ""
-	z.Notes = ""
+	z.Title = empty
+	z.Notes = empty
 	z.AutoRead = false
 	z.AutoStar = false
 
@@ -85,18 +85,19 @@ func (z *Subscription) clear() {
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
 func (z *Subscription) serialize(flags ...bool) Record {
-	flagNoZeroCheck := len(flags) > 0 && flags[0]
-	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != "" {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
+	result := make(Record)
+
+	if flagNoZeroCheck || z.ID != empty {
 		result[subscriptionID] = z.ID
 	}
 
-	if flagNoZeroCheck || z.UserID != "" {
+	if flagNoZeroCheck || z.UserID != empty {
 		result[subscriptionUserID] = z.UserID
 	}
 
-	if flagNoZeroCheck || z.FeedID != "" {
+	if flagNoZeroCheck || z.FeedID != empty {
 		result[subscriptionFeedID] = z.FeedID
 	}
 
@@ -110,11 +111,11 @@ func (z *Subscription) serialize(flags ...bool) Record {
 		result[subscriptionDateAdded] = z.DateAdded.UTC().Format(fmtTime)
 	}
 
-	if flagNoZeroCheck || z.Title != "" {
+	if flagNoZeroCheck || z.Title != empty {
 		result[subscriptionTitle] = z.Title
 	}
 
-	if flagNoZeroCheck || z.Notes != "" {
+	if flagNoZeroCheck || z.Notes != empty {
 		result[subscriptionNotes] = z.Notes
 	}
 
@@ -137,11 +138,13 @@ func (z *Subscription) serialize(flags ...bool) Record {
 	}
 
 	return result
+
 }
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
 func (z *Subscription) deserialize(values Record, flags ...bool) error {
+
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 	z.clear()
 
@@ -150,20 +153,17 @@ func (z *Subscription) deserialize(values Record, flags ...bool) error {
 	var unknown []string
 
 	z.ID = values[subscriptionID]
-
-	if !(z.ID != "") {
+	if !(z.ID != empty) {
 		missing = append(missing, subscriptionID)
 	}
 
 	z.UserID = values[subscriptionUserID]
-
-	if !(z.UserID != "") {
+	if !(z.UserID != empty) {
 		missing = append(missing, subscriptionUserID)
 	}
 
 	z.FeedID = values[subscriptionFeedID]
-
-	if !(z.FeedID != "") {
+	if !(z.FeedID != empty) {
 		missing = append(missing, subscriptionFeedID)
 	}
 
@@ -189,9 +189,7 @@ func (z *Subscription) deserialize(values Record, flags ...bool) error {
 	}(subscriptionDateAdded, values, errors)
 
 	z.Title = values[subscriptionTitle]
-
 	z.Notes = values[subscriptionNotes]
-
 	z.AutoRead = func(fieldName string, values map[string]string, errors []error) bool {
 		if value, ok := values[fieldName]; ok {
 			return value == "1"
@@ -213,33 +211,28 @@ func (z *Subscription) deserialize(values Record, flags ...bool) error {
 			}
 		}
 	}
+
 	return newDeserializationError(subscriptionEntity, errors, missing, unknown)
+
 }
 
 // serializeIndexes returns all index records
 func (z *Subscription) serializeIndexes() map[string]Record {
 
 	result := make(map[string]Record)
-
 	data := z.serialize(true)
-
 	var keys []string
 
 	keys = []string{}
-
 	keys = append(keys, data[subscriptionFeedID])
-
 	keys = append(keys, data[subscriptionUserID])
-
 	result[subscriptionIndexFeed] = Record{string(kvKeyEncode(keys...)): data[subscriptionID]}
 
 	keys = []string{}
-
 	keys = append(keys, data[subscriptionUserID])
-
 	keys = append(keys, data[subscriptionFeedID])
-
 	result[subscriptionIndexUser] = Record{string(kvKeyEncode(keys...)): data[subscriptionID]}
 
 	return result
+
 }

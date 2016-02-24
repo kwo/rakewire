@@ -81,22 +81,22 @@ func (z *Transmission) getID() string {
 
 // Clear reset all fields to zero/empty
 func (z *Transmission) clear() {
-	z.ID = ""
-	z.FeedID = ""
+	z.ID = empty
+	z.FeedID = empty
 	z.Duration = 0
-	z.Result = ""
-	z.ResultMessage = ""
+	z.Result = empty
+	z.ResultMessage = empty
 	z.StartTime = time.Time{}
-	z.URL = ""
+	z.URL = empty
 	z.ContentLength = 0
-	z.ContentType = ""
-	z.ETag = ""
+	z.ContentType = empty
+	z.ETag = empty
 	z.LastModified = time.Time{}
 	z.StatusCode = 0
 	z.UsesGzip = false
-	z.Flavor = ""
-	z.Generator = ""
-	z.Title = ""
+	z.Flavor = empty
+	z.Generator = empty
+	z.Title = empty
 	z.LastUpdated = time.Time{}
 	z.ItemCount = 0
 	z.NewItems = 0
@@ -106,14 +106,15 @@ func (z *Transmission) clear() {
 // Serialize serializes an object to a list of key-values.
 // An optional flag, when set, will serialize all fields to the resulting map, not just the non-zero values.
 func (z *Transmission) serialize(flags ...bool) Record {
-	flagNoZeroCheck := len(flags) > 0 && flags[0]
-	result := make(map[string]string)
 
-	if flagNoZeroCheck || z.ID != "" {
+	flagNoZeroCheck := len(flags) > 0 && flags[0]
+	result := make(Record)
+
+	if flagNoZeroCheck || z.ID != empty {
 		result[transmissionID] = z.ID
 	}
 
-	if flagNoZeroCheck || z.FeedID != "" {
+	if flagNoZeroCheck || z.FeedID != empty {
 		result[transmissionFeedID] = z.FeedID
 	}
 
@@ -121,11 +122,11 @@ func (z *Transmission) serialize(flags ...bool) Record {
 		result[transmissionDuration] = z.Duration.String()
 	}
 
-	if flagNoZeroCheck || z.Result != "" {
+	if flagNoZeroCheck || z.Result != empty {
 		result[transmissionResult] = z.Result
 	}
 
-	if flagNoZeroCheck || z.ResultMessage != "" {
+	if flagNoZeroCheck || z.ResultMessage != empty {
 		result[transmissionResultMessage] = z.ResultMessage
 	}
 
@@ -133,7 +134,7 @@ func (z *Transmission) serialize(flags ...bool) Record {
 		result[transmissionStartTime] = z.StartTime.UTC().Format(fmtTime)
 	}
 
-	if flagNoZeroCheck || z.URL != "" {
+	if flagNoZeroCheck || z.URL != empty {
 		result[transmissionURL] = z.URL
 	}
 
@@ -141,11 +142,11 @@ func (z *Transmission) serialize(flags ...bool) Record {
 		result[transmissionContentLength] = fmt.Sprintf("%d", z.ContentLength)
 	}
 
-	if flagNoZeroCheck || z.ContentType != "" {
+	if flagNoZeroCheck || z.ContentType != empty {
 		result[transmissionContentType] = z.ContentType
 	}
 
-	if flagNoZeroCheck || z.ETag != "" {
+	if flagNoZeroCheck || z.ETag != empty {
 		result[transmissionETag] = z.ETag
 	}
 
@@ -166,15 +167,15 @@ func (z *Transmission) serialize(flags ...bool) Record {
 		}(z.UsesGzip)
 	}
 
-	if flagNoZeroCheck || z.Flavor != "" {
+	if flagNoZeroCheck || z.Flavor != empty {
 		result[transmissionFlavor] = z.Flavor
 	}
 
-	if flagNoZeroCheck || z.Generator != "" {
+	if flagNoZeroCheck || z.Generator != empty {
 		result[transmissionGenerator] = z.Generator
 	}
 
-	if flagNoZeroCheck || z.Title != "" {
+	if flagNoZeroCheck || z.Title != empty {
 		result[transmissionTitle] = z.Title
 	}
 
@@ -191,11 +192,13 @@ func (z *Transmission) serialize(flags ...bool) Record {
 	}
 
 	return result
+
 }
 
 // Deserialize serializes an object to a list of key-values.
 // An optional flag, when set, will return an error if unknown keys are contained in the values.
 func (z *Transmission) deserialize(values Record, flags ...bool) error {
+
 	flagUnknownCheck := len(flags) > 0 && flags[0]
 	z.clear()
 
@@ -204,14 +207,12 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 	var unknown []string
 
 	z.ID = values[transmissionID]
-
-	if !(z.ID != "") {
+	if !(z.ID != empty) {
 		missing = append(missing, transmissionID)
 	}
 
 	z.FeedID = values[transmissionFeedID]
-
-	if !(z.FeedID != "") {
+	if !(z.FeedID != empty) {
 		missing = append(missing, transmissionFeedID)
 	}
 
@@ -229,9 +230,7 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 	}(transmissionDuration, values, errors)
 
 	z.Result = values[transmissionResult]
-
 	z.ResultMessage = values[transmissionResultMessage]
-
 	z.StartTime = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
@@ -246,7 +245,6 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 	}(transmissionStartTime, values, errors)
 
 	z.URL = values[transmissionURL]
-
 	z.ContentLength = func(fieldName string, values map[string]string, errors []error) int {
 		result, err := strconv.ParseInt(values[fieldName], 10, 64)
 		if err != nil {
@@ -257,9 +255,7 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 	}(transmissionContentLength, values, errors)
 
 	z.ContentType = values[transmissionContentType]
-
 	z.ETag = values[transmissionETag]
-
 	z.LastModified = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
@@ -290,11 +286,8 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 	}(transmissionUsesGzip, values, errors)
 
 	z.Flavor = values[transmissionFlavor]
-
 	z.Generator = values[transmissionGenerator]
-
 	z.Title = values[transmissionTitle]
-
 	z.LastUpdated = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
@@ -333,33 +326,28 @@ func (z *Transmission) deserialize(values Record, flags ...bool) error {
 			}
 		}
 	}
+
 	return newDeserializationError(transmissionEntity, errors, missing, unknown)
+
 }
 
 // serializeIndexes returns all index records
 func (z *Transmission) serializeIndexes() map[string]Record {
 
 	result := make(map[string]Record)
-
 	data := z.serialize(true)
-
 	var keys []string
 
 	keys = []string{}
-
 	keys = append(keys, data[transmissionFeedID])
-
 	keys = append(keys, data[transmissionStartTime])
-
 	result[transmissionIndexFeedTime] = Record{string(kvKeyEncode(keys...)): data[transmissionID]}
 
 	keys = []string{}
-
 	keys = append(keys, data[transmissionStartTime])
-
 	keys = append(keys, data[transmissionID])
-
 	result[transmissionIndexTime] = Record{string(kvKeyEncode(keys...)): data[transmissionID]}
 
 	return result
+
 }
