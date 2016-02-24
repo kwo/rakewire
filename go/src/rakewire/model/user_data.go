@@ -8,10 +8,12 @@ import (
 // UserByFeverHash get a user object by feverhash, nil if not found
 func UserByFeverHash(feverhash string, tx Transaction) (user *User, err error) {
 
-	data, ok := kvGetFromIndex(userEntity, userIndexFeverHash, []string{strings.ToLower(feverhash)}, tx)
-	if ok {
+	bUser := tx.Bucket(bucketData, userEntity)
+	bIndex := tx.Bucket(bucketIndex, userEntity, userIndexFeverHash)
+
+	if record := bIndex.GetIndex(bUser, feverhash); record != nil {
 		user = &User{}
-		err = user.deserialize(data)
+		err = user.deserialize(record)
 	}
 
 	return
@@ -21,10 +23,12 @@ func UserByFeverHash(feverhash string, tx Transaction) (user *User, err error) {
 // UserByUsername get a user object by username, nil if not found
 func UserByUsername(username string, tx Transaction) (user *User, err error) {
 
-	data, ok := kvGetFromIndex(userEntity, userIndexUsername, []string{strings.ToLower(username)}, tx)
-	if ok {
+	bUser := tx.Bucket(bucketData, userEntity)
+	bIndex := tx.Bucket(bucketIndex, userEntity, userIndexUsername)
+
+	if record := bIndex.GetIndex(bUser, strings.ToLower(username)); record != nil {
 		user = &User{}
-		err = user.deserialize(data)
+		err = user.deserialize(record)
 	}
 
 	return
@@ -36,8 +40,10 @@ func (z *User) Save(tx Transaction) error {
 
 	// new user, check for unique username
 	if z.getID() == empty {
-		indexName := userIndexUsername
-		if _, ok := kvGetFromIndex(userEntity, indexName, z.indexKeys()[indexName], tx); ok {
+		user, err := UserByUsername(z.Username, tx)
+		if err != nil {
+			return err
+		} else if user != nil {
 			return fmt.Errorf("Cannot save user, username is already taken: %s", strings.ToLower(z.Username))
 		}
 	}

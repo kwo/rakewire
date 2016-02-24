@@ -159,10 +159,6 @@ func (z *boltBucket) Delete(id string) error {
 
 }
 
-func (z *boltBucket) Get(key []byte) []byte {
-	return z.bucket.Get(key)
-}
-
 // GetIndex retrieves a Record from the given bucket looking up its ID in the current index bucket.
 func (z *boltBucket) GetIndex(b Bucket, id string) Record {
 

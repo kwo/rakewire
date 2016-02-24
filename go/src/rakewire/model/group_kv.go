@@ -7,6 +7,7 @@ package model
 
 import (
 	"sort"
+	"strings"
 )
 
 // index names
@@ -136,7 +137,7 @@ func (z *Group) indexKeys() map[string][]string {
 
 		data[groupUserID],
 
-		data[groupName],
+		strings.ToLower(data[groupName]),
 	}
 
 	return result
@@ -155,7 +156,7 @@ func (z *Group) serializeIndexes() map[string]Record {
 
 	keys = append(keys, data[groupUserID])
 
-	keys = append(keys, data[groupName])
+	keys = append(keys, strings.ToLower(data[groupName]))
 
 	result[groupIndexUserGroup] = Record{string(kvKeyEncode(keys...)): data[groupID]}
 

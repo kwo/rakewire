@@ -2,6 +2,8 @@ package model
 
 import (
 	"bytes"
+	"fmt"
+	"strings"
 )
 
 // GroupByID retrieves a single group.
@@ -40,21 +42,41 @@ func GroupsByUser(userID string, tx Transaction) (Groups, error) {
 
 }
 
+// GroupByName retrieve a group by user and name.
+func GroupByName(userID, groupName string, tx Transaction) (group *Group, err error) {
+
+	bGroup := tx.Bucket(bucketData, groupEntity)
+	bIndex := tx.Bucket(bucketIndex, groupEntity, groupIndexUserGroup)
+
+	key := kvKeyEncode(userID, strings.ToLower(groupName))
+
+	if record := bIndex.GetIndex(bGroup, string(key)); record != nil {
+		group = &Group{}
+		err = group.deserialize(record)
+	}
+
+	return
+
+}
+
 // Save saves a group to the database.
-func (group *Group) Save(tx Transaction) error {
+func (z *Group) Save(tx Transaction) error {
 
-	// TODO: new group, check for unique group name
-	// if group.getID() ==  {
-	// 	if _, ok := kvGetFromIndex(groupEntity, groupIndexUserGroup, group.indexKeys()[groupIndexUserGroup], tx); ok {
-	// 		return fmt.Errorf("Cannot save group, group name is already taken: %s", group.Name)
-	// 	}
-	// }
+	// new group, check for unique group name
+	if z.getID() == empty {
+		group, err := GroupByName(z.UserID, z.Name, tx)
+		if err != nil {
+			return err
+		} else if group != nil {
+			return fmt.Errorf("Cannot save group, name is already taken: %s", strings.ToLower(z.Name))
+		}
+	}
 
-	return kvSave(groupEntity, group, tx)
+	return kvSave(groupEntity, z, tx)
 
 }
 
 // Delete deletes a group in the database.
-func (group *Group) Delete(tx Transaction) error {
-	return kvDelete(groupEntity, group, tx)
+func (z *Group) Delete(tx Transaction) error {
+	return kvDelete(groupEntity, z, tx)
 }

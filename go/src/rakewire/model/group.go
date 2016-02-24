@@ -6,7 +6,7 @@ package model
 type Group struct {
 	ID     string `kv:"+groupby"`
 	UserID string `kv:"+required,UserGroup:1"`
-	Name   string `kv:"+required,+groupby,UserGroup:2"`
+	Name   string `kv:"+required,+groupby,UserGroup:2:lower"`
 }
 
 // NewGroup creates a new group with the specified user

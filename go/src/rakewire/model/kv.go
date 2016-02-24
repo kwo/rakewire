@@ -69,20 +69,6 @@ func kvGet(id string, b Bucket) (map[string]string, bool) {
 
 }
 
-func kvGetFromIndex(name, index string, keys []string, tx Transaction) (map[string]string, bool) {
-
-	bIndex := tx.Bucket(bucketIndex).Bucket(name).Bucket(index)
-	id := string(bIndex.Get(kvKeyEncode(keys...)))
-
-	if id != empty {
-		b := tx.Bucket(bucketData).Bucket(name)
-		return kvGet(id, b)
-	}
-
-	return nil, false
-
-}
-
 func kvPut(id string, record Record, b Bucket) error {
 
 	keys := []string{}

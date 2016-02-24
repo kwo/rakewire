@@ -67,11 +67,17 @@ func FeedByID(id string, tx Transaction) (feed *Feed, err error) {
 
 // FeedByURL return feed given url
 func FeedByURL(url string, tx Transaction) (feed *Feed, err error) {
-	if data, ok := kvGetFromIndex(feedEntity, feedIndexURL, []string{strings.ToLower(url)}, tx); ok {
+
+	bFeed := tx.Bucket(bucketData, feedEntity)
+	bIndex := tx.Bucket(bucketIndex, feedEntity, feedIndexURL)
+
+	if record := bIndex.GetIndex(bFeed, strings.ToLower(url)); record != nil {
 		feed = &Feed{}
-		err = feed.deserialize(data)
+		err = feed.deserialize(record)
 	}
+
 	return
+
 }
 
 // Save save feeds

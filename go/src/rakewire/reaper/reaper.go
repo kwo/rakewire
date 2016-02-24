@@ -92,7 +92,7 @@ func (z *Service) processResponse(feed *model.Feed) {
 			guIDs = append(guIDs, item.GUID)
 		}
 
-		dbItems0, err := model.ItemsByGUIDs(feed.ID, guIDs, tx)
+		dbItems0, err := model.ItemsByGUID(feed.ID, guIDs, tx)
 		if err != nil {
 			log.Printf("%-7s %-7s Cannot get previous feed items %s: %s", logWarn, logName, feed.URL, err.Error())
 			return err

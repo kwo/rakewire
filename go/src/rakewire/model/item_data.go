@@ -2,32 +2,35 @@ package model
 
 import (
 	"bytes"
+	"strings"
 )
 
-// ItemsByGUIDs retrieves items for specific GUIDs
-func ItemsByGUIDs(feedID string, guIDs []string, tx Transaction) (Items, error) {
+// ItemByGUID retrieve an item object by guid, nil if not found
+func ItemByGUID(guid string, tx Transaction) (item *Item, err error) {
+
+	bItem := tx.Bucket(bucketData, itemEntity)
+	bIndex := tx.Bucket(bucketIndex, itemEntity, itemIndexGUID)
+
+	if record := bIndex.GetIndex(bItem, strings.ToLower(guid)); record != nil {
+		item = &Item{}
+		err = item.deserialize(record)
+	}
+
+	return
+
+}
+
+// ItemsByGUID retrieves items for specific GUIDs
+func ItemsByGUID(feedID string, guIDs []string, tx Transaction) (Items, error) {
 
 	items := Items{}
-
-	// item index GUID = FeedID|GUID : ItemID
-	//min, max := kvKeyMinMax(feedID)
-
-	e := &Item{}
-	e.FeedID = feedID
-
-	for _, guID := range guIDs {
-
-		e.GUID = guID
-		indexKeys := e.indexKeys()[itemIndexGUID]
-
-		if data, ok := kvGetFromIndex(itemEntity, itemIndexGUID, indexKeys, tx); ok {
-			item := &Item{}
-			if err := item.deserialize(data); err != nil {
-				return nil, err
-			}
+	for _, guid := range guIDs {
+		item, err := ItemByGUID(guid, tx)
+		if err != nil {
+			return nil, err
+		} else if item != nil {
 			items = append(items, item)
 		}
-
 	} // loop
 
 	return items, nil

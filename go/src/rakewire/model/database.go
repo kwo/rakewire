@@ -61,7 +61,6 @@ type Bucket interface {
 	PutRecord(id string, record Record) error
 	Iterate(onRecord OnRecord) error
 	IterateIndex(b Bucket, minID, maxID string, onRecord OnRecord) error
-	Get(key []byte) []byte
 	Put(key []byte, value []byte) error
 }
 
