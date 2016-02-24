@@ -220,10 +220,6 @@ func kvKeyMax(values ...string) string {
 	return strings.Join(values, chSep) + chMax
 }
 
-func kvKeyMax2(values ...string) []byte {
-	return []byte(kvKeyMax(values...))
-}
-
 func kvKeyMinMax(id string) (string, string) {
 	return kvKeyEncode(id), kvKeyMax(id)
 }
