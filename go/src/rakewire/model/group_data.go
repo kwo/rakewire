@@ -22,7 +22,7 @@ func GroupsByUser(userID string, tx Transaction) (Groups, error) {
 	result := Groups{}
 
 	// group index UserGroup = UserID|Name : GroupID
-	min, max := kvKeyMinMax2(userID)
+	min, max := kvKeyMinMaxBytes(userID)
 	bIndex := tx.Bucket(bucketIndex).Bucket(groupEntity).Bucket(groupIndexUserGroup)
 	b := tx.Bucket(bucketData).Bucket(groupEntity)
 

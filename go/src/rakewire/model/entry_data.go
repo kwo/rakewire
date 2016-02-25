@@ -68,7 +68,7 @@ func EntryTotalByUser(userID string, tx Transaction) uint {
 	var result uint
 
 	// entry User index = UserID|EntryID : EntryID
-	min, max := kvKeyMinMax2(userID)
+	min, max := kvKeyMinMaxBytes(userID)
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexUser)
 
 	c := bIndex.Cursor()
@@ -237,8 +237,8 @@ func EntriesGetPrev(userID, maxID string, count int, tx Transaction) (Entries, e
 	}
 
 	// entry User index = UserID|EntryID : EntryID
-	min := kvKeyEncode2(userID)
-	max := kvKeyEncode2(userID, maxID) // maxID is exclusive, cursor, inclusive
+	min := kvKeyEncodeBytes(userID)
+	max := kvKeyEncodeBytes(userID, maxID) // maxID is exclusive, cursor, inclusive
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexUser)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
@@ -288,8 +288,8 @@ func EntriesUpdateReadByFeed(userID, subscriptionID string, maxTime time.Time, r
 	var idCache []string
 
 	// entry index Read = UserID|IsRead|Updated|EntryID : EntryID
-	min := kvKeyEncode2(userID, kvKeyBoolEncode(!read))
-	max := kvKeyEncode2(userID, kvKeyBoolEncode(!read), kvKeyTimeEncode(maxTime))
+	min := kvKeyEncodeBytes(userID, kvKeyBoolEncode(!read))
+	max := kvKeyEncodeBytes(userID, kvKeyBoolEncode(!read), kvKeyTimeEncode(maxTime))
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexRead)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 
@@ -328,8 +328,8 @@ func EntriesUpdateStarByFeed(userID, subscriptionID string, maxTime time.Time, s
 	var idCache []string
 
 	// entry index Star = UserID|IsStar|Updated|EntryID : EntryID
-	min := kvKeyEncode2(userID, kvKeyBoolEncode(!star))
-	max := kvKeyEncode2(userID, kvKeyBoolEncode(!star), kvKeyTimeEncode(maxTime))
+	min := kvKeyEncodeBytes(userID, kvKeyBoolEncode(!star))
+	max := kvKeyEncodeBytes(userID, kvKeyBoolEncode(!star), kvKeyTimeEncode(maxTime))
 	bIndex := tx.Bucket(bucketIndex).Bucket(entryEntity).Bucket(entryIndexStar)
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 

@@ -140,7 +140,7 @@ func kvDelete(name string, value Object, tx Transaction) error {
 
 	// collect keys
 	c := b.Cursor()
-	min, max := kvKeyMinMax2(value.getID())
+	min, max := kvKeyMinMaxBytes(value.getID())
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
 		keys = append(keys, string(k))
 	}
@@ -208,7 +208,7 @@ func kvKeyEncode(values ...string) string {
 	return strings.Join(values, chSep)
 }
 
-func kvKeyEncode2(values ...string) []byte {
+func kvKeyEncodeBytes(values ...string) []byte {
 	return []byte(kvKeyEncode(values...))
 }
 
@@ -224,8 +224,9 @@ func kvKeyMinMax(id string) (string, string) {
 	return kvKeyEncode(id), kvKeyMax(id)
 }
 
-func kvKeyMinMax2(id string) ([]byte, []byte) {
-	return []byte(kvKeyEncode(id)), []byte(kvKeyMax(id))
+func kvKeyMinMaxBytes(id string) ([]byte, []byte) {
+	k, v := kvKeyMinMax(id)
+	return []byte(k), []byte(v)
 }
 
 func kvKeyBoolEncode(value bool) string {
