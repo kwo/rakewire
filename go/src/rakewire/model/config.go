@@ -34,7 +34,7 @@ func (z *Configuration) Load(tx Transaction) error {
 func (z *Configuration) Save(tx Transaction) error {
 	b := tx.Bucket(bucketConfig)
 	for key, value := range z.values {
-		if err := b.Put([]byte(key), []byte(value)); err != nil {
+		if err := b.Put(key, value); err != nil {
 			return err
 		}
 	}

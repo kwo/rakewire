@@ -213,7 +213,7 @@ func copyBuckets(src, dst Database) error {
 				dstBucket := dstTx.Bucket(bucketName)
 				srcCursor := srcBucket.Cursor()
 				for k, v := srcCursor.First(); k != nil; k, v = srcCursor.Next() {
-					if err := dstBucket.Put(k, v); err != nil {
+					if err := dstBucket.Put(string(k), string(v)); err != nil {
 						return err
 					}
 				}
@@ -331,7 +331,7 @@ func checkEntries(db Database) error {
 		// remove bad entries
 		for _, id := range badIDs {
 			// use container, because operating on database without indexes yet
-			if err := entries.Delete(id); err != nil {
+			if err := entries.DeleteRecord(id); err != nil {
 				return err
 			}
 		}
@@ -437,7 +437,7 @@ func checkFeeds(db Database) error {
 		// remove bad feeds
 		for _, id := range badIDs {
 			// use container, because operating on database without indexes yet
-			if err := feeds.Delete(id); err != nil {
+			if err := feeds.DeleteRecord(id); err != nil {
 				return err
 			}
 		}
@@ -484,7 +484,7 @@ func checkGroups(db Database) error {
 
 		// remove bad groups
 		for _, id := range badIDs {
-			if err := groups.Delete(id); err != nil {
+			if err := groups.DeleteRecord(id); err != nil {
 				return err
 			}
 		}
@@ -531,7 +531,7 @@ func checkItems(db Database) error {
 		// remove bad items
 		for _, id := range badIDs {
 			// use container, because operating on database without indexes yet
-			if err := items.Delete(id); err != nil {
+			if err := items.DeleteRecord(id); err != nil {
 				return err
 			}
 		}
@@ -635,7 +635,7 @@ func checkSubscriptions(db Database) error {
 		// remove bad subscriptions
 		for _, id := range badIDs {
 			// use container, because operating on database without indexes yet
-			if err := subscriptions.Delete(id); err != nil {
+			if err := subscriptions.DeleteRecord(id); err != nil {
 				return err
 			}
 		}
@@ -690,7 +690,7 @@ func checkTransmissions(db Database) error {
 		// remove bad transmissions
 		for _, id := range badIDs {
 			// use container, because operating on database without indexes yet
-			if err := transmissions.Delete(id); err != nil {
+			if err := transmissions.DeleteRecord(id); err != nil {
 				return err
 			}
 		}

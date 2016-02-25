@@ -202,7 +202,7 @@ func TestBucketPutGetDeleteRecord(t *testing.T) {
 		items := tx.Bucket(bucketData, itemEntity)
 
 		for i := 1; i < 10; i++ {
-			if err := items.Delete(kvKeyUintEncode(uint64(i))); err != nil {
+			if err := items.DeleteRecord(kvKeyUintEncode(uint64(i))); err != nil {
 				return err
 			}
 		}

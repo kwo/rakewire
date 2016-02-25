@@ -54,13 +54,18 @@ type Transaction interface {
 type Bucket interface {
 	Bucket(name ...string) Bucket
 	Cursor() Cursor
-	Delete(id string) error
-	GetIndex(b Bucket, id string) Record
+
+	Delete(key string) error
+	Get(key string) string
+	Put(key, value string) error
+
+	DeleteRecord(id string) error
 	GetRecord(id string) Record
 	PutRecord(id string, record Record) error
 	Iterate(onRecord OnRecord) error
+
+	GetIndex(b Bucket, id string) Record
 	IterateIndex(b Bucket, minID, maxID string, onRecord OnRecord) error
-	Put(key []byte, value []byte) error
 }
 
 // Cursor loops through values in a bucket

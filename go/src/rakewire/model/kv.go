@@ -119,7 +119,7 @@ func kvSaveIndexes(name string, id string, newIndexes map[string]Record, oldInde
 		newIndexRecord := newIndexes[indexName]
 		b := indexBucket.Bucket(indexName)
 		for key, value := range newIndexRecord {
-			if err := b.Put([]byte(key), []byte(value)); err != nil {
+			if err := b.Put(key, value); err != nil {
 				return err
 			}
 		}

@@ -138,7 +138,11 @@ func (z *boltBucket) Cursor() Cursor {
 	return &boltCursor{cursor: cursor}
 }
 
-func (z *boltBucket) Delete(id string) error {
+func (z *boltBucket) Delete(key string) error {
+	return z.bucket.Delete([]byte(key))
+}
+
+func (z *boltBucket) DeleteRecord(id string) error {
 
 	keys := [][]byte{}
 
@@ -157,6 +161,10 @@ func (z *boltBucket) Delete(id string) error {
 
 	return nil
 
+}
+
+func (z *boltBucket) Get(key string) string {
+	return string(z.bucket.Get([]byte(key)))
 }
 
 // GetIndex retrieves a Record from the given bucket looking up its ID in the current index bucket.
@@ -190,28 +198,6 @@ func (z *boltBucket) GetRecord(id string) Record {
 	}
 
 	return record
-
-}
-
-func (z *boltBucket) Put(key, value []byte) error {
-	return z.bucket.Put(key, value)
-}
-
-func (z *boltBucket) PutRecord(id string, record Record) error {
-
-	if err := z.Delete(id); err != nil {
-		return err
-	}
-
-	for fieldname, v := range record {
-		key := []byte(kvKeyEncode(id, fieldname))
-		value := []byte(v)
-		if err := z.bucket.Put(key, value); err != nil {
-			return err
-		}
-	}
-
-	return nil
 
 }
 
@@ -273,6 +259,28 @@ func (z *boltBucket) IterateIndex(b Bucket, minID, maxID string, onRecord OnReco
 			}
 		}
 	} // for loop
+
+	return nil
+
+}
+
+func (z *boltBucket) Put(key, value string) error {
+	return z.bucket.Put([]byte(key), []byte(value))
+}
+
+func (z *boltBucket) PutRecord(id string, record Record) error {
+
+	if err := z.DeleteRecord(id); err != nil {
+		return err
+	}
+
+	for fieldname, v := range record {
+		key := []byte(kvKeyEncode(id, fieldname))
+		value := []byte(v)
+		if err := z.bucket.Put(key, value); err != nil {
+			return err
+		}
+	}
 
 	return nil
 
