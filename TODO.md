@@ -4,8 +4,13 @@
 
 ### Immediate
 
+ - separate out web project
+ - make project go gettable
+ - make gRPC client app
+
  - optimize entries
  - jwt authentication and basic auth
+ - gRPC multiplex with JSON API
  - native api to manage users
    - add
    - remove
@@ -16,18 +21,19 @@
    - save to buffer, write to db every 5? seconds, api to filter entries by level and category
    - expire entries by level (TRACE/DEBUG after 10min, other after X days)
 
- - create feed item frequency graph per feed for one week
-   - allow assigning polling frequency per hour/day for feed
-
- - expire entries/items by date/feed size
- - filter httpd requests on hostname
-
 ### Goals
   x Save Feed Entries
   x implememt Fever API
   - add support for Hot Links to Fever API support
 
 ### Unsorted
+
+  - create feed item frequency graph per feed for one week
+    - allow assigning polling frequency per hour/day for feed
+
+  - expire entries/items by date/feed size
+  - filter httpd requests on hostname
+
   - integrate boltview into rakewire for config
   - store subscription count in Feed
   - add subscribers count to user-agent when fetching

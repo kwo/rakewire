@@ -79,7 +79,7 @@ func TestBucketIterate(t *testing.T) {
 
 	if err := database.Select(func(tx Transaction) error {
 		feeds := tx.Bucket(bucketData, feedEntity)
-		return feeds.Iterate(func(record Record) error {
+		return feeds.Iterate(func(id string, record Record) error {
 			counter := 0
 			for k, v := range record {
 				t.Logf("%s: %s", k, v)
@@ -114,7 +114,7 @@ func TestBucketIndexIterate(t *testing.T) {
 		entryCount := 0
 
 		bEntries := tx.Bucket(bucketData, entryEntity)
-		if err := bEntries.Iterate(func(record Record) error {
+		if err := bEntries.Iterate(func(id string, record Record) error {
 			//t.Logf("entry bucket: %v", record)
 			entryCount++
 			return nil
@@ -129,7 +129,7 @@ func TestBucketIndexIterate(t *testing.T) {
 		entryCount = 0
 		min, max := kvKeyMinMax(user.ID)
 		bIndex := tx.Bucket(bucketIndex, entryEntity, entryIndexUser)
-		if err := bIndex.IterateIndex(bEntries, min, max, func(record Record) error {
+		if err := bIndex.IterateIndex(bEntries, min, max, func(id string, record Record) error {
 			//t.Logf("entry index:  %v", record)
 			entryCount++
 			return nil

@@ -1,4 +1,4 @@
-VERSION="1.10.0"
+VERSION="1.11.0-beta"
 BUILDTIME=`date -u +%FT%T%Z`
 BUILDHASH=`git rev-parse HEAD`
 STATUS=`git status --porcelain`

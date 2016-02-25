@@ -11,7 +11,7 @@ func SubscriptionsByUser(userID string, tx Transaction) (Subscriptions, error) {
 	bSubscription := tx.Bucket(bucketData, subscriptionEntity)
 	bFeed := tx.Bucket(bucketData, feedEntity)
 
-	err := bIndex.IterateIndex(bSubscription, min, max, func(record Record) error {
+	err := bIndex.IterateIndex(bSubscription, min, max, func(id string, record Record) error {
 		subscription := &Subscription{}
 		if err := subscription.deserialize(record); err != nil {
 			return err
@@ -42,7 +42,7 @@ func SubscriptionsByFeed(feedID string, tx Transaction) (Subscriptions, error) {
 	bSubscription := tx.Bucket(bucketData, subscriptionEntity)
 	bFeed := tx.Bucket(bucketData, feedEntity)
 
-	err := bIndex.IterateIndex(bSubscription, min, max, func(record Record) error {
+	err := bIndex.IterateIndex(bSubscription, min, max, func(id string, record Record) error {
 		subscription := &Subscription{}
 		if err := subscription.deserialize(record); err != nil {
 			return err

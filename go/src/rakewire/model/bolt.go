@@ -204,13 +204,13 @@ func (z *boltBucket) GetRecord(id string) Record {
 func (z *boltBucket) Iterate(onRecord OnRecord) error {
 
 	firstRow := false
-	var lastID string
+	var id, lastID string
 	record := make(Record)
 
 	err := z.bucket.ForEach(func(key, value []byte) error {
 
 		elements := kvKeyDecode(key)
-		id := elements[0]
+		id = elements[0]
 		fieldname := elements[1]
 
 		if !firstRow {
@@ -219,7 +219,7 @@ func (z *boltBucket) Iterate(onRecord OnRecord) error {
 		}
 
 		if id != lastID {
-			if err := onRecord(record); err != nil {
+			if err := onRecord(lastID, record); err != nil {
 				return err
 			}
 			// reset
@@ -238,7 +238,7 @@ func (z *boltBucket) Iterate(onRecord OnRecord) error {
 
 	// fire last one
 	if len(record) > 0 {
-		if err := onRecord(record); err != nil {
+		if err := onRecord(id, record); err != nil {
 			return err
 		}
 	}
@@ -253,8 +253,9 @@ func (z *boltBucket) IterateIndex(b Bucket, minID, maxID string, onRecord OnReco
 	max := []byte(maxID)
 	c := z.bucket.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-		if record := b.GetRecord(string(v)); record != nil {
-			if err := onRecord(record); err != nil {
+		id := string(v)
+		if record := b.GetRecord(id); record != nil {
+			if err := onRecord(id, record); err != nil {
 				return err
 			}
 		}

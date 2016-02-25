@@ -12,7 +12,7 @@ func FeedsAll(tx Transaction) (Feeds, error) {
 	result := Feeds{}
 
 	cFeeds := tx.Bucket(bucketData, feedEntity)
-	err := cFeeds.Iterate(func(record Record) error {
+	err := cFeeds.Iterate(func(id string, record Record) error {
 		f := &Feed{}
 		if err := f.deserialize(record); err != nil {
 			return err
@@ -38,7 +38,7 @@ func FeedsFetch(maxTime time.Time, tx Transaction) (Feeds, error) {
 	bIndex := tx.Bucket(bucketIndex, feedEntity, feedIndexNextFetch)
 	bFeed := tx.Bucket(bucketData, feedEntity)
 
-	err := bIndex.IterateIndex(bFeed, "", max, func(record Record) error {
+	err := bIndex.IterateIndex(bFeed, "", max, func(id string, record Record) error {
 		feed := &Feed{}
 		if err := feed.deserialize(record); err != nil {
 			return err

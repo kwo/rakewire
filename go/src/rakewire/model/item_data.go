@@ -46,7 +46,7 @@ func ItemsByFeed(feedID string, tx Transaction) (Items, error) {
 	bIndex := tx.Bucket(bucketIndex).Bucket(itemEntity).Bucket(itemIndexGUID)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
-	err := bIndex.IterateIndex(bItem, min, max, func(record Record) error {
+	err := bIndex.IterateIndex(bItem, min, max, func(id string, record Record) error {
 		item := &Item{}
 		if err := item.deserialize(record); err != nil {
 			return err

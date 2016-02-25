@@ -31,7 +31,7 @@ func EntriesAddNew(allItems Items, tx Transaction) error {
 		// subscription index Feed = FeedID|UserID : SubscriptionID
 		min, max := kvKeyMinMax(feedID)
 
-		err := bIndex.IterateIndex(bSubscription, min, max, func(record Record) error {
+		err := bIndex.IterateIndex(bSubscription, min, max, func(id string, record Record) error {
 			subscription := &Subscription{}
 			if err := subscription.deserialize(record); err != nil {
 				return err
@@ -92,7 +92,7 @@ func EntriesStarredByUser(userID string, tx Transaction) (Entries, error) {
 	bEntry := tx.Bucket(bucketData).Bucket(entryEntity)
 	bItem := tx.Bucket(bucketData).Bucket(itemEntity)
 
-	err := bIndex.IterateIndex(bEntry, min, max, func(record Record) error {
+	err := bIndex.IterateIndex(bEntry, min, max, func(id string, record Record) error {
 		entry := &Entry{}
 		if err := entry.deserialize(record); err != nil {
 			return err
@@ -124,7 +124,7 @@ func EntriesUnreadByUser(userID string, tx Transaction) (Entries, error) {
 	bEntry := tx.Bucket(bucketData, entryEntity)
 	bItem := tx.Bucket(bucketData, itemEntity)
 
-	err := bIndex.IterateIndex(bEntry, min, max, func(record Record) error {
+	err := bIndex.IterateIndex(bEntry, min, max, func(id string, record Record) error {
 		entry := &Entry{}
 		if err := entry.deserialize(record); err != nil {
 			return err
@@ -192,7 +192,7 @@ func EntriesGetNext(userID, minID string, count int, tx Transaction) (Entries, e
 
 	errMax := errors.New("Count reached")
 
-	err := bIndex.IterateIndex(bEntry, min, max, func(record Record) error {
+	err := bIndex.IterateIndex(bEntry, min, max, func(id string, record Record) error {
 
 		entry := &Entry{}
 		if err := entry.deserialize(record); err != nil {

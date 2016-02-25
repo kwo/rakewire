@@ -17,7 +17,7 @@ func TransmissionsByFeed(feedID string, since time.Duration, tx Transaction) (Tr
 	bIndex := tx.Bucket(bucketIndex, transmissionEntity, transmissionIndexFeedTime)
 	bTransmission := tx.Bucket(bucketData, transmissionEntity)
 
-	err := bIndex.IterateIndex(bTransmission, min, max, func(record Record) error {
+	err := bIndex.IterateIndex(bTransmission, min, max, func(id string, record Record) error {
 		transmission := &Transmission{}
 		if err := transmission.deserialize(record); err != nil {
 			return err

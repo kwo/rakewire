@@ -246,9 +246,9 @@ func copyContainers(src, dst Database) error {
 			srcBucket := srcTx.Bucket(bucketData, entityName)
 			return dst.Update(func(dstTx Transaction) error {
 				dstBucket := dstTx.Bucket(bucketData, entityName)
-				return srcBucket.Iterate(func(record Record) error {
+				return srcBucket.Iterate(func(id string, record Record) error {
 					if err := entity.deserialize(record, true); err != nil {
-						log.Printf("  Error in record (%d): %s", entity.getID(), err.Error())
+						log.Printf("  Error in record (%s): %s", id, err.Error())
 						return nil
 					}
 					return dstBucket.PutRecord(entity.getID(), record)
@@ -311,7 +311,7 @@ func checkEntries(db Database) error {
 		entries := tx.Bucket(bucketData, entryEntity)
 
 		entry := &Entry{}
-		entries.Iterate(func(record Record) error {
+		entries.Iterate(func(id string, record Record) error {
 			entry.clear()
 			if err := entry.deserialize(record); err == nil {
 				if !userExists(entry.UserID) {
@@ -351,7 +351,7 @@ func checkFeedDuplicates(db Database) error {
 		subscriptions := tx.Bucket(bucketData, subscriptionEntity)
 		findSubscriptions := func(feedID string) Subscriptions {
 			result := Subscriptions{}
-			subscriptions.Iterate(func(record Record) error {
+			subscriptions.Iterate(func(id string, record Record) error {
 				subscription := &Subscription{}
 				if err := subscription.deserialize(record); err == nil {
 					if subscription.FeedID == feedID {
@@ -406,7 +406,7 @@ func checkFeeds(db Database) error {
 		subscriptionExists := func(feedID string) bool {
 			result := false
 			subscription := &Subscription{}
-			subscriptions.Iterate(func(record Record) error {
+			subscriptions.Iterate(func(id string, record Record) error {
 				subscription.clear()
 				if err := subscription.deserialize(record); err == nil {
 					if subscription.FeedID == feedID {
@@ -423,7 +423,7 @@ func checkFeeds(db Database) error {
 		feeds := tx.Bucket(bucketData, feedEntity)
 
 		feed := &Feed{}
-		feeds.Iterate(func(record Record) error {
+		feeds.Iterate(func(id string, record Record) error {
 			feed.clear()
 			if err := feed.deserialize(record); err == nil {
 				if !subscriptionExists(feed.ID) {
@@ -471,7 +471,7 @@ func checkGroups(db Database) error {
 		groups := tx.Bucket(bucketData, groupEntity)
 
 		group := &Group{}
-		groups.Iterate(func(record Record) error {
+		groups.Iterate(func(id string, record Record) error {
 			group.clear()
 			if err := group.deserialize(record); err == nil {
 				if !userExists(group.UserID) {
@@ -517,7 +517,7 @@ func checkItems(db Database) error {
 		items := tx.Bucket(bucketData, itemEntity)
 
 		item := &Item{}
-		items.Iterate(func(record Record) error {
+		items.Iterate(func(id string, record Record) error {
 			item.clear()
 			if err := item.deserialize(record); err == nil {
 				if !feedExists(item.FeedID) {
@@ -597,7 +597,7 @@ func checkSubscriptions(db Database) error {
 		subscriptions := tx.Bucket(bucketData, subscriptionEntity)
 
 		subscription := &Subscription{}
-		subscriptions.Iterate(func(record Record) error {
+		subscriptions.Iterate(func(id string, record Record) error {
 			subscription.clear()
 			if err := subscription.deserialize(record); err == nil {
 				if !userExists(subscription.UserID) {
@@ -676,7 +676,7 @@ func checkTransmissions(db Database) error {
 		transmissions := tx.Bucket(bucketData, transmissionEntity)
 
 		transmission := &Transmission{}
-		transmissions.Iterate(func(record Record) error {
+		transmissions.Iterate(func(id string, record Record) error {
 			transmission.clear()
 			if err := transmission.deserialize(record); err == nil {
 				if !feedExists(transmission.FeedID) {
@@ -717,7 +717,7 @@ func rebuildIndexes(db Database) error {
 
 		err := db.Update(func(tx Transaction) error {
 			container := tx.Bucket(bucketData, entityName)
-			return container.Iterate(func(record Record) error {
+			return container.Iterate(func(id string, record Record) error {
 				if err := entity.deserialize(record); err != nil {
 					return err
 				}

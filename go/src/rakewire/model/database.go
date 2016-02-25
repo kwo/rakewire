@@ -16,7 +16,7 @@ var (
 type Record map[string]string
 
 // OnRecord defines a function type that fires on a new Record
-type OnRecord func(Record) error
+type OnRecord func(string, Record) error
 
 // OnRecord defines a function type that fires on a new Record
 type fnUniqueID func() (string, error)
