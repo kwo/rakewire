@@ -38,7 +38,7 @@ func openTestDatabase(t *testing.T, flags ...bool) Database {
 
 	if flagPopulateDatabase {
 		err = boltDB.Update(func(tx Transaction) error {
-			return populateDatabase(tx)
+			return populateDatabase(t, tx)
 		})
 		if err != nil {
 			t.Fatalf("Cannot populate database: %s", err.Error())
@@ -63,7 +63,7 @@ func closeTestDatabase(t *testing.T, d Database) {
 
 }
 
-func populateDatabase(tx Transaction) error {
+func populateDatabase(t *testing.T, tx Transaction) error {
 
 	// add test user
 	user := NewUser(testUsername)
@@ -100,12 +100,13 @@ func populateDatabase(tx Transaction) error {
 	}
 
 	// add test items
-	for _, f := range mFeeds {
+	for n, f := range mFeeds {
 		now := time.Now().Truncate(time.Second)
 		for i := 0; i < 10; i++ {
-			item := NewItem(f.ID, fmt.Sprintf("Item%d", i))
+			item := NewItem(f.ID, fmt.Sprintf("Feed%dItem%d", n, i))
 			item.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
 			item.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
+			//t.Logf("Item: %v", item)
 			f.Items = append(f.Items, item)
 		}
 		f.Transmission = NewTransmission(f.ID)

@@ -170,8 +170,7 @@ func (z *boltBucket) Get(key string) string {
 // GetIndex retrieves a Record from the given bucket looking up its ID in the current index bucket.
 func (z *boltBucket) GetIndex(b Bucket, id string) Record {
 
-	value := z.bucket.Get([]byte(id))
-	if value != nil {
+	if value := z.bucket.Get([]byte(id)); value != nil {
 		return b.GetRecord(string(value))
 	}
 

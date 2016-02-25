@@ -97,3 +97,38 @@ func TestItemHashEmpty(t *testing.T) {
 	}
 
 }
+
+func TestItemsByGUID(t *testing.T) {
+
+	t.Parallel()
+
+	database := openTestDatabase(t, true)
+	defer closeTestDatabase(t, database)
+
+	err := database.Select(func(tx Transaction) error {
+
+		bIndex := tx.Bucket(bucketIndex, itemEntity, itemIndexGUID)
+		c := bIndex.Cursor()
+
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			t.Logf("k: %v, v: %v", string(k), string(v))
+		}
+
+		item, err := ItemByGUID("0000000001", "Feed0Item0", tx)
+		if err != nil {
+			return err
+		}
+
+		if item == nil {
+			t.Error("Expected item but is nil")
+		}
+
+		return nil
+
+	})
+
+	if err != nil {
+		t.Errorf("Error when selecting from database: %s", err.Error())
+	}
+
+}

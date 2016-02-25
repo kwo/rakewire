@@ -1,16 +1,14 @@
 package model
 
-import (
-	"strings"
-)
-
 // ItemByGUID retrieve an item object by guid, nil if not found
-func ItemByGUID(guid string, tx Transaction) (item *Item, err error) {
+func ItemByGUID(feedID, guid string, tx Transaction) (item *Item, err error) {
 
 	bItem := tx.Bucket(bucketData, itemEntity)
 	bIndex := tx.Bucket(bucketIndex, itemEntity, itemIndexGUID)
 
-	if record := bIndex.GetIndex(bItem, strings.ToLower(guid)); record != nil {
+	key := kvKeyEncode(feedID, guid)
+
+	if record := bIndex.GetIndex(bItem, key); record != nil {
 		item = &Item{}
 		err = item.deserialize(record)
 	}
@@ -24,7 +22,7 @@ func ItemsByGUID(feedID string, guIDs []string, tx Transaction) (Items, error) {
 
 	items := Items{}
 	for _, guid := range guIDs {
-		item, err := ItemByGUID(guid, tx)
+		item, err := ItemByGUID(feedID, guid, tx)
 		if err != nil {
 			return nil, err
 		} else if item != nil {
