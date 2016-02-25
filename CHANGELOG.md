@@ -1,5 +1,13 @@
 # Rakewire Changelog
 
+## 1.10.0 2016-02-25 (internal release)
+
+ - upgrade to Go 1.6
+ - maintain dependencies with vendetta and Git submodules
+ - move to string IDs
+ - merge Container into Bucket API
+ - minor templating refinements for gokv tool
+
 ## 1.9.1 2016-02-17
 
  - add status handler to home page (temporairly) to return 200 for health checks
