@@ -15,11 +15,6 @@ var (
 // Record defines a group of key-value pairs that can create a new Object
 type Record map[string]string
 
-// GetID return the primary key of the object.
-func (z Record) GetID() string {
-	return z["ID"]
-}
-
 // OnRecord defines a function type that fires on a new Record
 type OnRecord func(Record) error
 

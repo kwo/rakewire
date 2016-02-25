@@ -248,10 +248,10 @@ func copyContainers(src, dst Database) error {
 				dstBucket := dstTx.Bucket(bucketData, entityName)
 				return srcBucket.Iterate(func(record Record) error {
 					if err := entity.deserialize(record, true); err != nil {
-						log.Printf("  Error in record (%d): %s", record.GetID(), err.Error())
+						log.Printf("  Error in record (%d): %s", entity.getID(), err.Error())
 						return nil
 					}
-					return dstBucket.PutRecord(record.GetID(), record)
+					return dstBucket.PutRecord(entity.getID(), record)
 				})
 			})
 		})
