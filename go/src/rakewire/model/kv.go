@@ -56,11 +56,11 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 
 	b := tx.Bucket(bucketData).Bucket(entityName)
 
-	fn := func() (uint64, string, error) {
+	fn := func() (string, error) {
 		return kvNextID(entityName, tx)
 	}
 
-	if err := value.setIDIfNecessary(fn); err != nil {
+	if err := value.setID(fn); err != nil {
 		return err
 	}
 
@@ -91,7 +91,7 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 	}
 
 	// save indexes
-	if err := kvSaveIndexes(entityName, value.getID(), newIndexes, oldIndexes, tx); err != nil {
+	if err := kvSaveIndexes(entityName, newIndexes, oldIndexes, tx); err != nil {
 		return err
 	}
 
@@ -99,7 +99,7 @@ func kvSave(entityName string, value Object, tx Transaction) error {
 
 }
 
-func kvSaveIndexes(name string, id string, newIndexes map[string]Record, oldIndexes map[string]Record, tx Transaction) error {
+func kvSaveIndexes(name string, newIndexes, oldIndexes map[string]Record, tx Transaction) error {
 
 	indexBucket := tx.Bucket(bucketIndex).Bucket(name)
 
@@ -167,7 +167,7 @@ func kvDelete(name string, value Object, tx Transaction) error {
 
 }
 
-func kvNextID(entityName string, tx Transaction) (uint64, string, error) {
+func kvNextID(entityName string, tx Transaction) (string, error) {
 
 	idStr := "0"
 	key := "sequence"
@@ -185,7 +185,7 @@ func kvNextID(entityName string, tx Transaction) (uint64, string, error) {
 	// turn into a uint64
 	id, err := strconv.ParseUint(idStr, 10, 64)
 	if err != nil {
-		return 0, "", err
+		return "", err
 	}
 
 	// increment
@@ -197,10 +197,10 @@ func kvNextID(entityName string, tx Transaction) (uint64, string, error) {
 	// save back to database
 	record[entityName] = idStr
 	if err := b.PutRecord(key, record); err != nil {
-		return 0, "", err
+		return "", err
 	}
 
-	return id, idStr, nil
+	return idStr, nil
 
 }
 

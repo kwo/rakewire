@@ -17,9 +17,9 @@ func NewGroup(userID string, name string) *Group {
 	}
 }
 
-func (z *Group) setIDIfNecessary(fn fnUniqueID) error {
+func (z *Group) setID(fn fnUniqueID) error {
 	if z.ID == empty {
-		if _, id, err := fn(); err == nil {
+		if id, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err

@@ -19,19 +19,16 @@ type Record map[string]string
 type OnRecord func(Record) error
 
 // OnRecord defines a function type that fires on a new Record
-type fnUniqueID func() (uint64, string, error)
+type fnUniqueID func() (string, error)
 
 // Object defines the functions necessary for objects to be persisted to the database
 type Object interface {
 	getID() string
-	setIDIfNecessary(fnUniqueID) error
+	setID(fnUniqueID) error
 	serialize(...bool) Record
 	deserialize(Record, ...bool) error
 	serializeIndexes() map[string]Record
 }
-
-// ContainerSeparator specified the separator character for container names
-const ContainerSeparator = "/"
 
 // Database defines the interface to a key-value store
 type Database interface {

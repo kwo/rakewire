@@ -29,9 +29,9 @@ func NewSubscription(userID, feedID string) *Subscription {
 	}
 }
 
-func (z *Subscription) setIDIfNecessary(fn fnUniqueID) error {
+func (z *Subscription) setID(fn fnUniqueID) error {
 	if z.ID == empty {
-		if _, id, err := fn(); err == nil {
+		if id, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err

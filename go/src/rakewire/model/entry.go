@@ -29,9 +29,9 @@ func NewEntry(userID, itemID, subscriptionID string) *Entry {
 
 }
 
-func (z *Entry) setIDIfNecessary(fn fnUniqueID) error {
+func (z *Entry) setID(fn fnUniqueID) error {
 	if z.ID == empty {
-		if _, id, err := fn(); err == nil {
+		if id, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err

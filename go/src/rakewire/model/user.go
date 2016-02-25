@@ -23,9 +23,9 @@ func NewUser(username string) *User {
 	}
 }
 
-func (z *User) setIDIfNecessary(fn fnUniqueID) error {
+func (z *User) setID(fn fnUniqueID) error {
 	if z.ID == empty {
-		if _, id, err := fn(); err == nil {
+		if id, err := fn(); err == nil {
 			z.ID = id
 		} else {
 			return err
