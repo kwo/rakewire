@@ -6,9 +6,15 @@
 
  - separate out web project
  - make project go gettable
+
+ - use protobuf to serialize objects in database
+   - remove records, revert to byte
+ - IDs: string or uint64?
+ - German Tank problem?
+ - group model methods with empty structs
+
  - make gRPC client app
 
- - optimize entries
  - jwt authentication and basic auth
  - gRPC multiplex with JSON API
  - native api to manage users
