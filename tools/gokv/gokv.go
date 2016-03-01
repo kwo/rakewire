@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"rakewire/tools/gokv/generator"
 	"strings"
-	"tools/gokv/generator"
 )
 
 func main() {
