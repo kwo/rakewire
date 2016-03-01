@@ -1,2 +1,0 @@
-rm -rf $PROJECT_HOME/go/{bin,pkg}/*
-rm -f $PROJECT_HOME/rakewire-*.db

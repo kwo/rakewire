@@ -1,2 +1,0 @@
-cd $PROJECT_HOME/web
-node -r ./test/init.js `find test -name "*.js" ! -path "test/init.js"` | faucet
