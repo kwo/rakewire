@@ -19,3 +19,6 @@
 [submodule "vendor/github.com/gorilla/context"]
 	path = vendor/github.com/gorilla/context
 	url = https://github.com/gorilla/context
+[submodule "tools/esc"]
+	path = tools/esc
+	url = https://github.com/mjibson/esc
