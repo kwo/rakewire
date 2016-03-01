@@ -1,9 +1,0 @@
-/go/bin
-/go/depgraph.svg
-/go/pkg
-/go/test/*.db
-/web/node_modules
-/web/public
-/NOTES.md
-/rakewire*.db
-/rakewire.pid
