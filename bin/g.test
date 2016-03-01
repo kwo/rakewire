@@ -1,4 +1,0 @@
-cd $PROJECT_HOME/go
-g.init
-go generate $(go list ./src/... | grep -v /vendor/)
-go test $*  $(go list ./src/... | grep -v /vendor/)

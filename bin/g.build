@@ -1,4 +1,0 @@
-cd $PROJECT_HOME/go
-eval $(go env)
-. $PROJECT_HOME/bin/b.init
-go build -tags netgo -ldflags "$LDFLAGS" -o ./bin/rakewire-${GOOS}-${GOARCH} ./src/rakewire/rakewire.go
