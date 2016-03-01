@@ -19,9 +19,6 @@
 [submodule "go/src/rakewire/vendor/github.com/gorilla/context"]
 	path = go/src/rakewire/vendor/github.com/gorilla/context
 	url = https://github.com/gorilla/context
-[submodule "go/src/tools/esc"]
-	path = go/src/tools/esc
-	url = https://github.com/mjibson/esc
 [submodule "go/src/rakewire/vendor/github.com/antonholmquist/jason"]
 	path = go/src/rakewire/vendor/github.com/antonholmquist/jason
 	url = https://github.com/antonholmquist/jason
