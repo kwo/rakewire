@@ -4,9 +4,6 @@
 
 ### Immediate
 
- - separate out web project
- - make project go gettable
-
  - use protobuf to serialize objects in database
    - remove records, revert to byte
  - IDs: string or uint64?

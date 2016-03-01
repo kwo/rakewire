@@ -1,7 +1,5 @@
 package httpd
 
-//go:generate esc -o static.go -pkg httpd -prefix $PROJECT_HOME/web $PROJECT_HOME/web/public
-
 import (
 	"github.com/gorilla/mux"
 	"net/http"

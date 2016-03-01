@@ -1,8 +1,20 @@
 # Rakewire
 
-Welcome to the Rakewire source code, developer!
+## Building
 
-This source code is divided into two projects: the backend, written in go, and the UI, an SPA, written using React.
+	git clone https://code.kfabrik.de:3333/rakewire/rakewire
+	cd rakewire
+	git submodule update --init
+	go test $(go list ./... | grep -v /vendor/)
+
+	go install ./tools/gokv/gokv.go
+	go install ./tools/esc
+	go generate $(go list ./... | grep -v /vendor/)
+	go test $(go list ./... | grep -v /vendor/)
+
+	go install rakewire.go
+
+	CGO_ENABLED=0; LDFLAGS="-X rakewire/model.Version=1.11.0-beta -X rakewire/model.BuildTime=`date -u +%FT%T%Z` -X rakewire/model.BuildHash=`git rev-parse HEAD`"; go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
 
 ## Dependencies
 
@@ -13,7 +25,7 @@ One tool, esc, must be installed manually to the tools directory as follows
 	cd tools
 	git submodule add https://github.com/mjibson/esc
 
-additionally, vendetta does not install dependencies of test file files by default so they must be installed manually as well
+additionally, vendetta does not install dependencies of test files by default so they must be installed manually as well
 
  	cd vendor/github.com
 	mkdir antonholmquist
