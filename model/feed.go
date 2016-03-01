@@ -10,16 +10,16 @@ import (
 type Feed struct {
 	ID            string        `json:"id" kv:"NextFetch:2"`
 	URL           string        `json:"url" kv:"+required,+groupall,URL:1:lower"`
-	SiteURL       string        `json:"siteURL"`
-	ETag          string        `json:"etag"`
-	LastModified  time.Time     `json:"lastModified"`
-	LastUpdated   time.Time     `json:"lastUpdated"`
-	NextFetch     time.Time     `json:"nextFetch" kv:"NextFetch:1"`
-	Notes         string        `json:"notes"`
-	Title         string        `json:"title"`
-	Status        string        `json:"status"`
-	StatusMessage string        `json:"statusMessage"`
-	StatusSince   time.Time     `json:"statusSince"` // time of last status
+	SiteURL       string        `json:"siteURL,omitempty"`
+	ETag          string        `json:"etag,omitempty"`
+	LastModified  time.Time     `json:"lastModified,omitempty"`
+	LastUpdated   time.Time     `json:"lastUpdated,omitempty"`
+	NextFetch     time.Time     `json:"nextFetch,omitempty" kv:"NextFetch:1"`
+	Notes         string        `json:"notes,omitempty"`
+	Title         string        `json:"title,omitempty"`
+	Status        string        `json:"status,omitempty"`
+	StatusMessage string        `json:"statusMessage,omitempty"`
+	StatusSince   time.Time     `json:"statusSince,omitempty"` // time of last status
 	Transmission  *Transmission `json:"-" kv:"-"`
 	Items         []*Item       `json:"-" kv:"-"`
 }

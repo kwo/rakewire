@@ -12,9 +12,9 @@ type Entry struct {
 	UserID         string    `json:"userID" kv:"+required,Read:1,Star:1,User:1"`
 	ItemID         string    `json:"itemID" kv:"+required"`
 	SubscriptionID string    `json:"subscriptionID" kv:"+required"` // TODO: necessary?
-	Updated        time.Time `json:"updated" kv:"Read:3,Star:3"`
-	IsRead         bool      `json:"read" kv:"Read:2"`
-	IsStar         bool      `json:"star" kv:"Star:2"`
+	Updated        time.Time `json:"updated,omitempty" kv:"Read:3,Star:3"`
+	IsRead         bool      `json:"read,omitempty" kv:"Read:2"`
+	IsStar         bool      `json:"star,omitempty" kv:"Star:2"`
 	Item           *Item     `json:"-" kv:"-"`
 }
 

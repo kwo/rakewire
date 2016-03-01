@@ -11,12 +11,12 @@ type Subscription struct {
 	ID       string    `json:"id"`
 	UserID   string    `json:"userID" kv:"+required,Feed:2,User:1"`
 	FeedID   string    `json:"feedID" kv:"+required,Feed:1,User:2"`
-	GroupIDs []string  `json:"groupIDs"`
-	Added    time.Time `json:"added"`
-	Title    string    `json:"title"`
-	Notes    string    `json:"notes"`
-	AutoRead bool      `json:"autoread"`
-	AutoStar bool      `json:"autostar"`
+	GroupIDs []string  `json:"groupIDs,omitempty"`
+	Added    time.Time `json:"added,omitempty"`
+	Title    string    `json:"title,omitempty"`
+	Notes    string    `json:"notes,omitempty"`
+	AutoRead bool      `json:"autoread,omitempty"`
+	AutoStar bool      `json:"autostar,omitempty"`
 	Feed     *Feed     `json:"-" kv:"-"`
 }
 

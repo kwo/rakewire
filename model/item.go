@@ -13,12 +13,12 @@ type Item struct {
 	ID      string    `json:"id"`
 	GUID    string    `json:"guid" kv:"+groupby,GUID:2"`
 	FeedID  string    `json:"feedID" kv:"+required,+groupall,GUID:1"`
-	Created time.Time `json:"created"`
-	Updated time.Time `json:"updated"`
-	URL     string    `json:"url"`
-	Author  string    `json:"author"`
-	Title   string    `json:"title"`
-	Content string    `json:"content"`
+	Created time.Time `json:"created,omitempty"`
+	Updated time.Time `json:"updated,omitempty"`
+	URL     string    `json:"url,omitempty"`
+	Author  string    `json:"author,omitempty"`
+	Title   string    `json:"title,omitempty"`
+	Content string    `json:"content,omitempty"`
 }
 
 // NewItem instantiate a new Item object
