@@ -50,8 +50,8 @@ func OPMLExport(user *User, tx Transaction) (*OPML, error) {
 			flags = strings.TrimSpace(flags)
 
 			var created *time.Time
-			if !subscription.DateAdded.IsZero() {
-				x := subscription.DateAdded.UTC()
+			if !subscription.Added.IsZero() {
+				x := subscription.Added.UTC()
 				created = &x
 			}
 
@@ -189,10 +189,10 @@ func OPMLImport(userID string, opml *OPML, replace bool, tx Transaction) error {
 			uf.AutoStar = uf.AutoStar || branch.IsAutoStar() || outline.IsAutoStar()
 			uf.AddGroup(group.ID)
 			if outline.Created != nil && !outline.Created.IsZero() {
-				uf.DateAdded = *outline.Created
+				uf.Added = *outline.Created
 			}
-			if uf.DateAdded.IsZero() {
-				uf.DateAdded = time.Now().Truncate(time.Second)
+			if uf.Added.IsZero() {
+				uf.Added = time.Now().Truncate(time.Second)
 			}
 			if err := uf.Save(tx); err != nil {
 				return err

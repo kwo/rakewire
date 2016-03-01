@@ -19,20 +19,20 @@ const (
 )
 
 const (
-	subscriptionID        = "ID"
-	subscriptionUserID    = "UserID"
-	subscriptionFeedID    = "FeedID"
-	subscriptionGroupIDs  = "GroupIDs"
-	subscriptionDateAdded = "DateAdded"
-	subscriptionTitle     = "Title"
-	subscriptionNotes     = "Notes"
-	subscriptionAutoRead  = "AutoRead"
-	subscriptionAutoStar  = "AutoStar"
+	subscriptionID       = "ID"
+	subscriptionUserID   = "UserID"
+	subscriptionFeedID   = "FeedID"
+	subscriptionGroupIDs = "GroupIDs"
+	subscriptionAdded    = "Added"
+	subscriptionTitle    = "Title"
+	subscriptionNotes    = "Notes"
+	subscriptionAutoRead = "AutoRead"
+	subscriptionAutoStar = "AutoStar"
 )
 
 var (
 	subscriptionAllFields = []string{
-		subscriptionID, subscriptionUserID, subscriptionFeedID, subscriptionGroupIDs, subscriptionDateAdded, subscriptionTitle, subscriptionNotes, subscriptionAutoRead, subscriptionAutoStar,
+		subscriptionID, subscriptionUserID, subscriptionFeedID, subscriptionGroupIDs, subscriptionAdded, subscriptionTitle, subscriptionNotes, subscriptionAutoRead, subscriptionAutoStar,
 	}
 	subscriptionAllIndexes = []string{
 		subscriptionIndexFeed, subscriptionIndexUser,
@@ -74,7 +74,7 @@ func (z *Subscription) clear() {
 	z.UserID = empty
 	z.FeedID = empty
 	z.GroupIDs = []string{}
-	z.DateAdded = time.Time{}
+	z.Added = time.Time{}
 	z.Title = empty
 	z.Notes = empty
 	z.AutoRead = false
@@ -107,8 +107,8 @@ func (z *Subscription) serialize(flags ...bool) Record {
 		}(z.GroupIDs)
 	}
 
-	if flagNoZeroCheck || !z.DateAdded.IsZero() {
-		result[subscriptionDateAdded] = z.DateAdded.UTC().Format(fmtTime)
+	if flagNoZeroCheck || !z.Added.IsZero() {
+		result[subscriptionAdded] = z.Added.UTC().Format(fmtTime)
 	}
 
 	if flagNoZeroCheck || z.Title != empty {
@@ -175,7 +175,7 @@ func (z *Subscription) deserialize(values Record, flags ...bool) error {
 		return result
 	}(subscriptionGroupIDs, values, errors)
 
-	z.DateAdded = func(fieldName string, values map[string]string, errors []error) time.Time {
+	z.Added = func(fieldName string, values map[string]string, errors []error) time.Time {
 		result := time.Time{}
 		if value, ok := values[fieldName]; ok {
 			t, err := time.Parse(fmtTime, value)
@@ -186,7 +186,7 @@ func (z *Subscription) deserialize(values Record, flags ...bool) error {
 			}
 		}
 		return result
-	}(subscriptionDateAdded, values, errors)
+	}(subscriptionAdded, values, errors)
 
 	z.Title = values[subscriptionTitle]
 	z.Notes = values[subscriptionNotes]

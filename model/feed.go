@@ -8,20 +8,20 @@ import (
 
 // Feed feed descriptor
 type Feed struct {
-	Transmission  *Transmission `kv:"-"`
-	Items         []*Item       `kv:"-"`
-	ID            string        `kv:"NextFetch:2"`
-	URL           string        `kv:"+required,+groupall,URL:1:lower"`
-	SiteURL       string
-	ETag          string
-	LastModified  time.Time
-	LastUpdated   time.Time
-	NextFetch     time.Time `kv:"NextFetch:1"`
-	Notes         string
-	Title         string
-	Status        string
-	StatusMessage string
-	StatusSince   time.Time // time of last status
+	ID            string        `json:"id" kv:"NextFetch:2"`
+	URL           string        `json:"url" kv:"+required,+groupall,URL:1:lower"`
+	SiteURL       string        `json:"siteURL"`
+	ETag          string        `json:"etag"`
+	LastModified  time.Time     `json:"lastModified"`
+	LastUpdated   time.Time     `json:"lastUpdated"`
+	NextFetch     time.Time     `json:"nextFetch" kv:"NextFetch:1"`
+	Notes         string        `json:"notes"`
+	Title         string        `json:"title"`
+	Status        string        `json:"status"`
+	StatusMessage string        `json:"statusMessage"`
+	StatusSince   time.Time     `json:"statusSince"` // time of last status
+	Transmission  *Transmission `json:"-" kv:"-"`
+	Items         []*Item       `json:"-" kv:"-"`
 }
 
 // NewFeed instantiate a new Feed object

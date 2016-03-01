@@ -4,9 +4,9 @@
 
 ### Immediate
 
- - use protobuf to serialize objects in database
+ - use json to serialize objects in database
    - remove records, revert to byte
- - IDs: string or uint64?
+ - IDs: back to uint64
  - German Tank problem?
  - group model methods with empty structs
 

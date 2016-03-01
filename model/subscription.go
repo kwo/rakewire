@@ -8,16 +8,16 @@ import (
 
 // Subscription defines a feed specific to a user.
 type Subscription struct {
-	ID        string
-	UserID    string `kv:"+required,Feed:2,User:1"`
-	FeedID    string `kv:"+required,Feed:1,User:2"`
-	GroupIDs  []string
-	DateAdded time.Time
-	Title     string
-	Notes     string
-	AutoRead  bool
-	AutoStar  bool
-	Feed      *Feed `kv:"-"`
+	ID       string    `json:"id"`
+	UserID   string    `json:"userID" kv:"+required,Feed:2,User:1"`
+	FeedID   string    `json:"feedID" kv:"+required,Feed:1,User:2"`
+	GroupIDs []string  `json:"groupIDs"`
+	Added    time.Time `json:"added"`
+	Title    string    `json:"title"`
+	Notes    string    `json:"notes"`
+	AutoRead bool      `json:"autoread"`
+	AutoStar bool      `json:"autostar"`
+	Feed     *Feed     `json:"-" kv:"-"`
 }
 
 // NewSubscription associates a feed with a user.

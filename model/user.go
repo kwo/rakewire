@@ -10,10 +10,10 @@ import (
 
 //User defines a system user
 type User struct {
-	ID           string
-	Username     string `kv:"+required,+groupby,Username:1:lower"`
-	PasswordHash string
-	FeverHash    string `kv:"FeverHash:1"`
+	ID           string `json:"id"`
+	Username     string `json:"username" kv:"+required,+groupby,Username:1:lower"`
+	PasswordHash string `json:"passwordhash"`
+	FeverHash    string `json:"feverhash" kv:"FeverHash:1"`
 }
 
 // NewUser creates a new user with the specified username
