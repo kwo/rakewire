@@ -8,8 +8,17 @@ This source code is divided into two projects: the backend, written in go, and t
 
 Dependencies are managed using git submodules via the vendetta tool.
 
-One tool, esc, must be installed manually to the tools directory
+One tool, esc, must be installed manually to the tools directory as follows
 
+	cd tools
+	git submodule add https://github.com/mjibson/esc
+
+additionally, vendetta does not install dependencies of test file files by default so they must be installed manually as well
+
+ 	cd vendor/github.com
+	mkdir antonholmquist
+	cd antonholmquist
+	git submodule add https://github.com/antonholmquist/jason
 
 
 ## OPML

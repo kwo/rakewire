@@ -22,3 +22,6 @@
 [submodule "tools/esc"]
 	path = tools/esc
 	url = https://github.com/mjibson/esc
+[submodule "vendor/github.com/antonholmquist/jason"]
+	path = vendor/github.com/antonholmquist/jason
+	url = https://github.com/antonholmquist/jason
