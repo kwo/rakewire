@@ -1,0 +1,21 @@
+[submodule "vendor/github.com/paulrosania/go-charset"]
+	path = vendor/github.com/paulrosania/go-charset
+	url = https://github.com/paulrosania/go-charset
+[submodule "vendor/github.com/boltdb/bolt"]
+	path = vendor/github.com/boltdb/bolt
+	url = https://github.com/boltdb/bolt
+[submodule "vendor/github.com/hashicorp/go-version"]
+	path = vendor/github.com/hashicorp/go-version
+	url = https://github.com/hashicorp/go-version
+[submodule "vendor/golang.org/x/crypto"]
+	path = vendor/golang.org/x/crypto
+	url = https://go.googlesource.com/crypto
+[submodule "vendor/github.com/gorilla/handlers"]
+	path = vendor/github.com/gorilla/handlers
+	url = https://github.com/gorilla/handlers
+[submodule "vendor/github.com/gorilla/mux"]
+	path = vendor/github.com/gorilla/mux
+	url = https://github.com/gorilla/mux
+[submodule "vendor/github.com/gorilla/context"]
+	path = vendor/github.com/gorilla/context
+	url = https://github.com/gorilla/context
