@@ -1,4 +1,4 @@
-package store
+package modelng
 
 import (
 	"io/ioutil"
@@ -10,12 +10,12 @@ func TestBoltDB(t *testing.T) {
 
 	t.Parallel()
 
-	store := openTestStore(t)
-	defer closeTestStore(t, store)
+	store := openTestDatabase(t)
+	defer closeTestDatabase(t, store)
 
 }
 
-func openTestStore(t *testing.T, flags ...bool) Store {
+func openTestDatabase(t *testing.T, flags ...bool) Database {
 
 	//flagPopulateStore := len(flags) > 0 && flags[0]
 
@@ -28,12 +28,12 @@ func openTestStore(t *testing.T, flags ...bool) Store {
 
 	store, err := Instance.Open(location)
 	if err != nil {
-		t.Fatalf("Cannot open store: %s", err.Error())
+		t.Fatalf("Cannot open database: %s", err.Error())
 	}
 
 	// if flagPopulateStore {
 	// 	err = boltDB.Update(func(tx Transaction) error {
-	// 		return populateStore(t, tx)
+	// 		return populateDatabase(t, tx)
 	// 	})
 	// 	if err != nil {
 	// 		t.Fatalf("Cannot populate store: %s", err.Error())
@@ -44,12 +44,12 @@ func openTestStore(t *testing.T, flags ...bool) Store {
 
 }
 
-func closeTestStore(t *testing.T, store Store) {
+func closeTestDatabase(t *testing.T, db Database) {
 
-	location := store.Location()
+	location := db.Location()
 
-	if err := Instance.Close(store); err != nil {
-		t.Errorf("Cannot close store: %s", err.Error())
+	if err := Instance.Close(db); err != nil {
+		t.Errorf("Cannot close database: %s", err.Error())
 	}
 
 	if err := os.Remove(location); err != nil {

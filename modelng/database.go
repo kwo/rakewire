@@ -1,10 +1,7 @@
-package store
+package modelng
 
-// Instance allows opening and closing new Stores
-var Instance = &boltInstance{}
-
-// Store defines the interface to a key-value store
-type Store interface {
+// Database defines the interface to a key-value store
+type Database interface {
 	Location() string
 	Select(fn func(tx Transaction) error) error
 	Update(fn func(tx Transaction) error) error

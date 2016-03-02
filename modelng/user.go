@@ -6,23 +6,24 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const (
+	entityUser         = "User"
+	indexUserUsername  = "Username"
+	indexUserFeverhash = "Feverhash"
+)
+
+var (
+	indexesUser = []string{
+		indexUserFeverhash, indexUserUsername,
+	}
+)
+
 // User defines a system user
 type User struct {
 	ID           string `json:"id"`
 	Username     string `json:"username"`
 	PasswordHash string `json:"passwordhash"`
 	FeverHash    string `json:"feverhash"`
-}
-
-func (z *User) setID(fn fnUniqueID) error {
-	if z.ID == empty {
-		if id, err := fn(); err == nil {
-			z.ID = id
-		} else {
-			return err
-		}
-	}
-	return nil
 }
 
 // SetPassword updates the password hashes.

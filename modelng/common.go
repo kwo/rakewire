@@ -1,7 +1,17 @@
 package modelng
 
 const (
-	empty = ""
+	bucketData  = "Data"
+	bucketIndex = "Index"
+	chSep       = "|"
+	empty       = ""
+	fmtTime     = "20060102150405Z0700"
+	fmtUint     = "%010d"
 )
 
-type fnUniqueID func() (string, error)
+var (
+	allEntities = map[string][]string{
+		entityConfig: indexesConfig,
+		entityUser:   indexesUser,
+	}
+)

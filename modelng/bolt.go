@@ -1,4 +1,4 @@
-package store
+package modelng
 
 import (
 	"github.com/boltdb/bolt"
@@ -6,30 +6,41 @@ import (
 	"time"
 )
 
+// Instance allows opening and closing new Databases
+var Instance = &boltInstance{}
+
 type boltInstance struct{}
 
 // Open opens the store at the specified location
-func (z *boltInstance) Open(location string) (Store, error) {
+func (z *boltInstance) Open(location string) (Database, error) {
 
 	boltDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
 		return nil, err
 	}
 
-	return &boltStore{db: boltDB}, nil
+	err = boltDB.Update(func(tx *bolt.Tx) error {
+		return checkSchema(tx)
+	})
+	if err != nil {
+		boltDB.Close()
+		return nil, err
+	}
+
+	return &boltDatabase{db: boltDB}, nil
 
 }
 
 // Close properly closes store resource
-func (z *boltInstance) Close(d Store) error {
+func (z *boltInstance) Close(db Database) error {
 
-	if d == nil {
+	if db == nil {
 		return nil
 	}
 
-	boltStore := d.(*boltStore).db
+	boltDB := db.(*boltDatabase).db
 
-	if err := boltStore.Close(); err != nil {
+	if err := boltDB.Close(); err != nil {
 		return err
 	}
 
@@ -37,23 +48,23 @@ func (z *boltInstance) Close(d Store) error {
 
 }
 
-type boltStore struct {
+type boltDatabase struct {
 	sync.Mutex
 	db *bolt.DB
 }
 
-func (z *boltStore) Location() string {
+func (z *boltDatabase) Location() string {
 	return z.db.Path()
 }
 
-func (z *boltStore) Select(fn func(tx Transaction) error) error {
+func (z *boltDatabase) Select(fn func(tx Transaction) error) error {
 	return z.db.View(func(tx *bolt.Tx) error {
 		bt := &boltTransaction{tx: tx}
 		return fn(bt)
 	})
 }
 
-func (z *boltStore) Update(fn func(transaction Transaction) error) error {
+func (z *boltDatabase) Update(fn func(transaction Transaction) error) error {
 	z.Lock()
 	defer z.Unlock()
 	return z.db.Update(func(tx *bolt.Tx) error {
