@@ -1,5 +1,8 @@
 package modelng
 
+// E groups all entry database methods
+var E = &entryStore{}
+
 type entryStore struct{}
 
 // addItems
@@ -14,9 +17,9 @@ func (z *entryStore) Delete(id string, tx Transaction) error {
 	return delete(entityEntry, id, tx)
 }
 
-func (z *entryStore) GetByID(id string, tx Transaction) *Entry {
+func (z *entryStore) Get(id string, tx Transaction) *Entry {
 	bData := tx.Bucket(bucketData, entityEntry)
-	if data := bData.Get([]byte(id)); data != nil {
+	if data := bData.Get(keyEncode(id)); data != nil {
 		entry := &Entry{}
 		if err := entry.decode(data); err == nil {
 			return entry

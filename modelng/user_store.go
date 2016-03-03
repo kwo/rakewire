@@ -21,12 +21,12 @@ func (z *userStore) Delete(id string, tx Transaction) error {
 func (z *userStore) GetByFeverhash(feverhash string, tx Transaction) *User {
 	bIndex := tx.Bucket(bucketIndex, entityUser, indexUserFeverhash)
 	if value := bIndex.Get(keyEncode(feverhash)); value != nil {
-		return U.GetByID(string(value), tx)
+		return U.Get(string(value), tx)
 	}
 	return nil
 }
 
-func (z *userStore) GetByID(id string, tx Transaction) *User {
+func (z *userStore) Get(id string, tx Transaction) *User {
 	bData := tx.Bucket(bucketData, entityUser)
 	if data := bData.Get([]byte(id)); data != nil {
 		user := &User{}
@@ -40,7 +40,7 @@ func (z *userStore) GetByID(id string, tx Transaction) *User {
 func (z *userStore) GetByUsername(username string, tx Transaction) *User {
 	bIndex := tx.Bucket(bucketIndex, entityUser, indexUserUsername)
 	if value := bIndex.Get(keyEncode(strings.ToLower(username))); value != nil {
-		return U.GetByID(string(value), tx)
+		return U.Get(string(value), tx)
 	}
 	return nil
 }

@@ -80,6 +80,10 @@ func keyEncodeUint(id uint64) string {
 	return fmt.Sprintf(fmtUint, id)
 }
 
+func keyMinMax(id string) ([]byte, []byte) {
+	return keyEncode(id), []byte(id + chMax)
+}
+
 func save(entityName string, object Object, tx Transaction) error {
 
 	bData := tx.Bucket(bucketData, entityName)
@@ -121,7 +125,7 @@ func save(entityName string, object Object, tx Transaction) error {
 		}
 	}
 
-	// save user entity
+	// save entity
 	if data, err := object.encode(); err == nil {
 		if err := bData.Put(keyEncode(object.getID()), data); err != nil {
 			return err

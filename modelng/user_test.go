@@ -51,6 +51,63 @@ func TestUserPassword(t *testing.T) {
 
 }
 
+func TestUserGetBadID(t *testing.T) {
+
+	t.Parallel()
+
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
+
+	err := database.Select(func(tx Transaction) error {
+		if user := U.Get(empty, tx); user != nil {
+			t.Error("Expected nil user")
+		}
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Error selecting from database: %s", err.Error())
+	}
+
+}
+
+func TestUserGetBadUsername(t *testing.T) {
+
+	t.Parallel()
+
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
+
+	err := database.Select(func(tx Transaction) error {
+		if user := U.GetByUsername(empty, tx); user != nil {
+			t.Error("Expected nil user")
+		}
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Error selecting from database: %s", err.Error())
+	}
+
+}
+
+func TestUserGetBadFeverhash(t *testing.T) {
+
+	t.Parallel()
+
+	database := openTestDatabase(t)
+	defer closeTestDatabase(t, database)
+
+	err := database.Select(func(tx Transaction) error {
+		if user := U.GetByFeverhash(empty, tx); user != nil {
+			t.Error("Expected nil user")
+		}
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Error selecting from database: %s", err.Error())
+	}
+
+}
+
 func TestUserAddDelete(t *testing.T) {
 
 	t.Parallel()
@@ -79,7 +136,7 @@ func TestUserAddDelete(t *testing.T) {
 
 	// retrieve user by ID
 	if err := database.Select(func(tx Transaction) error {
-		user := U.GetByID(fakeID, tx)
+		user := U.Get(fakeID, tx)
 		if user == nil {
 			t.Errorf("User not found by ID: %s", fakeID)
 		} else if user.Username != fakeUsername {
@@ -104,7 +161,7 @@ func TestUserAddDelete(t *testing.T) {
 
 	// retrieve user by ID
 	if err := database.Select(func(tx Transaction) error {
-		user := U.GetByID(fakeID, tx)
+		user := U.Get(fakeID, tx)
 		if user != nil {
 			t.Error("User found by ID, expected nil")
 		}

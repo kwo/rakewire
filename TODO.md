@@ -7,7 +7,7 @@
   - modelng
     x Config
     x User
-    - Group
+    x Group
     - Feed
     - Transmission
     - Item

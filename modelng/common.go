@@ -3,6 +3,7 @@ package modelng
 const (
 	bucketData  = "Data"
 	bucketIndex = "Index"
+	chMax       = "~"
 	chSep       = "|"
 	empty       = ""
 	fmtTime     = "20060102150405Z0700"
@@ -12,8 +13,9 @@ const (
 var (
 	allEntities = map[string][]string{
 		entityConfig: indexesConfig,
-		entityUser:   indexesUser,
 		entityEntry:  indexesEntry,
+		entityGroup:  indexesGroup,
+		entityUser:   indexesUser,
 	}
 )
 
@@ -23,6 +25,8 @@ func getObject(entityName string) Object {
 		return &Config{}
 	case entityEntry:
 		return &Entry{}
+	case entityGroup:
+		return &Group{}
 	case entityUser:
 		return &User{}
 	}

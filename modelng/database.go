@@ -3,8 +3,8 @@ package modelng
 // Database defines the interface to a key-value store
 type Database interface {
 	Location() string
-	Select(fn func(tx Transaction) error) error
-	Update(fn func(tx Transaction) error) error
+	Select(func(tx Transaction) error) error
+	Update(func(tx Transaction) error) error
 }
 
 // Transaction represents an atomic operation to the database
@@ -23,9 +23,9 @@ type Bucket interface {
 
 // Cursor loops through values in a bucket
 type Cursor interface {
-	First() (key []byte, value []byte)
-	Last() (key []byte, value []byte)
-	Next() (key []byte, value []byte)
-	Prev() (key []byte, value []byte)
-	Seek(seek []byte) (key []byte, value []byte)
+	First() (key, value []byte)
+	Last() (key, value []byte)
+	Next() (key, value []byte)
+	Prev() (key, value []byte)
+	Seek(seek []byte) (key, value []byte)
 }
