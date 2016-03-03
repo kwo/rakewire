@@ -25,6 +25,7 @@ func (z *groupStore) Get(id string, tx Transaction) *Group {
 }
 
 func (z *groupStore) GetForUser(userID string, tx Transaction) Groups {
+	// index Group UserName = UserID|Name : GroupID
 	groups := Groups{}
 	min, max := keyMinMax(userID)
 	b := tx.Bucket(bucketIndex, entityGroup, indexGroupUserName)

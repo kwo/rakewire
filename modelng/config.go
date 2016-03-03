@@ -18,5 +18,6 @@ type Config struct {
 
 type sequences struct {
 	User  uint64
+	Feed  uint64
 	Group uint64
 }

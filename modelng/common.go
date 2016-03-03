@@ -14,6 +14,7 @@ var (
 	allEntities = map[string][]string{
 		entityConfig: indexesConfig,
 		entityEntry:  indexesEntry,
+		entityFeed:   indexesFeed,
 		entityGroup:  indexesGroup,
 		entityUser:   indexesUser,
 	}
@@ -25,6 +26,8 @@ func getObject(entityName string) Object {
 		return &Config{}
 	case entityEntry:
 		return &Entry{}
+	case entityFeed:
+		return &Feed{}
 	case entityGroup:
 		return &Group{}
 	case entityUser:
