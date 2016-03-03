@@ -5,6 +5,25 @@ import (
 	"testing"
 )
 
+func TestUserSetup(t *testing.T) {
+
+	t.Parallel()
+
+	if obj := getObject(entityUser); obj == nil {
+		t.Error("missing getObject entry")
+	}
+
+	if obj := allEntities[entityUser]; obj == nil {
+		t.Error("missing allEntities entry")
+	}
+
+	c := &Config{}
+	if obj := c.Sequences.User; obj != 0 {
+		t.Error("missing sequences entry")
+	}
+
+}
+
 func TestUserPassword(t *testing.T) {
 
 	t.Parallel()

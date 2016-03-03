@@ -3,6 +3,7 @@ package modelng
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 // Object defines the functions necessary for objects to be persisted to a store
@@ -57,7 +58,22 @@ func keyDecode(value []byte) []string {
 }
 
 func keyEncode(values ...string) []byte {
-	return []byte(strings.Join(values, chSep))
+	return []byte(keyEncodeString(values...))
+}
+
+func keyEncodeString(values ...string) string {
+	return strings.Join(values, chSep)
+}
+
+func keyEncodeBool(value bool) string {
+	if value {
+		return "1"
+	}
+	return "0"
+}
+
+func keyEncodeTime(t time.Time) string {
+	return t.Format(fmtTime)
 }
 
 func keyEncodeUint(id uint64) string {

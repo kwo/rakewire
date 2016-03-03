@@ -6,16 +6,15 @@
 
   - modelng
     x Config
-     - add Configs (with prefix lookup)
     x User
-    - add collections
+    - Group
     - Feed
+    - Transmission
     - Item
     - Subscription
     - Entry (key: UserID, ItemID)
-    - Group
-    - Transmission
-    - OPML
+
+    - OPML - remove from model
 
  - jwt authentication and basic auth
  - gRPC multiplex with JSON API

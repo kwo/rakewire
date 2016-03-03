@@ -4,6 +4,20 @@ import (
 	"testing"
 )
 
+func TestConfigSetup(t *testing.T) {
+
+	t.Parallel()
+
+	if obj := getObject(entityConfig); obj == nil {
+		t.Error("missing getObject entry")
+	}
+
+	if obj := allEntities[entityConfig]; obj == nil {
+		t.Error("missing allEntities entry")
+	}
+
+}
+
 func TestConfig(t *testing.T) {
 
 	t.Parallel()

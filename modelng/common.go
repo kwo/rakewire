@@ -13,6 +13,7 @@ var (
 	allEntities = map[string][]string{
 		entityConfig: indexesConfig,
 		entityUser:   indexesUser,
+		entityEntry:  indexesEntry,
 	}
 )
 
@@ -20,6 +21,8 @@ func getObject(entityName string) Object {
 	switch entityName {
 	case entityConfig:
 		return &Config{}
+	case entityEntry:
+		return &Entry{}
 	case entityUser:
 		return &User{}
 	}
