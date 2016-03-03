@@ -17,16 +17,6 @@ type Object interface {
 	indexes() map[string][]string
 }
 
-func getObject(entityName string) Object {
-	switch entityName {
-	case entityConfig:
-		return &Config{}
-	case entityUser:
-		return &User{}
-	}
-	return nil
-}
-
 func delete(entityName string, id string, tx Transaction) error {
 
 	if id != empty {

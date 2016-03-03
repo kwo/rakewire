@@ -15,3 +15,13 @@ var (
 		entityUser:   indexesUser,
 	}
 )
+
+func getObject(entityName string) Object {
+	switch entityName {
+	case entityConfig:
+		return &Config{}
+	case entityUser:
+		return &User{}
+	}
+	return nil
+}
