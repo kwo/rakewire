@@ -26,6 +26,16 @@ func (z *feedStore) Get(id string, tx Transaction) *Feed {
 	return nil
 }
 
+func (z *feedStore) GetByURL(url string, tx Transaction) *Feed {
+	// index Feed URL = URL (lowercase) : FeedID
+	b := tx.Bucket(bucketIndex, entityFeed, indexFeedURL)
+	if id := b.Get(keyEncode(strings.ToLower(url))); id != nil {
+		return F.Get(string(id), tx)
+	}
+	return nil
+}
+
+// GetNext returns all feeds which are due to be fetched within the given max time.
 func (z *feedStore) GetNext(maxTime time.Time, tx Transaction) Feeds {
 	// index Feed NextFetch = FetchTime|FeedID : FeedID
 	feeds := Feeds{}
@@ -40,15 +50,6 @@ func (z *feedStore) GetNext(maxTime time.Time, tx Transaction) Feeds {
 		}
 	}
 	return feeds
-}
-
-func (z *feedStore) GetByURL(url string, tx Transaction) *Feed {
-	// index Feed URL = URL (lowercase) : FeedID
-	b := tx.Bucket(bucketIndex, entityFeed, indexFeedURL)
-	if id := b.Get(keyEncode(strings.ToLower(url))); id != nil {
-		return F.Get(string(id), tx)
-	}
-	return nil
 }
 
 func (z *feedStore) New(url string) *Feed {
