@@ -4,13 +4,18 @@
 
 ### Immediate
 
- - use json to serialize objects in database
-   - remove records, revert to byte
- - IDs: back to uint64
- - German Tank problem?
- - group model methods with empty structs
-
- - make gRPC client app
+  - modelng
+    x Config
+     - add Configs (with prefix lookup)
+    x User
+    - add collections
+    - Feed
+    - Item
+    - Subscription
+    - Entry (key: UserID, ItemID)
+    - Group
+    - Transmission
+    - OPML
 
  - jwt authentication and basic auth
  - gRPC multiplex with JSON API

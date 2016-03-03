@@ -2,16 +2,13 @@ package modelng
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 )
-
-type fnUniqueID func() (string, error)
 
 // Object defines the functions necessary for objects to be persisted to a store
 type Object interface {
 	getID() string
-	setID(fnUniqueID) error
+	setID(Transaction) error
 	encode() ([]byte, error)
 	decode([]byte) error
 	indexes() map[string][]string
@@ -67,41 +64,6 @@ func keyEncodeUint(id uint64) string {
 	return fmt.Sprintf(fmtUint, id)
 }
 
-func nextID(entityName string, tx Transaction) (string, error) {
-
-	idStr := "0"
-	name := "sequence." + entityName
-
-	// get previous value
-	entry := C.GetByID(name, tx)
-	if entry != nil {
-		idStr = entry.Value
-	} else {
-		entry = C.New(name, idStr)
-	}
-
-	// turn into a uint64
-	id, err := strconv.ParseUint(idStr, 10, 64)
-	if err != nil {
-		return empty, err
-	}
-
-	// increment
-	id++
-
-	// format as string
-	idStr = keyEncodeUint(id)
-
-	// save back to database
-	entry.Value = idStr
-	if err := C.Save(entry, tx); err != nil {
-		return empty, err
-	}
-
-	return idStr, nil
-
-}
-
 func save(entityName string, object Object, tx Transaction) error {
 
 	bData := tx.Bucket(bucketData, entityName)
@@ -138,10 +100,7 @@ func save(entityName string, object Object, tx Transaction) error {
 
 	// assign new ID, if necessary
 	if object.getID() == empty {
-		fn := func() (string, error) {
-			return nextID(entityName, tx)
-		}
-		if err := object.setID(fn); err != nil {
+		if err := object.setID(tx); err != nil {
 			return err
 		}
 	}

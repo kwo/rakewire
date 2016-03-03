@@ -1,28 +1,32 @@
 package modelng
 
 import (
-	"fmt"
+	"encoding/json"
 )
 
 func (z *Config) getID() string {
-	return z.Name
+	return idConfig
 }
 
-func (z *Config) setID(fn fnUniqueID) error {
+func (z *Config) setID(tx Transaction) error {
 	return nil
 }
 
+func (z *Config) clear() {
+	z.ID = empty
+	z.LoggingLevel = empty
+	z.Sequences = sequences{}
+}
+
 func (z *Config) encode() ([]byte, error) {
-	return keyEncode(z.Name, z.Value), nil
+	return json.Marshal(z)
 }
 
 func (z *Config) decode(data []byte) error {
-	e := keyDecode(data)
-	if len(e) != 2 {
-		return fmt.Errorf("Invalid blob %s", string(data))
+	z.clear()
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
 	}
-	z.Name = e[0]
-	z.Value = e[1]
 	return nil
 }
 

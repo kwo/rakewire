@@ -9,15 +9,12 @@ func (z *User) getID() string {
 	return z.ID
 }
 
-func (z *User) setID(fn fnUniqueID) error {
-	if z.ID == empty {
-		if id, err := fn(); err == nil {
-			z.ID = id
-		} else {
-			return err
-		}
-	}
-	return nil
+func (z *User) setID(tx Transaction) error {
+	config := C.Get(tx)
+	id := config.Sequences.User
+	config.Sequences.User = id + 1
+	z.ID = keyEncodeUint(id)
+	return C.Put(config, tx)
 }
 
 func (z *User) clear() {
