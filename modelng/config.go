@@ -17,7 +17,8 @@ type Config struct {
 }
 
 type sequences struct {
-	User  uint64
-	Feed  uint64
-	Group uint64
+	User         uint64
+	Feed         uint64
+	Group        uint64
+	Transmission uint64
 }

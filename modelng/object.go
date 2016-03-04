@@ -69,7 +69,7 @@ func keyEncodeBool(value bool) string {
 }
 
 func keyEncodeTime(t time.Time) string {
-	return t.UTC().Format(fmtTime)
+	return t.UTC().Truncate(time.Second).Format(fmtTime)
 }
 
 func keyEncodeUint(id uint64) string {

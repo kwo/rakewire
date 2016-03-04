@@ -9,7 +9,7 @@
     x User
     x Group
     x Feed
-    - Transmission
+    x Transmission
     - Item
     - Subscription
     - Entry (key: UserID, ItemID)

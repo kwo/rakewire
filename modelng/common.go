@@ -12,11 +12,12 @@ const (
 
 var (
 	allEntities = map[string][]string{
-		entityConfig: indexesConfig,
-		entityEntry:  indexesEntry,
-		entityFeed:   indexesFeed,
-		entityGroup:  indexesGroup,
-		entityUser:   indexesUser,
+		entityConfig:       indexesConfig,
+		entityEntry:        indexesEntry,
+		entityFeed:         indexesFeed,
+		entityGroup:        indexesGroup,
+		entityTransmission: indexesTransmission,
+		entityUser:         indexesUser,
 	}
 )
 
@@ -30,6 +31,8 @@ func getObject(entityName string) Object {
 		return &Feed{}
 	case entityGroup:
 		return &Group{}
+	case entityTransmission:
+		return &Transmission{}
 	case entityUser:
 		return &User{}
 	}
