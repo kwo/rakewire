@@ -8,7 +8,7 @@
     x Config
     x User
     x Group
-    - Feed
+    x Feed
     - Transmission
     - Item
     - Subscription
