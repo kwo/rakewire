@@ -17,6 +17,6 @@ type Groups []*Group
 // Group defines an item status for a user
 type Group struct {
 	ID     string `json:"id"`
-	UserID string `json:"userID"`
+	UserID string `json:"userId"`
 	Name   string `json:"name"`
 }

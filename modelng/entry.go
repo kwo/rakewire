@@ -21,8 +21,8 @@ type Entries []*Entry
 
 // Entry defines an item status for a user
 type Entry struct {
-	UserID  string    `json:"userID"`
-	ItemID  string    `json:"itemID"`
+	UserID  string    `json:"userId"`
+	ItemID  string    `json:"itemId"`
 	Updated time.Time `json:"updated,omitempty"`
 	Read    bool      `json:"read,omitempty"`
 	Star    bool      `json:"star,omitempty"`
