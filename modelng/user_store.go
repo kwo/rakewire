@@ -21,7 +21,7 @@ func (z *userStore) Delete(id string, tx Transaction) error {
 func (z *userStore) GetByFeverhash(feverhash string, tx Transaction) *User {
 	// index User FeverHash = FeverHash : UserID
 	bIndex := tx.Bucket(bucketIndex, entityUser, indexUserFeverhash)
-	if value := bIndex.Get(keyEncode(feverhash)); value != nil {
+	if value := bIndex.Get([]byte(feverhash)); value != nil {
 		return U.Get(string(value), tx)
 	}
 	return nil
@@ -41,7 +41,7 @@ func (z *userStore) Get(id string, tx Transaction) *User {
 func (z *userStore) GetByUsername(username string, tx Transaction) *User {
 	// index User Username = Username (lowercase) : UserID
 	bIndex := tx.Bucket(bucketIndex, entityUser, indexUserUsername)
-	if value := bIndex.Get(keyEncode(strings.ToLower(username))); value != nil {
+	if value := bIndex.Get([]byte(strings.ToLower(username))); value != nil {
 		return U.Get(string(value), tx)
 	}
 	return nil

@@ -15,7 +15,7 @@ func (z *groupStore) Delete(id string, tx Transaction) error {
 
 func (z *groupStore) Get(id string, tx Transaction) *Group {
 	bData := tx.Bucket(bucketData, entityGroup)
-	if data := bData.Get(keyEncode(id)); data != nil {
+	if data := bData.Get([]byte(id)); data != nil {
 		group := &Group{}
 		if err := group.decode(data); err == nil {
 			return group

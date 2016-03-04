@@ -6,7 +6,7 @@ import (
 )
 
 func (z *Entry) getID() string {
-	return keyEncodeString(z.UserID, z.ItemID)
+	return keyEncode(z.UserID, z.ItemID)
 }
 
 func (z *Entry) setID(tx Transaction) error {

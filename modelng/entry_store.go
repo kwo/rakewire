@@ -19,7 +19,7 @@ func (z *entryStore) Delete(id string, tx Transaction) error {
 
 func (z *entryStore) Get(id string, tx Transaction) *Entry {
 	bData := tx.Bucket(bucketData, entityEntry)
-	if data := bData.Get(keyEncode(id)); data != nil {
+	if data := bData.Get([]byte(id)); data != nil {
 		entry := &Entry{}
 		if err := entry.decode(data); err == nil {
 			return entry

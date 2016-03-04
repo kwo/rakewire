@@ -35,13 +35,13 @@ func delete(entityName string, id string, tx Transaction) error {
 			// delete indexes
 			for indexName, indexKeys := range object.indexes() {
 				bIndex := bIndexes.Bucket(indexName)
-				if err := bIndex.Delete(keyEncode(indexKeys...)); err != nil {
+				if err := bIndex.Delete([]byte(keyEncode(indexKeys...))); err != nil {
 					return err
 				}
 			}
 
 			// delete object
-			if err := bData.Delete(keyEncode(object.getID())); err != nil {
+			if err := bData.Delete([]byte(object.getID())); err != nil {
 				return err
 			}
 
@@ -53,15 +53,11 @@ func delete(entityName string, id string, tx Transaction) error {
 
 }
 
-func keyDecode(value []byte) []string {
-	return strings.Split(string(value), chSep)
-}
+// func keyDecode2(value []byte) []string {
+// 	return strings.Split(string(value), chSep)
+// }
 
-func keyEncode(values ...string) []byte {
-	return []byte(keyEncodeString(values...))
-}
-
-func keyEncodeString(values ...string) string {
+func keyEncode(values ...string) string {
 	return strings.Join(values, chSep)
 }
 
@@ -80,8 +76,12 @@ func keyEncodeUint(id uint64) string {
 	return fmt.Sprintf(fmtUint, id)
 }
 
-func keyMinMax(id string) ([]byte, []byte) {
-	return keyEncode(id), []byte(id + chMax)
+func keyMax(key string) []byte {
+	return []byte(key + chMax)
+}
+
+func keyMinMax(key string) ([]byte, []byte) {
+	return []byte(key), keyMax(key)
 }
 
 func save(entityName string, object Object, tx Transaction) error {
@@ -105,7 +105,7 @@ func save(entityName string, object Object, tx Transaction) error {
 			}
 			for indexName, indexKeys := range object.indexes() {
 				bIndex := bIndexes.Bucket(indexName)
-				if err := bIndex.Delete(keyEncode(indexKeys...)); err != nil {
+				if err := bIndex.Delete([]byte(keyEncode(indexKeys...))); err != nil {
 					return err
 				}
 			}
@@ -127,7 +127,7 @@ func save(entityName string, object Object, tx Transaction) error {
 
 	// save entity
 	if data, err := object.encode(); err == nil {
-		if err := bData.Put(keyEncode(object.getID()), data); err != nil {
+		if err := bData.Put([]byte(object.getID()), data); err != nil {
 			return err
 		}
 	} else {
@@ -137,7 +137,7 @@ func save(entityName string, object Object, tx Transaction) error {
 	// save new indexes
 	for indexName, indexKeys := range object.indexes() {
 		bIndex := bIndexes.Bucket(indexName)
-		if err := bIndex.Put(keyEncode(indexKeys...), keyEncode(object.getID())); err != nil {
+		if err := bIndex.Put([]byte(keyEncode(indexKeys...)), []byte(object.getID())); err != nil {
 			return err
 		}
 	}

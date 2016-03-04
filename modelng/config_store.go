@@ -8,7 +8,7 @@ type configStore struct{}
 func (z *configStore) Get(tx Transaction) *Config {
 	config := &Config{}
 	bData := tx.Bucket(bucketData, entityConfig)
-	if data := bData.Get(keyEncode(idConfig)); data != nil {
+	if data := bData.Get([]byte(idConfig)); data != nil {
 		config.decode(data)
 	}
 	return config

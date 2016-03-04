@@ -17,7 +17,7 @@ func (z *feedStore) Delete(id string, tx Transaction) error {
 
 func (z *feedStore) Get(id string, tx Transaction) *Feed {
 	bData := tx.Bucket(bucketData, entityFeed)
-	if data := bData.Get(keyEncode(id)); data != nil {
+	if data := bData.Get([]byte(id)); data != nil {
 		feed := &Feed{}
 		if err := feed.decode(data); err == nil {
 			return feed
@@ -29,7 +29,7 @@ func (z *feedStore) Get(id string, tx Transaction) *Feed {
 func (z *feedStore) GetByURL(url string, tx Transaction) *Feed {
 	// index Feed URL = URL (lowercase) : FeedID
 	b := tx.Bucket(bucketIndex, entityFeed, indexFeedURL)
-	if id := b.Get(keyEncode(strings.ToLower(url))); id != nil {
+	if id := b.Get([]byte(strings.ToLower(url))); id != nil {
 		return F.Get(string(id), tx)
 	}
 	return nil
@@ -40,7 +40,7 @@ func (z *feedStore) GetNext(maxTime time.Time, tx Transaction) Feeds {
 	// index Feed NextFetch = FetchTime|FeedID : FeedID
 	feeds := Feeds{}
 	nxtTime := maxTime.Add(1 * time.Second).Truncate(time.Second)
-	nxt := keyEncode(keyEncodeTime(nxtTime))
+	nxt := []byte(keyEncodeTime(nxtTime))
 	b := tx.Bucket(bucketIndex, entityFeed, indexFeedNextFetch)
 	c := b.Cursor()
 	for k, v := c.First(); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
