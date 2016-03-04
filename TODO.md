@@ -11,7 +11,7 @@
     x Feed
     x Transmission
     x Item
-    - Subscription
+    x Subscription
     - Entry (key: UserID, ItemID)
 
     - OPML - remove from model
