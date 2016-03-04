@@ -16,6 +16,7 @@ var (
 		entityEntry:        indexesEntry,
 		entityFeed:         indexesFeed,
 		entityGroup:        indexesGroup,
+		entityItem:         indexesItem,
 		entityTransmission: indexesTransmission,
 		entityUser:         indexesUser,
 	}
@@ -31,6 +32,8 @@ func getObject(entityName string) Object {
 		return &Feed{}
 	case entityGroup:
 		return &Group{}
+	case entityItem:
+		return &Item{}
 	case entityTransmission:
 		return &Transmission{}
 	case entityUser:

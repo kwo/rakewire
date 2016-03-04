@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// T transmissions all transmission database methods
+// T group all transmission database methods
 var T = &transmissionStore{}
 
 type transmissionStore struct{}
