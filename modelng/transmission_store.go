@@ -35,7 +35,7 @@ func (z *transmissionStore) GetForFeed(feedID string, since time.Duration, tx Tr
 	c := b.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		transmissionID := string(v)
-		if transmission := T.Get(transmissionID, tx); transmission != nil {
+		if transmission := z.Get(transmissionID, tx); transmission != nil {
 			transmissions = append(transmissions, transmission)
 		}
 	}
@@ -49,7 +49,7 @@ func (z *transmissionStore) GetLast(tx Transaction) *Transmission {
 	c := b.Cursor()
 	if k, _ := c.Last(); k != nil {
 		transmissionID := string(k)
-		return T.Get(transmissionID, tx)
+		return z.Get(transmissionID, tx)
 	}
 	return nil
 }
@@ -64,7 +64,7 @@ func (z *transmissionStore) GetRange(maxTime time.Time, since time.Duration, tx 
 	c := b.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		transmissionID := string(v)
-		if transmission := T.Get(transmissionID, tx); transmission != nil {
+		if transmission := z.Get(transmissionID, tx); transmission != nil {
 			transmissions = append(transmissions, transmission)
 		}
 	}

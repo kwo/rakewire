@@ -32,7 +32,7 @@ func (z *groupStore) GetForUser(userID string, tx Transaction) Groups {
 	c := b.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		groupID := string(v)
-		if group := G.Get(groupID, tx); group != nil {
+		if group := z.Get(groupID, tx); group != nil {
 			groups = append(groups, group)
 		}
 	}

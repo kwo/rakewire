@@ -28,6 +28,10 @@ func (z *entryStore) Get(id string, tx Transaction) *Entry {
 	return nil
 }
 
+func (z *entryStore) GetByIDs(userID, itemID string, tx Transaction) *Entry {
+	return z.Get(keyEncode(userID, itemID), tx)
+}
+
 func (z *entryStore) New(userID, itemID string) *Entry {
 	return &Entry{
 		UserID: userID,

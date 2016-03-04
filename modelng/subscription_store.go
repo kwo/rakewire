@@ -25,7 +25,7 @@ func (z *subscriptionStore) Get(id string, tx Transaction) *Subscription {
 }
 
 func (z *subscriptionStore) GetByIDs(userID, feedID string, tx Transaction) *Subscription {
-	return S.Get(keyEncode(userID, feedID), tx)
+	return z.Get(keyEncode(userID, feedID), tx)
 }
 
 func (z *subscriptionStore) GetForUser(userID string, tx Transaction) Subscriptions {
@@ -48,7 +48,7 @@ func (z *subscriptionStore) GetForFeed(feedID string, tx Transaction) Subscripti
 	c := tx.Bucket(bucketIndex, entitySubscription, indexSubscriptionFeed).Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		compoundID := string(v)
-		if subscription := S.Get(compoundID, tx); subscription != nil {
+		if subscription := z.Get(compoundID, tx); subscription != nil {
 			subscriptions = append(subscriptions, subscription)
 		}
 	}

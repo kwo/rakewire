@@ -29,7 +29,7 @@ func (z *itemStore) GetByGUID(feedID, guid string, tx Transaction) *Item {
 	b := tx.Bucket(bucketIndex, entityItem, indexItemGUID)
 	if value := b.Get([]byte(keyEncode(feedID, guid))); value != nil {
 		itemID := string(value)
-		return I.Get(itemID, tx)
+		return z.Get(itemID, tx)
 	}
 	return nil
 }
@@ -42,7 +42,7 @@ func (z *itemStore) GetForFeed(feedID string, tx Transaction) Items {
 	c := b.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		itemID := string(v)
-		if item := I.Get(itemID, tx); item != nil {
+		if item := z.Get(itemID, tx); item != nil {
 			items = append(items, item)
 		}
 	}

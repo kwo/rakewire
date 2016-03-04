@@ -22,7 +22,7 @@ func (z *userStore) GetByFeverhash(feverhash string, tx Transaction) *User {
 	// index User FeverHash = FeverHash : UserID
 	bIndex := tx.Bucket(bucketIndex, entityUser, indexUserFeverhash)
 	if value := bIndex.Get([]byte(feverhash)); value != nil {
-		return U.Get(string(value), tx)
+		return z.Get(string(value), tx)
 	}
 	return nil
 }
@@ -42,7 +42,7 @@ func (z *userStore) GetByUsername(username string, tx Transaction) *User {
 	// index User Username = Username (lowercase) : UserID
 	bIndex := tx.Bucket(bucketIndex, entityUser, indexUserUsername)
 	if value := bIndex.Get([]byte(strings.ToLower(username))); value != nil {
-		return U.Get(string(value), tx)
+		return z.Get(string(value), tx)
 	}
 	return nil
 }
@@ -54,7 +54,7 @@ func (z *userStore) New(username string) *User {
 }
 
 func (z *userStore) Save(user *User, tx Transaction) error {
-	if u := U.GetByUsername(user.Username, tx); u != nil {
+	if u := z.GetByUsername(user.Username, tx); u != nil {
 		return ErrUsernameTaken
 	}
 	return save(entityUser, user, tx)

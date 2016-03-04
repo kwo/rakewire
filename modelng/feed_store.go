@@ -30,7 +30,7 @@ func (z *feedStore) GetByURL(url string, tx Transaction) *Feed {
 	// index Feed URL = URL (lowercase) : FeedID
 	b := tx.Bucket(bucketIndex, entityFeed, indexFeedURL)
 	if id := b.Get([]byte(strings.ToLower(url))); id != nil {
-		return F.Get(string(id), tx)
+		return z.Get(string(id), tx)
 	}
 	return nil
 }
@@ -45,7 +45,7 @@ func (z *feedStore) GetNext(maxTime time.Time, tx Transaction) Feeds {
 	c := b.Cursor()
 	for k, v := c.First(); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 		feedID := string(v)
-		if feed := F.Get(feedID, tx); feed != nil {
+		if feed := z.Get(feedID, tx); feed != nil {
 			feeds = append(feeds, feed)
 		}
 	}
