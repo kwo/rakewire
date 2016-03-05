@@ -46,7 +46,7 @@ func TestSubscriptions(t *testing.T) {
 	// test by id
 	err = db.Select(func(tx Transaction) error {
 
-		subscription := S.GetByIDs(tx, userID, feedID)
+		subscription := S.Get(tx, userID, feedID)
 		if subscription == nil {
 			t.Fatal("Nil subscription, expected valid subscription")
 		}
@@ -77,7 +77,7 @@ func TestSubscriptions(t *testing.T) {
 
 	// test by id
 	err = db.Select(func(tx Transaction) error {
-		subscription := S.GetByIDs(tx, userID, feedID)
+		subscription := S.Get(tx, userID, feedID)
 		if subscription != nil {
 			t.Error("Expected nil subscription")
 		}
@@ -135,7 +135,7 @@ func TestSubscriptionsForUserFeed(t *testing.T) {
 	// test by user
 	err = db.Select(func(tx Transaction) error {
 
-		subscriptions := S.GetForUser("0000000002", tx)
+		subscriptions := S.GetForUser(tx, "0000000002")
 		if subscriptions == nil {
 			t.Fatal("Nil subscriptions, expected valid subscriptions")
 		}

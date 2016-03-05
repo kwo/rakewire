@@ -13,9 +13,19 @@ func (z *itemStore) Delete(tx Transaction, id string) error {
 	return delete(tx, entityItem, id)
 }
 
-func (z *itemStore) Get(tx Transaction, id string) *Item {
+// Get returns the item with the given compoundID or the given userID and itemID
+func (z *itemStore) Get(tx Transaction, id ...string) *Item {
+	compoundID := ""
+	switch len(id) {
+	case 1:
+		compoundID = id[0]
+	case 2:
+		compoundID = keyEncode(id...)
+	default:
+		return nil
+	}
 	bData := tx.Bucket(bucketData, entityItem)
-	if data := bData.Get([]byte(id)); data != nil {
+	if data := bData.Get([]byte(compoundID)); data != nil {
 		item := &Item{}
 		if err := item.decode(data); err == nil {
 			return item
