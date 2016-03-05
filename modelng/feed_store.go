@@ -11,8 +11,8 @@ var F = &feedStore{}
 
 type feedStore struct{}
 
-func (z *feedStore) Delete(id string, tx Transaction) error {
-	return delete(entityFeed, id, tx)
+func (z *feedStore) Delete(tx Transaction, id string) error {
+	return delete(tx, entityFeed, id)
 }
 
 func (z *feedStore) Get(id string, tx Transaction) *Feed {
@@ -59,6 +59,6 @@ func (z *feedStore) New(url string) *Feed {
 	}
 }
 
-func (z *feedStore) Save(feed *Feed, tx Transaction) error {
-	return save(entityFeed, feed, tx)
+func (z *feedStore) Save(tx Transaction, feed *Feed) error {
+	return save(tx, entityFeed, feed)
 }

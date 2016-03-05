@@ -33,7 +33,7 @@ func TestItemGetBadID(t *testing.T) {
 	defer closeTestDatabase(t, db)
 
 	err := db.Select(func(tx Transaction) error {
-		if item := I.Get(empty, tx); item != nil {
+		if item := I.Get(tx, empty); item != nil {
 			t.Error("Expected nil item")
 		}
 		return nil
@@ -52,7 +52,7 @@ func TestItemGetBadGUID(t *testing.T) {
 	defer closeTestDatabase(t, db)
 
 	err := db.Select(func(tx Transaction) error {
-		if item := I.GetByGUID(empty, empty, tx); item != nil {
+		if item := I.GetByGUID(tx, empty, empty); item != nil {
 			t.Error("Expected nil item")
 		}
 		return nil
@@ -78,7 +78,7 @@ func TestItems(t *testing.T) {
 	err := db.Update(func(tx Transaction) error {
 
 		item := I.New(feedID, guid)
-		if err := I.Save(item, tx); err != nil {
+		if err := I.Save(tx, item); err != nil {
 			return err
 		}
 		itemID = item.ID
@@ -93,7 +93,7 @@ func TestItems(t *testing.T) {
 	// test by id
 	err = db.Select(func(tx Transaction) error {
 
-		item := I.Get(itemID, tx)
+		item := I.Get(tx, itemID)
 		if item == nil {
 			t.Fatal("Nil item, expected valid item")
 		}
@@ -116,7 +116,7 @@ func TestItems(t *testing.T) {
 
 	// delete item
 	err = db.Update(func(tx Transaction) error {
-		if err := I.Delete(itemID, tx); err != nil {
+		if err := I.Delete(tx, itemID); err != nil {
 			return err
 		}
 		return nil
@@ -127,7 +127,7 @@ func TestItems(t *testing.T) {
 
 	// test by id
 	err = db.Select(func(tx Transaction) error {
-		item := I.Get(itemID, tx)
+		item := I.Get(tx, itemID)
 		if item != nil {
 			t.Error("Expected nil item")
 		}
@@ -154,7 +154,7 @@ func TestItemByGUID(t *testing.T) {
 				guid := fmt.Sprintf("Feed%02dItem%02d", f, i)
 				item := I.New(feedID, guid)
 				item.Content = guid
-				if err := I.Save(item, tx); err != nil {
+				if err := I.Save(tx, item); err != nil {
 					return err
 				}
 			}
@@ -172,7 +172,7 @@ func TestItemByGUID(t *testing.T) {
 		feedID := "0000000003"
 		guid := "Feed02Item03"
 
-		item := I.GetByGUID(feedID, guid, tx)
+		item := I.GetByGUID(tx, feedID, guid)
 		if item == nil {
 			t.Fatal("Nil item, expected valid item")
 		}
@@ -213,7 +213,7 @@ func TestItemForFeed(t *testing.T) {
 				guid := fmt.Sprintf("Feed%02dItem%02d", f, i)
 				item := I.New(feedID, guid)
 				item.Content = guid
-				if err := I.Save(item, tx); err != nil {
+				if err := I.Save(tx, item); err != nil {
 					return err
 				}
 			}
@@ -229,7 +229,7 @@ func TestItemForFeed(t *testing.T) {
 
 		feedID := "0000000003"
 
-		items := I.GetForFeed(feedID, tx)
+		items := I.GetForFeed(tx, feedID)
 		if items == nil {
 			t.Fatal("Nil items, expected valid items")
 		}

@@ -13,7 +13,7 @@ func (z *Transmission) setID(tx Transaction) error {
 	config := C.Get(tx)
 	config.Sequences.Transmission = config.Sequences.Transmission + 1
 	z.ID = keyEncodeUint(config.Sequences.Transmission)
-	return C.Put(config, tx)
+	return C.Put(tx, config)
 }
 
 func (z *Transmission) clear() {

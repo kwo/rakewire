@@ -9,8 +9,8 @@ var S = &subscriptionStore{}
 
 type subscriptionStore struct{}
 
-func (z *subscriptionStore) Delete(id string, tx Transaction) error {
-	return delete(entitySubscription, id, tx)
+func (z *subscriptionStore) Delete(tx Transaction, id string) error {
+	return delete(tx, entitySubscription, id)
 }
 
 func (z *subscriptionStore) Get(id string, tx Transaction) *Subscription {
@@ -24,7 +24,7 @@ func (z *subscriptionStore) Get(id string, tx Transaction) *Subscription {
 	return nil
 }
 
-func (z *subscriptionStore) GetByIDs(userID, feedID string, tx Transaction) *Subscription {
+func (z *subscriptionStore) GetByIDs(tx Transaction, userID, feedID string) *Subscription {
 	return z.Get(keyEncode(userID, feedID), tx)
 }
 
@@ -41,7 +41,7 @@ func (z *subscriptionStore) GetForUser(userID string, tx Transaction) Subscripti
 	return subscriptions
 }
 
-func (z *subscriptionStore) GetForFeed(feedID string, tx Transaction) Subscriptions {
+func (z *subscriptionStore) GetForFeed(tx Transaction, feedID string) Subscriptions {
 	// index Subscription Feed = FeedID|UserID : UserID|FeedID
 	subscriptions := Subscriptions{}
 	min, max := keyMinMax(feedID)
@@ -62,6 +62,6 @@ func (z *subscriptionStore) New(userID, feedID string) *Subscription {
 	}
 }
 
-func (z *subscriptionStore) Save(subscription *Subscription, tx Transaction) error {
-	return save(entitySubscription, subscription, tx)
+func (z *subscriptionStore) Save(tx Transaction, subscription *Subscription) error {
+	return save(tx, entitySubscription, subscription)
 }

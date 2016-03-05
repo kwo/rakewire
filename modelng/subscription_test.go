@@ -32,7 +32,7 @@ func TestSubscriptions(t *testing.T) {
 	err := db.Update(func(tx Transaction) error {
 
 		subscription := S.New(userID, feedID)
-		if err := S.Save(subscription, tx); err != nil {
+		if err := S.Save(tx, subscription); err != nil {
 			return err
 		}
 
@@ -46,7 +46,7 @@ func TestSubscriptions(t *testing.T) {
 	// test by id
 	err = db.Select(func(tx Transaction) error {
 
-		subscription := S.GetByIDs(userID, feedID, tx)
+		subscription := S.GetByIDs(tx, userID, feedID)
 		if subscription == nil {
 			t.Fatal("Nil subscription, expected valid subscription")
 		}
@@ -66,7 +66,7 @@ func TestSubscriptions(t *testing.T) {
 
 	// delete subscription
 	err = db.Update(func(tx Transaction) error {
-		if err := S.Delete(keyEncode(userID, feedID), tx); err != nil {
+		if err := S.Delete(tx, keyEncode(userID, feedID)); err != nil {
 			return err
 		}
 		return nil
@@ -77,7 +77,7 @@ func TestSubscriptions(t *testing.T) {
 
 	// test by id
 	err = db.Select(func(tx Transaction) error {
-		subscription := S.GetByIDs(userID, feedID, tx)
+		subscription := S.GetByIDs(tx, userID, feedID)
 		if subscription != nil {
 			t.Error("Expected nil subscription")
 		}
@@ -103,7 +103,7 @@ func TestSubscriptionsForUserFeed(t *testing.T) {
 			for f := 0; f < 5; f++ {
 				feedID := keyEncodeUint(uint64(f + 1))
 				subscription := S.New(userID, feedID)
-				if err := S.Save(subscription, tx); err != nil {
+				if err := S.Save(tx, subscription); err != nil {
 					return err
 				}
 			}
@@ -117,7 +117,7 @@ func TestSubscriptionsForUserFeed(t *testing.T) {
 	// test by feed
 	err = db.Select(func(tx Transaction) error {
 
-		subscriptions := S.GetForFeed("0000000002", tx)
+		subscriptions := S.GetForFeed(tx, "0000000002")
 		if subscriptions == nil {
 			t.Fatal("Nil subscriptions, expected valid subscriptions")
 		}

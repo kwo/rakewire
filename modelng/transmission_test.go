@@ -57,7 +57,7 @@ func TestTransmissions(t *testing.T) {
 	err := db.Update(func(tx Transaction) error {
 
 		transmission := T.New(feedID)
-		if err := T.Save(transmission, tx); err != nil {
+		if err := T.Save(tx, transmission); err != nil {
 			return err
 		}
 		transmissionID = transmission.ID
@@ -92,7 +92,7 @@ func TestTransmissions(t *testing.T) {
 
 	// delete transmission
 	err = db.Update(func(tx Transaction) error {
-		if err := T.Delete(transmissionID, tx); err != nil {
+		if err := T.Delete(tx, transmissionID); err != nil {
 			return err
 		}
 		return nil
@@ -141,7 +141,7 @@ func TestTransmissionRanges(t *testing.T) {
 			latest = latest.Add(10 * time.Minute)
 			transmission := T.New(feedID)
 			transmission.StartTime = latest
-			if err := T.Save(transmission, tx); err != nil {
+			if err := T.Save(tx, transmission); err != nil {
 				return err
 			}
 		}
@@ -184,7 +184,7 @@ func TestTransmissionRanges(t *testing.T) {
 	// get feed2 in the last hour transmissions
 	err = db.Select(func(tx Transaction) error {
 
-		transmissions := T.GetForFeed(feedID2, time.Hour, tx)
+		transmissions := T.GetForFeed(tx, feedID2, time.Hour)
 
 		if transmissions == nil {
 			t.Fatalf("Cannot get last transmissions")
@@ -204,7 +204,7 @@ func TestTransmissionRanges(t *testing.T) {
 	// get all in the last hour
 	err = db.Select(func(tx Transaction) error {
 
-		transmissions := T.GetRange(now, time.Hour, tx)
+		transmissions := T.GetRange(tx, now, time.Hour)
 
 		if transmissions == nil {
 			t.Fatalf("Cannot get last transmissions")

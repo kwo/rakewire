@@ -32,7 +32,7 @@ func TestGroupGetBadID(t *testing.T) {
 	defer closeTestDatabase(t, db)
 
 	err := db.Select(func(tx Transaction) error {
-		if group := G.Get(empty, tx); group != nil {
+		if group := G.Get(tx, empty); group != nil {
 			t.Error("Expected nil group")
 		}
 		return nil
@@ -56,14 +56,14 @@ func TestGroups(t *testing.T) {
 
 		user := U.New("user1")
 		user.SetPassword("password")
-		if err := U.Save(user, tx); err != nil {
+		if err := U.Save(tx, user); err != nil {
 			return err
 		}
 		userID = user.ID
 
 		for i := 0; i < 20; i++ {
 			g := G.New(userID, fmt.Sprintf("Group%d", i))
-			if err := G.Save(g, tx); err != nil {
+			if err := G.Save(tx, g); err != nil {
 				return err
 			}
 		}
@@ -77,7 +77,7 @@ func TestGroups(t *testing.T) {
 
 	err = db.Update(func(tx Transaction) error {
 
-		groups := G.GetForUser(userID, tx)
+		groups := G.GetForUser(tx, userID)
 		if groups == nil {
 			t.Fatal("Nil group, expected non-nil value")
 		}
@@ -88,7 +88,7 @@ func TestGroups(t *testing.T) {
 
 		for i, group := range groups {
 			if i%2 == 0 {
-				if err := G.Delete(group.ID, tx); err != nil {
+				if err := G.Delete(tx, group.ID); err != nil {
 					return err
 				}
 			}
@@ -103,7 +103,7 @@ func TestGroups(t *testing.T) {
 
 	err = db.Select(func(tx Transaction) error {
 
-		groups := G.GetForUser(userID, tx)
+		groups := G.GetForUser(tx, userID)
 		if groups == nil {
 			t.Fatal("Nil group, expected non-nil value")
 		}

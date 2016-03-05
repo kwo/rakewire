@@ -14,20 +14,20 @@ var (
 
 type userStore struct{}
 
-func (z *userStore) Delete(id string, tx Transaction) error {
-	return delete(entityUser, id, tx)
+func (z *userStore) Delete(tx Transaction, id string) error {
+	return delete(tx, entityUser, id)
 }
 
-func (z *userStore) GetByFeverhash(feverhash string, tx Transaction) *User {
+func (z *userStore) GetByFeverhash(tx Transaction, feverhash string) *User {
 	// index User FeverHash = FeverHash : UserID
 	bIndex := tx.Bucket(bucketIndex, entityUser, indexUserFeverhash)
 	if value := bIndex.Get([]byte(feverhash)); value != nil {
-		return z.Get(string(value), tx)
+		return z.Get(tx, string(value))
 	}
 	return nil
 }
 
-func (z *userStore) Get(id string, tx Transaction) *User {
+func (z *userStore) Get(tx Transaction, id string) *User {
 	bData := tx.Bucket(bucketData, entityUser)
 	if data := bData.Get([]byte(id)); data != nil {
 		user := &User{}
@@ -38,11 +38,11 @@ func (z *userStore) Get(id string, tx Transaction) *User {
 	return nil
 }
 
-func (z *userStore) GetByUsername(username string, tx Transaction) *User {
+func (z *userStore) GetByUsername(tx Transaction, username string) *User {
 	// index User Username = Username (lowercase) : UserID
 	bIndex := tx.Bucket(bucketIndex, entityUser, indexUserUsername)
 	if value := bIndex.Get([]byte(strings.ToLower(username))); value != nil {
-		return z.Get(string(value), tx)
+		return z.Get(tx, string(value))
 	}
 	return nil
 }
@@ -53,9 +53,9 @@ func (z *userStore) New(username string) *User {
 	}
 }
 
-func (z *userStore) Save(user *User, tx Transaction) error {
-	if u := z.GetByUsername(user.Username, tx); u != nil {
+func (z *userStore) Save(tx Transaction, user *User) error {
+	if u := z.GetByUsername(tx, user.Username); u != nil {
 		return ErrUsernameTaken
 	}
-	return save(entityUser, user, tx)
+	return save(tx, entityUser, user)
 }

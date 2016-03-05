@@ -13,8 +13,8 @@ type entryStore struct{}
 // markRead - by feed, group, all
 // markStarred - individually
 
-func (z *entryStore) Delete(id string, tx Transaction) error {
-	return delete(entityEntry, id, tx)
+func (z *entryStore) Delete(tx Transaction, id string) error {
+	return delete(tx, entityEntry, id)
 }
 
 func (z *entryStore) Get(id string, tx Transaction) *Entry {
@@ -39,6 +39,6 @@ func (z *entryStore) New(userID, itemID string) *Entry {
 	}
 }
 
-func (z *entryStore) Save(entry *Entry, tx Transaction) error {
-	return save(entityEntry, entry, tx)
+func (z *entryStore) Save(tx Transaction, entry *Entry) error {
+	return save(tx, entityEntry, entry)
 }

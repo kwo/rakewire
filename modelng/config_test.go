@@ -33,7 +33,7 @@ func TestConfig(t *testing.T) {
 		config := C.Get(tx)
 		config.LoggingLevel = loglevel
 		config.Sequences.User = userID
-		return C.Put(config, tx)
+		return C.Put(tx, config)
 	}); err != nil {
 		t.Fatalf("Error retrieving config: %s", err.Error())
 	}

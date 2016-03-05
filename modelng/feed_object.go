@@ -14,7 +14,7 @@ func (z *Feed) setID(tx Transaction) error {
 	config := C.Get(tx)
 	config.Sequences.Feed = config.Sequences.Feed + 1
 	z.ID = keyEncodeUint(config.Sequences.Feed)
-	return C.Put(config, tx)
+	return C.Put(tx, config)
 }
 
 func (z *Feed) clear() {

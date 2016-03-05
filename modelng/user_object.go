@@ -13,7 +13,7 @@ func (z *User) setID(tx Transaction) error {
 	config := C.Get(tx)
 	config.Sequences.User = config.Sequences.User + 1
 	z.ID = keyEncodeUint(config.Sequences.User)
-	return C.Put(config, tx)
+	return C.Put(tx, config)
 }
 
 func (z *User) clear() {

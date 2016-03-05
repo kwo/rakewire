@@ -13,7 +13,7 @@ func (z *Item) setID(tx Transaction) error {
 	config := C.Get(tx)
 	config.Sequences.Item = config.Sequences.Item + 1
 	z.ID = keyEncodeUint(config.Sequences.Item)
-	return C.Put(config, tx)
+	return C.Put(tx, config)
 }
 
 func (z *Item) clear() {

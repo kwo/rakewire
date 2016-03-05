@@ -10,8 +10,8 @@ var T = &transmissionStore{}
 
 type transmissionStore struct{}
 
-func (z *transmissionStore) Delete(id string, tx Transaction) error {
-	return delete(entityTransmission, id, tx)
+func (z *transmissionStore) Delete(tx Transaction, id string) error {
+	return delete(tx, entityTransmission, id)
 }
 
 func (z *transmissionStore) Get(id string, tx Transaction) *Transmission {
@@ -25,7 +25,7 @@ func (z *transmissionStore) Get(id string, tx Transaction) *Transmission {
 	return nil
 }
 
-func (z *transmissionStore) GetForFeed(feedID string, since time.Duration, tx Transaction) Transmissions {
+func (z *transmissionStore) GetForFeed(tx Transaction, feedID string, since time.Duration) Transmissions {
 	// index Transmission FeedTime = FeedID|StartTime : TransmissionID
 	transmissions := Transmissions{}
 	now := time.Now().Truncate(time.Second)
@@ -54,7 +54,7 @@ func (z *transmissionStore) GetLast(tx Transaction) *Transmission {
 	return nil
 }
 
-func (z *transmissionStore) GetRange(maxTime time.Time, since time.Duration, tx Transaction) Transmissions {
+func (z *transmissionStore) GetRange(tx Transaction, maxTime time.Time, since time.Duration) Transmissions {
 	// index Transmission Time = StartTime|TransmissionID : TransmissionID
 	transmissions := Transmissions{}
 	minTime := maxTime.Add(-since)
@@ -78,6 +78,6 @@ func (z *transmissionStore) New(feedID string) *Transmission {
 	}
 }
 
-func (z *transmissionStore) Save(transmission *Transmission, tx Transaction) error {
-	return save(entityTransmission, transmission, tx)
+func (z *transmissionStore) Save(tx Transaction, transmission *Transmission) error {
+	return save(tx, entityTransmission, transmission)
 }

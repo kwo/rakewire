@@ -9,11 +9,11 @@ var I = &itemStore{}
 
 type itemStore struct{}
 
-func (z *itemStore) Delete(id string, tx Transaction) error {
-	return delete(entityItem, id, tx)
+func (z *itemStore) Delete(tx Transaction, id string) error {
+	return delete(tx, entityItem, id)
 }
 
-func (z *itemStore) Get(id string, tx Transaction) *Item {
+func (z *itemStore) Get(tx Transaction, id string) *Item {
 	bData := tx.Bucket(bucketData, entityItem)
 	if data := bData.Get([]byte(id)); data != nil {
 		item := &Item{}
@@ -24,17 +24,17 @@ func (z *itemStore) Get(id string, tx Transaction) *Item {
 	return nil
 }
 
-func (z *itemStore) GetByGUID(feedID, guid string, tx Transaction) *Item {
+func (z *itemStore) GetByGUID(tx Transaction, feedID, guid string) *Item {
 	// index Item GUID = FeedID|GUID : ItemID
 	b := tx.Bucket(bucketIndex, entityItem, indexItemGUID)
 	if value := b.Get([]byte(keyEncode(feedID, guid))); value != nil {
 		itemID := string(value)
-		return z.Get(itemID, tx)
+		return z.Get(tx, itemID)
 	}
 	return nil
 }
 
-func (z *itemStore) GetForFeed(feedID string, tx Transaction) Items {
+func (z *itemStore) GetForFeed(tx Transaction, feedID string) Items {
 	// index Item GUID = FeedID|GUID : ItemID
 	items := Items{}
 	min, max := keyMinMax(feedID)
@@ -42,7 +42,7 @@ func (z *itemStore) GetForFeed(feedID string, tx Transaction) Items {
 	c := b.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		itemID := string(v)
-		if item := z.Get(itemID, tx); item != nil {
+		if item := z.Get(tx, itemID); item != nil {
 			items = append(items, item)
 		}
 	}
@@ -56,6 +56,6 @@ func (z *itemStore) New(feedID, guid string) *Item {
 	}
 }
 
-func (z *itemStore) Save(item *Item, tx Transaction) error {
-	return save(entityItem, item, tx)
+func (z *itemStore) Save(tx Transaction, item *Item) error {
+	return save(tx, entityItem, item)
 }

@@ -9,11 +9,11 @@ var G = &groupStore{}
 
 type groupStore struct{}
 
-func (z *groupStore) Delete(id string, tx Transaction) error {
-	return delete(entityGroup, id, tx)
+func (z *groupStore) Delete(tx Transaction, id string) error {
+	return delete(tx, entityGroup, id)
 }
 
-func (z *groupStore) Get(id string, tx Transaction) *Group {
+func (z *groupStore) Get(tx Transaction, id string) *Group {
 	bData := tx.Bucket(bucketData, entityGroup)
 	if data := bData.Get([]byte(id)); data != nil {
 		group := &Group{}
@@ -24,7 +24,7 @@ func (z *groupStore) Get(id string, tx Transaction) *Group {
 	return nil
 }
 
-func (z *groupStore) GetForUser(userID string, tx Transaction) Groups {
+func (z *groupStore) GetForUser(tx Transaction, userID string) Groups {
 	// index Group UserName = UserID|Name : GroupID
 	groups := Groups{}
 	min, max := keyMinMax(userID)
@@ -32,7 +32,7 @@ func (z *groupStore) GetForUser(userID string, tx Transaction) Groups {
 	c := b.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		groupID := string(v)
-		if group := z.Get(groupID, tx); group != nil {
+		if group := z.Get(tx, groupID); group != nil {
 			groups = append(groups, group)
 		}
 	}
@@ -46,6 +46,6 @@ func (z *groupStore) New(userID, name string) *Group {
 	}
 }
 
-func (z *groupStore) Save(group *Group, tx Transaction) error {
-	return save(entityGroup, group, tx)
+func (z *groupStore) Save(tx Transaction, group *Group) error {
+	return save(tx, entityGroup, group)
 }

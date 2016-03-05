@@ -59,7 +59,7 @@ func TestUserGetBadID(t *testing.T) {
 	defer closeTestDatabase(t, database)
 
 	err := database.Select(func(tx Transaction) error {
-		if user := U.Get(empty, tx); user != nil {
+		if user := U.Get(tx, empty); user != nil {
 			t.Error("Expected nil user")
 		}
 		return nil
@@ -78,7 +78,7 @@ func TestUserGetBadUsername(t *testing.T) {
 	defer closeTestDatabase(t, database)
 
 	err := database.Select(func(tx Transaction) error {
-		if user := U.GetByUsername(empty, tx); user != nil {
+		if user := U.GetByUsername(tx, empty); user != nil {
 			t.Error("Expected nil user")
 		}
 		return nil
@@ -97,7 +97,7 @@ func TestUserGetBadFeverhash(t *testing.T) {
 	defer closeTestDatabase(t, database)
 
 	err := database.Select(func(tx Transaction) error {
-		if user := U.GetByFeverhash(empty, tx); user != nil {
+		if user := U.GetByFeverhash(tx, empty); user != nil {
 			t.Error("Expected nil user")
 		}
 		return nil
@@ -125,7 +125,7 @@ func TestUserAddDelete(t *testing.T) {
 		if err := user.SetPassword(fakePassword); err != nil {
 			return err
 		}
-		if err := U.Save(user, tx); err != nil {
+		if err := U.Save(tx, user); err != nil {
 			return err
 		}
 		fakeID = user.ID
@@ -136,7 +136,7 @@ func TestUserAddDelete(t *testing.T) {
 
 	// retrieve user by ID
 	if err := database.Select(func(tx Transaction) error {
-		user := U.Get(fakeID, tx)
+		user := U.Get(tx, fakeID)
 		if user == nil {
 			t.Errorf("User not found by ID: %s", fakeID)
 		} else if user.Username != fakeUsername {
@@ -151,7 +151,7 @@ func TestUserAddDelete(t *testing.T) {
 
 	// delete user
 	if err := database.Update(func(tx Transaction) error {
-		if err := U.Delete(fakeID, tx); err != nil {
+		if err := U.Delete(tx, fakeID); err != nil {
 			t.Errorf("Error deleting user: %s", err.Error())
 		}
 		return nil
@@ -161,7 +161,7 @@ func TestUserAddDelete(t *testing.T) {
 
 	// retrieve user by ID
 	if err := database.Select(func(tx Transaction) error {
-		user := U.Get(fakeID, tx)
+		user := U.Get(tx, fakeID)
 		if user != nil {
 			t.Error("User found by ID, expected nil")
 		}
@@ -190,14 +190,14 @@ func TestUserGets(t *testing.T) {
 			return err
 		}
 		fakeFeverhash = user.FeverHash
-		return U.Save(user, tx)
+		return U.Save(tx, user)
 	}); err != nil {
 		t.Fatalf("Error updating database: %s", err.Error())
 	}
 
 	// retrieve user by username
 	if err := database.Select(func(tx Transaction) error {
-		user := U.GetByUsername(fakeUsername, tx)
+		user := U.GetByUsername(tx, fakeUsername)
 		if user == nil {
 			t.Errorf("User not found by username: %s", fakeUsername)
 		} else if user.Username != fakeUsername {
@@ -212,7 +212,7 @@ func TestUserGets(t *testing.T) {
 
 	// retrieve user by feverhash
 	if err := database.Select(func(tx Transaction) error {
-		user := U.GetByFeverhash(fakeFeverhash, tx)
+		user := U.GetByFeverhash(tx, fakeFeverhash)
 		if user == nil {
 			t.Errorf("User not found by feverhash: %s", fakeUsername)
 		} else if user.Username != fakeUsername {
@@ -231,7 +231,7 @@ func TestUserGets(t *testing.T) {
 		if err := user.SetPassword(fakePassword); err != nil {
 			return err
 		}
-		if err := U.Save(user, tx); err != ErrUsernameTaken {
+		if err := U.Save(tx, user); err != ErrUsernameTaken {
 			t.Error("Expected error saving user with non-unique username.")
 		}
 		return nil

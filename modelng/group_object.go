@@ -12,7 +12,7 @@ func (z *Group) setID(tx Transaction) error {
 	config := C.Get(tx)
 	config.Sequences.Group = config.Sequences.Group + 1
 	z.ID = keyEncodeUint(config.Sequences.Group)
-	return C.Put(config, tx)
+	return C.Put(tx, config)
 }
 
 func (z *Group) clear() {

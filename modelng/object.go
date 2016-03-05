@@ -15,7 +15,7 @@ type Object interface {
 	indexes() map[string][]string
 }
 
-func delete(entityName string, id string, tx Transaction) error {
+func delete(tx Transaction, entityName string, id string) error {
 
 	if id != empty {
 
@@ -84,7 +84,7 @@ func keyMinMax(key string) ([]byte, []byte) {
 	return []byte(key), keyMax(key)
 }
 
-func save(entityName string, object Object, tx Transaction) error {
+func save(tx Transaction, entityName string, object Object) error {
 
 	bData := tx.Bucket(bucketData, entityName)
 	bIndexes := tx.Bucket(bucketIndex, entityName)

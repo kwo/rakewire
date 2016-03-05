@@ -78,7 +78,7 @@ func TestFeeds(t *testing.T) {
 	err := db.Update(func(tx Transaction) error {
 
 		feed := F.New(feedURL)
-		if err := F.Save(feed, tx); err != nil {
+		if err := F.Save(tx, feed); err != nil {
 			return err
 		}
 		feedID = feed.ID
@@ -155,7 +155,7 @@ func TestFeeds(t *testing.T) {
 
 	// delete feed
 	err = db.Update(func(tx Transaction) error {
-		if err := F.Delete(feedID, tx); err != nil {
+		if err := F.Delete(tx, feedID); err != nil {
 			return err
 		}
 		return nil
@@ -192,7 +192,7 @@ func TestFeedGetNext(t *testing.T) {
 			feed := F.New(fmt.Sprintf("Feed%02d", i+1))
 			feed.LastUpdated = latest
 			feed.UpdateFetchTime(feed.LastUpdated)
-			if err := F.Save(feed, tx); err != nil {
+			if err := F.Save(tx, feed); err != nil {
 				return err
 			}
 			t.Logf("Feed Add : %s %s, lastUpdated: %s, nextFetch: %s", feed.ID, feed.URL, keyEncodeTime(feed.LastUpdated), keyEncodeTime(feed.NextFetch))

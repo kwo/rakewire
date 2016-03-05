@@ -14,6 +14,6 @@ func (z *configStore) Get(tx Transaction) *Config {
 	return config
 }
 
-func (z *configStore) Put(config *Config, tx Transaction) error {
-	return save(entityConfig, config, tx)
+func (z *configStore) Put(tx Transaction, config *Config) error {
+	return save(tx, entityConfig, config)
 }

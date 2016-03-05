@@ -32,7 +32,7 @@ func TestEntries(t *testing.T) {
 	err := db.Update(func(tx Transaction) error {
 
 		entry := E.New(userID, itemID)
-		if err := E.Save(entry, tx); err != nil {
+		if err := E.Save(tx, entry); err != nil {
 			return err
 		}
 
@@ -66,7 +66,7 @@ func TestEntries(t *testing.T) {
 
 	// delete entry
 	err = db.Update(func(tx Transaction) error {
-		if err := E.Delete(keyEncode(userID, itemID), tx); err != nil {
+		if err := E.Delete(tx, keyEncode(userID, itemID)); err != nil {
 			return err
 		}
 		return nil
