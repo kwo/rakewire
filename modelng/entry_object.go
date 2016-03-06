@@ -37,5 +37,6 @@ func (z *Entry) indexes() map[string][]string {
 	result := make(map[string][]string)
 	result[indexEntryRead] = []string{z.UserID, keyEncodeBool(z.Read), keyEncodeTime(z.Updated), z.ItemID}
 	result[indexEntryStar] = []string{z.UserID, keyEncodeBool(z.Star), keyEncodeTime(z.Updated), z.ItemID}
+	result[indexEntryUpdated] = []string{z.UserID, keyEncodeTime(z.Updated), z.ItemID}
 	return result
 }

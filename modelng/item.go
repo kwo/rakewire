@@ -20,6 +20,17 @@ var (
 // Items is a collection Item objects
 type Items []*Item
 
+// GroupByFeedID groups collections of elements in Items by FeedID
+func (z Items) GroupByFeedID() map[string]Items {
+	result := make(map[string]Items)
+	for _, item := range z {
+		a := result[item.FeedID]
+		a = append(a, item)
+		result[item.FeedID] = a
+	}
+	return result
+}
+
 // Item from a feed
 type Item struct {
 	ID      string    `json:"id"`

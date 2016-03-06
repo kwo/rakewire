@@ -46,7 +46,7 @@ func TestEntries(t *testing.T) {
 	// test by id
 	err = db.Select(func(tx Transaction) error {
 
-		entry := E.GetByIDs(userID, itemID, tx)
+		entry := E.Get(tx, userID, itemID)
 		if entry == nil {
 			t.Fatal("Nil entry, expected valid entry")
 		}
@@ -77,7 +77,7 @@ func TestEntries(t *testing.T) {
 
 	// test by id
 	err = db.Select(func(tx Transaction) error {
-		entry := E.GetByIDs(userID, itemID, tx)
+		entry := E.Get(tx, userID, itemID)
 		if entry != nil {
 			t.Error("Expected nil entry")
 		}

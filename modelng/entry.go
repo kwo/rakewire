@@ -5,14 +5,15 @@ import (
 )
 
 const (
-	entityEntry    = "Entry"
-	indexEntryRead = "Read"
-	indexEntryStar = "Star"
+	entityEntry       = "Entry"
+	indexEntryRead    = "Read"
+	indexEntryStar    = "Star"
+	indexEntryUpdated = "Updated"
 )
 
 var (
 	indexesEntry = []string{
-		indexEntryRead, indexEntryStar,
+		indexEntryRead, indexEntryStar, indexEntryUpdated,
 	}
 )
 
