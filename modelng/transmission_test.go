@@ -32,7 +32,7 @@ func TestTransmissionGetBadID(t *testing.T) {
 	defer closeTestDatabase(t, db)
 
 	err := db.Select(func(tx Transaction) error {
-		if transmission := T.Get(empty, tx); transmission != nil {
+		if transmission := T.Get(tx, empty); transmission != nil {
 			t.Error("Expected nil transmission")
 		}
 		return nil
@@ -72,7 +72,7 @@ func TestTransmissions(t *testing.T) {
 	// test by id
 	err = db.Select(func(tx Transaction) error {
 
-		transmission := T.Get(transmissionID, tx)
+		transmission := T.Get(tx, transmissionID)
 		if transmission == nil {
 			t.Fatal("Nil transmission, expected valid transmission")
 		}
@@ -103,7 +103,7 @@ func TestTransmissions(t *testing.T) {
 
 	// test by id
 	err = db.Select(func(tx Transaction) error {
-		transmission := T.Get(transmissionID, tx)
+		transmission := T.Get(tx, transmissionID)
 		if transmission != nil {
 			t.Error("Expected nil transmission")
 		}

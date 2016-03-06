@@ -14,7 +14,7 @@ func (z *transmissionStore) Delete(tx Transaction, id string) error {
 	return delete(tx, entityTransmission, id)
 }
 
-func (z *transmissionStore) Get(id string, tx Transaction) *Transmission {
+func (z *transmissionStore) Get(tx Transaction, id string) *Transmission {
 	bData := tx.Bucket(bucketData, entityTransmission)
 	if data := bData.Get([]byte(id)); data != nil {
 		transmission := &Transmission{}
@@ -35,7 +35,7 @@ func (z *transmissionStore) GetForFeed(tx Transaction, feedID string, since time
 	c := b.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		transmissionID := string(v)
-		if transmission := z.Get(transmissionID, tx); transmission != nil {
+		if transmission := z.Get(tx, transmissionID); transmission != nil {
 			transmissions = append(transmissions, transmission)
 		}
 	}
@@ -49,7 +49,7 @@ func (z *transmissionStore) GetLast(tx Transaction) *Transmission {
 	c := b.Cursor()
 	if k, _ := c.Last(); k != nil {
 		transmissionID := string(k)
-		return z.Get(transmissionID, tx)
+		return z.Get(tx, transmissionID)
 	}
 	return nil
 }
@@ -64,7 +64,7 @@ func (z *transmissionStore) GetRange(tx Transaction, maxTime time.Time, since ti
 	c := b.Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		transmissionID := string(v)
-		if transmission := z.Get(transmissionID, tx); transmission != nil {
+		if transmission := z.Get(tx, transmissionID); transmission != nil {
 			transmissions = append(transmissions, transmission)
 		}
 	}

@@ -34,7 +34,7 @@ func TestFeedGetBadID(t *testing.T) {
 	defer closeTestDatabase(t, db)
 
 	err := db.Select(func(tx Transaction) error {
-		if feed := F.Get(empty, tx); feed != nil {
+		if feed := F.Get(tx, empty); feed != nil {
 			t.Error("Expected nil feed")
 		}
 		return nil
@@ -53,7 +53,7 @@ func TestFeedGetBadURL(t *testing.T) {
 	defer closeTestDatabase(t, db)
 
 	err := db.Select(func(tx Transaction) error {
-		if feed := F.GetByURL(empty, tx); feed != nil {
+		if feed := F.GetByURL(tx, empty); feed != nil {
 			t.Error("Expected nil feed")
 		}
 		return nil
@@ -93,7 +93,7 @@ func TestFeeds(t *testing.T) {
 	// test by id
 	err = db.Select(func(tx Transaction) error {
 
-		feed := F.Get(feedID, tx)
+		feed := F.Get(tx, feedID)
 		if feed == nil {
 			t.Fatal("Nil feed, expected valid feed")
 		}
@@ -114,7 +114,7 @@ func TestFeeds(t *testing.T) {
 	// test by url
 	err = db.Select(func(tx Transaction) error {
 
-		feed := F.GetByURL(feedURL, tx)
+		feed := F.GetByURL(tx, feedURL)
 		if feed == nil {
 			t.Fatal("Nil feed, expected valid feed")
 		}
@@ -135,7 +135,7 @@ func TestFeeds(t *testing.T) {
 	// test by url uppercase
 	err = db.Select(func(tx Transaction) error {
 
-		feed := F.GetByURL(strings.ToUpper(feedURL), tx)
+		feed := F.GetByURL(tx, strings.ToUpper(feedURL))
 		if feed == nil {
 			t.Fatal("Nil feed, expected valid feed")
 		}
@@ -166,7 +166,7 @@ func TestFeeds(t *testing.T) {
 
 	// test by id
 	err = db.Select(func(tx Transaction) error {
-		feed := F.Get(feedID, tx)
+		feed := F.Get(tx, feedID)
 		if feed != nil {
 			t.Error("Expected nil feed")
 		}
@@ -218,7 +218,7 @@ func TestFeedGetNext(t *testing.T) {
 
 	err = db.Select(func(tx Transaction) error {
 		max := time.Now().Add(10 * time.Minute).Truncate(time.Second)
-		feeds := F.GetNext(max, tx)
+		feeds := F.GetNext(tx, max)
 		for _, feed := range feeds {
 			t.Logf("Feed Next: %s, lastUpdated: %s, nextFetch: %s", feed.URL, keyEncodeTime(feed.LastUpdated), keyEncodeTime(feed.NextFetch))
 		}

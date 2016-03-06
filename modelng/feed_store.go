@@ -15,7 +15,7 @@ func (z *feedStore) Delete(tx Transaction, id string) error {
 	return delete(tx, entityFeed, id)
 }
 
-func (z *feedStore) Get(id string, tx Transaction) *Feed {
+func (z *feedStore) Get(tx Transaction, id string) *Feed {
 	bData := tx.Bucket(bucketData, entityFeed)
 	if data := bData.Get([]byte(id)); data != nil {
 		feed := &Feed{}
@@ -26,17 +26,17 @@ func (z *feedStore) Get(id string, tx Transaction) *Feed {
 	return nil
 }
 
-func (z *feedStore) GetByURL(url string, tx Transaction) *Feed {
+func (z *feedStore) GetByURL(tx Transaction, url string) *Feed {
 	// index Feed URL = URL (lowercase) : FeedID
 	b := tx.Bucket(bucketIndex, entityFeed, indexFeedURL)
 	if id := b.Get([]byte(strings.ToLower(url))); id != nil {
-		return z.Get(string(id), tx)
+		return z.Get(tx, string(id))
 	}
 	return nil
 }
 
 // GetNext returns all feeds which are due to be fetched within the given max time.
-func (z *feedStore) GetNext(maxTime time.Time, tx Transaction) Feeds {
+func (z *feedStore) GetNext(tx Transaction, maxTime time.Time) Feeds {
 	// index Feed NextFetch = FetchTime|FeedID : FeedID
 	feeds := Feeds{}
 	nxtTime := maxTime.Add(1 * time.Second).Truncate(time.Second)
@@ -45,7 +45,7 @@ func (z *feedStore) GetNext(maxTime time.Time, tx Transaction) Feeds {
 	c := b.Cursor()
 	for k, v := c.First(); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 		feedID := string(v)
-		if feed := z.Get(feedID, tx); feed != nil {
+		if feed := z.Get(tx, feedID); feed != nil {
 			feeds = append(feeds, feed)
 		}
 	}
