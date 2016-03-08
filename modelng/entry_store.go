@@ -110,8 +110,6 @@ func (z *entryQuery) Min(min time.Time) *entryQuery {
 	return z
 }
 
-// Count returns the number of entries for the given user within the given timeframe.
-// minTime is inclusive, maxTime, exclusive and both are have a precision of not more than a second.
 func (z *entryQuery) Count() int {
 
 	result := 0
@@ -123,12 +121,12 @@ func (z *entryQuery) Count() int {
 		// index Entry FeedUpdated = UserID|FeedID|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryFeedUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.max.Add(-1*time.Second))))
+		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.max)))
 	} else {
 		// index Entry Updated = UserID|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, keyEncodeTime(z.max.Add(-1*time.Second))))
+		max = []byte(keyEncode(z.userID, keyEncodeTime(z.max)))
 	}
 
 	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
@@ -150,12 +148,12 @@ func (z *entryQuery) Get() Entries {
 		// index Entry FeedUpdated = UserID|FeedID|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryFeedUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.max.Add(-1*time.Second))))
+		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.max)))
 	} else {
 		// index Entry Updated = UserID|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, keyEncodeTime(z.max.Add(-1*time.Second))))
+		max = []byte(keyEncode(z.userID, keyEncodeTime(z.max)))
 	}
 
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {

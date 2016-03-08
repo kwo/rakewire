@@ -20,6 +20,24 @@ var (
 // Items is a collection Item objects
 type Items []*Item
 
+// ByID maps items to their ID
+func (z Items) ByID() map[string]*Item {
+	result := make(map[string]*Item)
+	for _, item := range z {
+		result[item.ID] = item
+	}
+	return result
+}
+
+// ByURL maps items to their URL
+func (z Items) ByURL() map[string]*Item {
+	result := make(map[string]*Item)
+	for _, item := range z {
+		result[item.URL] = item
+	}
+	return result
+}
+
 // GroupByFeedID groups collections of elements in Items by FeedID
 func (z Items) GroupByFeedID() map[string]Items {
 	result := make(map[string]Items)

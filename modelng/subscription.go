@@ -18,6 +18,17 @@ var (
 // Subscriptions is a collection of Subscription objects.
 type Subscriptions []*Subscription
 
+// WithGroup creates a new Subscriptions collection containing only subscriptions with the given groupID.
+func (z Subscriptions) WithGroup(groupID string) Subscriptions {
+	result := Subscriptions{}
+	for _, subscription := range z {
+		if subscription.HasGroup(groupID) {
+			result = append(result, subscription)
+		}
+	}
+	return result
+}
+
 // Subscription defines a feed specific to a user.
 type Subscription struct {
 	UserID   string    `json:"userId"`
