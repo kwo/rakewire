@@ -18,6 +18,9 @@ var (
 	}
 )
 
+// Users is a collection of User objects
+type Users []*User
+
 // User defines a system user
 type User struct {
 	ID           string `json:"id"`

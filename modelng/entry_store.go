@@ -10,6 +10,14 @@ var E = &entryStore{}
 
 type entryStore struct{}
 
+type entryQuery struct {
+	tx     Transaction
+	userID string
+	feedID string
+	min    time.Time
+	max    time.Time
+}
+
 func (z *entryStore) AddItems(tx Transaction, allItems Items) error {
 
 	mappedItems := allItems.GroupByFeedID()
@@ -18,7 +26,7 @@ func (z *entryStore) AddItems(tx Transaction, allItems Items) error {
 		subscriptions := S.GetForFeed(tx, feedID)
 		for _, subscription := range subscriptions {
 			for _, item := range items {
-				entry := z.New(subscription.UserID, item.ID)
+				entry := z.New(subscription.UserID, item.ID, subscription.FeedID)
 				entry.Updated = item.Updated
 				entry.Read = subscription.AutoRead
 				entry.Star = subscription.AutoStar
@@ -30,22 +38,6 @@ func (z *entryStore) AddItems(tx Transaction, allItems Items) error {
 	}
 
 	return nil
-}
-
-func (z *entryStore) Count(tx Transaction, userID string, minTime, maxTime time.Time) int {
-
-	result := 0
-
-	// index Entry Updated = UserID|Updated|ItemID : ItemID
-	min := []byte(keyEncode(userID, keyEncodeTime(minTime)))
-	max := []byte(keyEncode(userID, keyEncodeTime(maxTime)))
-	c := tx.Bucket(bucketIndex, entityEntry, indexEntryUpdated).Cursor()
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
-		result++
-	}
-
-	return result
-
 }
 
 func (z *entryStore) Delete(tx Transaction, id string) error {
@@ -73,30 +65,12 @@ func (z *entryStore) Get(tx Transaction, id ...string) *Entry {
 	return nil
 }
 
-func (z *entryStore) New(userID, itemID string) *Entry {
+func (z *entryStore) New(userID, itemID, feedID string) *Entry {
 	return &Entry{
 		UserID: userID,
 		ItemID: itemID,
+		FeedID: feedID,
 	}
-}
-
-func (z *entryStore) Range(tx Transaction, userID string, minTime, maxTime time.Time) Entries {
-
-	entries := Entries{}
-
-	// index Entry Updated = UserID|Updated|ItemID : ItemID
-	min := []byte(keyEncode(userID, keyEncodeTime(minTime)))
-	max := []byte(keyEncode(userID, keyEncodeTime(maxTime)))
-	c := tx.Bucket(bucketIndex, entityEntry, indexEntryUpdated).Cursor()
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-		entryID := string(v)
-		if entry := z.Get(tx, entryID); entry != nil {
-			entries = append(entries, entry)
-		}
-	}
-
-	return entries
-
 }
 
 func (z *entryStore) Save(tx Transaction, entry *Entry) error {
@@ -112,17 +86,81 @@ func (z *entryStore) SaveAll(tx Transaction, entries Entries) error {
 	return nil
 }
 
-func (z *entryStore) Starred(tx Transaction, userID string, minTime, maxTime time.Time) Entries {
+func (z *entryStore) Query(tx Transaction, userID string) *entryQuery {
+	return &entryQuery{
+		tx:     tx,
+		userID: userID,
+		min:    time.Time{},
+		max:    time.Now(),
+	}
+}
+
+func (z *entryQuery) Feed(feedID string) *entryQuery {
+	z.feedID = feedID
+	return z
+}
+
+func (z *entryQuery) Max(max time.Time) *entryQuery {
+	z.max = max
+	return z
+}
+
+func (z *entryQuery) Min(min time.Time) *entryQuery {
+	z.min = min
+	return z
+}
+
+// Count returns the number of entries for the given user within the given timeframe.
+// minTime is inclusive, maxTime, exclusive and both are have a precision of not more than a second.
+func (z *entryQuery) Count() int {
+
+	result := 0
+
+	var c Cursor
+	var min, max []byte
+
+	if z.feedID != empty {
+		// index Entry FeedUpdated = UserID|FeedID|Updated|ItemID : ItemID
+		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryFeedUpdated).Cursor()
+		min = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.min)))
+		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.max.Add(-1*time.Second))))
+	} else {
+		// index Entry Updated = UserID|Updated|ItemID : ItemID
+		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryUpdated).Cursor()
+		min = []byte(keyEncode(z.userID, keyEncodeTime(z.min)))
+		max = []byte(keyEncode(z.userID, keyEncodeTime(z.max.Add(-1*time.Second))))
+	}
+
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
+		result++
+	}
+
+	return result
+
+}
+
+func (z *entryQuery) Get() Entries {
 
 	entries := Entries{}
 
-	// index Entry Star = UserID|Star|Updated|ItemID : ItemID
-	min := []byte(keyEncode(userID, keyEncodeBool(true), keyEncodeTime(minTime)))
-	max := []byte(keyEncode(userID, keyEncodeBool(true), keyEncodeTime(maxTime)))
-	c := tx.Bucket(bucketIndex, entityEntry, indexEntryStar).Cursor()
+	var c Cursor
+	var min, max []byte
+
+	if z.feedID != empty {
+		// index Entry FeedUpdated = UserID|FeedID|Updated|ItemID : ItemID
+		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryFeedUpdated).Cursor()
+		min = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.min)))
+		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.max.Add(-1*time.Second))))
+	} else {
+		// index Entry Updated = UserID|Updated|ItemID : ItemID
+		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryUpdated).Cursor()
+		min = []byte(keyEncode(z.userID, keyEncodeTime(z.min)))
+		max = []byte(keyEncode(z.userID, keyEncodeTime(z.max.Add(-1*time.Second))))
+	}
+
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		entryID := string(v)
-		if entry := z.Get(tx, entryID); entry != nil {
+		if entry := E.Get(z.tx, entryID); entry != nil {
 			entries = append(entries, entry)
 		}
 	}
@@ -131,17 +169,58 @@ func (z *entryStore) Starred(tx Transaction, userID string, minTime, maxTime tim
 
 }
 
-func (z *entryStore) Unread(tx Transaction, userID string, minTime, maxTime time.Time) Entries {
+func (z *entryQuery) Starred() Entries {
 
 	entries := Entries{}
 
-	// index Entry Read = UserID|Read|Updated|ItemID : ItemID
-	min := []byte(keyEncode(userID, keyEncodeBool(false), keyEncodeTime(minTime)))
-	max := []byte(keyEncode(userID, keyEncodeBool(false), keyEncodeTime(maxTime)))
-	c := tx.Bucket(bucketIndex, entityEntry, indexEntryRead).Cursor()
+	var c Cursor
+	var min, max []byte
+
+	if z.feedID != empty {
+		// index Entry FeedStarUpdated = UserID|FeedID|Star|Updated|ItemID : ItemID
+		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryFeedStarUpdated).Cursor()
+		min = []byte(keyEncode(z.userID, z.feedID, keyEncodeBool(true), keyEncodeTime(z.min)))
+		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeBool(true), keyEncodeTime(z.max.Add(-1*time.Second))))
+	} else {
+		// index Entry StarUpdated = UserID|Star|Updated|ItemID : ItemID
+		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryStarUpdated).Cursor()
+		min = []byte(keyEncode(z.userID, keyEncodeBool(true), keyEncodeTime(z.min)))
+		max = []byte(keyEncode(z.userID, keyEncodeBool(true), keyEncodeTime(z.max.Add(-1*time.Second))))
+	}
+
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
 		entryID := string(v)
-		if entry := z.Get(tx, entryID); entry != nil {
+		if entry := E.Get(z.tx, entryID); entry != nil {
+			entries = append(entries, entry)
+		}
+	}
+
+	return entries
+
+}
+
+func (z *entryQuery) Unread() Entries {
+
+	entries := Entries{}
+
+	var c Cursor
+	var min, max []byte
+
+	if z.feedID != empty {
+		// index Entry FeedReadUpdated = UserID|FeedID|Read|Updated|ItemID : ItemID
+		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryFeedReadUpdated).Cursor()
+		min = []byte(keyEncode(z.userID, z.feedID, keyEncodeBool(false), keyEncodeTime(z.min)))
+		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeBool(false), keyEncodeTime(z.max.Add(-1*time.Second))))
+	} else {
+		// index Entry ReadUpdated = UserID|Read|Updated|ItemID : ItemID
+		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryReadUpdated).Cursor()
+		min = []byte(keyEncode(z.userID, keyEncodeBool(false), keyEncodeTime(z.min)))
+		max = []byte(keyEncode(z.userID, keyEncodeBool(false), keyEncodeTime(z.max.Add(-1*time.Second))))
+	}
+
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+		entryID := string(v)
+		if entry := E.Get(z.tx, entryID); entry != nil {
 			entries = append(entries, entry)
 		}
 	}
