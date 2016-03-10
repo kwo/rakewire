@@ -1,6 +1,7 @@
 package modelng
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 	"time"
@@ -16,6 +17,28 @@ func TestEntrySetup(t *testing.T) {
 
 	if obj := allEntities[entityEntry]; obj == nil {
 		t.Error("missing allEntities entry")
+	}
+
+}
+
+func TestIndex(t *testing.T) {
+
+	t.Parallel()
+
+	r1 := []byte("0000000002|0000000012|20160309210900Z|0000000230") // -1
+	mx := []byte("0000000002|0000000012|20160309211000Z")
+	r2 := []byte("0000000002|0000000012|20160309211000Z|0000000230") // 1
+
+	var expectedResult int
+
+	expectedResult = -1
+	if c := bytes.Compare(r1, mx); c != expectedResult {
+		t.Errorf("Bad compare result: %d, expected %d", c, expectedResult)
+	}
+
+	expectedResult = 1
+	if c := bytes.Compare(r2, mx); c != expectedResult {
+		t.Errorf("Bad compare result: %d, expected %d", c, expectedResult)
 	}
 
 }
@@ -319,6 +342,288 @@ func TestEntryQueries(t *testing.T) {
 					t.Fatal("nil entries")
 				}
 			}
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		t.Errorf("Error selecting from database: %s", err.Error())
+	}
+
+}
+
+func TestStarred(t *testing.T) {
+
+	/*
+
+		User Star Updated Item
+		0000000001 0 t0 0000000001
+		0000000001 0 t1 0000000002
+		0000000001 0 t1 0000000006
+		0000000001 1 t0 0000000003
+		0000000001 1 t1 0000000004
+		0000000001 1 t1 0000000005
+
+		User Feed Star Updated Item
+		0000000001 0000000002 0 t0 0000000001
+		0000000001 0000000002 0 t1 0000000002
+		0000000001 0000000002 1 t0 0000000003
+		0000000001 0000000002 1 t1 0000000004
+		0000000001 0000000003 1 t1 0000000005
+		0000000001 0000000004 0 t1 0000000006
+
+	*/
+
+	t.Parallel()
+
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
+
+	now := time.Now().Truncate(time.Second)
+	t0 := now.Add(-15 * time.Minute)
+	t1 := now.Add(-10 * time.Minute)
+
+	err := db.Update(func(tx Transaction) error {
+
+		entries := Entries{}
+		var entry *Entry
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(1), keyEncodeUint(2))
+		entry.Updated = t0
+		entries = append(entries, entry)
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(2), keyEncodeUint(2))
+		entry.Updated = t1
+		entries = append(entries, entry)
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(3), keyEncodeUint(2))
+		entry.Updated = t0
+		entry.Star = true
+		entries = append(entries, entry)
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(4), keyEncodeUint(2))
+		entry.Updated = t1
+		entry.Star = true
+		entries = append(entries, entry)
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(5), keyEncodeUint(3))
+		entry.Updated = t1
+		entry.Star = true
+		entries = append(entries, entry)
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(6), keyEncodeUint(4))
+		entry.Updated = t1
+		entries = append(entries, entry)
+
+		return E.SaveAll(tx, entries)
+
+	})
+	if err != nil {
+		t.Errorf("Error updating database: %s", err.Error())
+	}
+
+	err = db.Select(func(tx Transaction) error {
+
+		// get total starred
+		if entries := E.Query(tx, keyEncodeUint(1)).Starred(); entries != nil {
+			expectedCount := 3
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		// get total starred for time up til t1
+		if entries := E.Query(tx, keyEncodeUint(1)).Max(t1).Starred(); entries != nil {
+			expectedCount := 1
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		// get total starred for time starting at t1
+		if entries := E.Query(tx, keyEncodeUint(1)).Min(t1).Starred(); entries != nil {
+			expectedCount := 2
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		// get total starred for feed 2
+		if entries := E.Query(tx, keyEncodeUint(1)).Feed(keyEncodeUint(2)).Starred(); entries != nil {
+			expectedCount := 2
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		// get total starred for feed 2 up til t1
+		if entries := E.Query(tx, keyEncodeUint(1)).Feed(keyEncodeUint(2)).Max(t1).Starred(); entries != nil {
+			expectedCount := 1
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		// get total starred for feed 2 starting at t1
+		if entries := E.Query(tx, keyEncodeUint(1)).Feed(keyEncodeUint(2)).Min(t1).Starred(); entries != nil {
+			expectedCount := 1
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		t.Errorf("Error selecting from database: %s", err.Error())
+	}
+
+}
+
+func TestUnread(t *testing.T) {
+
+	/*
+
+		User Read Updated Item
+		0000000001 0 t0 0000000001
+		0000000001 0 t1 0000000002
+		0000000001 0 t1 0000000006
+		0000000001 1 t0 0000000003
+		0000000001 1 t1 0000000004
+		0000000001 1 t1 0000000005
+
+		User Feed Read Updated Item
+		0000000001 0000000002 0 t0 0000000001
+		0000000001 0000000002 0 t1 0000000002
+		0000000001 0000000002 1 t0 0000000003
+		0000000001 0000000002 1 t1 0000000004
+		0000000001 0000000003 1 t1 0000000005
+		0000000001 0000000004 0 t1 0000000006
+
+	*/
+
+	t.Parallel()
+
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
+
+	now := time.Now().Truncate(time.Second)
+	t0 := now.Add(-15 * time.Minute)
+	t1 := now.Add(-10 * time.Minute)
+
+	err := db.Update(func(tx Transaction) error {
+
+		entries := Entries{}
+		var entry *Entry
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(1), keyEncodeUint(2))
+		entry.Updated = t0
+		entries = append(entries, entry)
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(2), keyEncodeUint(2))
+		entry.Updated = t1
+		entries = append(entries, entry)
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(3), keyEncodeUint(2))
+		entry.Updated = t0
+		entry.Read = true
+		entries = append(entries, entry)
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(4), keyEncodeUint(2))
+		entry.Updated = t1
+		entry.Read = true
+		entries = append(entries, entry)
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(5), keyEncodeUint(3))
+		entry.Updated = t1
+		entry.Read = true
+		entries = append(entries, entry)
+
+		entry = E.New(keyEncodeUint(1), keyEncodeUint(6), keyEncodeUint(4))
+		entry.Updated = t1
+		entries = append(entries, entry)
+
+		return E.SaveAll(tx, entries)
+
+	})
+	if err != nil {
+		t.Errorf("Error updating database: %s", err.Error())
+	}
+
+	err = db.Select(func(tx Transaction) error {
+
+		// get total unread
+		if entries := E.Query(tx, keyEncodeUint(1)).Unread(); entries != nil {
+			expectedCount := 3
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		// get total unread for time up til t1
+		if entries := E.Query(tx, keyEncodeUint(1)).Max(t1).Unread(); entries != nil {
+			expectedCount := 1
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		// get total unread for time starting at t1
+		if entries := E.Query(tx, keyEncodeUint(1)).Min(t1).Unread(); entries != nil {
+			expectedCount := 2
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		// get total unread for feed 2
+		if entries := E.Query(tx, keyEncodeUint(1)).Feed(keyEncodeUint(2)).Unread(); entries != nil {
+			expectedCount := 2
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		// get total unread for feed 2 up til t1
+		if entries := E.Query(tx, keyEncodeUint(1)).Feed(keyEncodeUint(2)).Max(t1).Unread(); entries != nil {
+			expectedCount := 1
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
+		}
+
+		// get total unread for feed 2 starting at t1
+		if entries := E.Query(tx, keyEncodeUint(1)).Feed(keyEncodeUint(2)).Min(t1).Unread(); entries != nil {
+			expectedCount := 1
+			if len(entries) != expectedCount {
+				t.Errorf("Bad entry count: %d, expected %d", len(entries), expectedCount)
+			}
+		} else {
+			t.Error("Nil entries")
 		}
 
 		return nil

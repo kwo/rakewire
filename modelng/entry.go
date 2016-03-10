@@ -23,6 +23,13 @@ var (
 // Entries is a collection of Entry elements
 type Entries []*Entry
 
+// Reverse reverses the order of the collection
+func (z Entries) Reverse() {
+	for left, right := 0, len(z)-1; left < right; left, right = left+1, right-1 {
+		z[left], z[right] = z[right], z[left]
+	}
+}
+
 // Unique returns an array of unique Entry elements
 func (z Entries) Unique() Entries {
 
@@ -38,13 +45,6 @@ func (z Entries) Unique() Entries {
 
 	return entries
 
-}
-
-// Reverse reverses the order of the collection
-func (z Entries) Reverse() {
-	for left, right := 0, len(z)-1; left < right; left, right = left+1, right-1 {
-		z[left], z[right] = z[right], z[left]
-	}
 }
 
 // Entry defines an item status for a user

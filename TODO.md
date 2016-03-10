@@ -12,9 +12,12 @@
     x Transmission
     x Item
     x Subscription
-    - Entry (key: UserID, ItemID)
-
+    x Entry (key: UserID, ItemID)
     - OPML - remove from model
+    - Fever redo
+    - rewrite integrity check
+    - use int32 instead of dates
+    - use protobuf
 
  - jwt authentication and basic auth
  - gRPC multiplex with JSON API

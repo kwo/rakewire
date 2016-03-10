@@ -100,11 +100,15 @@ func (z *entryQuery) Feed(feedID string) *entryQuery {
 	return z
 }
 
+// Max sets the latest update time for entries in the query, exclusive.
+// Time resolution is precise to the second.
 func (z *entryQuery) Max(max time.Time) *entryQuery {
 	z.max = max
 	return z
 }
 
+// Min sets the earliest update time for entries in the query.
+// Time resolution is precise to the second.
 func (z *entryQuery) Min(min time.Time) *entryQuery {
 	z.min = min
 	return z
@@ -115,21 +119,23 @@ func (z *entryQuery) Count() int {
 	result := 0
 
 	var c Cursor
-	var min, max []byte
+	var min, nxt []byte
 
 	if z.feedID != empty {
 		// index Entry FeedUpdated = UserID|FeedID|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryFeedUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.max)))
+		nxt = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.max)))
 	} else {
 		// index Entry Updated = UserID|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, keyEncodeTime(z.max)))
+		nxt = []byte(keyEncode(z.userID, keyEncodeTime(z.max)))
 	}
 
-	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, _ = c.Next() {
+	//fmt.Printf("min: %s, max: %s\n", string(min), string(max))
+	for k, _ := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, _ = c.Next() {
+		//fmt.Printf("key: %s\n", string(k))
 		result++
 	}
 
@@ -142,21 +148,21 @@ func (z *entryQuery) Get() Entries {
 	entries := Entries{}
 
 	var c Cursor
-	var min, max []byte
+	var min, nxt []byte
 
 	if z.feedID != empty {
 		// index Entry FeedUpdated = UserID|FeedID|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryFeedUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.max)))
+		nxt = []byte(keyEncode(z.userID, z.feedID, keyEncodeTime(z.max)))
 	} else {
 		// index Entry Updated = UserID|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, keyEncodeTime(z.max)))
+		nxt = []byte(keyEncode(z.userID, keyEncodeTime(z.max)))
 	}
 
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 		entryID := string(v)
 		if entry := E.Get(z.tx, entryID); entry != nil {
 			entries = append(entries, entry)
@@ -172,21 +178,21 @@ func (z *entryQuery) Starred() Entries {
 	entries := Entries{}
 
 	var c Cursor
-	var min, max []byte
+	var min, nxt []byte
 
 	if z.feedID != empty {
 		// index Entry FeedStarUpdated = UserID|FeedID|Star|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryFeedStarUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, z.feedID, keyEncodeBool(true), keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeBool(true), keyEncodeTime(z.max.Add(-1*time.Second))))
+		nxt = []byte(keyEncode(z.userID, z.feedID, keyEncodeBool(true), keyEncodeTime(z.max)))
 	} else {
 		// index Entry StarUpdated = UserID|Star|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryStarUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, keyEncodeBool(true), keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, keyEncodeBool(true), keyEncodeTime(z.max.Add(-1*time.Second))))
+		nxt = []byte(keyEncode(z.userID, keyEncodeBool(true), keyEncodeTime(z.max)))
 	}
 
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 		entryID := string(v)
 		if entry := E.Get(z.tx, entryID); entry != nil {
 			entries = append(entries, entry)
@@ -202,21 +208,21 @@ func (z *entryQuery) Unread() Entries {
 	entries := Entries{}
 
 	var c Cursor
-	var min, max []byte
+	var min, nxt []byte
 
 	if z.feedID != empty {
 		// index Entry FeedReadUpdated = UserID|FeedID|Read|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryFeedReadUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, z.feedID, keyEncodeBool(false), keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, z.feedID, keyEncodeBool(false), keyEncodeTime(z.max.Add(-1*time.Second))))
+		nxt = []byte(keyEncode(z.userID, z.feedID, keyEncodeBool(false), keyEncodeTime(z.max)))
 	} else {
 		// index Entry ReadUpdated = UserID|Read|Updated|ItemID : ItemID
 		c = z.tx.Bucket(bucketIndex, entityEntry, indexEntryReadUpdated).Cursor()
 		min = []byte(keyEncode(z.userID, keyEncodeBool(false), keyEncodeTime(z.min)))
-		max = []byte(keyEncode(z.userID, keyEncodeBool(false), keyEncodeTime(z.max.Add(-1*time.Second))))
+		nxt = []byte(keyEncode(z.userID, keyEncodeBool(false), keyEncodeTime(z.max)))
 	}
 
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, nxt) < 0; k, v = c.Next() {
 		entryID := string(v)
 		if entry := E.Get(z.tx, entryID); entry != nil {
 			entries = append(entries, entry)
