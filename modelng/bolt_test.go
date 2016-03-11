@@ -17,8 +17,6 @@ func TestBoltDB(t *testing.T) {
 
 func openTestDatabase(t *testing.T, flags ...bool) Database {
 
-	//flagPopulateStore := len(flags) > 0 && flags[0]
-
 	f, err := ioutil.TempFile("", "bolt-")
 	if err != nil {
 		t.Fatalf("Cannot acquire temp file: %s", err.Error())
@@ -30,15 +28,6 @@ func openTestDatabase(t *testing.T, flags ...bool) Database {
 	if err != nil {
 		t.Fatalf("Cannot open database: %s", err.Error())
 	}
-
-	// if flagPopulateStore {
-	// 	err = boltDB.Update(func(tx Transaction) error {
-	// 		return populateDatabase(t, tx)
-	// 	})
-	// 	if err != nil {
-	// 		t.Fatalf("Cannot populate store: %s", err.Error())
-	// 	}
-	// }
 
 	return store
 
