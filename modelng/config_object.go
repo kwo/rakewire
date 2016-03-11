@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 )
 
-func (z *Config) getID() string {
+func (z *Config) GetID() string {
 	return idConfig
 }
 

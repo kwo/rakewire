@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 )
 
-func (z *Group) getID() string {
+func (z *Group) GetID() string {
 	return z.ID
 }
 

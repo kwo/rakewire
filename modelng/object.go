@@ -8,7 +8,7 @@ import (
 
 // Object defines the functions necessary for objects to be persisted to a store
 type Object interface {
-	getID() string
+	GetID() string
 	setID(Transaction) error
 	encode() ([]byte, error)
 	decode([]byte) error
@@ -41,7 +41,7 @@ func delete(tx Transaction, entityName string, id string) error {
 			}
 
 			// delete object
-			if err := bData.Delete([]byte(object.getID())); err != nil {
+			if err := bData.Delete([]byte(object.GetID())); err != nil {
 				return err
 			}
 
@@ -90,7 +90,7 @@ func save(tx Transaction, entityName string, object Object) error {
 	bIndexes := tx.Bucket(bucketIndex, entityName)
 
 	// delete old indexes, if ID not empty
-	if object.getID() != empty {
+	if object.GetID() != empty {
 
 		// save new data
 		newdata, err := object.encode()
@@ -99,7 +99,7 @@ func save(tx Transaction, entityName string, object Object) error {
 		}
 
 		// retrieve old data
-		if olddata := bData.Get([]byte(object.getID())); olddata != nil {
+		if olddata := bData.Get([]byte(object.GetID())); olddata != nil {
 			if err := object.decode(olddata); err != nil {
 				return err
 			}
@@ -119,7 +119,7 @@ func save(tx Transaction, entityName string, object Object) error {
 	} // delete old indexes
 
 	// assign new ID, if necessary
-	if object.getID() == empty {
+	if object.GetID() == empty {
 		if err := object.setID(tx); err != nil {
 			return err
 		}
@@ -127,7 +127,7 @@ func save(tx Transaction, entityName string, object Object) error {
 
 	// save entity
 	if data, err := object.encode(); err == nil {
-		if err := bData.Put([]byte(object.getID()), data); err != nil {
+		if err := bData.Put([]byte(object.GetID()), data); err != nil {
 			return err
 		}
 	} else {
@@ -137,7 +137,7 @@ func save(tx Transaction, entityName string, object Object) error {
 	// save new indexes
 	for indexName, indexKeys := range object.indexes() {
 		bIndex := bIndexes.Bucket(indexName)
-		if err := bIndex.Put([]byte(keyEncode(indexKeys...)), []byte(object.getID())); err != nil {
+		if err := bIndex.Put([]byte(keyEncode(indexKeys...)), []byte(object.GetID())); err != nil {
 			return err
 		}
 	}

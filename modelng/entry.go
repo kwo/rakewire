@@ -35,7 +35,7 @@ func (z Entries) Unique() Entries {
 
 	uniques := make(map[string]*Entry)
 	for _, entry := range z {
-		uniques[entry.getID()] = entry
+		uniques[entry.GetID()] = entry
 	}
 
 	entries := Entries{}

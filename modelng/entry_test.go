@@ -255,7 +255,7 @@ func TestEntryQueries(t *testing.T) {
 			if len(entries) != expectedCount {
 				t.Errorf("Bad count: %d, expected %d", len(entries), expectedCount)
 				for _, entry := range entries {
-					t.Logf("entry: %s: %v", entry.getID(), entry.Updated)
+					t.Logf("entry: %s: %v", entry.GetID(), entry.Updated)
 				}
 			}
 		}

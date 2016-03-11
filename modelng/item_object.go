@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (z *Item) getID() string {
+func (z *Item) GetID() string {
 	return z.ID
 }
 

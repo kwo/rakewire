@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (z *Transmission) getID() string {
+func (z *Transmission) GetID() string {
 	return z.ID
 }
 

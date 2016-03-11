@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (z *Subscription) getID() string {
+func (z *Subscription) GetID() string {
 	return keyEncode(z.UserID, z.FeedID)
 }
 

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func (z *Entry) getID() string {
+func (z *Entry) GetID() string {
 	return keyEncode(z.UserID, z.ItemID)
 }
 

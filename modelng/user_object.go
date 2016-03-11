@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func (z *User) getID() string {
+func (z *User) GetID() string {
 	return z.ID
 }
 

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func (z *Feed) getID() string {
+func (z *Feed) GetID() string {
 	return z.ID
 }
 
