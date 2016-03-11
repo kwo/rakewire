@@ -15,6 +15,7 @@
     x Entry (key: UserID, ItemID)
     - OPML - remove from model
     - Fever redo
+    - remove old model
     - rewrite integrity check
     - use int32 instead of dates
     - use protobuf
