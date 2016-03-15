@@ -3,6 +3,9 @@ package opml
 import (
 	"bytes"
 	"io"
+	"io/ioutil"
+	"os"
+	model "rakewire/modelng"
 	"strings"
 	"testing"
 	"time"
@@ -438,4 +441,61 @@ func getTestDocumentSorted() io.Reader {
 		</body>
 	</opml>`
 	return strings.NewReader(document)
+}
+
+func openTestDatabase(t *testing.T) model.Database {
+
+	f, err := ioutil.TempFile("", "bolt-")
+	if err != nil {
+		t.Fatalf("Cannot acquire temp file: %s", err.Error())
+	}
+	f.Close()
+	location := f.Name()
+
+	store, err := model.Instance.Open(location)
+	if err != nil {
+		t.Fatalf("Cannot open database: %s", err.Error())
+	}
+
+	return store
+
+}
+
+func closeTestDatabase(t *testing.T, db model.Database) {
+
+	location := db.Location()
+
+	if err := model.Instance.Close(db); err != nil {
+		t.Errorf("Cannot close database: %s", err.Error())
+	}
+
+	if err := os.Remove(location); err != nil {
+		t.Errorf("Cannot remove temp file: %s", err.Error())
+	}
+
+}
+
+func addUser(t *testing.T, db model.Database) *model.User {
+
+	var user *model.User
+
+	err := db.Update(func(tx model.Transaction) error {
+
+		// add user
+		user = model.U.New("opml.ninja")
+		if err := user.SetPassword("abcdefg"); err != nil {
+			return err
+		}
+		if err := model.U.Save(tx, user); err != nil {
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Error adding user: %s", err.Error())
+	}
+
+	return user
+
 }

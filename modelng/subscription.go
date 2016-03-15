@@ -18,6 +18,15 @@ var (
 // Subscriptions is a collection of Subscription objects.
 type Subscriptions []*Subscription
 
+// ByTitle groups elements in the Subscriptions collection by Name
+func (z Subscriptions) ByTitle() map[string]*Subscription {
+	result := make(map[string]*Subscription)
+	for _, subscription := range z {
+		result[subscription.Title] = subscription
+	}
+	return result
+}
+
 // WithGroup creates a new Subscriptions collection containing only subscriptions with the given groupID.
 func (z Subscriptions) WithGroup(groupID string) Subscriptions {
 	result := Subscriptions{}

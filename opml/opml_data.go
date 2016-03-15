@@ -136,8 +136,6 @@ func Import(tx model.Transaction, userID string, opml *OPML) error {
 
 	for branch, outlines := range flatOPML {
 
-		group := groupsByName[branch.Title]
-
 		for _, outline := range outlines {
 
 			var feed *model.Feed
@@ -165,7 +163,7 @@ func Import(tx model.Transaction, userID string, opml *OPML) error {
 			getTitle := func() string {
 				result := outline.Title
 				if result == "" {
-					result = outline.Title
+					result = outline.Text
 				}
 				if result == "" {
 					result = feed.Title
@@ -176,13 +174,18 @@ func Import(tx model.Transaction, userID string, opml *OPML) error {
 				if result == "" {
 					result = feed.URL
 				}
-				if result == "" {
-					result = outline.HTMLURL
-				}
-				if result == "" {
-					result = outline.XMLURL
-				}
 				return result
+			}
+
+			// get group, add if necessary
+			group := groupsByName[branch.Title]
+			if group == nil {
+				group = model.G.New(userID, branch.Title)
+				if err := model.G.Save(tx, group); err != nil {
+					return err
+				}
+				groups = append(groups, group)
+				groupsByName[group.Name] = group
 			}
 
 			subscription.Title = getTitle()
