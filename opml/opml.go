@@ -17,13 +17,13 @@ type OPML struct {
 
 // Head holds some meta information about the document.
 type Head struct {
-	XMLName      xml.Name  `xml:"head"`
-	Title        string    `xml:"title"`
-	DateCreated  time.Time `xml:"dateCreated,omitempty"`
-	DateModified string    `xml:"dateModified,omitempty"`
-	OwnerName    string    `xml:"ownerName,omitempty"`
-	OwnerEmail   string    `xml:"ownerEmail,omitempty"`
-	OwnerID      string    `xml:"ownerId,omitempty"`
+	XMLName      xml.Name   `xml:"head"`
+	Title        string     `xml:"title"`
+	DateCreated  *time.Time `xml:"dateCreated,omitempty"`
+	DateModified string     `xml:"dateModified,omitempty"`
+	OwnerName    string     `xml:"ownerName,omitempty"`
+	OwnerEmail   string     `xml:"ownerEmail,omitempty"`
+	OwnerID      string     `xml:"ownerId,omitempty"`
 }
 
 // Body represents the main opml document body
@@ -38,7 +38,7 @@ type Outline struct {
 	Version     string     `xml:"version,attr,omitempty"`
 	Type        string     `xml:"type,attr,omitempty"`
 	Title       string     `xml:"title,attr"`
-	Text        string     `xml:"text,attr"` // always mirrors title
+	Text        string     `xml:"text,attr,omitempty"` // always mirrors title
 	XMLURL      string     `xml:"xmlUrl,attr,omitempty"`
 	HTMLURL     string     `xml:"htmlUrl,attr,omitempty"`
 	Created     *time.Time `xml:"created,attr,omitempty"`

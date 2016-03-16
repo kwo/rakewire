@@ -230,7 +230,7 @@ func getTestOPML() *OPML {
 	opml1 := &OPML{}
 	opml1.Head = &Head{
 		Title:       "Rakewire Subscriptions",
-		DateCreated: now,
+		DateCreated: &now,
 		OwnerName:   "karl@ostendorf.com",
 	}
 	opml1.Body = &Body{

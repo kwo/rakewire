@@ -13,7 +13,7 @@
     x Item
     x Subscription
     x Entry (key: UserID, ItemID)
-    - OPML - remove from model
+    x OPML - remove from model
     - Fever redo
     - remove old model
     - rewrite integrity check

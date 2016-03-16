@@ -24,7 +24,6 @@ func Export(tx model.Transaction, user *model.User) (*OPML, error) {
 		if _, ok := categories[group.Name]; !ok {
 			category := &Outline{
 				Title: group.Name,
-				Text:  group.Name,
 			}
 			categories[group.Name] = category
 
@@ -68,7 +67,6 @@ func Export(tx model.Transaction, user *model.User) (*OPML, error) {
 			outline := &Outline{
 				Type:        "rss",
 				Title:       getTitle(subscription),
-				Text:        getTitle(subscription),
 				Created:     created,
 				Description: subscription.Notes,
 				Category:    flags,
@@ -88,10 +86,11 @@ func Export(tx model.Transaction, user *model.User) (*OPML, error) {
 
 	outlines.Sort()
 
+	now := time.Now().UTC().Truncate(time.Second)
 	opml := &OPML{
 		Head: &Head{
 			Title:       "Rakewire Subscriptions",
-			DateCreated: time.Now().UTC().Truncate(time.Second),
+			DateCreated: &now,
 			OwnerName:   user.Username,
 		},
 		Body: &Body{
