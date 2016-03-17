@@ -5,7 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	model "rakewire/modelng"
+	"rakewire/model"
 	"strings"
 	"testing"
 	"time"

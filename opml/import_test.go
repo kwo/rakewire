@@ -2,7 +2,7 @@ package opml
 
 import (
 	"io"
-	model "rakewire/modelng"
+	"rakewire/model"
 	"strings"
 	"testing"
 	"time"

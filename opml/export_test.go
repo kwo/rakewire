@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-	model "rakewire/modelng"
+	"rakewire/model"
 	"strings"
 	"testing"
 )
