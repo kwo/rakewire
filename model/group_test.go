@@ -1,139 +1,122 @@
 package model
 
 import (
+	"fmt"
 	"testing"
 )
 
-func TestGroup(t *testing.T) {
+func TestGroupSetup(t *testing.T) {
 
 	t.Parallel()
 
-	database := openTestDatabase(t)
-	defer closeTestDatabase(t, database)
-
-	fakeUsername := "jeff@lubowski.zzz"
-	fakePassword := "12345678"
-	fakeUserID := ""
-	fakeGroupname1 := "Group1"
-	fakeGroupname2 := "Group2"
-
-	// add user to database
-	if err := database.Update(func(tx Transaction) error {
-		user := NewUser(fakeUsername)
-		if err := user.SetPassword(fakePassword); err != nil {
-			return err
-		}
-		if err := user.Save(tx); err != nil {
-			return err
-		}
-		fakeUserID = user.ID
-		return nil
-	}); err != nil {
-		t.Fatalf("Error updating database: %s", err.Error())
+	if obj := getObject(entityGroup); obj == nil {
+		t.Error("missing getObject entry")
 	}
 
-	// add group1
-	if err := database.Update(func(tx Transaction) error {
-		group := NewGroup(fakeUserID, fakeGroupname1)
-		return group.Save(tx)
-	}); err != nil {
-		t.Fatalf("Error updating database: %s", err.Error())
+	if obj := allEntities[entityGroup]; obj == nil {
+		t.Error("missing allEntities entry")
 	}
 
-	// retrieve group1 by name
-	if err := database.Select(func(tx Transaction) error {
-		group, err := GroupByName(fakeUserID, fakeGroupname1, tx)
-		if err != nil {
-			return err
-		}
-		if group == nil {
-			t.Errorf("Group1 not found by name: %s", fakeGroupname1)
-		} else if group.Name != fakeGroupname1 {
-			t.Errorf("Bad name, expected %s, actual %s", fakeGroupname1, group.Name)
-		} else if group.ID == empty {
-			t.Error("Empty Group ID")
+	c := &Config{}
+	if obj := c.Sequences.Group; obj != 0 {
+		t.Error("missing sequences entry")
+	}
+
+}
+
+func TestGroupGetBadID(t *testing.T) {
+
+	t.Parallel()
+
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
+
+	err := db.Select(func(tx Transaction) error {
+		if group := G.Get(tx, empty); group != nil {
+			t.Error("Expected nil group")
 		}
 		return nil
-	}); err != nil {
-		t.Fatalf("Error selecting database: %s", err.Error())
+	})
+	if err != nil {
+		t.Errorf("Error selecting from database: %s", err.Error())
 	}
 
-	// retrieve groups by user
-	if err := database.Select(func(tx Transaction) error {
-		groups, err := GroupsByUser(fakeUserID, tx)
-		if err != nil {
+}
+
+func TestGroups(t *testing.T) {
+
+	t.Parallel()
+
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
+
+	userID := empty
+
+	err := db.Update(func(tx Transaction) error {
+
+		user := U.New("user1")
+		user.SetPassword("password")
+		if err := U.Save(tx, user); err != nil {
 			return err
 		}
+		userID = user.ID
+
+		for i := 0; i < 20; i++ {
+			g := G.New(userID, fmt.Sprintf("Group%d", i))
+			if err := G.Save(tx, g); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		t.Fatalf("Error adding groups: %s", err.Error())
+	}
+
+	err = db.Update(func(tx Transaction) error {
+
+		groups := G.GetForUser(tx, userID)
 		if groups == nil {
-			t.Error("Groups not found by user")
-		} else if len(groups) != 1 {
-			t.Errorf("Bad number of groups, expected %d, actual %d", 1, len(groups))
-		} else if groups.First().Name != fakeGroupname1 {
-			t.Errorf("Bad name, expected %s, actual %s", fakeGroupname1, groups.First().Name)
-		} else if groups.First().ID == empty {
-			t.Error("Empty Group ID")
+			t.Fatal("Nil group, expected non-nil value")
 		}
+
+		if len(groups) != 20 {
+			t.Errorf("bad number of groups, expected %d, actual %d", 20, len(groups))
+		}
+
+		for i, group := range groups {
+			if i%2 == 0 {
+				if err := G.Delete(tx, group.ID); err != nil {
+					return err
+				}
+			}
+		}
+
 		return nil
-	}); err != nil {
-		t.Fatalf("Error selecting database: %s", err.Error())
+
+	})
+	if err != nil {
+		t.Fatalf("Error deleting groups: %s", err.Error())
 	}
 
-	// add group2
-	if err := database.Update(func(tx Transaction) error {
-		group := NewGroup(fakeUserID, fakeGroupname2)
-		return group.Save(tx)
-	}); err != nil {
-		t.Fatalf("Error updating database: %s", err.Error())
-	}
+	err = db.Select(func(tx Transaction) error {
 
-	// retrieve group2 by name
-	if err := database.Select(func(tx Transaction) error {
-		group, err := GroupByName(fakeUserID, fakeGroupname2, tx)
-		if err != nil {
-			return err
-		}
-		if group == nil {
-			t.Errorf("Group2 not found by name: %s", fakeGroupname2)
-		} else if group.Name != fakeGroupname2 {
-			t.Errorf("Bad name, expected %s, actual %s", fakeGroupname2, group.Name)
-		} else if group.ID == empty {
-			t.Error("Empty Group ID")
-		}
-		return nil
-	}); err != nil {
-		t.Fatalf("Error selecting database: %s", err.Error())
-	}
-
-	// retrieve groups by user
-	if err := database.Select(func(tx Transaction) error {
-		groups, err := GroupsByUser(fakeUserID, tx)
-		if err != nil {
-			return err
-		}
+		groups := G.GetForUser(tx, userID)
 		if groups == nil {
-			t.Error("Groups not found by user")
-		} else if len(groups) != 2 {
-			t.Errorf("Bad number of groups, expected %d, actual %d", 2, len(groups))
-		} else if groups.First().Name != fakeGroupname1 {
-			t.Errorf("Bad name, expected %s, actual %s", fakeGroupname1, groups.First().Name)
-		} else if groups.First().ID == empty {
-			t.Error("Empty Group ID")
-		} else if groups[1].Name != fakeGroupname2 {
-			t.Errorf("Bad name, expected %s, actual %s", fakeGroupname2, groups[1].Name)
-		} else if groups[1].ID == empty {
-			t.Error("Empty Group ID")
+			t.Fatal("Nil group, expected non-nil value")
 		}
-		return nil
-	}); err != nil {
-		t.Fatalf("Error selecting database: %s", err.Error())
-	}
 
-	// add new user with same username to database, expect error
-	if err := database.Update(func(tx Transaction) error {
-		group := NewGroup(fakeUserID, fakeGroupname1)
-		return group.Save(tx)
-	}); err == nil {
-		t.Error("Expected error saving group with non-unique name.")
+		if len(groups) != 10 {
+			t.Errorf("bad number of groups, expected %d, actual %d", 20, len(groups))
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		t.Fatalf("Error reading groups: %s", err.Error())
 	}
 
 }

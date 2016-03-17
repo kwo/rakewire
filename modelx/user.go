@@ -1,32 +1,37 @@
 package model
 
+//go:generate gokv $GOFILE
+
 import (
 	"crypto/md5"
 	"encoding/hex"
 	"golang.org/x/crypto/bcrypt"
 )
 
-const (
-	entityUser         = "User"
-	indexUserUsername  = "Username"
-	indexUserFeverhash = "Feverhash"
-)
-
-var (
-	indexesUser = []string{
-		indexUserFeverhash, indexUserUsername,
-	}
-)
-
-// Users is a collection of User objects
-type Users []*User
-
-// User defines a system user
+//User defines a system user
 type User struct {
 	ID           string `json:"id"`
-	Username     string `json:"username"`
+	Username     string `json:"username" kv:"+required,+groupby,Username:1:lower"`
 	PasswordHash string `json:"passwordhash"`
-	FeverHash    string `json:"feverhash"`
+	FeverHash    string `json:"feverhash" kv:"FeverHash:1"`
+}
+
+// NewUser creates a new user with the specified username
+func NewUser(username string) *User {
+	return &User{
+		Username: username,
+	}
+}
+
+func (z *User) setID(fn fnUniqueID) error {
+	if z.ID == empty {
+		if id, err := fn(); err == nil {
+			z.ID = id
+		} else {
+			return err
+		}
+	}
+	return nil
 }
 
 // SetPassword updates the password hashes.

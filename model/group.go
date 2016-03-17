@@ -1,29 +1,40 @@
 package model
 
-//go:generate gokv $GOFILE
+const (
+	entityGroup        = "Group"
+	indexGroupUserName = "UserName"
+)
 
-//Group defines a group of feeds for a user
+var (
+	indexesGroup = []string{
+		indexGroupUserName,
+	}
+)
+
+// Groups is a collection of Group elements
+type Groups []*Group
+
+// ByID groups elements in the Groups collection by ID
+func (z Groups) ByID() map[string]*Group {
+	result := make(map[string]*Group)
+	for _, group := range z {
+		result[group.ID] = group
+	}
+	return result
+}
+
+// ByName groups elements in the Groups collection by Name
+func (z Groups) ByName() map[string]*Group {
+	result := make(map[string]*Group)
+	for _, group := range z {
+		result[group.Name] = group
+	}
+	return result
+}
+
+// Group defines an item status for a user
 type Group struct {
-	ID     string `json:"id" kv:"+groupby"`
-	UserID string `json:"userID" kv:"+required,UserGroup:1"`
-	Name   string `json:"name" kv:"+required,+groupby,UserGroup:2:lower"`
-}
-
-// NewGroup creates a new group with the specified user
-func NewGroup(userID string, name string) *Group {
-	return &Group{
-		UserID: userID,
-		Name:   name,
-	}
-}
-
-func (z *Group) setID(fn fnUniqueID) error {
-	if z.ID == empty {
-		if id, err := fn(); err == nil {
-			z.ID = id
-		} else {
-			return err
-		}
-	}
-	return nil
+	ID     string `json:"id"`
+	UserID string `json:"userId"`
+	Name   string `json:"name"`
 }

@@ -1,15 +1,18 @@
 package model
 
 import (
-	"bytes"
 	"github.com/boltdb/bolt"
-	semver "github.com/hashicorp/go-version"
 	"sync"
 	"time"
 )
 
-// OpenDatabase opens the database at the specified location
-func OpenDatabase(location string) (Database, error) {
+// Instance allows opening and closing new Databases
+var Instance = &boltInstance{}
+
+type boltInstance struct{}
+
+// Open opens the store at the specified location
+func (z *boltInstance) Open(location string) (Database, error) {
 
 	boltDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
@@ -24,18 +27,18 @@ func OpenDatabase(location string) (Database, error) {
 		return nil, err
 	}
 
-	return newBoltDatabase(boltDB), nil
+	return &boltDatabase{db: boltDB}, nil
 
 }
 
-// CloseDatabase properly closes database resource
-func CloseDatabase(d Database) error {
+// Close properly closes store resource
+func (z *boltInstance) Close(db Database) error {
 
-	if d == nil {
+	if db == nil {
 		return nil
 	}
 
-	boltDB := d.(*boltDatabase).db
+	boltDB := db.(*boltDatabase).db
 
 	if err := boltDB.Close(); err != nil {
 		return err
@@ -43,35 +46,6 @@ func CloseDatabase(d Database) error {
 
 	return nil
 
-}
-
-// CheckDatabaseIntegrity checks the database integrity.
-func CheckDatabaseIntegrity(location string) error {
-	return checkIntegrity(location)
-}
-
-// CheckDatabaseIntegrityIf checks the database integrity only if the database version differs from the app version.
-func CheckDatabaseIntegrityIf(location string) error {
-
-	dbVersion, err := semver.NewVersion(getDatabaseVersion(location))
-	if err != nil {
-		return err
-	}
-
-	appVersion, err := semver.NewVersion(Version)
-	if err != nil {
-		return err
-	}
-
-	if dbVersion.LessThan(appVersion) {
-		return checkIntegrity(location)
-	}
-
-	return nil
-}
-
-func newBoltDatabase(boltDB *bolt.DB) Database {
-	return &boltDatabase{db: boltDB}
 }
 
 type boltDatabase struct {
@@ -138,152 +112,16 @@ func (z *boltBucket) Cursor() Cursor {
 	return &boltCursor{cursor: cursor}
 }
 
-func (z *boltBucket) Delete(key string) error {
-	return z.bucket.Delete([]byte(key))
+func (z *boltBucket) Delete(key []byte) error {
+	return z.bucket.Delete(key)
 }
 
-func (z *boltBucket) DeleteRecord(id string) error {
-
-	keys := [][]byte{}
-
-	c := z.bucket.Cursor()
-	min, max := kvKeyMinMax(id)
-	for k, _ := c.Seek([]byte(min)); k != nil && bytes.Compare(k, []byte(max)) <= 0; k, _ = c.Next() {
-		keys = append(keys, k)
-		// do not delete in a cursor, it is buggy, sometimes advancing the position
-	} // for loop
-
-	for _, k := range keys {
-		if err := z.bucket.Delete(k); err != nil {
-			return err
-		}
-	}
-
-	return nil
-
+func (z *boltBucket) Get(key []byte) []byte {
+	return z.bucket.Get(key)
 }
 
-func (z *boltBucket) Get(key string) string {
-	return string(z.bucket.Get([]byte(key)))
-}
-
-// GetIndex retrieves a Record from the given bucket looking up its ID in the current index bucket.
-func (z *boltBucket) GetIndex(b Bucket, id string) Record {
-
-	if value := z.bucket.Get([]byte(id)); value != nil {
-		return b.GetRecord(string(value))
-	}
-
-	return nil
-
-}
-
-func (z *boltBucket) GetRecord(id string) Record {
-
-	found := false
-	record := make(Record)
-
-	c := z.bucket.Cursor()
-	min, max := kvKeyMinMax(id)
-	for k, v := c.Seek([]byte(min)); k != nil && bytes.Compare(k, []byte(max)) <= 0; k, v = c.Next() {
-		// assume proper key format of ID/fieldname
-		fieldname := kvKeyDecode(k)[1]
-		record[fieldname] = string(v)
-		found = true
-	} // for loop
-
-	if !found {
-		return nil
-	}
-
-	return record
-
-}
-
-func (z *boltBucket) Iterate(onRecord OnRecord) error {
-
-	firstRow := false
-	var id, lastID string
-	record := make(Record)
-
-	err := z.bucket.ForEach(func(key, value []byte) error {
-
-		elements := kvKeyDecode(key)
-		id = elements[0]
-		fieldname := elements[1]
-
-		if !firstRow {
-			lastID = id
-			firstRow = true
-		}
-
-		if id != lastID {
-			if err := onRecord(lastID, record); err != nil {
-				return err
-			}
-			// reset
-			lastID = id
-			record = make(Record)
-		} // id switch
-
-		record[fieldname] = string(value)
-		return nil
-
-	}) // for each
-
-	if err != nil {
-		return err
-	}
-
-	// fire last one
-	if len(record) > 0 {
-		if err := onRecord(id, record); err != nil {
-			return err
-		}
-	}
-
-	return nil
-
-}
-
-func (z *boltBucket) IterateIndex(b Bucket, minID, maxID string, onRecord OnRecord) error {
-
-	min := []byte(minID)
-	max := []byte(maxID)
-	c := z.bucket.Cursor()
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-		id := string(v)
-		if record := b.GetRecord(id); record != nil {
-			if err := onRecord(id, record); err != nil {
-				return err
-			}
-		}
-	} // for loop
-
-	return nil
-
-}
-
-func (z *boltBucket) Put(key, value string) error {
-	return z.bucket.Put([]byte(key), []byte(value))
-}
-
-func (z *boltBucket) PutRecord(id string, record Record) error {
-
-	if err := z.DeleteRecord(id); err != nil {
-		return err
-	}
-
-	for fieldname, v := range record {
-		key := []byte(kvKeyEncode(id, fieldname))
-		value := []byte(v)
-		if err := z.bucket.Put(key, value); err != nil {
-			return err
-		}
-	}
-
-	return nil
-
+func (z *boltBucket) Put(key, value []byte) error {
+	return z.bucket.Put(key, value)
 }
 
 type boltCursor struct {

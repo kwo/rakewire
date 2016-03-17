@@ -4,38 +4,55 @@ import (
 	"time"
 )
 
-//go:generate gokv $GOFILE
+const (
+	entityEntry               = "Entry"
+	indexEntryFeedReadUpdated = "FeedReadUpdated"
+	indexEntryFeedStarUpdated = "FeedStarUpdated"
+	indexEntryFeedUpdated     = "FeedUpdated"
+	indexEntryReadUpdated     = "ReadUpdated"
+	indexEntryStarUpdated     = "StarUpdated"
+	indexEntryUpdated         = "Updated"
+)
 
-// Entry defines an item's status for a specific user.
+var (
+	indexesEntry = []string{
+		indexEntryFeedReadUpdated, indexEntryFeedStarUpdated, indexEntryFeedUpdated, indexEntryReadUpdated, indexEntryStarUpdated, indexEntryUpdated,
+	}
+)
+
+// Entries is a collection of Entry elements
+type Entries []*Entry
+
+// Reverse reverses the order of the collection
+func (z Entries) Reverse() {
+	for left, right := 0, len(z)-1; left < right; left, right = left+1, right-1 {
+		z[left], z[right] = z[right], z[left]
+	}
+}
+
+// Unique returns an array of unique Entry elements
+func (z Entries) Unique() Entries {
+
+	uniques := make(map[string]*Entry)
+	for _, entry := range z {
+		uniques[entry.GetID()] = entry
+	}
+
+	entries := Entries{}
+	for _, entry := range uniques {
+		entries = append(entries, entry)
+	}
+
+	return entries
+
+}
+
+// Entry defines an item status for a user
 type Entry struct {
-	ID             string    `json:"id" kv:"Read:4,Star:4,User:2"`
-	UserID         string    `json:"userID" kv:"+required,Read:1,Star:1,User:1"`
-	ItemID         string    `json:"itemID" kv:"+required"`
-	SubscriptionID string    `json:"subscriptionID" kv:"+required"` // TODO: necessary?
-	Updated        time.Time `json:"updated,omitempty" kv:"Read:3,Star:3"`
-	IsRead         bool      `json:"read,omitempty" kv:"Read:2"`
-	IsStar         bool      `json:"star,omitempty" kv:"Star:2"`
-	Item           *Item     `json:"-" kv:"-"`
-}
-
-// NewEntry returns a new Entry object
-func NewEntry(userID, itemID, subscriptionID string) *Entry {
-
-	return &Entry{
-		UserID:         userID,
-		ItemID:         itemID,
-		SubscriptionID: subscriptionID,
-	}
-
-}
-
-func (z *Entry) setID(fn fnUniqueID) error {
-	if z.ID == empty {
-		if id, err := fn(); err == nil {
-			z.ID = id
-		} else {
-			return err
-		}
-	}
-	return nil
+	UserID  string    `json:"userId"`
+	ItemID  string    `json:"itemId"`
+	FeedID  string    `json:"feedId"`
+	Updated time.Time `json:"updated,omitempty"`
+	Read    bool      `json:"read,omitempty"`
+	Star    bool      `json:"star,omitempty"`
 }

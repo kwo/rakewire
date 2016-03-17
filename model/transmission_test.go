@@ -5,101 +5,220 @@ import (
 	"time"
 )
 
-func TestNewTransmission(t *testing.T) {
+func TestTransmissionSetup(t *testing.T) {
 
 	t.Parallel()
 
-	fl := NewTransmission(kvKeyUintEncode(123))
-
-	if fl == nil {
-		t.Fatalf("Transmission factory not returning a valid transmission")
+	if obj := getObject(entityTransmission); obj == nil {
+		t.Error("missing getObject entry")
 	}
 
-	if fl.ID != empty {
-		t.Errorf("Factory method should not set th ID, expected empty, actual %d", fl.ID)
+	if obj := allEntities[entityTransmission]; obj == nil {
+		t.Error("missing allEntities entry")
 	}
 
-	if fl.FeedID != kvKeyUintEncode(123) {
-		t.Errorf("Factory method not setting FeedID properly, expected %s, actual %s", "123", fl.FeedID)
+	c := &Config{}
+	if obj := c.Sequences.Transmission; obj != 0 {
+		t.Error("missing sequences entry")
 	}
 
 }
 
-func TestTransmissionSerialize(t *testing.T) {
+func TestTransmissionGetBadID(t *testing.T) {
 
 	t.Parallel()
 
-	fl := getNewTransmission()
-	validateTransmission(t, fl)
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
 
-	data := fl.serialize()
-	if data == nil {
-		t.Fatal("Transmission serialize returned a nil map")
+	err := db.Select(func(tx Transaction) error {
+		if transmission := T.Get(tx, empty); transmission != nil {
+			t.Error("Expected nil transmission")
+		}
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Error selecting from database: %s", err.Error())
 	}
-
-	fl2 := &Transmission{}
-	if err := fl2.deserialize(data); err != nil {
-		t.Fatalf("Transmission deserialize returned an error: %s", err.Error())
-	}
-	validateTransmission(t, fl2)
 
 }
 
-func getNewTransmission() *Transmission {
+func TestTransmissions(t *testing.T) {
 
-	dt := time.Date(2015, time.November, 26, 13, 55, 0, 0, time.Local)
+	t.Parallel()
 
-	fl := NewTransmission(kvKeyUintEncode(123))
-	fl.ID = kvKeyUintEncode(1)
-	fl.ContentLength = 0
-	fl.ContentType = "text/plain"
-	fl.Duration = 6 * time.Second
-	fl.ETag = "etag"
-	fl.Flavor = "flavor"
-	fl.Generator = ""
-	//fl.LastModified = dt
-	fl.LastUpdated = dt
-	fl.Result = FetchResultOK
-	fl.ResultMessage = "message"
-	fl.StartTime = dt
-	fl.StatusCode = 200
-	fl.Title = "title"
-	fl.URL = "url"
-	fl.UsesGzip = false
-	fl.NewItems = 2
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
 
-	return fl
+	transmissionID := empty
+	feedID := "0000000002"
+
+	// add transmission
+	err := db.Update(func(tx Transaction) error {
+
+		transmission := T.New(feedID)
+		if err := T.Save(tx, transmission); err != nil {
+			return err
+		}
+		transmissionID = transmission.ID
+
+		return nil
+
+	})
+	if err != nil {
+		t.Errorf("Error adding transmission: %s", err.Error())
+	}
+
+	// test by id
+	err = db.Select(func(tx Transaction) error {
+
+		transmission := T.Get(tx, transmissionID)
+		if transmission == nil {
+			t.Fatal("Nil transmission, expected valid transmission")
+		}
+		if transmission.ID != transmissionID {
+			t.Errorf("transmission ID mismatch, expected %s, actual %s", transmissionID, transmission.ID)
+		}
+		if transmission.FeedID != feedID {
+			t.Errorf("transmission FeedID mismatch, expected %s, actual %s", feedID, transmission.URL)
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		t.Errorf("Error selecting transmission: %s", err.Error())
+	}
+
+	// delete transmission
+	err = db.Update(func(tx Transaction) error {
+		if err := T.Delete(tx, transmissionID); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Error deleting transmission: %s", err.Error())
+	}
+
+	// test by id
+	err = db.Select(func(tx Transaction) error {
+		transmission := T.Get(tx, transmissionID)
+		if transmission != nil {
+			t.Error("Expected nil transmission")
+		}
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Error selecting transmission: %s", err.Error())
+	}
 
 }
 
-func validateTransmission(t *testing.T, fl *Transmission) {
+func TestTransmissionRanges(t *testing.T) {
 
-	dt := time.Date(2015, time.November, 26, 13, 55, 0, 0, time.Local)
+	t.Parallel()
 
-	assertNotNil(t, fl)
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
 
-	if fl.ID != kvKeyUintEncode(1) {
-		t.Errorf("Transmission ID incorrect, expected %d, actual %d", 0, fl.ID)
+	feedID1 := "0000000010"
+	feedID2 := "0000000020"
+	now := time.Now().Truncate(time.Second)
+
+	// add transmissions
+	err := db.Update(func(tx Transaction) error {
+
+		latest := now.Add(-10 * 100 * time.Minute)
+
+		for i := 0; i < 100; i++ {
+			var feedID string
+			if i%2 == 0 {
+				feedID = feedID2
+			} else {
+				feedID = feedID1
+			}
+			latest = latest.Add(10 * time.Minute)
+			transmission := T.New(feedID)
+			transmission.StartTime = latest
+			if err := T.Save(tx, transmission); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		t.Errorf("Error adding transmissions: %s", err.Error())
 	}
 
-	assertEqual(t, 0, fl.ContentLength)
-	assertEqual(t, "text/plain", fl.ContentType)
-	assertEqual(t, 6*time.Second, fl.Duration)
-	assertEqual(t, "etag", fl.ETag)
-	if fl.FeedID != kvKeyUintEncode(123) {
-		t.Errorf("FeedIDs do not match, expected %d, actual %d", 123, fl.FeedID)
+	// get last transmission
+	err = db.Select(func(tx Transaction) error {
+
+		transmission := T.GetLast(tx)
+
+		if transmission == nil {
+			t.Fatalf("Cannot get last transmission")
+		}
+
+		if transmission.ID != "0000000100" {
+			t.Errorf("Bad transmissionID: %s", transmission.ID)
+		}
+
+		if transmission.FeedID != "0000000010" {
+			t.Errorf("Bad transmission FeedID: %s", transmission.FeedID)
+		}
+
+		if transmission.StartTime.Unix() != now.Unix() {
+			t.Errorf("Bad transmission StartTime: %v, expected: %v", transmission.StartTime, now)
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		t.Errorf("Error selecting transmissions: %s", err.Error())
 	}
-	assertEqual(t, "flavor", fl.Flavor)
-	assertEqual(t, "", fl.Generator)
-	assertEqual(t, time.Time{}.UnixNano(), fl.LastModified.UnixNano())
-	assertEqual(t, dt.UnixNano(), fl.LastUpdated.UnixNano())
-	assertEqual(t, FetchResultOK, fl.Result)
-	assertEqual(t, "message", fl.ResultMessage)
-	assertEqual(t, dt.UnixNano(), fl.StartTime.UnixNano())
-	assertEqual(t, 200, fl.StatusCode)
-	assertEqual(t, "title", fl.Title)
-	assertEqual(t, "url", fl.URL)
-	assertEqual(t, false, fl.UsesGzip)
-	assertEqual(t, 2, fl.NewItems)
+
+	// get feed2 in the last hour transmissions
+	err = db.Select(func(tx Transaction) error {
+
+		transmissions := T.GetForFeed(tx, feedID2, time.Hour)
+
+		if transmissions == nil {
+			t.Fatalf("Cannot get last transmissions")
+		}
+
+		if len(transmissions) != 3 {
+			t.Errorf("Bad transmission count: %d, expected %d", len(transmissions), 3)
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		t.Errorf("Error selecting transmissions: %s", err.Error())
+	}
+
+	// get all in the last hour
+	err = db.Select(func(tx Transaction) error {
+
+		transmissions := T.GetRange(tx, now, time.Hour)
+
+		if transmissions == nil {
+			t.Fatalf("Cannot get last transmissions")
+		}
+
+		if len(transmissions) != 6 {
+			t.Errorf("Bad transmission count: %d, expected %d", len(transmissions), 6)
+		}
+
+		return nil
+
+	})
+	if err != nil {
+		t.Errorf("Error selecting transmissions: %s", err.Error())
+	}
 
 }

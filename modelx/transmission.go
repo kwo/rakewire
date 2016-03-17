@@ -1,48 +1,19 @@
 package model
 
+//go:generate gokv $GOFILE
+
 import (
 	"time"
 )
 
-const (
-	entityTransmission        = "Transmission"
-	indexTransmissionTime     = "Time"
-	indexTransmissionFeedTime = "FeedTime"
-)
-
-var (
-	indexesTransmission = []string{
-		indexTransmissionTime, indexTransmissionFeedTime,
-	}
-)
-
-// FetchResults
-const (
-	FetchResultOK          = "OK"
-	FetchResultRedirect    = "MV" // message contains old URL -> new URL
-	FetchResultClientError = "EC" // message contains error text
-	FetchResultServerError = "ES" // check http status code
-	FetchResultFeedError   = "FP" // cannot parse feed
-)
-
-// Transmissions is a collection Transmission objects
-type Transmissions []*Transmission
-
-// Reverse reverses the order of the collection
-func (z Transmissions) Reverse() {
-	for left, right := 0, len(z)-1; left < right; left, right = left+1, right-1 {
-		z[left], z[right] = z[right], z[left]
-	}
-}
-
 // Transmission represents an attempted HTTP request to a feed
 type Transmission struct {
-	ID            string        `json:"id"`
-	FeedID        string        `json:"feedId"`
+	ID            string        `json:"id" kv:"Time:2"`
+	FeedID        string        `json:"feedID" kv:"+required,FeedTime:1"`
 	Duration      time.Duration `json:"duration"`
 	Result        string        `json:"result,omitempty"`
 	ResultMessage string        `json:"resultMessage,omitempty"`
-	StartTime     time.Time     `json:"startTime"`
+	StartTime     time.Time     `json:"startTime" kv:"Time:1,FeedTime:2"`
 	URL           string        `json:"url"`
 	ContentLength int           `json:"contentLength,omitempty"`
 	ContentType   string        `json:"contentType,omitempty"`
@@ -56,4 +27,31 @@ type Transmission struct {
 	LastUpdated   time.Time     `json:"lastUpdated,omitempty"`
 	ItemCount     int           `json:"itemCount,omitempty"`
 	NewItems      int           `json:"newItems,omitempty"`
+}
+
+// FetchResults
+const (
+	FetchResultOK          = "OK"
+	FetchResultRedirect    = "MV" // message contains old URL -> new URL
+	FetchResultClientError = "EC" // message contains error text
+	FetchResultServerError = "ES" // check http status code
+	FetchResultFeedError   = "FP" // cannot parse feed
+)
+
+// NewTransmission instantiates a new Transmission with the required fields set.
+func NewTransmission(feedID string) *Transmission {
+	return &Transmission{
+		FeedID: feedID,
+	}
+}
+
+func (z *Transmission) setID(fn fnUniqueID) error {
+	if z.ID == empty {
+		if id, err := fn(); err == nil {
+			z.ID = id
+		} else {
+			return err
+		}
+	}
+	return nil
 }

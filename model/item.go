@@ -1,43 +1,65 @@
 package model
 
-//go:generate gokv $GOFILE
-
 import (
 	"crypto/sha256"
 	"encoding/hex"
 	"time"
 )
 
+const (
+	entityItem    = "Item"
+	indexItemGUID = "GUID"
+)
+
+var (
+	indexesItem = []string{
+		indexItemGUID,
+	}
+)
+
+// Items is a collection Item objects
+type Items []*Item
+
+// ByID maps items to their ID
+func (z Items) ByID() map[string]*Item {
+	result := make(map[string]*Item)
+	for _, item := range z {
+		result[item.ID] = item
+	}
+	return result
+}
+
+// ByURL maps items to their URL
+func (z Items) ByURL() map[string]*Item {
+	result := make(map[string]*Item)
+	for _, item := range z {
+		result[item.URL] = item
+	}
+	return result
+}
+
+// GroupByFeedID groups collections of elements in Items by FeedID
+func (z Items) GroupByFeedID() map[string]Items {
+	result := make(map[string]Items)
+	for _, item := range z {
+		a := result[item.FeedID]
+		a = append(a, item)
+		result[item.FeedID] = a
+	}
+	return result
+}
+
 // Item from a feed
 type Item struct {
 	ID      string    `json:"id"`
-	GUID    string    `json:"guid" kv:"+groupby,GUID:2"`
-	FeedID  string    `json:"feedID" kv:"+required,+groupall,GUID:1"`
+	GUID    string    `json:"guid" `
+	FeedID  string    `json:"feedId"`
 	Created time.Time `json:"created,omitempty"`
 	Updated time.Time `json:"updated,omitempty"`
 	URL     string    `json:"url,omitempty"`
 	Author  string    `json:"author,omitempty"`
 	Title   string    `json:"title,omitempty"`
 	Content string    `json:"content,omitempty"`
-}
-
-// NewItem instantiate a new Item object
-func NewItem(feedID string, guID string) *Item {
-	return &Item{
-		FeedID: feedID,
-		GUID:   guID,
-	}
-}
-
-func (z *Item) setID(fn fnUniqueID) error {
-	if z.ID == empty {
-		if id, err := fn(); err == nil {
-			z.ID = id
-		} else {
-			return err
-		}
-	}
-	return nil
 }
 
 // Hash generated a fingerprint for the item to test if it has been updated or not.

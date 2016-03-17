@@ -4,36 +4,56 @@ import (
 	"testing"
 )
 
+func TestConfigSetup(t *testing.T) {
+
+	t.Parallel()
+
+	if obj := getObject(entityConfig); obj == nil {
+		t.Error("missing getObject entry")
+	}
+
+	if obj := allEntities[entityConfig]; obj == nil {
+		t.Error("missing allEntities entry")
+	}
+
+}
+
 func TestConfig(t *testing.T) {
+
+	t.Parallel()
 
 	database := openTestDatabase(t)
 	defer closeTestDatabase(t, database)
 
-	config := NewConfiguration()
-	config.Set("hello", "world")
-	err := database.Update(func(tx Transaction) error {
-		if err := config.Save(tx); err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		t.Fatalf("Cannot save to database: %s", err.Error())
+	loglevel := "TRACE"
+	var userID uint64 = 1
+
+	// get, update config
+	if err := database.Update(func(tx Transaction) error {
+		config := C.Get(tx)
+		config.LoggingLevel = loglevel
+		config.Sequences.User = userID
+		return C.Put(tx, config)
+	}); err != nil {
+		t.Fatalf("Error retrieving config: %s", err.Error())
 	}
 
-	config = NewConfiguration()
-	err = database.Select(func(tx Transaction) error {
-		if err := config.Load(tx); err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		t.Fatalf("Cannot load from database: %s", err.Error())
-	}
+	// get, compare config
+	if err := database.Select(func(tx Transaction) error {
+		config := C.Get(tx)
 
-	if value := config.Get("hello", ""); value != "world" {
-		t.Errorf("Expected %s, actual %s", "world", value)
+		if config.LoggingLevel != loglevel {
+			t.Errorf("Bad loglevel, expected %s, actual %s", loglevel, config.LoggingLevel)
+		}
+
+		if config.Sequences.User != userID {
+			t.Errorf("Bad user sequence, expected %d, actual %d", config.Sequences.User, userID)
+		}
+
+		return nil
+
+	}); err != nil {
+		t.Fatalf("Error retrieving config: %s", err.Error())
 	}
 
 }

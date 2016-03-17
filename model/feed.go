@@ -6,48 +6,44 @@ import (
 	"time"
 )
 
+const (
+	entityFeed         = "Feed"
+	indexFeedNextFetch = "NextFetch"
+	indexFeedURL       = "URL"
+)
+
+var (
+	indexesFeed = []string{
+		indexFeedNextFetch, indexFeedURL,
+	}
+)
+
+// Feeds is a collection of Feed elements
+type Feeds []*Feed
+
+// ByURL groups elements in the Feeds collection by URL
+func (z Feeds) ByURL() map[string]*Feed {
+	result := make(map[string]*Feed)
+	for _, feed := range z {
+		result[feed.URL] = feed
+	}
+	return result
+}
+
 // Feed feed descriptor
 type Feed struct {
-	ID            string        `json:"id" kv:"NextFetch:2"`
-	URL           string        `json:"url" kv:"+required,+groupall,URL:1:lower"`
-	SiteURL       string        `json:"siteURL,omitempty"`
-	ETag          string        `json:"etag,omitempty"`
-	LastModified  time.Time     `json:"lastModified,omitempty"`
-	LastUpdated   time.Time     `json:"lastUpdated,omitempty"`
-	NextFetch     time.Time     `json:"nextFetch,omitempty" kv:"NextFetch:1"`
-	Notes         string        `json:"notes,omitempty"`
-	Title         string        `json:"title,omitempty"`
-	Status        string        `json:"status,omitempty"`
-	StatusMessage string        `json:"statusMessage,omitempty"`
-	StatusSince   time.Time     `json:"statusSince,omitempty"` // time of last status
-	Transmission  *Transmission `json:"-" kv:"-"`
-	Items         []*Item       `json:"-" kv:"-"`
-}
-
-// NewFeed instantiate a new Feed object
-func NewFeed(url string) *Feed {
-	return &Feed{
-		URL:       url,
-		NextFetch: time.Now().Truncate(time.Second),
-	}
-}
-
-func (z *Feed) setID(fn fnUniqueID) error {
-	if z.ID == empty {
-		if id, err := fn(); err == nil {
-			z.ID = id
-		} else {
-			return err
-		}
-	}
-	return nil
-}
-
-// AddItem to the feed
-func (z *Feed) AddItem(guID string) *Item {
-	item := NewItem(z.ID, guID)
-	z.Items = append(z.Items, item)
-	return item
+	ID            string    `json:"id"`
+	URL           string    `json:"url"`
+	SiteURL       string    `json:"siteURL,omitempty"`
+	ETag          string    `json:"etag,omitempty"`
+	LastModified  time.Time `json:"lastModified,omitempty"`
+	LastUpdated   time.Time `json:"lastUpdated,omitempty"`
+	NextFetch     time.Time `json:"nextFetch,omitempty"`
+	Notes         string    `json:"notes,omitempty"`
+	Title         string    `json:"title,omitempty"`
+	Status        string    `json:"status,omitempty"`
+	StatusMessage string    `json:"statusMessage,omitempty"`
+	StatusSince   time.Time `json:"statusSince,omitempty"` // time of last status
 }
 
 // UpdateFetchTime increases the fetch interval
