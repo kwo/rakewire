@@ -24,7 +24,7 @@ func openTestDatabase(t *testing.T) model.Database {
 	f.Close()
 	location := f.Name()
 
-	boltDB, err := model.OpenDatabase(location)
+	boltDB, err := model.Instance.Open(location)
 	if err != nil {
 		t.Fatalf("Cannot open database: %s", err.Error())
 	}
@@ -44,7 +44,7 @@ func closeTestDatabase(t *testing.T, d model.Database) {
 
 	location := d.Location()
 
-	if err := model.CloseDatabase(d); err != nil {
+	if err := model.Instance.Close(d); err != nil {
 		t.Errorf("Cannot close database: %s", err.Error())
 	}
 

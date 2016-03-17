@@ -6,17 +6,18 @@ import (
 	"log"
 	"net/http"
 	"rakewire/model"
+	"rakewire/opml"
 )
 
 func (z *API) opmlExport(w http.ResponseWriter, req *http.Request) {
 
 	user := context.Get(req, "user").(*model.User)
 
-	var opml *model.OPML
+	var opmldoc *opml.OPML
 	err := z.db.Select(func(tx model.Transaction) error {
-		doc, err := model.OPMLExport(user, tx)
+		doc, err := opml.Export(tx, user)
 		if err == nil {
-			opml = doc
+			opmldoc = doc
 		}
 		return err
 	})
@@ -28,7 +29,7 @@ func (z *API) opmlExport(w http.ResponseWriter, req *http.Request) {
 
 	w.Header().Set(hContentType, "application/xml")
 	w.WriteHeader(http.StatusOK)
-	err = model.OPMLFormat(opml, w)
+	err = opml.Format(opmldoc, w)
 	if err != nil {
 		log.Printf("%-7s %-7s Error formatting OPML: %s", logWarn, logName, err.Error())
 	}
@@ -39,7 +40,7 @@ func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
 
 	user := context.Get(req, "user").(*model.User)
 
-	opml, err := model.OPMLParse(req.Body)
+	opmldoc, err := opml.Parse(req.Body)
 	if err != nil {
 		message := fmt.Sprintf("Error parsing OPML: %s\n", err.Error())
 		log.Printf("%-7s %-7s %s", logWarn, logName, message)
@@ -49,9 +50,8 @@ func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	replace := req.URL.Query().Get("replace") == "true"
 	err = z.db.Update(func(tx model.Transaction) error {
-		return model.OPMLImport(user.ID, opml, replace, tx)
+		return opml.Import(tx, user.ID, opmldoc)
 	})
 
 	if err != nil {

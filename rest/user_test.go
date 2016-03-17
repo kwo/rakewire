@@ -16,10 +16,10 @@ func TestUserGet(t *testing.T) {
 	defer closeTestDatabase(t, database)
 
 	// add test user
-	user := model.NewUser("testuser")
+	user := model.U.New("testuser")
 	user.SetPassword("abcdefg")
 	err := database.Update(func(tx model.Transaction) error {
-		return user.Save(tx)
+		return model.U.Save(tx, user)
 	})
 	if err != nil {
 		t.Fatalf("Cannot save user: %s", err.Error())
