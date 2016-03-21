@@ -2,7 +2,6 @@ package fever
 
 import (
 	"github.com/antonholmquist/jason"
-	"rakewire/model"
 	"testing"
 )
 
@@ -14,18 +13,7 @@ func TestItemsAll(t *testing.T) {
 	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
-
-	var user *model.User
-	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
-		}
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
-	}
+	user := getUser(t, database)
 
 	var totalItems int64 = 40
 	var expectedNumberItems = 40
@@ -80,18 +68,7 @@ func TestItemsNext(t *testing.T) {
 	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
-
-	var user *model.User
-	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
-		}
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
-	}
+	user := getUser(t, database)
 
 	var sinceID = "20"
 	var totalItems int64 = 40
@@ -147,18 +124,7 @@ func TestItemsPrev(t *testing.T) {
 	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
-
-	var user *model.User
-	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
-		}
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
-	}
+	user := getUser(t, database)
 
 	var maxID = "20"
 	var totalItems int64 = 40
@@ -214,18 +180,7 @@ func TestItemsByID(t *testing.T) {
 	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
-
-	var user *model.User
-	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
-		}
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
-	}
+	user := getUser(t, database)
 
 	var withIDs = "15,37,8"
 	var totalItems int64 = 40

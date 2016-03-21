@@ -73,6 +73,33 @@ func (z *entryStore) New(userID, itemID, feedID string) *Entry {
 	}
 }
 
+// Range returns Entries for the given user by internal ID.
+func (z *entryStore) Range(tx Transaction, userID string, ids ...string) Entries {
+
+	entries := Entries{}
+
+	// bucket Entry = UserID|ItemID : value
+	c := tx.Bucket(bucketData, entityEntry).Cursor()
+	min, max := keyMinMax(userID)
+	switch len(ids) {
+	case 1:
+		min = []byte(keyEncode(userID, ids[0]))
+	case 2:
+		min = []byte(keyEncode(userID, ids[0]))
+		max = keyMax(keyEncode(userID, ids[1]))
+	}
+
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
+		entryID := string(v)
+		if entry := E.Get(tx, entryID); entry != nil {
+			entries = append(entries, entry)
+		}
+	}
+
+	return entries
+
+}
+
 func (z *entryStore) Save(tx Transaction, entry *Entry) error {
 	return save(tx, entityEntry, entry)
 }
@@ -114,9 +141,9 @@ func (z *entryQuery) Min(min time.Time) *entryQuery {
 	return z
 }
 
-func (z *entryQuery) Count() int {
+func (z *entryQuery) Count() uint {
 
-	result := 0
+	var result uint
 
 	var c Cursor
 	var min, nxt []byte

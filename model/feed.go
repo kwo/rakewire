@@ -21,6 +21,15 @@ var (
 // Feeds is a collection of Feed elements
 type Feeds []*Feed
 
+// ByID groups elements in the Feeds collection by ID
+func (z Feeds) ByID() map[string]*Feed {
+	result := make(map[string]*Feed)
+	for _, feed := range z {
+		result[feed.ID] = feed
+	}
+	return result
+}
+
 // ByURL groups elements in the Feeds collection by URL
 func (z Feeds) ByURL() map[string]*Feed {
 	result := make(map[string]*Feed)

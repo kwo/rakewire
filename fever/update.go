@@ -25,29 +25,25 @@ func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx 
 	switch mark {
 	case "item":
 
-		items, err := model.EntriesByUser(userID, []string{encodeID(idStr)}, tx)
-		if err != nil {
-			return err
+		entry := model.E.Get(tx, userID, encodeID(idStr))
+		if entry == nil {
+			return fmt.Errorf("Entry not found: %s", idStr)
 		}
-		if len(items) != 1 {
-			return fmt.Errorf("User item not found: %s", idStr)
-		}
-		item := items[0]
 
 		switch pAs {
 		case "read":
-			item.IsRead = true
+			entry.Read = true
 		case "unread":
-			item.IsRead = false
+			entry.Read = false
 		case "saved":
-			item.IsStar = true
+			entry.Star = true
 		case "unsaved":
-			item.IsStar = false
+			entry.Star = false
 		default:
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
 
-		if err := model.EntriesSave([]*model.Entry{item}, tx); err != nil {
+		if err := model.E.Save(tx, entry); err != nil {
 			return err
 		}
 
@@ -55,8 +51,12 @@ func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx 
 		if pAs != "read" {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		// TODO: first query then use EntriesSave to mark
-		if err := model.EntriesUpdateReadByFeed(userID, encodeID(idStr), maxTime, true, tx); err != nil {
+		feedID := encodeID(idStr)
+		entries := model.E.Query(tx, userID).Feed(feedID).Max(maxTime).Unread()
+		for _, entry := range entries {
+			entry.Read = false
+		}
+		if err := model.E.SaveAll(tx, entries); err != nil {
 			return err
 		}
 
@@ -64,9 +64,16 @@ func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx 
 		if pAs != "read" {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		// TODO: first query then use EntriesSave to mark
-		if err := model.EntriesUpdateReadByGroup(userID, encodeID(idStr), maxTime, true, tx); err != nil {
-			return err
+		groupID := encodeID(idStr)
+		subscriptions := model.S.GetForUser(tx, userID).WithGroup(groupID)
+		for _, subscription := range subscriptions {
+			entries := model.E.Query(tx, userID).Feed(subscription.FeedID).Max(maxTime).Unread()
+			for _, entry := range entries {
+				entry.Read = false
+			}
+			if err := model.E.SaveAll(tx, entries); err != nil {
+				return err
+			}
 		}
 
 	default:

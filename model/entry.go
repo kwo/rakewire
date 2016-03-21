@@ -24,10 +24,11 @@ var (
 type Entries []*Entry
 
 // Reverse reverses the order of the collection
-func (z Entries) Reverse() {
+func (z Entries) Reverse() Entries {
 	for left, right := 0, len(z)-1; left < right; left, right = left+1, right-1 {
 		z[left], z[right] = z[right], z[left]
 	}
+	return z
 }
 
 // Unique returns an array of unique Entry elements
@@ -45,6 +46,14 @@ func (z Entries) Unique() Entries {
 
 	return entries
 
+}
+
+// Limit truncate the size of the collection to the given number of items.
+func (z Entries) Limit(limit uint) Entries {
+	if len(z) > int(limit) {
+		return z[:limit]
+	}
+	return z
 }
 
 // Entry defines an item status for a user

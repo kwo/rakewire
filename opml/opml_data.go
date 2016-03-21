@@ -14,7 +14,7 @@ func Export(tx model.Transaction, user *model.User) (*OPML, error) {
 	groupsByID := groups.ByID()
 	subscriptions := model.S.GetForUser(tx, user.ID)
 	subscriptionsByGroup := groupSubscriptionsByGroup(subscriptions, groupsByID)
-	feedsByID := getSubscriptionFeeds(tx, subscriptions)
+	feedsByID := model.F.GetBySubscriptions(tx, subscriptions).ByID()
 
 	categories := make(map[string]*Outline)
 	for group, groupSubscriptions := range subscriptionsByGroup {
@@ -125,7 +125,7 @@ func Import(tx model.Transaction, userID string, opml *OPML) error {
 
 	// get subscriptions, reset
 	subscriptions := model.S.GetForUser(tx, userID)
-	feedsByID := getSubscriptionFeeds(tx, subscriptions)
+	feedsByID := model.F.GetBySubscriptions(tx, subscriptions).ByID()
 	for _, subscription := range subscriptions {
 		subscription.GroupIDs = []string{}
 		subscription.AutoRead = false

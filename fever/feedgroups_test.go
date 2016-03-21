@@ -17,25 +17,14 @@ func TestGroups(t *testing.T) {
 	server := newServer(database)
 	defer server.Close()
 
-	var user *model.User
-	var mSubscriptions []*model.Subscription
+	user := getUser(t, database)
+	var mSubscriptions model.Subscriptions
 	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err != nil {
-			return err
-		}
-		user = u
-		ufs, err := model.SubscriptionsByUser(user.ID, tx)
-		if err != nil {
-			return err
-		}
-		mSubscriptions = ufs
+		mSubscriptions = model.S.GetForUser(tx, user.ID)
 		return nil
 	})
 	if err != nil {
-		t.Fatalf("Error: %s", err.Error())
-	} else if user == nil {
-		t.Fatal("User not found")
+		t.Fatalf("Cannot select subscriptions: %s", err.Error())
 	}
 
 	// make request
@@ -96,8 +85,8 @@ func TestGroups(t *testing.T) {
 							t.Errorf("Invalid FeedID: %s", err.Error())
 						}
 						feedIDStr := fmt.Sprintf("%010d", feedID)
-						if feedIDStr != mSubscriptions[(j*2)+i].ID {
-							t.Errorf("FeedID mismatch, expected %d, actual %d", mSubscriptions[(j*2)+i].ID, feedID)
+						if feedIDStr != mSubscriptions[(j*2)+i].FeedID {
+							t.Errorf("FeedID mismatch, expected %s, actual %s", mSubscriptions[(j*2)+i].FeedID, feedIDStr)
 						}
 					}
 				}
@@ -116,25 +105,14 @@ func TestFeeds(t *testing.T) {
 	server := newServer(database)
 	defer server.Close()
 
-	var user *model.User
-	var mSubscriptions []*model.Subscription
+	user := getUser(t, database)
+	var mSubscriptions model.Subscriptions
 	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err != nil {
-			return err
-		}
-		user = u
-		ufs, err := model.SubscriptionsByUser(user.ID, tx)
-		if err != nil {
-			return err
-		}
-		mSubscriptions = ufs
+		mSubscriptions = model.S.GetForUser(tx, user.ID)
 		return nil
 	})
 	if err != nil {
-		t.Fatalf("Error: %s", err.Error())
-	} else if user == nil {
-		t.Fatal("User not found")
+		t.Fatalf("Cannot select subscriptions: %s", err.Error())
 	}
 
 	target := server.URL + "/fever?api&feeds"
@@ -157,8 +135,8 @@ func TestFeeds(t *testing.T) {
 		for i, feed := range feeds {
 			if id, err := feed.GetInt64("id"); err != nil {
 				t.Errorf("Cannot retrieve feed.id: %s", err.Error())
-			} else if fmt.Sprintf("%010d", id) != mSubscriptions[i].ID {
-				t.Errorf("feed.id mimatch, expected %d, actual %d", id, mSubscriptions[i].ID)
+			} else if fmt.Sprintf("%010d", id) != mSubscriptions[i].FeedID {
+				t.Errorf("feed.id mimatch, expected %s, actual %s", id, mSubscriptions[i].FeedID)
 			}
 			if title, err := feed.GetString("title"); err != nil {
 				t.Errorf("Cannot retrieve feed.title: %s", err.Error())
@@ -194,8 +172,8 @@ func TestFeeds(t *testing.T) {
 							t.Errorf("Invalid FeedID: %s", err.Error())
 						}
 						feedIDStr := fmt.Sprintf("%010d", feedID)
-						if feedIDStr != mSubscriptions[(j*2)+i].ID {
-							t.Errorf("FeedID mismatch, expected %d, actual %d", mSubscriptions[(j*2)+i].ID, feedID)
+						if feedIDStr != mSubscriptions[(j*2)+i].FeedID {
+							t.Errorf("FeedID mismatch, expected %s, actual %s", mSubscriptions[(j*2)+i].FeedID, feedIDStr)
 						}
 					}
 				}

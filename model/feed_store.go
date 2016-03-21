@@ -35,6 +35,16 @@ func (z *feedStore) GetByURL(tx Transaction, url string) *Feed {
 	return nil
 }
 
+func (z *feedStore) GetBySubscriptions(tx Transaction, subscriptions Subscriptions) Feeds {
+	result := Feeds{}
+	for _, subscription := range subscriptions {
+		if feed := z.Get(tx, subscription.FeedID); feed != nil {
+			result = append(result, feed)
+		}
+	}
+	return result
+}
+
 // GetNext returns all feeds which are due to be fetched within the given max time.
 func (z *feedStore) GetNext(tx Transaction, maxTime time.Time) Feeds {
 	// index Feed NextFetch = FetchTime|FeedID : FeedID

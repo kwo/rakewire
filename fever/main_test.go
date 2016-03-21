@@ -2,7 +2,6 @@ package fever
 
 import (
 	"github.com/antonholmquist/jason"
-	"rakewire/model"
 	"strconv"
 	"testing"
 	"time"
@@ -16,18 +15,7 @@ func TestAuth(t *testing.T) {
 	server := newServer(database)
 	defer server.Close()
 	defer closeTestDatabase(t, database)
-
-	var user *model.User
-	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
-		}
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
-	}
+	user := getUser(t, database)
 
 	target := server.URL + "/fever?api"
 	data, err := makeRequest(user, target)
@@ -122,18 +110,7 @@ func TestXmlUnsupported(t *testing.T) {
 	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
-
-	var user *model.User
-	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
-		}
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
-	}
+	user := getUser(t, database)
 
 	target := server.URL + "/fever?api=xml"
 	data, err := makeRequest(user, target)

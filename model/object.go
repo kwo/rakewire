@@ -53,10 +53,6 @@ func delete(tx Transaction, entityName string, id string) error {
 
 }
 
-// func keyDecode2(value []byte) []string {
-// 	return strings.Split(string(value), chSep)
-// }
-
 func keyEncode(values ...string) string {
 	return strings.Join(values, chSep)
 }

@@ -2,7 +2,6 @@ package fever
 
 import (
 	"github.com/antonholmquist/jason"
-	"rakewire/model"
 	"strconv"
 	"strings"
 	"testing"
@@ -16,18 +15,7 @@ func TestUnreadIDs(t *testing.T) {
 	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
-
-	var user *model.User
-	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
-		}
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
-	}
+	user := getUser(t, database)
 
 	var expectedNumberItems = 24
 	// var expectedFirstID uint64 = 1
@@ -95,18 +83,7 @@ func TestSavedIDs(t *testing.T) {
 	defer closeTestDatabase(t, database)
 	server := newServer(database)
 	defer server.Close()
-
-	var user *model.User
-	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
-			user = u
-		}
-		return err
-	})
-	if err != nil {
-		t.Fatalf("Cannot get user: %s", err.Error())
-	}
+	user := getUser(t, database)
 
 	var expectedNumberItems = 8
 	// var expectedFirstID uint64 = 1

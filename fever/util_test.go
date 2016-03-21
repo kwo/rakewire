@@ -66,7 +66,7 @@ func makeRequest(user *model.User, target string, formValues ...string) ([]byte,
 	} else if rsp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Bad error code, expected %d, actual %d", http.StatusOK, rsp.StatusCode)
 	} else if rsp.Header.Get(hContentType) != mimeJSON {
-		return nil, fmt.Errorf("Bad content type, expected %d, actual %d", mimeJSON, rsp.Header.Get(hContentType))
+		return nil, fmt.Errorf("Bad content type, expected %s, actual %s", mimeJSON, rsp.Header.Get(hContentType))
 	} else if rsp.Header.Get(hContentEncoding) != "gzip" {
 		return nil, fmt.Errorf("Bad content encoding, expected %s, actual %s", "gzip", rsp.Header.Get(hContentEncoding))
 	}
@@ -93,27 +93,27 @@ func openTestDatabase(t *testing.T) model.Database {
 	f.Close()
 	location := f.Name()
 
-	boltDB, err := model.OpenDatabase(location)
+	store, err := model.Instance.Open(location)
 	if err != nil {
 		t.Fatalf("Cannot open database: %s", err.Error())
 	}
 
-	err = boltDB.Update(func(tx model.Transaction) error {
+	err = store.Update(func(tx model.Transaction) error {
 		return populateDatabase(tx)
 	})
 	if err != nil {
 		t.Fatalf("Cannot populate database: %s", err.Error())
 	}
 
-	return boltDB
+	return store
 
 }
 
-func closeTestDatabase(t *testing.T, d model.Database) {
+func closeTestDatabase(t *testing.T, db model.Database) {
 
-	location := d.Location()
+	location := db.Location()
 
-	if err := model.CloseDatabase(d); err != nil {
+	if err := model.Instance.Close(db); err != nil {
 		t.Errorf("Cannot close database: %s", err.Error())
 	}
 
@@ -123,21 +123,37 @@ func closeTestDatabase(t *testing.T, d model.Database) {
 
 }
 
+func getUser(t *testing.T, db model.Database) *model.User {
+
+	var user *model.User
+
+	err := db.Select(func(tx model.Transaction) error {
+		user = model.U.GetByUsername(tx, testUsername)
+		return nil
+	})
+	if err != nil {
+		t.Fatalf("Cannot get user: %s", err.Error())
+	}
+
+	return user
+
+}
+
 func populateDatabase(tx model.Transaction) error {
 
 	// add test user
-	user := model.NewUser(testUsername)
+	user := model.U.New(testUsername)
 	user.SetPassword("abcdefg")
-	if err := user.Save(tx); err != nil {
+	if err := model.U.Save(tx, user); err != nil {
 		return err
 	}
 
 	// add test groups
 	mGroups := []*model.Group{}
 	for i := 0; i < 2; i++ {
-		g := model.NewGroup(user.ID, fmt.Sprintf("Group%d", i))
+		g := model.G.New(user.ID, fmt.Sprintf("Group%d", i))
 		mGroups = append(mGroups, g)
-		if err := g.Save(tx); err != nil {
+		if err := model.G.Save(tx, g); err != nil {
 			return err
 		}
 	}
@@ -146,48 +162,52 @@ func populateDatabase(tx model.Transaction) error {
 	mFeeds := []*model.Feed{}
 	mSubscriptions := []*model.Subscription{}
 	for i := 0; i < 4; i++ {
-		f := model.NewFeed(fmt.Sprintf("http://localhost%d", i))
-		if _, err := f.Save(tx); err != nil {
+		f := model.F.New(fmt.Sprintf("http://localhost%d", i))
+		if err := model.F.Save(tx, f); err != nil {
 			return err
 		}
 		mFeeds = append(mFeeds, f)
-		uf := model.NewSubscription(user.ID, f.ID)
-		uf.GroupIDs = append(uf.GroupIDs, mGroups[i%2].ID)
-		if err := uf.Save(tx); err != nil {
+		s := model.S.New(user.ID, f.ID)
+		s.GroupIDs = append(s.GroupIDs, mGroups[i%2].ID)
+		if err := model.S.Save(tx, s); err != nil {
 			return err
 		}
-		mSubscriptions = append(mSubscriptions, uf)
+		mSubscriptions = append(mSubscriptions, s)
 	}
 
 	// add test items
+	mItems := model.Items{}
 	for _, f := range mFeeds {
 		now := time.Now().Truncate(time.Second)
 		for i := 0; i < 10; i++ {
-			item := model.NewItem(f.ID, fmt.Sprintf("Item%d", i))
+			item := model.I.New(f.ID, fmt.Sprintf("Item%d", i))
 			item.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
 			item.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
-			f.Items = append(f.Items, item)
+			mItems = append(mItems, item)
 		}
-		f.Transmission = model.NewTransmission(f.ID)
-		f.Transmission.StartTime = now
-		if _, err := f.Save(tx); err != nil {
+		if err := model.F.Save(tx, f); err != nil {
+			return err
+		}
+		tr := model.T.New(f.ID)
+		tr.StartTime = now
+		if err := model.T.Save(tx, tr); err != nil {
+			return err
+		}
+		if err := model.E.AddItems(tx, mItems); err != nil {
 			return err
 		}
 	}
 
 	// mark entries read
-	entries, err := model.EntriesGetAll(user.ID, tx)
-	if err != nil {
-		return err
-	}
+	entries := model.E.Range(tx, user.ID)
 	now := time.Now().Truncate(time.Second)
 	tRead := now.Add(-6 * 24 * time.Hour).Add(1 * time.Second)
 	tStar := now.Add(-8 * 24 * time.Hour).Add(1 * time.Second)
-	for _, ue := range entries {
-		ue.IsRead = ue.Updated.Before(tRead)
-		ue.IsStar = ue.Updated.Before(tStar)
+	for _, e := range entries {
+		e.Read = e.Updated.Before(tRead)
+		e.Star = e.Updated.Before(tStar)
 	}
-	if err := model.EntriesSave(entries, tx); err != nil {
+	if err := model.E.SaveAll(tx, entries); err != nil {
 		return err
 	}
 

@@ -87,13 +87,13 @@ func (z *BasicAuthOptions) authenticateDatabase(token string) *model.User {
 	}
 
 	z.Database.Select(func(tx model.Transaction) error {
-		user, err := model.UserByUsername(username, tx)
-		if err == nil && user != nil {
+		user := model.U.GetByUsername(tx, username)
+		if user != nil {
 			if user.MatchPassword(password) {
 				result = user
 			}
 		}
-		return err
+		return fmt.Errorf("User not found: %s", username)
 	})
 
 	return result

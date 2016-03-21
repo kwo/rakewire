@@ -1,6 +1,7 @@
 package fever
 
 import (
+	"fmt"
 	"github.com/antonholmquist/jason"
 	"rakewire/model"
 	"testing"
@@ -17,11 +18,11 @@ func TestMark(t *testing.T) {
 
 	var user *model.User
 	err := database.Select(func(tx model.Transaction) error {
-		u, err := model.UserByUsername(testUsername, tx)
-		if err == nil && u != nil {
+		u := model.U.GetByUsername(tx, testUsername)
+		if u != nil {
 			user = u
 		}
-		return err
+		return fmt.Errorf("User unknown: %s", testUsername)
 	})
 	if err != nil {
 		t.Fatalf("Cannot get user: %s", err.Error())

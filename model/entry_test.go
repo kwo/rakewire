@@ -208,7 +208,7 @@ func TestEntryQueries(t *testing.T) {
 	err = db.Select(func(tx Transaction) error {
 
 		// test count
-		expectedCount := 400
+		var expectedCount uint = 400
 		for _, user := range users {
 			if count := E.Query(tx, user.ID).Count(); count != expectedCount {
 				t.Errorf("Bad count: %d, expected %d", count, expectedCount)
@@ -252,7 +252,7 @@ func TestEntryQueries(t *testing.T) {
 		t.Logf("min: %v, max: %v", min, max)
 		for _, user := range users {
 			entries := E.Query(tx, user.ID).Feed("0000000012").Min(min).Max(max).Get()
-			if len(entries) != expectedCount {
+			if len(entries) != int(expectedCount) {
 				t.Errorf("Bad count: %d, expected %d", len(entries), expectedCount)
 				for _, entry := range entries {
 					t.Logf("entry: %s: %v", entry.GetID(), entry.Updated)

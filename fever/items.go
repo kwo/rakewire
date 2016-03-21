@@ -6,83 +6,78 @@ import (
 
 func (z *API) getItemsAll(userID string, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.EntriesGetAll(userID, tx)
-	if err != nil {
-		return nil, err
-	}
+	entries := model.E.Range(tx, userID)
+	itemsByID := model.I.GetByEntries(tx, entries).ByID()
 
-	items := []*Item{}
+	feverItems := []*Item{}
 	for _, entry := range entries {
-		item := toItem(entry)
-		items = append(items, item)
+		feverItem := toItem(entry, itemsByID[entry.ItemID])
+		feverItems = append(feverItems, feverItem)
 	}
-	return items, nil
+	return feverItems, nil
 
 }
 
 func (z *API) getItemsNext(userID, minID string, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.EntriesGetNext(userID, encodeID(minID), 50, tx)
-	if err != nil {
-		return nil, err
-	}
+	min := parseID(minID)
+	max := min + 100
 
-	items := []*Item{}
+	entries := model.E.Range(tx, userID, encodeID(minID), formatID(max)).Limit(50)
+	itemsByID := model.I.GetByEntries(tx, entries).ByID()
+
+	feverItems := []*Item{}
 	for _, entry := range entries {
-		item := toItem(entry)
-		items = append(items, item)
+		feverItem := toItem(entry, itemsByID[entry.ItemID])
+		feverItems = append(feverItems, feverItem)
 	}
-	return items, nil
+	return feverItems, nil
 
 }
 
 func (z *API) getItemsPrev(userID, maxID string, tx model.Transaction) ([]*Item, error) {
 
-	entries, err := model.EntriesGetPrev(userID, encodeID(maxID), 50, tx)
-	if err != nil {
-		return nil, err
-	}
+	max := parseID(maxID)
+	min := max - 100
 
-	items := []*Item{}
+	entries := model.E.Range(tx, userID, formatID(min), encodeID(maxID)).Reverse().Limit(50)
+	itemsByID := model.I.GetByEntries(tx, entries).ByID()
+
+	feverItems := []*Item{}
 	for _, entry := range entries {
-		item := toItem(entry)
-		items = append(items, item)
+		feverItem := toItem(entry, itemsByID[entry.ItemID])
+		feverItems = append(feverItems, feverItem)
 	}
-	return items, nil
+	return feverItems, nil
 
 }
 
-func (z *API) getItemsByIds(userID string, ids0 []string, tx model.Transaction) ([]*Item, error) {
+func (z *API) getItemsByIds(userID string, ids []string, tx model.Transaction) ([]*Item, error) {
 
-	ids := []string{}
-	for _, id0 := range ids0 {
-		ids = append(ids, encodeID(id0))
+	feverItems := []*Item{}
+	for _, id := range ids {
+		itemID := encodeID(id)
+		if entry := model.E.Get(tx, userID, itemID); entry != nil {
+			item := model.I.Get(tx, itemID)
+			feverItem := toItem(entry, item)
+			feverItems = append(feverItems, feverItem)
+		}
 	}
 
-	entries, err := model.EntriesByUser(userID, ids, tx)
-	if err != nil {
-		return nil, err
-	}
-
-	items := []*Item{}
-	for _, entry := range entries {
-		item := toItem(entry)
-		items = append(items, item)
-	}
-	return items, nil
+	return feverItems, nil
 
 }
 
-func toItem(entry *model.Entry) *Item {
+func toItem(entry *model.Entry, item *model.Item) *Item {
 	return &Item{
-		ID:             parseID(entry.ID),
-		SubscriptionID: parseID(entry.SubscriptionID),
-		Title:          entry.Item.Title,
-		Author:         entry.Item.Author,
-		HTML:           entry.Item.Content,
-		URL:            entry.Item.URL,
-		IsSaved:        boolToUint8(entry.IsStar),
-		IsRead:         boolToUint8(entry.IsRead),
-		Created:        entry.Item.Created.Unix(),
+		ID:             parseID(entry.ItemID),
+		SubscriptionID: parseID(entry.FeedID),
+		Title:          item.Title,
+		Author:         item.Author,
+		HTML:           item.Content,
+		URL:            item.URL,
+		IsSaved:        boolToUint8(entry.Star),
+		IsRead:         boolToUint8(entry.Read),
+		Created:        item.Created.Unix(),
 	}
 }

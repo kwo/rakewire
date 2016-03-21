@@ -64,13 +64,13 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 		var user *model.User
 		if apiKey := req.PostFormValue(AuthParam); apiKey != "" {
 			z.db.Select(func(tx model.Transaction) error {
-				u, err := model.UserByFeverHash(apiKey, tx)
-				if err == nil && u != nil {
+				u := model.U.GetByFeverhash(tx, apiKey)
+				if u != nil {
 					rsp.Authorized = 1
 					log.Printf("%-7s %-7s authorized: %s", logDebug, logName, u.Username)
 					user = u
 				}
-				return err
+				return nil
 			})
 		}
 
@@ -83,11 +83,11 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 				switch k {
 
 				case "api":
-					startTime, err := model.LastFetchTime(tx)
-					if err == nil {
-						rsp.LastRefreshed = startTime.Unix()
+					tr := model.T.GetLast(tx)
+					if tr != nil {
+						rsp.LastRefreshed = tr.StartTime.Unix()
 					} else {
-						log.Printf("%-7s %-7s error retrieving last transmission fetch time: %s", logWarn, logName, err.Error())
+						log.Printf("%-7s %-7s error retrieving last transmission fetch time: %s", logWarn, logName, "not found")
 					}
 
 					uMark := req.PostFormValue("mark")
@@ -117,7 +117,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 					}
 
 				case "items":
-					rsp.ItemCount = model.EntryTotalByUser(user.ID, tx)
+					rsp.ItemCount = model.E.Query(tx, user.ID).Count()
 					if id := req.URL.Query().Get("since_id"); len(id) > 0 {
 						items, err := z.getItemsNext(user.ID, id, tx)
 						if err == nil {

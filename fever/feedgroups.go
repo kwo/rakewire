@@ -7,31 +7,25 @@ import (
 
 func (z *API) getFeeds(userID string, tx model.Transaction) ([]*Feed, []*FeedGroup, error) {
 
-	mGroups, err := model.GroupsByUser(userID, tx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	mFeeds, err := model.SubscriptionsByUser(userID, tx)
-	if err != nil {
-		return nil, nil, err
-	}
+	mGroups := model.G.GetForUser(tx, userID)
+	mSubscriptions := model.S.GetForUser(tx, userID)
+	mFeedsByID := model.F.GetBySubscriptions(tx, mSubscriptions).ByID()
 
 	feeds := []*Feed{}
-	for _, mFeed := range mFeeds {
+	for _, mSubscription := range mSubscriptions {
 		feed := &Feed{
-			ID:          parseID(mFeed.ID),
-			Title:       mFeed.Title,
+			ID:          parseID(mSubscription.FeedID),
+			Title:       mSubscription.Title,
 			FaviconID:   0,
-			URL:         mFeed.Feed.URL,
-			SiteURL:     mFeed.Feed.SiteURL,
+			URL:         mFeedsByID[mSubscription.FeedID].URL,
+			SiteURL:     mFeedsByID[mSubscription.FeedID].SiteURL,
 			IsSpark:     0,
-			LastUpdated: mFeed.Feed.LastUpdated.Unix(),
+			LastUpdated: mFeedsByID[mSubscription.FeedID].LastUpdated.Unix(),
 		}
 		feeds = append(feeds, feed)
 	}
 
-	feedGroups := makeFeedGroups(mGroups, mFeeds)
+	feedGroups := makeFeedGroups(mGroups, mSubscriptions)
 
 	return feeds, feedGroups, nil
 
@@ -39,15 +33,8 @@ func (z *API) getFeeds(userID string, tx model.Transaction) ([]*Feed, []*FeedGro
 
 func (z *API) getGroups(userID string, tx model.Transaction) ([]*Group, []*FeedGroup, error) {
 
-	mGroups, err := model.GroupsByUser(userID, tx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	mFeeds, err := model.SubscriptionsByUser(userID, tx)
-	if err != nil {
-		return nil, nil, err
-	}
+	mGroups := model.G.GetForUser(tx, userID)
+	mSubscriptions := model.S.GetForUser(tx, userID)
 
 	groups := []*Group{}
 	for _, mGroup := range mGroups {
@@ -58,13 +45,13 @@ func (z *API) getGroups(userID string, tx model.Transaction) ([]*Group, []*FeedG
 		groups = append(groups, group)
 	}
 
-	feedGroups := makeFeedGroups(mGroups, mFeeds)
+	feedGroups := makeFeedGroups(mGroups, mSubscriptions)
 
 	return groups, feedGroups, nil
 
 }
 
-func makeFeedGroups(mGroups []*model.Group, mFeeds []*model.Subscription) []*FeedGroup {
+func makeFeedGroups(mGroups model.Groups, mSubscriptions model.Subscriptions) []*FeedGroup {
 
 	contains := func(i string, a []string) bool {
 		for _, x := range a {
@@ -78,9 +65,9 @@ func makeFeedGroups(mGroups []*model.Group, mFeeds []*model.Subscription) []*Fee
 	feedGroups := []*FeedGroup{}
 	for _, mGroup := range mGroups {
 		feedIDs := []string{}
-		for _, mFeed := range mFeeds {
-			if contains(mGroup.ID, mFeed.GroupIDs) {
-				feedIDs = append(feedIDs, decodeID(mFeed.ID))
+		for _, mSubscription := range mSubscriptions {
+			if contains(mGroup.ID, mSubscription.GroupIDs) {
+				feedIDs = append(feedIDs, decodeID(mSubscription.FeedID))
 			}
 		}
 		feedGroup := &FeedGroup{

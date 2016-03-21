@@ -33,16 +33,6 @@ func _flatten(outlines Outlines, branch *Outline, result map[*Outline]Outlines) 
 	}
 }
 
-func getSubscriptionFeeds(tx model.Transaction, subscriptions model.Subscriptions) map[string]*model.Feed {
-	result := make(map[string]*model.Feed)
-	for _, subscription := range subscriptions {
-		if feed := model.F.Get(tx, subscription.FeedID); feed != nil {
-			result[feed.ID] = feed
-		}
-	}
-	return result
-}
-
 func groupOutlinesByURL(flatOPML map[*Outline]Outlines) map[string]*Outline {
 	result := make(map[string]*Outline)
 	for _, outlines := range flatOPML {
