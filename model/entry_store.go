@@ -74,24 +74,25 @@ func (z *entryStore) New(userID, itemID, feedID string) *Entry {
 }
 
 // Range returns Entries for the given user by internal ID.
-func (z *entryStore) Range(tx Transaction, userID string, ids ...string) Entries {
+// The optional string parameters are for minID (inclusive) and maxID (exclusive) respectively.
+func (z *entryStore) Range(tx Transaction, userID string, minmax ...string) Entries {
 
 	entries := Entries{}
 
 	// bucket Entry = UserID|ItemID : value
-	c := tx.Bucket(bucketData, entityEntry).Cursor()
 	min, max := keyMinMax(userID)
-	switch len(ids) {
+	switch len(minmax) {
 	case 1:
-		min = []byte(keyEncode(userID, ids[0]))
+		min = []byte(keyEncode(userID, minmax[0]))
 	case 2:
-		min = []byte(keyEncode(userID, ids[0]))
-		max = keyMax(keyEncode(userID, ids[1]))
+		min = []byte(keyEncode(userID, minmax[0]))
+		max = []byte(keyEncode(userID, minmax[1]))
 	}
 
-	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) <= 0; k, v = c.Next() {
-		entryID := string(v)
-		if entry := E.Get(tx, entryID); entry != nil {
+	c := tx.Bucket(bucketData, entityEntry).Cursor()
+	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) < 0; k, v = c.Next() {
+		entry := &Entry{}
+		if err := entry.decode(v); err == nil {
 			entries = append(entries, entry)
 		}
 	}

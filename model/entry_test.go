@@ -43,6 +43,54 @@ func TestIndex(t *testing.T) {
 
 }
 
+func TestEntryLimit(t *testing.T) {
+
+	entries := Entries{}
+
+	expectedSize := 100
+
+	for i := 0; i < expectedSize; i++ {
+		e := E.New(keyEncodeUint(1), keyEncodeUint(uint64(i)), keyEncodeUint(2))
+		entries = append(entries, e)
+	}
+
+	size := len(entries)
+	if size != expectedSize {
+		t.Errorf("Bad size: %d, expected %d", size, expectedSize)
+	}
+
+	expectedSize2 := 50
+	entries2 := entries.Limit(uint(expectedSize2))
+
+	// new collection limited to 50
+	size2 := len(entries2)
+	if size2 != expectedSize2 {
+		t.Errorf("Bad size: %d, expected %d", size2, expectedSize2)
+	}
+
+	// original collection is unmodified
+	size = len(entries)
+	if size != expectedSize {
+		t.Errorf("Bad size: %d, expected %d", size, expectedSize)
+	}
+
+	expectedSize3 := 150
+	entries3 := entries.Limit(uint(expectedSize3))
+
+	// new collection does not exceed max
+	size3 := len(entries3)
+	if size3 != expectedSize {
+		t.Errorf("Bad size: %d, expected %d", size3, expectedSize)
+	}
+
+	// original collection is unmodified
+	size = len(entries)
+	if size != expectedSize {
+		t.Errorf("Bad size: %d, expected %d", size, expectedSize)
+	}
+
+}
+
 func TestEntryBasics(t *testing.T) {
 
 	t.Parallel()
@@ -133,7 +181,9 @@ func TestEntryQueries(t *testing.T) {
 		// add users
 		for uu := 0; uu < 2; uu++ {
 			u := U.New(fmt.Sprintf("User%02d", uu+1))
-			u.SetPassword("ancdefg")
+			if err := u.SetPassword("ancdefg"); err != nil {
+				t.Errorf("Cannot set user password: %s", err.Error())
+			}
 			if err := U.Save(tx, u); err != nil {
 				return err
 			}
@@ -353,7 +403,102 @@ func TestEntryQueries(t *testing.T) {
 
 }
 
-func TestStarred(t *testing.T) {
+func TestEntryRange(t *testing.T) {
+
+	/*
+
+		UserID     ItemID
+		0000000001 0000000001
+		0000000001 0000000002
+		0000000001 0000000003
+		0000000001 0000000004
+		0000000001 0000000005
+		0000000001 0000000006
+		0000000002 0000000007
+		0000000002 0000000008
+		0000000002 0000000009
+		0000000002 0000000010
+		0000000002 0000000011
+		0000000002 0000000012
+
+	*/
+
+	t.Parallel()
+
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
+
+	err := db.Update(func(tx Transaction) error {
+
+		entries := Entries{}
+		now := time.Now().Truncate(time.Second)
+
+		for i := 0; i < 12; i++ {
+
+			u := 1
+			if i > 5 {
+				u = 2
+			}
+
+			e := E.New(keyEncodeUint(uint64(u)), keyEncodeUint(uint64(i+1)), keyEncodeUint(3))
+			e.Updated = now
+			t.Logf("Entry: %v", e)
+			entries = append(entries, e)
+
+		}
+
+		return E.SaveAll(tx, entries)
+
+	})
+	if err != nil {
+		t.Errorf("Error updating database: %s", err.Error())
+	}
+
+	// all
+	err = db.Select(func(tx Transaction) error {
+		entries := E.Range(tx, keyEncodeUint(1))
+		size := len(entries)
+		expectedSize := 6
+		if size != expectedSize {
+			t.Errorf("Bad size: %d, expected %d", size, expectedSize)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Error selecting from database: %s", err.Error())
+	}
+
+	// min
+	err = db.Select(func(tx Transaction) error {
+		entries := E.Range(tx, keyEncodeUint(1), keyEncodeUint(3))
+		size := len(entries)
+		expectedSize := 4
+		if size != expectedSize {
+			t.Errorf("Bad size: %d, expected %d", size, expectedSize)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Error selecting from database: %s", err.Error())
+	}
+
+	// min/max
+	err = db.Select(func(tx Transaction) error {
+		entries := E.Range(tx, keyEncodeUint(1), keyEncodeUint(3), keyEncodeUint(5))
+		size := len(entries)
+		expectedSize := 2
+		if size != expectedSize {
+			t.Errorf("Bad size: %d, expected %d", size, expectedSize)
+		}
+		return nil
+	})
+	if err != nil {
+		t.Errorf("Error selecting from database: %s", err.Error())
+	}
+
+}
+
+func TestEntryStarred(t *testing.T) {
 
 	/*
 
@@ -494,7 +639,7 @@ func TestStarred(t *testing.T) {
 
 }
 
-func TestUnread(t *testing.T) {
+func TestEntryUnread(t *testing.T) {
 
 	/*
 
