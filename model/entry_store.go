@@ -89,6 +89,7 @@ func (z *entryStore) Range(tx Transaction, userID string, minmax ...string) Entr
 		max = []byte(keyEncode(userID, minmax[1]))
 	}
 
+	//fmt.Printf("Range: min: %s, max: %s\n", string(min), string(max))
 	c := tx.Bucket(bucketData, entityEntry).Cursor()
 	for k, v := c.Seek(min); k != nil && bytes.Compare(k, max) < 0; k, v = c.Next() {
 		entry := &Entry{}
@@ -119,7 +120,7 @@ func (z *entryStore) Query(tx Transaction, userID string) *entryQuery {
 		tx:     tx,
 		userID: userID,
 		min:    time.Time{},
-		max:    time.Now(),
+		max:    time.Now().Add(1 * time.Second).Truncate(time.Second), // prevents losing entries when saving and then querying
 	}
 }
 

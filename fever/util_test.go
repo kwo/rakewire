@@ -185,9 +185,6 @@ func populateDatabase(tx model.Transaction) error {
 			item := model.I.New(f.ID, fmt.Sprintf("Item%d", i))
 			item.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
 			item.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
-			if err := model.I.Save(tx, item); err != nil {
-				return err
-			}
 			mItems = append(mItems, item)
 		}
 		tr := model.T.New(f.ID)
@@ -195,6 +192,9 @@ func populateDatabase(tx model.Transaction) error {
 		if err := model.T.Save(tx, tr); err != nil {
 			return err
 		}
+	}
+	if err := model.I.SaveAll(tx, mItems); err != nil {
+		return err
 	}
 	if err := model.E.AddItems(tx, mItems); err != nil {
 		return err

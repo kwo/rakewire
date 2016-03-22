@@ -45,7 +45,7 @@ func decodeID(value string) string {
 
 // formatID takes a uint64 and formats it as a model string ID
 func formatID(value uint64) string {
-	return strconv.FormatUint(value, 10)
+	return encodeID(strconv.FormatUint(value, 10))
 }
 
 // parseID takes a string ID from model and converts it to a uint64 for fever structs.

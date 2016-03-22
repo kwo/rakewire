@@ -17,7 +17,7 @@ func TestUnreadIDs(t *testing.T) {
 	defer server.Close()
 	user := getUser(t, database)
 
-	var expectedNumberItems = 24
+	expectedNumberItems := 24
 	// var expectedFirstID uint64 = 1
 	// var expectedLastID uint64 = 40
 

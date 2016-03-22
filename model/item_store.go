@@ -70,3 +70,12 @@ func (z *itemStore) New(feedID, guid string) *Item {
 func (z *itemStore) Save(tx Transaction, item *Item) error {
 	return save(tx, entityItem, item)
 }
+
+func (z *itemStore) SaveAll(tx Transaction, items Items) error {
+	for _, item := range items {
+		if err := z.Save(tx, item); err != nil {
+			return err
+		}
+	}
+	return nil
+}

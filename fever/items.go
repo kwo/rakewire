@@ -20,10 +20,12 @@ func (z *API) getItemsAll(userID string, tx model.Transaction) ([]*Item, error) 
 
 func (z *API) getItemsNext(userID, minID string, tx model.Transaction) ([]*Item, error) {
 
-	min := parseID(minID)
+	// minID is exclusive
+
+	min := parseID(minID) + 1
 	max := min + 100
 
-	entries := model.E.Range(tx, userID, encodeID(minID), formatID(max)).Limit(50)
+	entries := model.E.Range(tx, userID, formatID(min), formatID(max)).Limit(50)
 	itemsByID := model.I.GetByEntries(tx, entries).ByID()
 
 	feverItems := []*Item{}
@@ -37,10 +39,17 @@ func (z *API) getItemsNext(userID, minID string, tx model.Transaction) ([]*Item,
 
 func (z *API) getItemsPrev(userID, maxID string, tx model.Transaction) ([]*Item, error) {
 
-	max := parseID(maxID)
-	min := max - 100
+	// maxID is exclusive
 
-	entries := model.E.Range(tx, userID, formatID(min), encodeID(maxID)).Reverse().Limit(50)
+	max := parseID(maxID) // Range max is exclusive so no adjustment necessary
+	var min uint64
+	if max > 100 {
+		min = max - 100
+	}
+
+	//fmt.Printf("getItemsPrev, min: %d %s, max: %d %s\n", min, formatID(min), max, encodeID(maxID))
+
+	entries := model.E.Range(tx, userID, formatID(min), formatID(max)).Reverse().Limit(50)
 	itemsByID := model.I.GetByEntries(tx, entries).ByID()
 
 	feverItems := []*Item{}
