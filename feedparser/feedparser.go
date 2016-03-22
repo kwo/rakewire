@@ -88,11 +88,6 @@ const (
 )
 
 const (
-	logName  = "[parsr]"
-	logTrace = "[TRACE]"
-)
-
-const (
 	empty = ""
 )
 

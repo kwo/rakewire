@@ -66,8 +66,8 @@ func TestEntryHash(t *testing.T) {
 	e.Content = "content"
 	if h := e.hash(); h == lastHash {
 		t.Fatal("Content should be part of entry hash")
-	} else {
-		lastHash = h
+		// } else {
+		// 	lastHash = h
 	}
 
 }
