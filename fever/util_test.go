@@ -18,7 +18,9 @@ import (
 )
 
 const (
-	testUsername = "jeff"
+	hAcceptEncoding  = "Accept-Encoding"
+	hContentEncoding = "Content-Encoding"
+	testUsername     = "jeff"
 )
 
 func TestMain(m *testing.M) {
@@ -183,19 +185,19 @@ func populateDatabase(tx model.Transaction) error {
 			item := model.I.New(f.ID, fmt.Sprintf("Item%d", i))
 			item.Created = now.Add(time.Duration(-i) * 24 * time.Hour)
 			item.Updated = now.Add(time.Duration(-i) * 24 * time.Hour)
+			if err := model.I.Save(tx, item); err != nil {
+				return err
+			}
 			mItems = append(mItems, item)
-		}
-		if err := model.F.Save(tx, f); err != nil {
-			return err
 		}
 		tr := model.T.New(f.ID)
 		tr.StartTime = now
 		if err := model.T.Save(tx, tr); err != nil {
 			return err
 		}
-		if err := model.E.AddItems(tx, mItems); err != nil {
-			return err
-		}
+	}
+	if err := model.E.AddItems(tx, mItems); err != nil {
+		return err
 	}
 
 	// mark entries read
