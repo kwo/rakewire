@@ -10,12 +10,6 @@ import (
 	"strings"
 )
 
-const (
-	bucketConfig = "Config"
-	bucketData   = "Data"
-	bucketIndex  = "Index"
-)
-
 // BasicAuthOptions stores the configuration for HTTP Basic Authentication.
 type BasicAuthOptions struct {
 	Realm    string
