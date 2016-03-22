@@ -16,7 +16,8 @@ const (
 
 var (
 	indexesEntry = []string{
-		indexEntryFeedReadUpdated, indexEntryFeedStarUpdated, indexEntryFeedUpdated, indexEntryReadUpdated, indexEntryStarUpdated, indexEntryUpdated,
+		indexEntryFeedReadUpdated, indexEntryFeedStarUpdated, indexEntryFeedUpdated,
+		indexEntryReadUpdated, indexEntryStarUpdated, indexEntryUpdated,
 	}
 )
 

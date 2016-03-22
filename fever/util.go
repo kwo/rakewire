@@ -9,19 +9,21 @@ import (
 
 const (
 	logName  = "[fever]"
-	logTrace = "[TRACE]"
 	logDebug = "[DEBUG]"
-	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"
-	logError = "[ERROR]"
 )
 
 const (
-	hAcceptEncoding  = "Accept-Encoding"
-	hContentEncoding = "Content-Encoding"
-	hContentType     = "Content-Type"
-	mPost            = "POST"
-	mimeJSON         = "text/json; charset=utf-8"
+	hContentType = "Content-Type"
+	mimeJSON     = "text/json; charset=utf-8"
+	mPost        = "POST"
+)
+
+const (
+	itemRead      = "read"
+	itemUnread    = "unread"
+	itemStarred   = "saved"
+	itemUnstarred = "unsaved"
 )
 
 func boolToUint8(value bool) uint8 {

@@ -31,13 +31,13 @@ func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx 
 		}
 
 		switch pAs {
-		case "read":
+		case itemRead:
 			entry.Read = true
-		case "unread":
+		case itemUnread:
 			entry.Read = false
-		case "saved":
+		case itemStarred:
 			entry.Star = true
-		case "unsaved":
+		case itemUnstarred:
 			entry.Star = false
 		default:
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
