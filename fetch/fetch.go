@@ -38,8 +38,6 @@ var (
 )
 
 var (
-	fetchTimeout        = "fetch.timeout"
-	fetchWorkers        = "fetch.workers"
 	fetchTimeoutDefault = time.Second * 20
 	fetchWorkersDefault = 10
 	httpUserAgent       = "Rakewire " + model.Version
@@ -50,22 +48,22 @@ type Service struct {
 	sync.Mutex
 	running bool
 	input   chan *model.Feed
-	output  chan *model.Feed
+	output  chan *model.Harvest
 	workers int
 	latch   sync.WaitGroup
 	client  *http.Client
 }
 
 // NewService create new fetcher service
-func NewService(cfg *model.Configuration, input chan *model.Feed, output chan *model.Feed) *Service {
-	timeout, err := time.ParseDuration(cfg.Get(fetchTimeout, fetchTimeoutDefault.String()))
+func NewService(cfg *model.Config, input chan *model.Feed, output chan *model.Harvest) *Service {
+	timeout, err := time.ParseDuration(cfg.Fetch.Timeout)
 	if err != nil {
 		timeout = fetchTimeoutDefault
 	}
 	return &Service{
 		input:   input,
 		output:  output,
-		workers: cfg.GetInt(fetchWorkers, fetchWorkersDefault),
+		workers: cfg.GetInt(cfg.Fetch.Workers, fetchWorkersDefault),
 		client:  newInternalClient(timeout),
 	}
 }
@@ -138,43 +136,47 @@ func (z *Service) run(id int) {
 
 func (z *Service) processFeed(feed *model.Feed, id int) {
 
+	harvest := &model.Harvest{
+		Feed: feed,
+	}
+
 	startTime := time.Now().UTC().Truncate(time.Millisecond)
 	now := startTime.Truncate(time.Second)
-	feed.Transmission = model.NewTransmission(feed.ID)
 
-	feed.Transmission.URL = feed.URL
-	feed.Transmission.StartTime = now
+	harvest.Transmission = model.T.New(feed.ID)
+	harvest.Transmission.URL = feed.URL
+	harvest.Transmission.StartTime = now
 
 	rsp, err := z.client.Do(newRequest(feed))
 	if err != nil && (rsp == nil || rsp.StatusCode != http.StatusMovedPermanently) {
-		processFeedClientError(feed, err)
+		processFeedClientError(harvest, err)
 	} else {
 
-		feed.Transmission.StatusCode = rsp.StatusCode
+		harvest.Transmission.StatusCode = rsp.StatusCode
 
 		switch {
 
 		case rsp.StatusCode == http.StatusMovedPermanently:
-			processFeedMovedPermanently(feed, rsp)
+			processFeedMovedPermanently(harvest, rsp)
 
 		case rsp.StatusCode == http.StatusOK:
 			reader, _ := readBody(rsp)
 			body := &ReadCounter{ReadCloser: reader}
 			p := feedparser.NewParser()
-			xmlFeed, err := p.Parse(body, feed.Transmission.ContentType)
+			xmlFeed, err := p.Parse(body, harvest.Transmission.ContentType)
 
-			processFeedOK(feed, rsp)
+			processFeedOK(harvest, rsp)
 			if err != nil || xmlFeed == nil {
-				processFeedOKButCannotParse(feed, err)
+				processFeedOKButCannotParse(harvest, err)
 			} else {
-				processFeedOKAndParse(feed, body.Size, xmlFeed)
+				processFeedOKAndParse(harvest, body.Size, xmlFeed)
 			}
 
 		case rsp.StatusCode == http.StatusNotModified:
-			processFeedNotModified(feed, rsp)
+			processFeedNotModified(harvest, rsp)
 
 		case rsp.StatusCode >= 400:
-			processFeedServerError(feed, rsp)
+			processFeedServerError(harvest, rsp)
 
 		case true:
 			log.Printf("%-7s %-7s Uncaught Status Code: %d", logWarn, logName, rsp.StatusCode)
@@ -183,43 +185,43 @@ func (z *Service) processFeed(feed *model.Feed, id int) {
 
 	} // not err
 
-	feed.Transmission.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
-	if feed.StatusSince.IsZero() || feed.Status != feed.Transmission.Result {
+	harvest.Transmission.Duration = time.Now().Truncate(time.Millisecond).Sub(startTime)
+	if feed.StatusSince.IsZero() || feed.Status != harvest.Transmission.Result {
 		feed.StatusSince = time.Now()
 	}
-	feed.Status = feed.Transmission.Result
-	feed.StatusMessage = feed.Transmission.ResultMessage
+	feed.Status = harvest.Transmission.Result
+	feed.StatusMessage = harvest.Transmission.ResultMessage
 
-	z.output <- feed
+	z.output <- harvest
 
 }
 
-func processFeedOK(feed *model.Feed, rsp *http.Response) {
-	feed.Transmission.Result = model.FetchResultOK
-	feed.Transmission.ContentType = rsp.Header.Get(hContentType)
-	feed.Transmission.ETag = rsp.Header.Get(hEtag)
-	feed.Transmission.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
-	feed.Transmission.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
-	feed.ETag = feed.Transmission.ETag
-	feed.LastModified = feed.Transmission.LastModified
+func processFeedOK(harvest *model.Harvest, rsp *http.Response) {
+	harvest.Transmission.Result = model.FetchResultOK
+	harvest.Transmission.ContentType = rsp.Header.Get(hContentType)
+	harvest.Transmission.ETag = rsp.Header.Get(hEtag)
+	harvest.Transmission.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
+	harvest.Transmission.UsesGzip = usesGzip(rsp.Header.Get(hContentEncoding))
+	harvest.Feed.ETag = harvest.Transmission.ETag
+	harvest.Feed.LastModified = harvest.Transmission.LastModified
 }
 
-func processFeedOKButCannotParse(feed *model.Feed, err error) {
-	feed.Transmission.Result = model.FetchResultFeedError
-	feed.Transmission.ResultMessage = err.Error()
+func processFeedOKButCannotParse(harvest *model.Harvest, err error) {
+	harvest.Transmission.Result = model.FetchResultFeedError
+	harvest.Transmission.ResultMessage = err.Error()
 }
 
-func processFeedOKAndParse(feed *model.Feed, size int, xmlFeed *feedparser.Feed) {
-	feed.Transmission.ContentLength = size
-	feed.Transmission.Flavor = xmlFeed.Flavor
-	feed.Transmission.Generator = xmlFeed.Generator
-	feed.Transmission.Title = xmlFeed.Title
-	feed.Title = xmlFeed.Title
-	feed.SiteURL = xmlFeed.LinkAlternate
+func processFeedOKAndParse(harvest *model.Harvest, size int, xmlFeed *feedparser.Feed) {
+	harvest.Transmission.ContentLength = size
+	harvest.Transmission.Flavor = xmlFeed.Flavor
+	harvest.Transmission.Generator = xmlFeed.Generator
+	harvest.Transmission.Title = xmlFeed.Title
+	harvest.Feed.Title = xmlFeed.Title
+	harvest.Feed.SiteURL = xmlFeed.LinkAlternate
 
 	// convert Items to Items
 	for _, xmlEntry := range xmlFeed.Entries {
-		item := feed.AddItem(xmlEntry.ID)
+		item := harvest.AddItem(xmlEntry.ID)
 		item.Created = xmlEntry.Created
 		item.Updated = xmlEntry.Updated
 		item.Title = xmlEntry.Title
@@ -236,26 +238,26 @@ func processFeedOKAndParse(feed *model.Feed, size int, xmlFeed *feedparser.Feed)
 
 }
 
-func processFeedClientError(feed *model.Feed, err error) {
-	feed.Transmission.Result = model.FetchResultClientError
-	feed.Transmission.ResultMessage = err.Error()
+func processFeedClientError(harvest *model.Harvest, err error) {
+	harvest.Transmission.Result = model.FetchResultClientError
+	harvest.Transmission.ResultMessage = err.Error()
 }
 
-func processFeedServerError(feed *model.Feed, rsp *http.Response) {
-	feed.Transmission.Result = model.FetchResultServerError
+func processFeedServerError(harvest *model.Harvest, rsp *http.Response) {
+	harvest.Transmission.Result = model.FetchResultServerError
 }
 
-func processFeedMovedPermanently(feed *model.Feed, rsp *http.Response) {
-	feed.Transmission.Result = model.FetchResultRedirect
+func processFeedMovedPermanently(harvest *model.Harvest, rsp *http.Response) {
+	harvest.Transmission.Result = model.FetchResultRedirect
 	newURL := rsp.Header.Get(hLocation)
-	feed.Transmission.ResultMessage = fmt.Sprintf("%s moved %s", feed.URL, newURL)
-	feed.URL = newURL // update feed
+	harvest.Transmission.ResultMessage = fmt.Sprintf("%s moved %s", harvest.Feed.URL, newURL)
+	harvest.Feed.URL = newURL // update feed
 }
 
-func processFeedNotModified(feed *model.Feed, rsp *http.Response) {
-	feed.Transmission.Result = model.FetchResultOK
-	feed.Transmission.ETag = rsp.Header.Get(hEtag)
-	feed.Transmission.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
+func processFeedNotModified(harvest *model.Harvest, rsp *http.Response) {
+	harvest.Transmission.Result = model.FetchResultOK
+	harvest.Transmission.ETag = rsp.Header.Get(hEtag)
+	harvest.Transmission.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 }
 
 func newRequest(feed *model.Feed) *http.Request {

@@ -1,7 +1,6 @@
 package fetch
 
 import (
-	"bytes"
 	"compress/gzip"
 	"io"
 	"net/http"
@@ -39,21 +38,5 @@ func readBody(rsp *http.Response) (io.ReadCloser, error) {
 	}
 
 	return rsp.Body, nil
-
-}
-
-func unzipReader(data io.Reader) ([]byte, error) {
-
-	r, err := gzip.NewReader(data)
-	if err != nil {
-		return nil, err
-	}
-
-	var uncompressedData bytes.Buffer
-	if _, err = io.Copy(&uncompressedData, r); err != nil {
-		return nil, err
-	}
-
-	return uncompressedData.Bytes(), nil
 
 }
