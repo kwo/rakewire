@@ -49,6 +49,15 @@ func (z Items) GroupByFeedID() map[string]Items {
 	return result
 }
 
+// GroupByGUID groups collections of elements in Items by GUID
+func (z Items) GroupByGUID() map[string]*Item {
+	result := make(map[string]*Item)
+	for _, item := range z {
+		result[item.GUID] = item
+	}
+	return result
+}
+
 // Item from a feed
 type Item struct {
 	ID      string    `json:"id"`

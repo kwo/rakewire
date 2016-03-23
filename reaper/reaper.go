@@ -13,12 +13,11 @@ const (
 	logDebug = "[DEBUG]"
 	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"
-	logError = "[ERROR]"
 )
 
 // Service for saving fetch responses back to the database
 type Service struct {
-	Input      chan *model.Feed
+	Input      chan *model.Harvest
 	database   model.Database
 	killsignal chan bool
 	running    int32
@@ -26,10 +25,10 @@ type Service struct {
 }
 
 // NewService create a new service
-func NewService(cfg *model.Configuration, database model.Database) *Service {
+func NewService(cfg *model.Config, database model.Database) *Service {
 
 	return &Service{
-		Input:      make(chan *model.Feed),
+		Input:      make(chan *model.Harvest),
 		database:   database,
 		killsignal: make(chan bool),
 	}
@@ -60,6 +59,19 @@ func (z *Service) Stop() {
 	log.Printf("%-7s %-7s service stopped", logInfo, logName)
 }
 
+// IsRunning status of the service
+func (z *Service) IsRunning() bool {
+	return atomic.LoadInt32(&z.running) != 0
+}
+
+func (z *Service) setRunning(running bool) {
+	if running {
+		atomic.StoreInt32(&z.running, 1)
+	} else {
+		atomic.StoreInt32(&z.running, 0)
+	}
+}
+
 func (z *Service) run() {
 
 	log.Printf("%-7s %-7s run starting...", logDebug, logName)
@@ -67,8 +79,8 @@ func (z *Service) run() {
 run:
 	for {
 		select {
-		case rsp := <-z.Input:
-			z.processResponse(rsp)
+		case harvest := <-z.Input:
+			z.reapHarvest(harvest)
 		case <-z.killsignal:
 			break run
 		}
@@ -82,27 +94,16 @@ run:
 
 }
 
-func (z *Service) processResponse(feed *model.Feed) {
+func (z *Service) reapHarvest(harvest *model.Harvest) {
 
 	err := z.database.Update(func(tx model.Transaction) error {
 
-		// query previous items of feed
-		var guIDs []string
-		for _, item := range feed.Items {
-			guIDs = append(guIDs, item.GUID)
-		}
-
-		dbItems0, err := model.ItemsByGUID(feed.ID, guIDs, tx)
-		if err != nil {
-			log.Printf("%-7s %-7s Cannot get previous feed items %s: %s", logWarn, logName, feed.URL, err.Error())
-			return err
-		}
-		dbItems := dbItems0.GroupByGUID()
+		dbItems := z.getDatabaseItems(tx, harvest.Items).GroupByGUID()
 
 		// setIDs, check dates for new items
 		var mostRecent time.Time
 		newItemCount := 0
-		for _, item := range feed.Items {
+		for _, item := range harvest.Items {
 
 			if dbItem, ok := dbItems[item.GUID]; !ok {
 
@@ -143,40 +144,51 @@ func (z *Service) processResponse(feed *model.Feed) {
 
 		} // loop items
 
-		feed.Transmission.LastUpdated = mostRecent
+		harvest.Transmission.LastUpdated = mostRecent
 
 		// only bump up LastUpdated if mostRecent is after previous time
 		// lastUpdated can move forward if no new items, if an existing item has been updated
-		if mostRecent.After(feed.LastUpdated) {
-			feed.LastUpdated = mostRecent
+		if mostRecent.After(harvest.Feed.LastUpdated) {
+			harvest.Feed.LastUpdated = mostRecent
 		}
 
-		if feed.Transmission.Result == model.FetchResultOK {
-			if feed.LastUpdated.IsZero() {
-				feed.LastUpdated = time.Now() // only if new items?
+		if harvest.Transmission.Result == model.FetchResultOK {
+			if harvest.Feed.LastUpdated.IsZero() {
+				harvest.Feed.LastUpdated = time.Now() // only if new items?
 			}
 		}
 
-		feed.Transmission.ItemCount = len(feed.Items)
-		feed.Transmission.NewItems = newItemCount
+		harvest.Transmission.ItemCount = len(harvest.Items)
+		harvest.Transmission.NewItems = newItemCount
 
-		switch feed.Status {
+		switch harvest.Feed.Status {
 		case model.FetchResultOK:
-			feed.UpdateFetchTime(feed.LastUpdated)
+			harvest.Feed.UpdateFetchTime(harvest.Feed.LastUpdated)
 		case model.FetchResultRedirect:
-			feed.AdjustFetchTime(1 * time.Second)
+			harvest.Feed.AdjustFetchTime(1 * time.Second)
 		default: // errors
-			feed.UpdateFetchTime(feed.StatusSince)
+			harvest.Feed.UpdateFetchTime(harvest.Feed.StatusSince)
 		}
 
-		// save feed
-		_, err = feed.Save(tx)
-		if err != nil {
-			log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, feed.URL, err.Error())
+		// save transmission
+		if err := model.T.Save(tx, harvest.Transmission); err != nil {
+			log.Printf("%-7s %-7s Cannot save transmission %s: %s", logWarn, logName, harvest.Transmission.URL, err.Error())
 			return err
 		}
 
-		log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logDebug, logName, feed.Status, feed.Transmission.StatusCode, feed.LastUpdated.Local().Format("02.01.06 15:04"), feed.Transmission.NewItems, feed.Transmission.ItemCount, feed.URL, feed.StatusMessage)
+		// save items
+		if err := model.I.SaveAll(tx, harvest.Items); err != nil {
+			log.Printf("%-7s %-7s Cannot save items %s: %s", logWarn, logName, harvest.Feed.URL, err.Error())
+			return err
+		}
+
+		// save feed
+		if err := model.F.Save(tx, harvest.Feed); err != nil {
+			log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, harvest.Feed.URL, err.Error())
+			return err
+		}
+
+		log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logDebug, logName, harvest.Feed.Status, harvest.Transmission.StatusCode, harvest.Feed.LastUpdated.Local().Format("02.01.06 15:04"), harvest.Transmission.NewItems, harvest.Transmission.ItemCount, harvest.Feed.URL, harvest.Feed.StatusMessage)
 
 		return nil
 
@@ -188,15 +200,16 @@ func (z *Service) processResponse(feed *model.Feed) {
 
 }
 
-// IsRunning status of the service
-func (z *Service) IsRunning() bool {
-	return atomic.LoadInt32(&z.running) != 0
-}
+func (z *Service) getDatabaseItems(tx model.Transaction, items model.Items) model.Items {
 
-func (z *Service) setRunning(running bool) {
-	if running {
-		atomic.StoreInt32(&z.running, 1)
-	} else {
-		atomic.StoreInt32(&z.running, 0)
+	result := model.Items{}
+
+	for _, item := range items {
+		if dbItem := model.I.GetByGUID(tx, item.FeedID, item.GUID); dbItem != nil {
+			result = append(result, dbItem)
+		}
 	}
+
+	return result
+
 }
