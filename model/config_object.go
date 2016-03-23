@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 )
 
+// GetID returns the unique ID for the object
 func (z *Config) GetID() string {
 	return idConfig
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// GetID returns the unique ID for the object
 func (z *Feed) GetID() string {
 	return z.ID
 }
