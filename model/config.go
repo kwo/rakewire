@@ -15,6 +15,7 @@ type Config struct {
 	Sequences sequences
 	Fetch     fetchConfig
 	Log       logConfig
+	Poll      pollConfig
 }
 
 type fetchConfig struct {
@@ -24,6 +25,11 @@ type fetchConfig struct {
 
 type logConfig struct {
 	Level string
+}
+
+type pollConfig struct {
+	Interval string
+	Limit    int
 }
 
 type sequences struct {

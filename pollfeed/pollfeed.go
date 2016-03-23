@@ -9,8 +9,6 @@ import (
 )
 
 const (
-	pollInterval        = "poll.interval"
-	pollLimit           = "poll.limit"
 	pollIntervalDefault = time.Second * 5
 	pollLimitDefault    = 10
 )
@@ -21,7 +19,6 @@ const (
 	logDebug = "[DEBUG]"
 	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"
-	logError = "[ERROR]"
 )
 
 // Service for pumping feeds between fetcher and database
@@ -39,17 +36,17 @@ type Service struct {
 }
 
 // NewService create a new service
-func NewService(cfg *model.Configuration, database model.Database) *Service {
+func NewService(cfg *model.Config, database model.Database) *Service {
 
-	interval, err := time.ParseDuration(cfg.Get(pollInterval, pollIntervalDefault.String()))
+	interval, err := time.ParseDuration(cfg.GetStr(cfg.Poll.Interval, pollIntervalDefault.String()))
 	if err != nil {
 		interval = pollIntervalDefault
-		log.Printf("%-7s %-7s Bad or missing interval configuration parameter (%s), setting to default of %s.", logWarn, logName, pollInterval, pollIntervalDefault.String())
+		log.Printf("%-7s %-7s Bad or missing poll interval configuration parameter, setting to default of %s.", logWarn, logName, pollIntervalDefault.String())
 	}
 
 	return &Service{
 		Output:       make(chan *model.Feed),
-		limit:        cfg.GetInt(pollLimit, pollLimitDefault),
+		limit:        cfg.GetInt(cfg.Poll.Limit, pollLimitDefault),
 		database:     database,
 		pollInterval: interval,
 		killsignal:   make(chan bool),
@@ -128,13 +125,7 @@ func (z *Service) poll(t time.Time) {
 	err := z.database.Select(func(tx model.Transaction) error {
 
 		// get next feeds
-		feeds, err := model.FeedsFetch(t, tx)
-		if err != nil {
-			log.Printf("%-7s %-7s Cannot poll feeds: %s", logWarn, logName, err.Error())
-			z.setPolling(false)
-			z.polllatch.Done()
-			return err
-		}
+		feeds := model.F.GetNext(tx, t)
 
 		// limit runs to X feeds
 		if z.limit > 0 && len(feeds) > z.limit {
