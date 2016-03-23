@@ -5,19 +5,16 @@ import (
 )
 
 const (
-	logName  = "[fever]"
-	logDebug = "[DEBUG]"
-	logInfo  = "[INFO]"
-	logWarn  = "[WARN]"
-	logError = "[ERROR]"
+	logName = "[fever]"
+	logWarn = "[WARN]"
 )
 
 const (
 	hContentType = "Content-Type"
 	mGet         = "GET"
-	mPost        = "POST"
-	mPut         = "PUT"
-	mimeJSON     = "text/json; charset=utf-8"
+	//	mPost        = "POST"
+	mPut     = "PUT"
+	mimeJSON = "text/json; charset=utf-8"
 )
 
 func notFound(w http.ResponseWriter, req *http.Request) {

@@ -29,13 +29,6 @@ func openTestDatabase(t *testing.T) model.Database {
 		t.Fatalf("Cannot open database: %s", err.Error())
 	}
 
-	// err = boltDB.Update(func(tx model.Transaction) error {
-	// 	return populateDatabase(tx)
-	// })
-	// if err != nil {
-	// 	t.Fatalf("Cannot populate database: %s", err.Error())
-	// }
-
 	return boltDB
 
 }
