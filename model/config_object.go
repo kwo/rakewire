@@ -15,7 +15,7 @@ func (z *Config) setID(tx Transaction) error {
 
 func (z *Config) clear() {
 	z.ID = empty
-	z.LoggingLevel = empty
+	z.Log.Level = empty
 	z.Sequences = sequences{}
 }
 

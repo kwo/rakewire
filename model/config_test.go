@@ -31,7 +31,7 @@ func TestConfig(t *testing.T) {
 	// get, update config
 	if err := database.Update(func(tx Transaction) error {
 		config := C.Get(tx)
-		config.LoggingLevel = loglevel
+		config.Log.Level = loglevel
 		config.Sequences.User = userID
 		return C.Put(tx, config)
 	}); err != nil {
@@ -42,8 +42,8 @@ func TestConfig(t *testing.T) {
 	if err := database.Select(func(tx Transaction) error {
 		config := C.Get(tx)
 
-		if config.LoggingLevel != loglevel {
-			t.Errorf("Bad loglevel, expected %s, actual %s", loglevel, config.LoggingLevel)
+		if config.Log.Level != loglevel {
+			t.Errorf("Bad loglevel, expected %s, actual %s", loglevel, config.Log.Level)
 		}
 
 		if config.Sequences.User != userID {

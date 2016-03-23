@@ -11,9 +11,13 @@ var (
 
 // Config defines the application configurtion.
 type Config struct {
-	ID           string
-	LoggingLevel string
-	Sequences    sequences
+	ID        string
+	Sequences sequences
+	Log       logConfig
+}
+
+type logConfig struct {
+	Level string
 }
 
 type sequences struct {
