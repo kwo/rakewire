@@ -94,9 +94,9 @@ func main() {
 
 	// initialize logging
 	loggingConfiguration := &logging.Configuration{
-		File:    cfg.Get("logging.file", ""),
-		Level:   cfg.Get("logging.level", "WARN"),
-		NoColor: cfg.GetBool("logging.nocolor", false),
+		File:    cfg.GetStr("logging.file"),
+		Level:   cfg.GetStr("logging.level", "WARN"),
+		NoColor: cfg.GetBool("logging.nocolor"),
 	}
 	loggingConfiguration.Init()
 

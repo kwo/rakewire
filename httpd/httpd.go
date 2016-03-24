@@ -15,7 +15,6 @@ import (
 
 const (
 	logName  = "[httpd]"
-	logDebug = "[DEBUG]"
 	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"
 	logError = "[ERROR]"
@@ -23,7 +22,6 @@ const (
 
 const (
 	httpdAccessLevel        = "httpd.accesslevel"
-	httpdAddress            = "httpd.address"
 	httpdHost               = "httpd.host"
 	httpdPort               = "httpd.port"
 	httpdTLSPort            = "httpd.tls.port"
@@ -31,7 +29,6 @@ const (
 	httpdTLSPublic          = "httpd.tls.public"
 	httpdUseTLS             = "httpd.tls.active"
 	httpdAccessLevelDefault = "DEBUG"
-	httpdAddressDefault     = ""
 	httpdHostDefault        = "localhost"
 	httpdPortDefault        = 8888
 	httpdTLSPortDefault     = 4444
@@ -63,29 +60,21 @@ type Service struct {
 }
 
 const (
-	hAcceptEncoding  = "Accept-Encoding"
-	hContentEncoding = "Content-Encoding"
-	hContentLength   = "Content-Length"
-	hContentType     = "Content-Type"
-	hVary            = "Vary"
-	mGet             = "GET"
-	mPost            = "POST"
-	mPut             = "PUT"
-	mimeHTML         = "text/html; charset=utf-8"
-	mimeJSON         = "application/json"
-	mimeText         = "text/plain; charset=utf-8"
+	hContentType = "Content-Type"
+	mGet         = "GET"
+	mimeText     = "text/plain; charset=utf-8"
 )
 
 // NewService creates a new httpd service.
 func NewService(cfg *model.Configuration, database model.Database) *Service {
 	return &Service{
 		database:    database,
-		accessLevel: cfg.Get(httpdAccessLevel, httpdAccessLevelDefault),
-		host:        cfg.Get(httpdHost, httpdHostDefault),
+		accessLevel: cfg.GetStr(httpdAccessLevel, httpdAccessLevelDefault),
+		host:        cfg.GetStr(httpdHost, httpdHostDefault),
 		port:        cfg.GetInt(httpdPort, httpdPortDefault),
 		tlsPort:     cfg.GetInt(httpdTLSPort, httpdTLSPortDefault),
-		tlsPublic:   cfg.Get(httpdTLSPublic, httpdTLSPublicDefault),
-		tlsPrivate:  cfg.Get(httpdTLSPrivate, httpdTLSPrivateDefault),
+		tlsPublic:   cfg.GetStr(httpdTLSPublic, httpdTLSPublicDefault),
+		tlsPrivate:  cfg.GetStr(httpdTLSPrivate, httpdTLSPrivateDefault),
 		useTLS:      cfg.GetBool(httpdUseTLS, httpdUseTLSDefault),
 	}
 }
