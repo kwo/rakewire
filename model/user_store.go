@@ -15,7 +15,7 @@ var (
 type userStore struct{}
 
 func (z *userStore) Delete(tx Transaction, id string) error {
-	return delete(tx, entityUser, id)
+	return deleteObject(tx, entityUser, id)
 }
 
 func (z *userStore) GetByFeverhash(tx Transaction, feverhash string) *User {
@@ -57,5 +57,5 @@ func (z *userStore) Save(tx Transaction, user *User) error {
 	if u := z.GetByUsername(tx, user.Username); u != nil {
 		return ErrUsernameTaken
 	}
-	return save(tx, entityUser, user)
+	return saveObject(tx, entityUser, user)
 }

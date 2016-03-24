@@ -10,7 +10,7 @@ var G = &groupStore{}
 type groupStore struct{}
 
 func (z *groupStore) Delete(tx Transaction, id string) error {
-	return delete(tx, entityGroup, id)
+	return deleteObject(tx, entityGroup, id)
 }
 
 func (z *groupStore) Get(tx Transaction, id string) *Group {
@@ -47,5 +47,5 @@ func (z *groupStore) New(userID, name string) *Group {
 }
 
 func (z *groupStore) Save(tx Transaction, group *Group) error {
-	return save(tx, entityGroup, group)
+	return saveObject(tx, entityGroup, group)
 }

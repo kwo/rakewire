@@ -11,7 +11,7 @@ var T = &transmissionStore{}
 type transmissionStore struct{}
 
 func (z *transmissionStore) Delete(tx Transaction, id string) error {
-	return delete(tx, entityTransmission, id)
+	return deleteObject(tx, entityTransmission, id)
 }
 
 func (z *transmissionStore) Get(tx Transaction, id string) *Transmission {
@@ -79,5 +79,5 @@ func (z *transmissionStore) New(feedID string) *Transmission {
 }
 
 func (z *transmissionStore) Save(tx Transaction, transmission *Transmission) error {
-	return save(tx, entityTransmission, transmission)
+	return saveObject(tx, entityTransmission, transmission)
 }

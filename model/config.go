@@ -1,5 +1,9 @@
 package model
 
+import (
+	"strconv"
+)
+
 const (
 	entityConfig = "Config"
 	idConfig     = "configuration"
@@ -9,27 +13,11 @@ var (
 	indexesConfig = []string{}
 )
 
-// Config defines the application configurtion.
-type Config struct {
+// Configuration defines the application configurtion.
+type Configuration struct {
 	ID        string
 	Sequences sequences
-	Fetch     fetchConfig
-	Log       logConfig
-	Poll      pollConfig
-}
-
-type fetchConfig struct {
-	Timeout string
-	Workers int
-}
-
-type logConfig struct {
-	Level string
-}
-
-type pollConfig struct {
-	Interval string
-	Limit    int
+	Values    map[string]string
 }
 
 type sequences struct {
@@ -40,18 +28,66 @@ type sequences struct {
 	Transmission uint64
 }
 
-// GetInt returns the given value if nonzero otherwise the default value
-func (cfg *Config) GetInt(value int, defaultValue int) int {
-	if value != 0 {
-		return value
+// GetBool returns the given value if exists otherwise the default value
+func (z *Configuration) GetBool(name string, defaultValue ...bool) bool {
+	if valueStr, ok := z.Values[name]; ok {
+		if value, err := strconv.ParseBool(valueStr); err == nil {
+			return value
+		}
 	}
-	return defaultValue
+	if len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+	return false
 }
 
-// GetStr returns the given value if not empty otherwise the default value
-func (cfg *Config) GetStr(value string, defaultValue string) string {
-	if value != empty {
+// SetBool sets a boolean configuration value
+func (z *Configuration) SetBool(name string, value bool) {
+	if value {
+		z.Values[name] = strconv.FormatBool(value)
+	} else {
+		delete(z.Values, name)
+	}
+}
+
+// GetInt returns the given value if exists otherwise the default value
+func (z *Configuration) GetInt(name string, defaultValue ...int) int {
+	if valueStr, ok := z.Values[name]; ok {
+		if value, err := strconv.ParseInt(valueStr, 10, 64); err == nil {
+			return int(value)
+		}
+	}
+	if len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+	return 0
+}
+
+// SetInt sets an integer configuration value
+func (z *Configuration) SetInt(name string, value int) {
+	if value != 0 {
+		z.Values[name] = strconv.FormatInt(int64(value), 10)
+	} else {
+		delete(z.Values, name)
+	}
+}
+
+// GetStr returns the given value if exists otherwise the default value
+func (z *Configuration) GetStr(name string, defaultValue ...string) string {
+	if value, ok := z.Values[name]; ok {
 		return value
 	}
-	return defaultValue
+	if len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+	return empty
+}
+
+// SetStr sets an integer configuration value
+func (z *Configuration) SetStr(name string, value string) {
+	if value != empty {
+		z.Values[name] = value
+	} else {
+		delete(z.Values, name)
+	}
 }

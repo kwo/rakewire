@@ -5,8 +5,8 @@ var C = &configStore{}
 
 type configStore struct{}
 
-func (z *configStore) Get(tx Transaction) *Config {
-	config := &Config{}
+func (z *configStore) Get(tx Transaction) *Configuration {
+	config := z.New()
 	bData := tx.Bucket(bucketData, entityConfig)
 	if data := bData.Get([]byte(idConfig)); data != nil {
 		config.decode(data)
@@ -14,6 +14,12 @@ func (z *configStore) Get(tx Transaction) *Config {
 	return config
 }
 
-func (z *configStore) Put(tx Transaction, config *Config) error {
-	return save(tx, entityConfig, config)
+func (z *configStore) New() *Configuration {
+	return &Configuration{
+		Values: make(map[string]string),
+	}
+}
+
+func (z *configStore) Put(tx Transaction, config *Configuration) error {
+	return saveObject(tx, entityConfig, config)
 }

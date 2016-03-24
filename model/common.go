@@ -26,7 +26,7 @@ var (
 func getObject(entityName string) Object {
 	switch entityName {
 	case entityConfig:
-		return &Config{}
+		return &Configuration{}
 	case entityEntry:
 		return &Entry{}
 	case entityFeed:

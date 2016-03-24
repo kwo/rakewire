@@ -41,7 +41,7 @@ func (z *entryStore) AddItems(tx Transaction, allItems Items) error {
 }
 
 func (z *entryStore) Delete(tx Transaction, id string) error {
-	return delete(tx, entityEntry, id)
+	return deleteObject(tx, entityEntry, id)
 }
 
 func (z *entryStore) Get(tx Transaction, id ...string) *Entry {
@@ -103,7 +103,7 @@ func (z *entryStore) Range(tx Transaction, userID string, minmax ...string) Entr
 }
 
 func (z *entryStore) Save(tx Transaction, entry *Entry) error {
-	return save(tx, entityEntry, entry)
+	return saveObject(tx, entityEntry, entry)
 }
 
 func (z *entryStore) SaveAll(tx Transaction, entries Entries) error {

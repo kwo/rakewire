@@ -10,7 +10,7 @@ var S = &subscriptionStore{}
 type subscriptionStore struct{}
 
 func (z *subscriptionStore) Delete(tx Transaction, id string) error {
-	return delete(tx, entitySubscription, id)
+	return deleteObject(tx, entitySubscription, id)
 }
 
 // Get returns the subscription with the given compoundID or the given userID and feedID
@@ -69,5 +69,5 @@ func (z *subscriptionStore) New(userID, feedID string) *Subscription {
 }
 
 func (z *subscriptionStore) Save(tx Transaction, subscription *Subscription) error {
-	return save(tx, entitySubscription, subscription)
+	return saveObject(tx, entitySubscription, subscription)
 }

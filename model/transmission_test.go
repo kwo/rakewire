@@ -17,7 +17,7 @@ func TestTransmissionSetup(t *testing.T) {
 		t.Error("missing allEntities entry")
 	}
 
-	c := &Config{}
+	c := C.New()
 	if obj := c.Sequences.Transmission; obj != 0 {
 		t.Error("missing sequences entry")
 	}

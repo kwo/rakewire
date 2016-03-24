@@ -10,7 +10,7 @@ var I = &itemStore{}
 type itemStore struct{}
 
 func (z *itemStore) Delete(tx Transaction, id string) error {
-	return delete(tx, entityItem, id)
+	return deleteObject(tx, entityItem, id)
 }
 
 // Get returns the item with the given itemID
@@ -68,7 +68,7 @@ func (z *itemStore) New(feedID, guid string) *Item {
 }
 
 func (z *itemStore) Save(tx Transaction, item *Item) error {
-	return save(tx, entityItem, item)
+	return saveObject(tx, entityItem, item)
 }
 
 func (z *itemStore) SaveAll(tx Transaction, items Items) error {

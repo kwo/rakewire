@@ -5,25 +5,25 @@ import (
 )
 
 // GetID returns the unique ID for the object
-func (z *Config) GetID() string {
+func (z *Configuration) GetID() string {
 	return idConfig
 }
 
-func (z *Config) setID(tx Transaction) error {
+func (z *Configuration) setID(tx Transaction) error {
 	return nil
 }
 
-func (z *Config) clear() {
+func (z *Configuration) clear() {
 	z.ID = empty
-	z.Log.Level = empty
 	z.Sequences = sequences{}
+	z.Values = make(map[string]string)
 }
 
-func (z *Config) encode() ([]byte, error) {
+func (z *Configuration) encode() ([]byte, error) {
 	return json.Marshal(z)
 }
 
-func (z *Config) decode(data []byte) error {
+func (z *Configuration) decode(data []byte) error {
 	z.clear()
 	if err := json.Unmarshal(data, z); err != nil {
 		return err
@@ -31,6 +31,6 @@ func (z *Config) decode(data []byte) error {
 	return nil
 }
 
-func (z *Config) indexes() map[string][]string {
+func (z *Configuration) indexes() map[string][]string {
 	return map[string][]string{}
 }

@@ -25,13 +25,14 @@ func TestConfig(t *testing.T) {
 	database := openTestDatabase(t)
 	defer closeTestDatabase(t, database)
 
-	loglevel := "TRACE"
 	var userID uint64 = 1
 
 	// get, update config
 	if err := database.Update(func(tx Transaction) error {
 		config := C.Get(tx)
-		config.Log.Level = loglevel
+		config.SetBool("one", true)
+		config.SetInt("two", 1)
+		config.SetStr("three", empty)
 		config.Sequences.User = userID
 		return C.Put(tx, config)
 	}); err != nil {
@@ -42,8 +43,22 @@ func TestConfig(t *testing.T) {
 	if err := database.Select(func(tx Transaction) error {
 		config := C.Get(tx)
 
-		if config.Log.Level != loglevel {
-			t.Errorf("Bad loglevel, expected %s, actual %s", loglevel, config.Log.Level)
+		boolValue := config.GetBool("one")
+		boolValueExpected := true
+		if !boolValue {
+			t.Errorf("Bad bool value: %t, expected %t", boolValue, boolValueExpected)
+		}
+
+		intValue := config.GetInt("two")
+		intValueExpected := 1
+		if intValue != intValueExpected {
+			t.Errorf("Bad int value: %d, expected %d", intValue, intValueExpected)
+		}
+
+		strValue := config.GetStr("three", "hello")
+		strValueExpected := "hello"
+		if strValue != strValueExpected {
+			t.Errorf("Bad str value: %s, expected %s", strValue, strValueExpected)
 		}
 
 		if config.Sequences.User != userID {
