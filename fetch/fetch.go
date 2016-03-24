@@ -37,6 +37,11 @@ var (
 	ErrRestart = errors.New("The service is already started")
 )
 
+const (
+	fetchTimeout = "fetch.timeout"
+	fetchWorkers = "fetch.workers"
+)
+
 var (
 	fetchTimeoutDefault = time.Second * 20
 	fetchWorkersDefault = 10
@@ -55,15 +60,15 @@ type Service struct {
 }
 
 // NewService create new fetcher service
-func NewService(cfg *model.Config, input chan *model.Feed, output chan *model.Harvest) *Service {
-	timeout, err := time.ParseDuration(cfg.Fetch.Timeout)
+func NewService(cfg *model.Configuration, input chan *model.Feed, output chan *model.Harvest) *Service {
+	timeout, err := time.ParseDuration(cfg.GetStr(fetchTimeout, fetchTimeoutDefault.String()))
 	if err != nil {
 		timeout = fetchTimeoutDefault
 	}
 	return &Service{
 		input:   input,
 		output:  output,
-		workers: cfg.GetInt(cfg.Fetch.Workers, fetchWorkersDefault),
+		workers: cfg.GetInt(fetchWorkers, fetchWorkersDefault),
 		client:  newInternalClient(timeout),
 	}
 }

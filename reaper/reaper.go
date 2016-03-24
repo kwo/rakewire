@@ -25,7 +25,7 @@ type Service struct {
 }
 
 // NewService create a new service
-func NewService(cfg *model.Config, database model.Database) *Service {
+func NewService(cfg *model.Configuration, database model.Database) *Service {
 
 	return &Service{
 		Input:      make(chan *model.Harvest),

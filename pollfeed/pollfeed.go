@@ -9,7 +9,9 @@ import (
 )
 
 const (
+	pollInterval        = "poll.interval"
 	pollIntervalDefault = time.Second * 5
+	pollLimit           = "poll.limit"
 	pollLimitDefault    = 10
 )
 
@@ -36,9 +38,9 @@ type Service struct {
 }
 
 // NewService create a new service
-func NewService(cfg *model.Config, database model.Database) *Service {
+func NewService(cfg *model.Configuration, database model.Database) *Service {
 
-	interval, err := time.ParseDuration(cfg.GetStr(cfg.Poll.Interval, pollIntervalDefault.String()))
+	interval, err := time.ParseDuration(cfg.GetStr(pollInterval, pollIntervalDefault.String()))
 	if err != nil {
 		interval = pollIntervalDefault
 		log.Printf("%-7s %-7s Bad or missing poll interval configuration parameter, setting to default of %s.", logWarn, logName, pollIntervalDefault.String())
@@ -46,7 +48,7 @@ func NewService(cfg *model.Config, database model.Database) *Service {
 
 	return &Service{
 		Output:       make(chan *model.Feed),
-		limit:        cfg.GetInt(cfg.Poll.Limit, pollLimitDefault),
+		limit:        cfg.GetInt(pollLimit, pollLimitDefault),
 		database:     database,
 		pollInterval: interval,
 		killsignal:   make(chan bool),
