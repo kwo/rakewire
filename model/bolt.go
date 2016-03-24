@@ -20,7 +20,7 @@ func (z *boltInstance) Open(location string) (Database, error) {
 	}
 
 	err = boltDB.Update(func(tx *bolt.Tx) error {
-		return checkSchema(tx)
+		return z.checkSchema(tx)
 	})
 	if err != nil {
 		boltDB.Close()

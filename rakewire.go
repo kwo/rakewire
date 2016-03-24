@@ -20,8 +20,6 @@ import (
 
 const (
 	logName  = "[main]"
-	logTrace = "[TRACE]"
-	logDebug = "[DEBUG]"
 	logInfo  = "[INFO]"
 	logWarn  = "[WARN]"
 	logError = "[ERROR]"
@@ -40,7 +38,6 @@ func main() {
 	var flagVersion = flag.Bool("version", false, "print version and exit")
 	var flagFile = flag.String("f", "rakewire.db", "file to open as the rakewire database")
 	var flagCheckDatabase = flag.Bool("check", false, "check database integrity and exit")
-	var flagCheckDatabaseIf = flag.Bool("checkif", false, "check database integrity if version differs then exit")
 	var flagPidFile = flag.String("pidfile", "/var/run/rakewire.pid", "PID file")
 	flag.Parse()
 
@@ -54,41 +51,39 @@ func main() {
 
 	model.AppStart = time.Now()
 
-	dbFile, errDbFile := filepath.Abs(*flagFile)
-	if errDbFile != nil {
-		log.Printf("Cannot find database file: %s\n", errDbFile.Error())
+	var dbFile string
+	if filename, err := filepath.Abs(*flagFile); err == nil {
+		dbFile = filename
+	} else {
+		log.Printf("Cannot find database file: %s\n", err.Error())
 		return
 	}
-
 	log.Printf("Database:   %s\n", dbFile)
 
 	if *flagCheckDatabase {
-		if err := model.CheckDatabaseIntegrity(dbFile); err != nil {
-			log.Printf("Error: %s\n", err.Error())
-			os.Exit(1)
-		}
-		return
-	} else if *flagCheckDatabaseIf {
-		if err := model.CheckDatabaseIntegrityIf(dbFile); err != nil {
+		if err := model.Instance.Check(dbFile); err != nil {
 			log.Printf("Error: %s\n", err.Error())
 			os.Exit(1)
 		}
 		return
 	}
 
-	database, errDb := model.OpenDatabase(dbFile)
-	if errDb != nil {
-		log.Println(errDb.Error())
-		model.CloseDatabase(database)
+	if db, err := model.Instance.Open(dbFile); db != nil && err == nil {
+		database = db
+	} else if err != nil {
+		log.Println(err.Error())
+		model.Instance.Close(db)
 		return
-	} else if database == nil {
+	} else if db == nil {
 		return
 	}
 
-	cfg, errCfg := loadConfiguration(database)
-	if errCfg != nil {
-		log.Printf("Abort! Cannot load configuration: %s", errCfg.Error())
-		model.CloseDatabase(database)
+	var cfg *model.Configuration
+	if c, err := loadConfiguration(database); err == nil {
+		cfg = c
+	} else {
+		log.Printf("Abort! Cannot load configuration: %s", err.Error())
+		model.Instance.Close(database)
 		return
 	}
 
@@ -151,7 +146,7 @@ func monitorShutdown(chErrors chan error, pidFile string) {
 	polld.Stop()
 	fetchd.Stop()
 	reaperd.Stop()
-	if err := model.CloseDatabase(database); err != nil {
+	if err := model.Instance.Close(database); err != nil {
 		log.Printf("%-7s %-7s Error closing database: %s", logWarn, logName, err.Error())
 	}
 
@@ -162,9 +157,10 @@ func monitorShutdown(chErrors chan error, pidFile string) {
 }
 
 func loadConfiguration(db model.Database) (*model.Configuration, error) {
-	cfg := model.NewConfiguration()
+	cfg := model.C.New()
 	err := db.Select(func(tx model.Transaction) error {
-		return cfg.Load(tx)
+		cfg = model.C.Get(tx)
+		return nil
 	})
 	return cfg, err
 }

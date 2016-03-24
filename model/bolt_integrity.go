@@ -4,7 +4,7 @@ import (
 	"github.com/boltdb/bolt"
 )
 
-func checkSchema(tx *bolt.Tx) error {
+func (z *boltInstance) checkSchema(tx *bolt.Tx) error {
 
 	var b *bolt.Bucket
 
@@ -36,4 +36,8 @@ func checkSchema(tx *bolt.Tx) error {
 
 	return nil
 
+}
+
+func (z *boltInstance) Check(filename string) error {
+	return nil
 }
