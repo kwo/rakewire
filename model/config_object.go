@@ -14,7 +14,6 @@ func (z *Configuration) setID(tx Transaction) error {
 }
 
 func (z *Configuration) clear() {
-	z.ID = empty
 	z.Sequences = sequences{}
 	z.Values = make(map[string]string)
 }

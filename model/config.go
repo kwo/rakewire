@@ -15,7 +15,6 @@ var (
 
 // Configuration defines the application configurtion.
 type Configuration struct {
-	ID        string
 	Sequences sequences
 	Values    map[string]string
 }
