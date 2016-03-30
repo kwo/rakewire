@@ -25,3 +25,6 @@
 [submodule "vendor/github.com/antonholmquist/jason"]
 	path = vendor/github.com/antonholmquist/jason
 	url = https://github.com/antonholmquist/jason
+[submodule "vendor/github.com/murphysean/cache"]
+	path = vendor/github.com/murphysean/cache
+	url = https://github.com/murphysean/cache
