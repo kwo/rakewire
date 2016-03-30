@@ -18,6 +18,17 @@ var (
 // Subscriptions is a collection of Subscription objects.
 type Subscriptions []*Subscription
 
+// ByFeedID groups elements in the Subscriptions collection by FeedID
+func (z Subscriptions) ByFeedID() map[string]Subscriptions {
+	result := make(map[string]Subscriptions)
+	for _, subscription := range z {
+		subscriptions := result[subscription.FeedID]
+		subscriptions = append(subscriptions, subscription)
+		result[subscription.FeedID] = subscriptions
+	}
+	return result
+}
+
 // ByTitle groups elements in the Subscriptions collection by Name
 func (z Subscriptions) ByTitle() map[string]*Subscription {
 	result := make(map[string]*Subscription)

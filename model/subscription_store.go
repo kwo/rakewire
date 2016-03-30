@@ -68,6 +68,18 @@ func (z *subscriptionStore) New(userID, feedID string) *Subscription {
 	}
 }
 
+func (z *subscriptionStore) Range(tx Transaction) Subscriptions {
+	subscriptions := Subscriptions{}
+	c := tx.Bucket(bucketData, entitySubscription).Cursor()
+	for k, v := c.First(); k != nil; k, v = c.Next() {
+		subscription := &Subscription{}
+		if err := subscription.decode(v); err == nil {
+			subscriptions = append(subscriptions, subscription)
+		}
+	}
+	return subscriptions
+}
+
 func (z *subscriptionStore) Save(tx Transaction, subscription *Subscription) error {
 	return saveObject(tx, entitySubscription, subscription)
 }

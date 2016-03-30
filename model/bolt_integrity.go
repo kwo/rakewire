@@ -85,19 +85,13 @@ func (z *boltInstance) backupDatabase(location string) (string, error) {
 
 }
 
-func (z *boltInstance) findFirstMatchingSubscriptionForFeed(tx Transaction) lookupFunc {
+func (z *boltInstance) findMatchingSubscriptionForFeed(tx Transaction) lookupFunc {
+	subscriptionsByFeedID := S.Range(tx).ByFeedID()
 	return func(id ...string) bool {
 		feedID := id[0]
-		subscription := &Subscription{}
-		c := tx.Bucket(bucketData, entitySubscription).Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			subscription.clear()
-			if err := subscription.decode(v); err == nil {
-				if subscription.FeedID == feedID {
-					return true
-				}
-			}
-		} // loop
+		if subscriptions, ok := subscriptionsByFeedID[feedID]; ok {
+			return len(subscriptions) > 0
+		}
 		return false
 	}
 }
@@ -199,7 +193,7 @@ func (z *boltInstance) checkFeeds(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		subscriptionExists := z.findFirstMatchingSubscriptionForFeed(tx)
+		subscriptionExists := z.findMatchingSubscriptionForFeed(tx)
 
 		badIDs := []string{}
 		c := tx.Bucket(bucketData, entityFeed).Cursor()
