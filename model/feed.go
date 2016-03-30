@@ -3,6 +3,8 @@ package model
 //go:generate gokv $GOFILE
 
 import (
+	"sort"
+	"strings"
 	"time"
 )
 
@@ -20,6 +22,17 @@ var (
 
 // Feeds is a collection of Feed elements
 type Feeds []*Feed
+
+func (z Feeds) Len() int      { return len(z) }
+func (z Feeds) Swap(i, j int) { z[i], z[j] = z[j], z[i] }
+func (z Feeds) Less(i, j int) bool {
+	return z[i].ID < z[j].ID
+}
+
+// SortByID sort collection by ID
+func (z Feeds) SortByID() {
+	sort.Stable(z)
+}
 
 // ByID groups elements in the Feeds collection by ID
 func (z Feeds) ByID() map[string]*Feed {
@@ -41,13 +54,14 @@ func (z Feeds) ByURL() map[string]*Feed {
 	return result
 }
 
-// ByURLAll groups elements in the Feeds collection by URL
+// ByURLAll groups elements in the Feeds collection by lowercase URL
 func (z Feeds) ByURLAll() map[string]Feeds {
 	result := make(map[string]Feeds)
 	for _, feed := range z {
-		feeds := result[feed.URL]
+		url := strings.ToLower(feed.URL)
+		feeds := result[url]
 		feeds = append(feeds, feed)
-		result[feed.URL] = feeds
+		result[url] = feeds
 	}
 	return result
 }

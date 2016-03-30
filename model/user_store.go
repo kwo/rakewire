@@ -53,6 +53,18 @@ func (z *userStore) New(username string) *User {
 	}
 }
 
+func (z *userStore) Range(tx Transaction) Users {
+	users := Users{}
+	c := tx.Bucket(bucketData, entityUser).Cursor()
+	for k, v := c.First(); k != nil; k, v = c.Next() {
+		user := &User{}
+		if err := user.decode(v); err == nil {
+			users = append(users, user)
+		}
+	}
+	return users
+}
+
 func (z *userStore) Save(tx Transaction, user *User) error {
 	if u := z.GetByUsername(tx, user.Username); u != nil {
 		return ErrUsernameTaken

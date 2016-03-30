@@ -1,6 +1,7 @@
 package model
 
 import (
+	"sort"
 	"time"
 )
 
@@ -17,6 +18,17 @@ var (
 
 // Subscriptions is a collection of Subscription objects.
 type Subscriptions []*Subscription
+
+func (z Subscriptions) Len() int      { return len(z) }
+func (z Subscriptions) Swap(i, j int) { z[i], z[j] = z[j], z[i] }
+func (z Subscriptions) Less(i, j int) bool {
+	return z[i].Added.Before(z[j].Added)
+}
+
+// SortByAddedDate sort collection by AddedDate
+func (z Subscriptions) SortByAddedDate() {
+	sort.Stable(z)
+}
 
 // ByFeedID groups elements in the Subscriptions collection by FeedID
 func (z Subscriptions) ByFeedID() map[string]Subscriptions {
