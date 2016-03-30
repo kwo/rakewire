@@ -72,3 +72,19 @@ func TestConfig(t *testing.T) {
 	}
 
 }
+
+func TestConfigJson(t *testing.T) {
+
+	t.Parallel()
+	config := C.New()
+	config.Sequences.User++
+	config.SetStr("logging.level", "DEBUG")
+
+	data, err := config.encode()
+	if err != nil {
+		t.Errorf("Error encoding config: %s", err.Error())
+	}
+
+	t.Log(string(data))
+
+}

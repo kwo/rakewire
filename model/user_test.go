@@ -240,3 +240,20 @@ func TestUserGets(t *testing.T) {
 	}
 
 }
+
+func TestUserJson(t *testing.T) {
+
+	t.Parallel()
+
+	user := U.New("karl@ostendorf.com")
+	if err := user.SetPassword("abcdefg"); err != nil {
+		t.Errorf("Error setting user password: %s", err.Error())
+	}
+	data, err := user.encode()
+	if err != nil {
+		t.Errorf("Error encoding user: %s", err.Error())
+	}
+
+	t.Log(string(data))
+
+}
