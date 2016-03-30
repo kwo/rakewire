@@ -30,11 +30,24 @@ func (z Feeds) ByID() map[string]*Feed {
 	return result
 }
 
-// ByURL groups elements in the Feeds collection by URL
+// ByURL maps feeds keyed by URL.
+// If multiple feeds exist with the same URL, the last feed will be keyed and the others ignored.
+// See also ByURLAll
 func (z Feeds) ByURL() map[string]*Feed {
 	result := make(map[string]*Feed)
 	for _, feed := range z {
 		result[feed.URL] = feed
+	}
+	return result
+}
+
+// ByURLAll groups elements in the Feeds collection by URL
+func (z Feeds) ByURLAll() map[string]Feeds {
+	result := make(map[string]Feeds)
+	for _, feed := range z {
+		feeds := result[feed.URL]
+		feeds = append(feeds, feed)
+		result[feed.URL] = feeds
 	}
 	return result
 }
