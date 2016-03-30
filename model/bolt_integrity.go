@@ -21,7 +21,7 @@ func (z *boltInstance) Check(filename string) error {
 
 	// backup database (rename to backup name)
 	var backupFilename string
-	if name, err := z.backupDatabase(filename); err == nil {
+	if name, err := backupDatabase(filename); err == nil {
 		backupFilename = name
 	} else {
 		return err
@@ -46,22 +46,24 @@ func (z *boltInstance) Check(filename string) error {
 	defer z.Close(newDb)
 
 	// copy buckets
-	if err := z.copyBuckets(oldDb, newDb); err != nil {
+	if err := copyBuckets(oldDb, newDb); err != nil {
 		return err
 	}
 
 	// TODO: check integrity of each bucket
 	log.Printf("%-7s %-7s validating data...", logInfo, logName)
-	if err := z.checkSubscriptions(newDb); err != nil {
+	if err := checkSubscriptions(newDb); err != nil {
 		return err
 	}
-	if err := z.checkFeeds(newDb); err != nil {
+	// check for feeds without subscription and duplicate feeds
+	// check for multiple subscriptions to same feed
+	if err := checkFeeds(newDb); err != nil {
 		return err
 	}
 	log.Printf("%-7s %-7s validating data done", logInfo, logName)
 
 	// rebuild indexes
-	if err := z.rebuildIndexes(oldDb, newDb); err != nil {
+	if err := rebuildIndexes(oldDb, newDb); err != nil {
 		return err
 	}
 
@@ -69,7 +71,7 @@ func (z *boltInstance) Check(filename string) error {
 
 }
 
-func (z *boltInstance) backupDatabase(location string) (string, error) {
+func backupDatabase(location string) (string, error) {
 
 	now := time.Now().Truncate(time.Second)
 	timestamp := now.Format("20060102150405")
@@ -85,7 +87,7 @@ func (z *boltInstance) backupDatabase(location string) (string, error) {
 
 }
 
-func (z *boltInstance) findMatchingSubscriptionForFeed(tx Transaction) lookupFunc {
+func findMatchingSubscriptionForFeed(tx Transaction) lookupFunc {
 	subscriptionsByFeedID := S.Range(tx).ByFeedID()
 	return func(id ...string) bool {
 		feedID := id[0]
@@ -96,7 +98,7 @@ func (z *boltInstance) findMatchingSubscriptionForFeed(tx Transaction) lookupFun
 	}
 }
 
-func (z *boltInstance) makeFeedCache(tx Transaction, max int) lookupFunc {
+func makeFeedCache(tx Transaction, max int) lookupFunc {
 
 	c := &cache.PowerCache{}
 	c.MaxKeys = max
@@ -118,7 +120,7 @@ func (z *boltInstance) makeFeedCache(tx Transaction, max int) lookupFunc {
 
 }
 
-func (z *boltInstance) makeGroupCache(tx Transaction, max int) lookupFunc {
+func makeGroupCache(tx Transaction, max int) lookupFunc {
 
 	c := &cache.PowerCache{}
 	c.MaxKeys = max
@@ -141,31 +143,7 @@ func (z *boltInstance) makeGroupCache(tx Transaction, max int) lookupFunc {
 
 }
 
-func (z *boltInstance) makeSubscriptionCache(tx Transaction, max int) lookupFunc {
-
-	c := &cache.PowerCache{}
-	c.MaxKeys = max
-	c.ValueLoader = func(key string) (interface{}, error) {
-		if s := S.Get(tx, key); s != nil {
-			return s, nil
-		}
-		return nil, cache.ErrNotPresent
-	}
-	c.Initialize()
-
-	return func(id ...string) bool {
-		userID := id[0]
-		feedID := id[1]
-		key := keyEncode(userID, feedID)
-		if s, err := c.Get(key); s != nil && err == nil {
-			return true
-		}
-		return false
-	}
-
-}
-
-func (z *boltInstance) makeUserCache(tx Transaction, max int) lookupFunc {
+func makeUserCache(tx Transaction, max int) lookupFunc {
 
 	c := &cache.PowerCache{}
 	c.MaxKeys = max
@@ -187,13 +165,13 @@ func (z *boltInstance) makeUserCache(tx Transaction, max int) lookupFunc {
 
 }
 
-func (z *boltInstance) checkFeeds(db Database) error {
+func checkFeeds(db Database) error {
 
 	log.Printf("%-7s %-7s   %s ...", logInfo, logName, entityFeed)
 
 	return db.Update(func(tx Transaction) error {
 
-		subscriptionExists := z.findMatchingSubscriptionForFeed(tx)
+		subscriptionExists := findMatchingSubscriptionForFeed(tx)
 
 		badIDs := []string{}
 		c := tx.Bucket(bucketData, entityFeed).Cursor()
@@ -224,15 +202,39 @@ func (z *boltInstance) checkFeeds(db Database) error {
 
 }
 
-func (z *boltInstance) checkSubscriptions(db Database) error {
+func checkFeedDuplicates(db Database) error {
+
+	log.Printf("%-7s %-7s   %s duplicates ...", logInfo, logName, entityFeed)
+
+	return db.Update(func(tx Transaction) error {
+
+		feedsByURL := F.Range(tx).ByURLAll()
+
+		// url
+		for _, feeds := range feedsByURL {
+			if len(feeds) > 1 {
+				// get subscriptions
+				// rewrite subscriptions
+			}
+		}
+
+		// TODO: remove bad feeds
+
+		return nil
+
+	})
+
+}
+
+func checkSubscriptions(db Database) error {
 
 	log.Printf("%-7s %-7s   %s ...", logInfo, logName, entitySubscription)
 
 	return db.Update(func(tx Transaction) error {
 
-		userExists := z.makeUserCache(tx, 50)
-		feedExists := z.makeFeedCache(tx, 500)
-		groupExists := z.makeGroupCache(tx, 500)
+		userExists := makeUserCache(tx, 50)
+		feedExists := makeFeedCache(tx, 500)
+		groupExists := makeGroupCache(tx, 500)
 
 		badIDs := []string{}
 		cleanedSubscriptions := Subscriptions{}
@@ -296,7 +298,7 @@ func (z *boltInstance) checkSubscriptions(db Database) error {
 
 }
 
-func (z *boltInstance) copyBuckets(srcDb, dstDb Database) error {
+func copyBuckets(srcDb, dstDb Database) error {
 
 	log.Printf("%-7s %-7s copying buckets...", logInfo, logName)
 	err := srcDb.Select(func(srcTx Transaction) error {
@@ -335,7 +337,7 @@ func (z *boltInstance) copyBuckets(srcDb, dstDb Database) error {
 
 }
 
-func (z *boltInstance) rebuildIndexes(srcDb, dstDb Database) error {
+func rebuildIndexes(srcDb, dstDb Database) error {
 
 	log.Printf("%-7s %-7s rebuild indexes...", logInfo, logName)
 	err := srcDb.Select(func(srcTx Transaction) error {
