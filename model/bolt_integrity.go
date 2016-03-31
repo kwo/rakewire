@@ -52,6 +52,9 @@ func (z *boltInstance) Check(filename string) error {
 
 	log.Printf("%-7s %-7s validating data...", logInfo, logName)
 
+	// enforce referential integrity
+	// enforce unique fields
+
 	if err := removeBogusSubscriptions(newDb); err != nil {
 		return err
 	}
@@ -72,9 +75,29 @@ func (z *boltInstance) Check(filename string) error {
 		return err
 	}
 
+	if err := removeBogusGroups(newDb); err != nil {
+		return err
+	}
+
+	// TODO: remove duplicate group names
+
 	if err := removeBogusGroupsFromSubscriptions(newDb); err != nil {
 		return err
 	}
+
+	if err := removeBogusItems(newDb); err != nil {
+		return err
+	}
+
+	if err := removeBogusEntries(newDb); err != nil {
+		return err
+	}
+
+	if err := removeBogusTransmissions(newDb); err != nil {
+		return err
+	}
+
+	// TODO: warn on duplicate user names
 
 	log.Printf("%-7s %-7s validating data done", logInfo, logName)
 
@@ -174,6 +197,28 @@ func makeFeedCache(tx Transaction, max int) lookupFunc {
 	return func(id ...string) bool {
 		feedID := id[0]
 		if f, err := c.Get(feedID); f != nil && err == nil {
+			return true
+		}
+		return false
+	}
+
+}
+
+func makeItemCache(tx Transaction, max int) lookupFunc {
+
+	c := &cache.PowerCache{}
+	c.MaxKeys = max
+	c.ValueLoader = func(key string) (interface{}, error) {
+		if i := I.Get(tx, key); i != nil {
+			return i, nil
+		}
+		return nil, cache.ErrNotPresent
+	}
+	c.Initialize()
+
+	return func(id ...string) bool {
+		itemID := id[0]
+		if i, err := c.Get(itemID); i != nil && err == nil {
 			return true
 		}
 		return false
@@ -301,6 +346,125 @@ func rebuildIndexes(db Database) error {
 
 }
 
+func removeBogusEntries(db Database) error {
+
+	log.Printf("%-7s %-7s   remove bogus entries...", logInfo, logName)
+
+	return db.Update(func(tx Transaction) error {
+
+		userExists := makeUserCache(tx, 50)
+		feedExists := makeFeedCache(tx, 500)
+		itemExists := makeItemCache(tx, 50)
+		badIDs := []string{}
+
+		c := tx.Bucket(bucketData, entityEntry).Cursor()
+
+		entry := &Entry{}
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			entry.clear()
+			if err := entry.decode(v); err == nil {
+				if !userExists(entry.UserID) {
+					log.Printf("    entry without user: %s (%s)", entry.UserID, entry.GetID())
+					badIDs = append(badIDs, entry.GetID())
+				} else if !feedExists(entry.FeedID) {
+					log.Printf("    entry without feed: %s (%s)", entry.FeedID, entry.GetID())
+					badIDs = append(badIDs, entry.GetID())
+				} else if !itemExists(entry.ItemID) {
+					log.Printf("    entry without item: %s (%s)", entry.ItemID, entry.GetID())
+					badIDs = append(badIDs, entry.GetID())
+				}
+			} else {
+				return err
+			}
+		}
+
+		// remove bad subscriptions
+		for _, id := range badIDs {
+			if err := E.Delete(tx, id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
+func removeBogusItems(db Database) error {
+
+	log.Printf("%-7s %-7s   remove bogus items...", logInfo, logName)
+
+	return db.Update(func(tx Transaction) error {
+
+		feedExists := makeFeedCache(tx, 500)
+		badIDs := []string{}
+
+		c := tx.Bucket(bucketData, entityItem).Cursor()
+
+		item := &Item{}
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			item.clear()
+			if err := item.decode(v); err == nil {
+				if !feedExists(item.FeedID) {
+					log.Printf("    item without feed: %s (%s %s)", item.FeedID, item.GetID(), item.GUID)
+					badIDs = append(badIDs, item.GetID())
+				}
+			} else {
+				return err
+			}
+		}
+
+		// remove bad items
+		for _, id := range badIDs {
+			if err := I.Delete(tx, id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
+func removeBogusGroups(db Database) error {
+
+	log.Printf("%-7s %-7s   remove bogus groups...", logInfo, logName)
+
+	return db.Update(func(tx Transaction) error {
+
+		userExists := makeUserCache(tx, 50)
+		badIDs := []string{}
+
+		c := tx.Bucket(bucketData, entityGroup).Cursor()
+
+		group := &Group{}
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			group.clear()
+			if err := group.decode(v); err == nil {
+				if !userExists(group.UserID) {
+					log.Printf("    group without user: %s (%s)", group.UserID, group.GetID())
+					badIDs = append(badIDs, group.GetID())
+				}
+			} else {
+				return err
+			}
+		}
+
+		// remove bad items
+		for _, id := range badIDs {
+			if err := G.Delete(tx, id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
 func removeBogusGroupsFromSubscriptions(db Database) error {
 
 	log.Printf("%-7s %-7s   remove bogus groups from subscriptions...", logInfo, logName)
@@ -385,6 +549,43 @@ func removeBogusSubscriptions(db Database) error {
 		// remove bad subscriptions
 		for _, id := range badIDs {
 			if err := S.Delete(tx, id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
+func removeBogusTransmissions(db Database) error {
+
+	log.Printf("%-7s %-7s   remove bogus transmissions...", logInfo, logName)
+
+	return db.Update(func(tx Transaction) error {
+
+		feedExists := makeFeedCache(tx, 500)
+		badIDs := []string{}
+
+		c := tx.Bucket(bucketData, entityTransmission).Cursor()
+
+		transmission := &Transmission{}
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			transmission.clear()
+			if err := transmission.decode(v); err == nil {
+				if !feedExists(transmission.FeedID) {
+					log.Printf("    transmission without feed: %s (%s)", transmission.FeedID, transmission.GetID())
+					badIDs = append(badIDs, transmission.GetID())
+				}
+			} else {
+				return err
+			}
+		}
+
+		// remove bad items
+		for _, id := range badIDs {
+			if err := T.Delete(tx, id); err != nil {
 				return err
 			}
 		}
