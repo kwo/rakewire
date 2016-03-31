@@ -62,11 +62,12 @@ func (z *boltInstance) Check(filename string) error {
 		return err
 	}
 
+	// enforces uniqueness of lowercase feed.URL
 	if err := migrateSubscriptionsToFirstOfDuplicateFeeds(newDb); err != nil {
 		return err
 	}
 
-	if err := removeDuplicateSubscriptions(newDb); err != nil {
+	if err := removeSubscriptionsToSameFeed(newDb); err != nil {
 		return err
 	}
 
@@ -78,7 +79,7 @@ func (z *boltInstance) Check(filename string) error {
 		return err
 	}
 
-	// TODO: remove duplicate group names
+	// TODO: test for unique group names by userID, groupName (lowercase)
 
 	if err := removeBogusGroupsFromSubscriptions(newDb); err != nil {
 		return err
@@ -88,6 +89,8 @@ func (z *boltInstance) Check(filename string) error {
 		return err
 	}
 
+	// TODO: remove non-unique Item GUIDs (FeedID, GUID lowercase)
+
 	if err := removeBogusEntries(newDb); err != nil {
 		return err
 	}
@@ -96,7 +99,7 @@ func (z *boltInstance) Check(filename string) error {
 		return err
 	}
 
-	// TODO: warn on duplicate user names
+	// TODO: warn on duplicate user names (lowercase)
 
 	log.Printf("%-7s %-7s validating data done", logInfo, logName)
 
@@ -161,23 +164,6 @@ func copyBuckets(srcDb, dstDb Database) error {
 	log.Printf("%-7s %-7s copying buckets done", logInfo, logName)
 
 	return nil
-
-}
-
-func groupSubscriptionsByLowercaseFeedURL(tx Transaction, subscriptions Subscriptions) map[string]Subscriptions {
-
-	result := make(map[string]Subscriptions)
-	feedsByID := F.GetBySubscriptions(tx, subscriptions).ByID()
-
-	for _, subscription := range subscriptions {
-		feed := feedsByID[subscription.FeedID]
-		url := strings.ToLower(feed.URL)
-		subs := result[url]
-		subs = append(subs, subscription)
-		result[url] = subs
-	}
-
-	return result
 
 }
 
@@ -560,46 +546,6 @@ func removeBogusTransmissions(db Database) error {
 
 }
 
-func removeDuplicateSubscriptions(db Database) error {
-
-	log.Printf("%-7s %-7s   remove subscription duplicates...", logInfo, logName)
-
-	// loop thru subscriptions per user
-	// groups subscriptions by lowercase feed url
-	// identify duplicates
-	// assign groups to original
-	// remove duplicate
-
-	return db.Update(func(tx Transaction) error {
-		users := U.Range(tx)
-		for _, user := range users {
-			subscriptions := S.GetForUser(tx, user.ID)
-			subscriptionsByURL := groupSubscriptionsByLowercaseFeedURL(tx, subscriptions)
-			for _, subs := range subscriptionsByURL {
-				if len(subs) > 1 {
-					subs.SortByAddedDate()
-					originalSubscription := subs[0]
-					for _, s := range subs[1:] {
-						for _, groupID := range s.GroupIDs {
-							originalSubscription.AddGroup(groupID)
-						} // groupIDs
-						if err := S.Delete(tx, s.GetID()); err != nil {
-							return err
-						}
-					} // duplicate subscriptions
-					if err := S.Save(tx, originalSubscription); err != nil {
-						return err
-					}
-				} // has duplicates
-			} // subscriptionsByURL
-		} // users
-
-		return nil
-
-	})
-
-}
-
 func removeFeedsWithoutSubscription(db Database) error {
 
 	log.Printf("%-7s %-7s   remove feeds without subscriptions...", logInfo, logName)
@@ -637,6 +583,45 @@ func removeFeedsWithoutSubscription(db Database) error {
 				return err
 			}
 		}
+
+		return nil
+
+	})
+
+}
+
+func removeSubscriptionsToSameFeed(db Database) error {
+
+	log.Printf("%-7s %-7s   remove subscription duplicates...", logInfo, logName)
+
+	// loop thru subscriptions per user
+	// groups subscriptions by lowercase feed url
+	// identify duplicates
+	// assign groups to original
+	// remove duplicate
+
+	return db.Update(func(tx Transaction) error {
+		users := U.Range(tx)
+		for _, user := range users {
+			subscriptionsByFeedID := S.GetForUser(tx, user.ID).ByFeedID()
+			for _, subs := range subscriptionsByFeedID {
+				if len(subs) > 1 {
+					subs.SortByAddedDate()
+					originalSubscription := subs[0]
+					for _, s := range subs[1:] {
+						for _, groupID := range s.GroupIDs {
+							originalSubscription.AddGroup(groupID)
+						} // groupIDs
+						if err := S.Delete(tx, s.GetID()); err != nil {
+							return err
+						}
+					} // duplicate subscriptions
+					if err := S.Save(tx, originalSubscription); err != nil {
+						return err
+					}
+				} // has duplicates
+			} // subscriptionsByFeedID
+		} // users
 
 		return nil
 

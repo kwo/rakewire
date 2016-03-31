@@ -14,11 +14,13 @@
     x Subscription
     x Entry (key: UserID, ItemID)
     x OPML - remove from model
-    - Fever redo
-    - remove old model
+    x Fever redo
+    x remove old model
     - rewrite integrity check
+    - standardize model functions and naming conventions
     - use int32 instead of dates
     - use protobuf
+
 
  - jwt authentication and basic auth
  - gRPC multiplex with JSON API
@@ -27,6 +29,7 @@
    - remove
    - change password
  - add maintenance routine to remove feeds with no subscription
+   - to backup database at periodic intervals (use tx.Write)
  - replace logging with homegrown api - current is BS - log to console and/or database
  - turn off logging to console, store in database, call via api
    - save to buffer, write to db every 5? seconds, api to filter entries by level and category
