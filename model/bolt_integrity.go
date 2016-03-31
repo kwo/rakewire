@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"github.com/murphysean/cache"
 	"log"
 	"os"
 	"path/filepath"
@@ -182,21 +181,13 @@ func groupSubscriptionsByLowercaseFeedURL(tx Transaction, subscriptions Subscrip
 
 }
 
-func makeFeedCache(tx Transaction, max int) lookupFunc {
+func makeFeedLookup(tx Transaction) lookupFunc {
 
-	c := &cache.PowerCache{}
-	c.MaxKeys = max
-	c.ValueLoader = func(key string) (interface{}, error) {
-		if f := F.Get(tx, key); f != nil {
-			return f, nil
-		}
-		return nil, cache.ErrNotPresent
-	}
-	c.Initialize()
+	feedsByID := F.Range(tx).ByID()
 
 	return func(id ...string) bool {
 		feedID := id[0]
-		if f, err := c.Get(feedID); f != nil && err == nil {
+		if _, ok := feedsByID[feedID]; ok {
 			return true
 		}
 		return false
@@ -204,21 +195,25 @@ func makeFeedCache(tx Transaction, max int) lookupFunc {
 
 }
 
-func makeItemCache(tx Transaction, max int) lookupFunc {
+func makeGroupLookup(tx Transaction) lookupFunc {
 
-	c := &cache.PowerCache{}
-	c.MaxKeys = max
-	c.ValueLoader = func(key string) (interface{}, error) {
-		if i := I.Get(tx, key); i != nil {
-			return i, nil
+	groupsByID := G.Range(tx).ByID()
+
+	return func(id ...string) bool {
+		groupID := id[0]
+		if _, ok := groupsByID[groupID]; ok {
+			return true
 		}
-		return nil, cache.ErrNotPresent
+		return false
 	}
-	c.Initialize()
+
+}
+
+func makeItemLookup(tx Transaction) lookupFunc {
 
 	return func(id ...string) bool {
 		itemID := id[0]
-		if i, err := c.Get(itemID); i != nil && err == nil {
+		if i := I.Get(tx, itemID); i != nil {
 			return true
 		}
 		return false
@@ -226,44 +221,13 @@ func makeItemCache(tx Transaction, max int) lookupFunc {
 
 }
 
-func makeGroupCache(tx Transaction, max int) lookupFunc {
+func makeUserLookup(tx Transaction) lookupFunc {
 
-	c := &cache.PowerCache{}
-	c.MaxKeys = max
-	c.ValueLoader = func(key string) (interface{}, error) {
-		if g := G.Get(tx, key); g != nil {
-			return g, nil
-		}
-		return nil, cache.ErrNotPresent
-	}
-	c.Initialize()
+	usersByID := U.Range(tx).ByID()
 
 	return func(id ...string) bool {
 		userID := id[0]
-		groupID := id[1]
-		if g, err := c.Get(groupID); g != nil && err == nil {
-			return g.(*Group).UserID == userID
-		}
-		return false
-	}
-
-}
-
-func makeUserCache(tx Transaction, max int) lookupFunc {
-
-	c := &cache.PowerCache{}
-	c.MaxKeys = max
-	c.ValueLoader = func(key string) (interface{}, error) {
-		if u := U.Get(tx, key); u != nil {
-			return u, nil
-		}
-		return nil, cache.ErrNotPresent
-	}
-	c.Initialize()
-
-	return func(id ...string) bool {
-		userID := id[0]
-		if u, err := c.Get(userID); u != nil && err == nil {
+		if _, ok := usersByID[userID]; ok {
 			return true
 		}
 		return false
@@ -273,7 +237,7 @@ func makeUserCache(tx Transaction, max int) lookupFunc {
 
 func migrateSubscriptionsToFirstOfDuplicateFeeds(db Database) error {
 
-	log.Printf("%-7s %-7s   remove feeds duplicates...", logInfo, logName)
+	log.Printf("%-7s %-7s   remove feed duplicates...", logInfo, logName)
 
 	return db.Update(func(tx Transaction) error {
 
@@ -352,9 +316,9 @@ func removeBogusEntries(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		userExists := makeUserCache(tx, 50)
-		feedExists := makeFeedCache(tx, 500)
-		itemExists := makeItemCache(tx, 50)
+		userExists := makeUserLookup(tx)
+		feedExists := makeFeedLookup(tx)
+		itemExists := makeItemLookup(tx)
 		badIDs := []string{}
 
 		c := tx.Bucket(bucketData, entityEntry).Cursor()
@@ -391,50 +355,13 @@ func removeBogusEntries(db Database) error {
 
 }
 
-func removeBogusItems(db Database) error {
-
-	log.Printf("%-7s %-7s   remove bogus items...", logInfo, logName)
-
-	return db.Update(func(tx Transaction) error {
-
-		feedExists := makeFeedCache(tx, 500)
-		badIDs := []string{}
-
-		c := tx.Bucket(bucketData, entityItem).Cursor()
-
-		item := &Item{}
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			item.clear()
-			if err := item.decode(v); err == nil {
-				if !feedExists(item.FeedID) {
-					log.Printf("    item without feed: %s (%s %s)", item.FeedID, item.GetID(), item.GUID)
-					badIDs = append(badIDs, item.GetID())
-				}
-			} else {
-				return err
-			}
-		}
-
-		// remove bad items
-		for _, id := range badIDs {
-			if err := I.Delete(tx, id); err != nil {
-				return err
-			}
-		}
-
-		return nil
-
-	})
-
-}
-
 func removeBogusGroups(db Database) error {
 
 	log.Printf("%-7s %-7s   remove bogus groups...", logInfo, logName)
 
 	return db.Update(func(tx Transaction) error {
 
-		userExists := makeUserCache(tx, 50)
+		userExists := makeUserLookup(tx)
 		badIDs := []string{}
 
 		c := tx.Bucket(bucketData, entityGroup).Cursor()
@@ -471,7 +398,7 @@ func removeBogusGroupsFromSubscriptions(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		groupExists := makeGroupCache(tx, 500)
+		groupExists := makeGroupLookup(tx)
 		cleanedSubscriptions := Subscriptions{}
 
 		c := tx.Bucket(bucketData, entitySubscription).Cursor()
@@ -518,14 +445,51 @@ func removeBogusGroupsFromSubscriptions(db Database) error {
 
 }
 
+func removeBogusItems(db Database) error {
+
+	log.Printf("%-7s %-7s   remove bogus items...", logInfo, logName)
+
+	return db.Update(func(tx Transaction) error {
+
+		feedExists := makeFeedLookup(tx)
+		badIDs := []string{}
+
+		c := tx.Bucket(bucketData, entityItem).Cursor()
+
+		item := &Item{}
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			item.clear()
+			if err := item.decode(v); err == nil {
+				if !feedExists(item.FeedID) {
+					log.Printf("    item without feed: %s (%s %s)", item.FeedID, item.GetID(), item.GUID)
+					badIDs = append(badIDs, item.GetID())
+				}
+			} else {
+				return err
+			}
+		}
+
+		// remove bad items
+		for _, id := range badIDs {
+			if err := I.Delete(tx, id); err != nil {
+				return err
+			}
+		}
+
+		return nil
+
+	})
+
+}
+
 func removeBogusSubscriptions(db Database) error {
 
 	log.Printf("%-7s %-7s   remove bogus subscriptions...", logInfo, logName)
 
 	return db.Update(func(tx Transaction) error {
 
-		userExists := makeUserCache(tx, 50)
-		feedExists := makeFeedCache(tx, 500)
+		userExists := makeUserLookup(tx)
+		feedExists := makeFeedLookup(tx)
 		badIDs := []string{}
 
 		c := tx.Bucket(bucketData, entitySubscription).Cursor()
@@ -565,7 +529,7 @@ func removeBogusTransmissions(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		feedExists := makeFeedCache(tx, 500)
+		feedExists := makeFeedLookup(tx)
 		badIDs := []string{}
 
 		c := tx.Bucket(bucketData, entityTransmission).Cursor()

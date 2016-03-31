@@ -46,6 +46,18 @@ func (z *groupStore) New(userID, name string) *Group {
 	}
 }
 
+func (z *groupStore) Range(tx Transaction) Groups {
+	groups := Groups{}
+	c := tx.Bucket(bucketData, entityGroup).Cursor()
+	for k, v := c.First(); k != nil; k, v = c.Next() {
+		group := &Group{}
+		if err := group.decode(v); err == nil {
+			groups = append(groups, group)
+		}
+	}
+	return groups
+}
+
 func (z *groupStore) Save(tx Transaction, group *Group) error {
 	return saveObject(tx, entityGroup, group)
 }

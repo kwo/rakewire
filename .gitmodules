@@ -4,9 +4,6 @@
 [submodule "vendor/github.com/boltdb/bolt"]
 	path = vendor/github.com/boltdb/bolt
 	url = https://github.com/boltdb/bolt
-[submodule "vendor/github.com/hashicorp/go-version"]
-	path = vendor/github.com/hashicorp/go-version
-	url = https://github.com/hashicorp/go-version
 [submodule "vendor/golang.org/x/crypto"]
 	path = vendor/golang.org/x/crypto
 	url = https://go.googlesource.com/crypto
@@ -25,6 +22,3 @@
 [submodule "vendor/github.com/antonholmquist/jason"]
 	path = vendor/github.com/antonholmquist/jason
 	url = https://github.com/antonholmquist/jason
-[submodule "vendor/github.com/murphysean/cache"]
-	path = vendor/github.com/murphysean/cache
-	url = https://github.com/murphysean/cache

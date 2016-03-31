@@ -22,6 +22,15 @@ var (
 // Users is a collection of User objects
 type Users []*User
 
+// ByID maps items to their ID
+func (z Users) ByID() map[string]*User {
+	result := make(map[string]*User)
+	for _, user := range z {
+		result[user.ID] = user
+	}
+	return result
+}
+
 // User defines a system user
 type User struct {
 	ID           string `json:"id"`
