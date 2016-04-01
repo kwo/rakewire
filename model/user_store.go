@@ -66,8 +66,10 @@ func (z *userStore) Range(tx Transaction) Users {
 }
 
 func (z *userStore) Save(tx Transaction, user *User) error {
-	if u := z.GetByUsername(tx, user.Username); u != nil {
-		return ErrUsernameTaken
+	if user.GetID() == empty {
+		if u := z.GetByUsername(tx, user.Username); u != nil {
+			return ErrUsernameTaken
+		}
 	}
 	return saveObject(tx, entityUser, user)
 }

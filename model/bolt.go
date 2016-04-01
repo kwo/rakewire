@@ -82,6 +82,16 @@ func (z *boltInstance) checkSchema(tx *bolt.Tx) error {
 
 }
 
+func (z *boltInstance) resetTempBucket(db Database) error {
+	tempBucketName := []byte("tmp")
+	boltDb := db.(*boltDatabase).db
+	return boltDb.Update(func(tx *bolt.Tx) error {
+		tx.DeleteBucket(tempBucketName) // ignore error
+		_, err := tx.CreateBucket(tempBucketName)
+		return err
+	})
+}
+
 type boltDatabase struct {
 	sync.Mutex
 	db *bolt.DB

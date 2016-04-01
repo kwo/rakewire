@@ -16,7 +16,7 @@
     x OPML - remove from model
     x Fever redo
     x remove old model
-    - rewrite integrity check
+    x rewrite integrity check
     - standardize model functions and naming conventions
     - use int32 instead of dates
     - use protobuf

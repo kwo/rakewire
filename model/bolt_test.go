@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
@@ -43,6 +44,28 @@ func closeTestDatabase(t *testing.T, db Database) {
 
 	if err := os.Remove(location); err != nil {
 		t.Errorf("Cannot remove temp file: %s", err.Error())
+	}
+
+}
+
+func TestWhatAreUniqueKeys(t *testing.T) {
+
+	t.Parallel()
+
+	var uniques []string
+
+	// collect unique indexes
+	for entityName := range allEntities {
+		o := getObject(entityName)
+		for indexName, values := range o.indexes() {
+			if len(values) < 3 {
+				uniques = append(uniques, fmt.Sprintf("%s:%s", entityName, indexName))
+			}
+		} // indexes
+	} // entities
+
+	for _, indexName := range uniques {
+		t.Log(indexName)
 	}
 
 }

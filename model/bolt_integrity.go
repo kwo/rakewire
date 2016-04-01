@@ -19,15 +19,15 @@ type lookupFunc func(id ...string) bool
 func (z *boltInstance) Check(filename string) error {
 
 	// backup database (rename to backup name)
-	var backupFilename string
-	if name, err := backupDatabase(filename); err == nil {
-		backupFilename = name
-	} else {
+	backupFilename := z.makeFilenameBackup(filename)
+	if err := os.Rename(filename, backupFilename); err != nil {
 		return err
 	}
 
-	// open both old and new databases
-	// check schema of both databases (in Open)
+	tmpFilename := z.makeFilenameTemp(filename)
+
+	// open both old, new and tmp databases
+	// check schema of all databases (in Open)
 	var oldDb Database
 	if db, err := z.Open(backupFilename); err == nil {
 		oldDb = db
@@ -36,6 +36,86 @@ func (z *boltInstance) Check(filename string) error {
 	}
 	defer z.Close(oldDb)
 
+	var tmpDb Database
+	if db, err := z.Open(tmpFilename); err == nil {
+		tmpDb = db
+	} else {
+		return err
+	}
+	defer z.Close(tmpDb)
+
+	// copy buckets (decoding and re-encoding)
+	if err := z.copyBucketsEncodeDecode(oldDb, tmpDb); err != nil {
+		return err
+	}
+
+	log.Printf("%-7s %-7s validating data...", logInfo, logName)
+
+	// enforce referential integrity
+	// enforce unique fields
+	//   Feed:URL         - migrate subscriptions, remove
+	//   Group:UserIDName - warn only
+	//   Item:FeedIDGUID  - warn only
+	//   User:Username    - warn only
+
+	if err := z.removeBogusSubscriptions(tmpDb); err != nil {
+		return err
+	}
+
+	if err := z.removeFeedsWithoutSubscription(tmpDb); err != nil {
+		return err
+	}
+
+	// enforces uniqueness of lowercase feed.URL
+	if err := z.migrateSubscriptionsToFirstOfDuplicateFeeds(tmpDb); err != nil {
+		return err
+	}
+
+	if err := z.removeSubscriptionsToSameFeed(tmpDb); err != nil {
+		return err
+	}
+
+	if err := z.removeFeedsWithoutSubscription(tmpDb); err != nil {
+		return err
+	}
+
+	if err := z.removeBogusGroups(tmpDb); err != nil {
+		return err
+	}
+
+	// TODO: test for unique group names by userID, groupName
+
+	if err := z.removeBogusGroupsFromSubscriptions(tmpDb); err != nil {
+		return err
+	}
+
+	if err := z.removeBogusItems(tmpDb); err != nil {
+		return err
+	}
+
+	if err := z.removeBogusEntries(tmpDb); err != nil {
+		return err
+	}
+
+	if err := z.removeBogusTransmissions(tmpDb); err != nil {
+		return err
+	}
+
+	if err := z.warnUsersWithSameUsername(tmpDb); err != nil {
+		return err
+	}
+
+	if err := z.warnGroupsWithSameName(tmpDb); err != nil {
+		return err
+	}
+
+	if err := z.warnItemsWithSameGUID(tmpDb); err != nil {
+		return err
+	}
+
+	log.Printf("%-7s %-7s validating data done", logInfo, logName)
+
+	// open new database
 	var newDb Database
 	if db, err := z.Open(filename); err == nil {
 		newDb = db
@@ -45,66 +125,20 @@ func (z *boltInstance) Check(filename string) error {
 	defer z.Close(newDb)
 
 	// copy buckets
-	if err := copyBuckets(oldDb, newDb); err != nil {
+	if err := z.copyBuckets(tmpDb, newDb); err != nil {
 		return err
 	}
-
-	log.Printf("%-7s %-7s validating data...", logInfo, logName)
-
-	// enforce referential integrity
-	// enforce unique fields
-
-	if err := removeBogusSubscriptions(newDb); err != nil {
-		return err
-	}
-
-	if err := removeFeedsWithoutSubscription(newDb); err != nil {
-		return err
-	}
-
-	// enforces uniqueness of lowercase feed.URL
-	if err := migrateSubscriptionsToFirstOfDuplicateFeeds(newDb); err != nil {
-		return err
-	}
-
-	if err := removeSubscriptionsToSameFeed(newDb); err != nil {
-		return err
-	}
-
-	if err := removeFeedsWithoutSubscription(newDb); err != nil {
-		return err
-	}
-
-	if err := removeBogusGroups(newDb); err != nil {
-		return err
-	}
-
-	// TODO: test for unique group names by userID, groupName (lowercase)
-
-	if err := removeBogusGroupsFromSubscriptions(newDb); err != nil {
-		return err
-	}
-
-	if err := removeBogusItems(newDb); err != nil {
-		return err
-	}
-
-	// TODO: remove non-unique Item GUIDs (FeedID, GUID lowercase)
-
-	if err := removeBogusEntries(newDb); err != nil {
-		return err
-	}
-
-	if err := removeBogusTransmissions(newDb); err != nil {
-		return err
-	}
-
-	// TODO: warn on duplicate user names (lowercase)
-
-	log.Printf("%-7s %-7s validating data done", logInfo, logName)
 
 	// rebuild indexes
-	if err := rebuildIndexes(newDb); err != nil {
+	if err := z.rebuildIndexes(newDb); err != nil {
+		return err
+	}
+
+	// close tmpDb, delete
+	if err := z.Close(tmpDb); err != nil {
+		return err
+	}
+	if err := os.Remove(tmpFilename); err != nil {
 		return err
 	}
 
@@ -112,23 +146,37 @@ func (z *boltInstance) Check(filename string) error {
 
 }
 
-func backupDatabase(location string) (string, error) {
+func (z *boltInstance) copyBuckets(srcDb, dstDb Database) error {
 
-	now := time.Now().Truncate(time.Second)
-	timestamp := now.Format("20060102150405")
+	log.Printf("%-7s %-7s copying buckets...", logInfo, logName)
+	err := srcDb.Select(func(srcTx Transaction) error {
+		return dstDb.Update(func(dstTx Transaction) error {
+			for entityName := range allEntities {
+				log.Printf("%-7s %-7s   %s ...", logInfo, logName, entityName)
+				srcBucket := srcTx.Bucket(bucketData, entityName)
+				dstBucket := dstTx.Bucket(bucketData, entityName)
+				c := srcBucket.Cursor()
+				for k, v := c.First(); k != nil; k, v = c.Next() {
+					if err := dstBucket.Put(k, v); err != nil {
+						return err
+					}
+				} // cursor
+			} // entities
+			return nil
+		}) // update
+	}) // select
 
-	dir := filepath.Dir(location)
-	ext := filepath.Ext(location)
-	filename := strings.TrimSuffix(filepath.Base(location), ext)
+	if err != nil {
+		return err
+	}
 
-	newFilename := fmt.Sprintf("%s%s%s-%s%s", dir, string(os.PathSeparator), filename, timestamp, ext)
-	err := os.Rename(location, newFilename)
+	log.Printf("%-7s %-7s copying buckets done", logInfo, logName)
 
-	return newFilename, err
+	return nil
 
 }
 
-func copyBuckets(srcDb, dstDb Database) error {
+func (z *boltInstance) copyBucketsEncodeDecode(srcDb, dstDb Database) error {
 
 	log.Printf("%-7s %-7s copying buckets...", logInfo, logName)
 	err := srcDb.Select(func(srcTx Transaction) error {
@@ -167,7 +215,170 @@ func copyBuckets(srcDb, dstDb Database) error {
 
 }
 
-func makeFeedLookup(tx Transaction) lookupFunc {
+// findItemsWithSameGUID returns a map of items with same guids keyed by FeedID|GUID
+func (z *boltInstance) findItemsWithSameGUID(db Database) (map[string]Items, error) {
+
+	// tmp bucket = FeedID|GUID : ItemIDs (space separated)
+	if err := z.resetTempBucket(db); err != nil {
+		return nil, err
+	}
+
+	err := db.Update(func(tx Transaction) error {
+
+		bTmp := tx.Bucket("tmp")
+
+		item := &Item{}
+		c := tx.Bucket(bucketData, entityItem).Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+
+			if err := item.decode(v); err != nil {
+				return err
+			}
+
+			key := []byte(keyEncode(item.FeedID, item.GUID))
+			var itemIDs string
+
+			if value := bTmp.Get(key); value != nil {
+				itemIDs = string(value)
+			}
+			if len(itemIDs) == 0 {
+				itemIDs = item.GetID()
+			} else {
+				itemIDs = itemIDs + " " + item.GetID()
+			}
+
+			if err := bTmp.Put(key, []byte(itemIDs)); err != nil {
+				return err
+			}
+
+		}
+
+		return nil
+
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]Items)
+
+	err = db.Select(func(tx Transaction) error {
+
+		c := tx.Bucket("tmp").Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			itemIDs := strings.Fields(string(v))
+			if len(itemIDs) > 1 {
+				key := string(k)
+				items := result[key]
+				for _, itemID := range itemIDs {
+					if item := I.Get(tx, itemID); item != nil {
+						items = append(items, item)
+					}
+				}
+				result[key] = items
+			}
+		}
+
+		return nil
+
+	})
+
+	return result, err
+
+}
+
+// findUsersWithSameUsername returns a map of users with same usernames keyed by username (lowercase)
+func (z *boltInstance) findUsersWithSameUsername(db Database) (map[string]Users, error) {
+
+	allUsers := make(map[string]Users)
+
+	err := db.Select(func(tx Transaction) error {
+		user := &User{}
+		c := tx.Bucket(bucketData, entityUser).Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			if err := user.decode(v); err != nil {
+				return err
+			}
+			username := strings.ToLower(user.Username)
+			users := allUsers[username]
+			users = append(users, user)
+			allUsers[username] = users
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]Users)
+	for username, users := range allUsers {
+		if len(users) > 1 {
+			result[username] = users
+		}
+	}
+	return result, err
+
+}
+
+// findGroupsWithSameName returns a map of groups with same names keyed by UserID|Name
+func (z *boltInstance) findGroupsWithSameName(db Database) (map[string]Groups, error) {
+
+	allGroups := make(map[string]Groups)
+
+	err := db.Select(func(tx Transaction) error {
+		group := &Group{}
+		c := tx.Bucket(bucketData, entityGroup).Cursor()
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			if err := group.decode(v); err != nil {
+				return err
+			}
+			key := keyEncode(group.UserID, group.Name)
+			groups := allGroups[key]
+			groups = append(groups, group)
+			allGroups[key] = groups
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]Groups)
+	for key, groups := range allGroups {
+		if len(groups) > 1 {
+			result[key] = groups
+		}
+	}
+	return result, err
+
+}
+
+func (z *boltInstance) makeFilenameBackup(location string) string {
+
+	now := time.Now().Truncate(time.Second)
+	timestamp := now.Format("20060102150405")
+
+	dir := filepath.Dir(location)
+	ext := filepath.Ext(location)
+	filename := strings.TrimSuffix(filepath.Base(location), ext)
+
+	return fmt.Sprintf("%s%s%s-%s%s", dir, string(os.PathSeparator), filename, timestamp, ext)
+
+}
+
+func (z *boltInstance) makeFilenameTemp(location string) string {
+
+	ext := filepath.Ext(location)
+	filename := strings.TrimSuffix(location, ext)
+
+	return fmt.Sprintf("%s%s", filename, ".tmp")
+
+}
+
+func (z *boltInstance) makeLookupFeed(tx Transaction) lookupFunc {
 
 	feedsByID := F.Range(tx).ByID()
 
@@ -181,7 +392,7 @@ func makeFeedLookup(tx Transaction) lookupFunc {
 
 }
 
-func makeGroupLookup(tx Transaction) lookupFunc {
+func (z *boltInstance) makeLookupGroup(tx Transaction) lookupFunc {
 
 	groupsByID := G.Range(tx).ByID()
 
@@ -195,7 +406,7 @@ func makeGroupLookup(tx Transaction) lookupFunc {
 
 }
 
-func makeItemLookup(tx Transaction) lookupFunc {
+func (z *boltInstance) makeLookupItem(tx Transaction) lookupFunc {
 
 	return func(id ...string) bool {
 		itemID := id[0]
@@ -207,7 +418,21 @@ func makeItemLookup(tx Transaction) lookupFunc {
 
 }
 
-func makeUserLookup(tx Transaction) lookupFunc {
+func (z *boltInstance) makeLookupSubscription(tx Transaction) lookupFunc {
+
+	subscriptionsByFeedID := S.Range(tx).ByFeedID()
+
+	return func(id ...string) bool {
+		feedID := id[0]
+		if subscriptions, ok := subscriptionsByFeedID[feedID]; ok {
+			return len(subscriptions) > 0
+		}
+		return false
+	}
+
+}
+
+func (z *boltInstance) makeLookupUser(tx Transaction) lookupFunc {
 
 	usersByID := U.Range(tx).ByID()
 
@@ -221,7 +446,7 @@ func makeUserLookup(tx Transaction) lookupFunc {
 
 }
 
-func migrateSubscriptionsToFirstOfDuplicateFeeds(db Database) error {
+func (z *boltInstance) migrateSubscriptionsToFirstOfDuplicateFeeds(db Database) error {
 
 	log.Printf("%-7s %-7s   remove feed duplicates...", logInfo, logName)
 
@@ -254,7 +479,7 @@ func migrateSubscriptionsToFirstOfDuplicateFeeds(db Database) error {
 
 }
 
-func rebuildIndexes(db Database) error {
+func (z *boltInstance) rebuildIndexes(db Database) error {
 
 	log.Printf("%-7s %-7s rebuild indexes...", logInfo, logName)
 
@@ -296,15 +521,15 @@ func rebuildIndexes(db Database) error {
 
 }
 
-func removeBogusEntries(db Database) error {
+func (z *boltInstance) removeBogusEntries(db Database) error {
 
 	log.Printf("%-7s %-7s   remove bogus entries...", logInfo, logName)
 
 	return db.Update(func(tx Transaction) error {
 
-		userExists := makeUserLookup(tx)
-		feedExists := makeFeedLookup(tx)
-		itemExists := makeItemLookup(tx)
+		userExists := z.makeLookupUser(tx)
+		feedExists := z.makeLookupFeed(tx)
+		itemExists := z.makeLookupItem(tx)
 		badIDs := []string{}
 
 		c := tx.Bucket(bucketData, entityEntry).Cursor()
@@ -341,13 +566,13 @@ func removeBogusEntries(db Database) error {
 
 }
 
-func removeBogusGroups(db Database) error {
+func (z *boltInstance) removeBogusGroups(db Database) error {
 
 	log.Printf("%-7s %-7s   remove bogus groups...", logInfo, logName)
 
 	return db.Update(func(tx Transaction) error {
 
-		userExists := makeUserLookup(tx)
+		userExists := z.makeLookupUser(tx)
 		badIDs := []string{}
 
 		c := tx.Bucket(bucketData, entityGroup).Cursor()
@@ -378,13 +603,13 @@ func removeBogusGroups(db Database) error {
 
 }
 
-func removeBogusGroupsFromSubscriptions(db Database) error {
+func (z *boltInstance) removeBogusGroupsFromSubscriptions(db Database) error {
 
 	log.Printf("%-7s %-7s   remove bogus groups from subscriptions...", logInfo, logName)
 
 	return db.Update(func(tx Transaction) error {
 
-		groupExists := makeGroupLookup(tx)
+		groupExists := z.makeLookupGroup(tx)
 		cleanedSubscriptions := Subscriptions{}
 
 		c := tx.Bucket(bucketData, entitySubscription).Cursor()
@@ -431,13 +656,13 @@ func removeBogusGroupsFromSubscriptions(db Database) error {
 
 }
 
-func removeBogusItems(db Database) error {
+func (z *boltInstance) removeBogusItems(db Database) error {
 
 	log.Printf("%-7s %-7s   remove bogus items...", logInfo, logName)
 
 	return db.Update(func(tx Transaction) error {
 
-		feedExists := makeFeedLookup(tx)
+		feedExists := z.makeLookupFeed(tx)
 		badIDs := []string{}
 
 		c := tx.Bucket(bucketData, entityItem).Cursor()
@@ -468,14 +693,14 @@ func removeBogusItems(db Database) error {
 
 }
 
-func removeBogusSubscriptions(db Database) error {
+func (z *boltInstance) removeBogusSubscriptions(db Database) error {
 
 	log.Printf("%-7s %-7s   remove bogus subscriptions...", logInfo, logName)
 
 	return db.Update(func(tx Transaction) error {
 
-		userExists := makeUserLookup(tx)
-		feedExists := makeFeedLookup(tx)
+		userExists := z.makeLookupUser(tx)
+		feedExists := z.makeLookupFeed(tx)
 		badIDs := []string{}
 
 		c := tx.Bucket(bucketData, entitySubscription).Cursor()
@@ -509,13 +734,13 @@ func removeBogusSubscriptions(db Database) error {
 
 }
 
-func removeBogusTransmissions(db Database) error {
+func (z *boltInstance) removeBogusTransmissions(db Database) error {
 
 	log.Printf("%-7s %-7s   remove bogus transmissions...", logInfo, logName)
 
 	return db.Update(func(tx Transaction) error {
 
-		feedExists := makeFeedLookup(tx)
+		feedExists := z.makeLookupFeed(tx)
 		badIDs := []string{}
 
 		c := tx.Bucket(bucketData, entityTransmission).Cursor()
@@ -546,20 +771,13 @@ func removeBogusTransmissions(db Database) error {
 
 }
 
-func removeFeedsWithoutSubscription(db Database) error {
+func (z *boltInstance) removeFeedsWithoutSubscription(db Database) error {
 
 	log.Printf("%-7s %-7s   remove feeds without subscriptions...", logInfo, logName)
 
 	return db.Update(func(tx Transaction) error {
 
-		subscriptionsByFeedID := S.Range(tx).ByFeedID()
-		subscriptionExists := func(id ...string) bool {
-			feedID := id[0]
-			if subscriptions, ok := subscriptionsByFeedID[feedID]; ok {
-				return len(subscriptions) > 0
-			}
-			return false
-		}
+		subscriptionExists := z.makeLookupSubscription(tx)
 
 		badIDs := []string{}
 		c := tx.Bucket(bucketData, entityFeed).Cursor()
@@ -590,7 +808,7 @@ func removeFeedsWithoutSubscription(db Database) error {
 
 }
 
-func removeSubscriptionsToSameFeed(db Database) error {
+func (z *boltInstance) removeSubscriptionsToSameFeed(db Database) error {
 
 	log.Printf("%-7s %-7s   remove subscription duplicates...", logInfo, logName)
 
@@ -626,5 +844,68 @@ func removeSubscriptionsToSameFeed(db Database) error {
 		return nil
 
 	})
+
+}
+
+func (z *boltInstance) warnItemsWithSameGUID(db Database) error {
+
+	log.Printf("%-7s %-7s   warn item with same guid...", logInfo, logName)
+
+	itemsByFeedIDGUID, err := z.findItemsWithSameGUID(db)
+	if err != nil {
+		return err
+	}
+
+	for key, items := range itemsByFeedIDGUID {
+		ids := strings.Split(key, chSep)
+		feedID := ids[0]
+		guid := ids[1]
+		for _, item := range items {
+			log.Printf("    item with duplicate guid: %s %s %s", feedID, item.ID, guid)
+		}
+	}
+
+	return nil
+
+}
+
+func (z *boltInstance) warnGroupsWithSameName(db Database) error {
+
+	log.Printf("%-7s %-7s   warn groups with same name...", logInfo, logName)
+
+	groupsByUserIDName, err := z.findGroupsWithSameName(db)
+	if err != nil {
+		return err
+	}
+
+	for key, groups := range groupsByUserIDName {
+		ids := strings.Split(key, chSep)
+		userID := ids[0]
+		name := ids[1]
+		for _, group := range groups {
+			log.Printf("    group with same name: %s %s %s", userID, group.ID, name)
+		}
+	}
+
+	return nil
+
+}
+
+func (z *boltInstance) warnUsersWithSameUsername(db Database) error {
+
+	log.Printf("%-7s %-7s   warn users with same username...", logInfo, logName)
+
+	usersByUsername, err := z.findUsersWithSameUsername(db)
+	if err != nil {
+		return err
+	}
+
+	for username, users := range usersByUsername {
+		for _, user := range users {
+			log.Printf("    user with same username: %s %s", user.ID, username)
+		}
+	}
+
+	return nil
 
 }

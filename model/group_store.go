@@ -2,10 +2,15 @@ package model
 
 import (
 	"bytes"
+	"errors"
 )
 
-// G groups all group database methods
-var G = &groupStore{}
+var (
+	// ErrGroupnameTaken occurs when adding a new group with a non-unique group name (per user).
+	ErrGroupnameTaken = errors.New("Group name exists already.")
+	// G groups all group database methods
+	G = &groupStore{}
+)
 
 type groupStore struct{}
 
@@ -59,5 +64,11 @@ func (z *groupStore) Range(tx Transaction) Groups {
 }
 
 func (z *groupStore) Save(tx Transaction, group *Group) error {
+	if group.GetID() == empty {
+		groupsByName := z.GetForUser(tx, group.UserID).ByName()
+		if group := groupsByName[group.Name]; group != nil {
+			return ErrGroupnameTaken
+		}
+	}
 	return saveObject(tx, entityGroup, group)
 }
