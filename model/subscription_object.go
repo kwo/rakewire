@@ -5,6 +5,17 @@ import (
 	"time"
 )
 
+func (z *Subscriptions) encode() ([]byte, error) {
+	return json.Marshal(z)
+}
+
+func (z *Subscriptions) decode(data []byte) error {
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetID returns the unique ID for the object
 func (z *Subscription) GetID() string {
 	return keyEncode(z.UserID, z.FeedID)

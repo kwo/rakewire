@@ -69,18 +69,6 @@ func (z *feedStore) New(url string) *Feed {
 	}
 }
 
-func (z *feedStore) Range(tx Transaction) Feeds {
-	feeds := Feeds{}
-	c := tx.Bucket(bucketData, entityFeed).Cursor()
-	for k, v := c.First(); k != nil; k, v = c.Next() {
-		feed := &Feed{}
-		if err := feed.decode(v); err == nil {
-			feeds = append(feeds, feed)
-		}
-	}
-	return feeds
-}
-
 func (z *feedStore) Save(tx Transaction, feed *Feed) error {
 	return saveObject(tx, entityFeed, feed)
 }

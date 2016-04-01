@@ -73,6 +73,7 @@ func (z *entryStore) New(userID, itemID, feedID string) *Entry {
 	}
 }
 
+// TODO: incorporate into Query
 // Range returns Entries for the given user by internal ID.
 // The optional string parameters are for minID (inclusive) and maxID (exclusive) respectively.
 func (z *entryStore) Range(tx Transaction, userID string, minmax ...string) Entries {

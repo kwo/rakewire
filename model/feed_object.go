@@ -51,3 +51,14 @@ func (z *Feed) indexes() map[string][]string {
 	result[indexFeedURL] = []string{strings.ToLower(z.URL)}
 	return result
 }
+
+func (z *Feeds) encode() ([]byte, error) {
+	return json.Marshal(z)
+}
+
+func (z *Feeds) decode(data []byte) error {
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
+	}
+	return nil
+}

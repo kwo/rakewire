@@ -29,11 +29,8 @@
    - remove
    - change password
  - add maintenance routine to remove feeds with no subscription
-   - to backup database at periodic intervals (use tx.Write)
- - replace logging with homegrown api - current is BS - log to console and/or database
- - turn off logging to console, store in database, call via api
-   - save to buffer, write to db every 5? seconds, api to filter entries by level and category
-   - expire entries by level (TRACE/DEBUG after 10min, other after X days)
+   - to backup database at periodic intervals (use tx.CopyFile)
+ - replace logging with homegrown api - current is BS - log to console LogFunc two levels INFO and DEBUG
 
 ### Goals
   x Save Feed Entries

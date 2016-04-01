@@ -6,6 +6,10 @@ import (
 	"time"
 )
 
+const (
+	bucketTmp = "tmp"
+)
+
 // Instance allows opening and closing new Databases
 var Instance = &boltInstance{}
 
@@ -82,14 +86,16 @@ func (z *boltInstance) checkSchema(tx *bolt.Tx) error {
 
 }
 
-func (z *boltInstance) resetTempBucket(db Database) error {
-	tempBucketName := []byte("tmp")
-	boltDb := db.(*boltDatabase).db
-	return boltDb.Update(func(tx *bolt.Tx) error {
-		tx.DeleteBucket(tempBucketName) // ignore error
-		_, err := tx.CreateBucket(tempBucketName)
+func (z *boltInstance) createTempBucket(tx Transaction, bucketName string) error {
+	tempBucketName := []byte(bucketName)
+	boltTx := tx.(*boltTransaction).tx
+	bTmp, err := boltTx.CreateBucketIfNotExists([]byte(bucketTmp))
+	if err != nil {
 		return err
-	})
+	}
+	bTmp.DeleteBucket(tempBucketName) // ignore error
+	_, err = bTmp.CreateBucket(tempBucketName)
+	return err
 }
 
 type boltDatabase struct {
