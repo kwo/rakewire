@@ -5,6 +5,17 @@ import (
 	"time"
 )
 
+func (z *Items) encode() ([]byte, error) {
+	return json.Marshal(z)
+}
+
+func (z *Items) decode(data []byte) error {
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetID returns the unique ID for the object
 func (z *Item) GetID() string {
 	return z.ID

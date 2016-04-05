@@ -4,6 +4,17 @@ import (
 	"encoding/json"
 )
 
+func (z *Groups) encode() ([]byte, error) {
+	return json.Marshal(z)
+}
+
+func (z *Groups) decode(data []byte) error {
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetID returns the unique ID for the object
 func (z *Group) GetID() string {
 	return z.ID
