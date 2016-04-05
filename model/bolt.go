@@ -86,16 +86,35 @@ func (z *boltInstance) checkSchema(tx *bolt.Tx) error {
 
 }
 
-func (z *boltInstance) createTempBucket(tx Transaction, bucketName string) error {
-	tempBucketName := []byte(bucketName)
-	boltTx := tx.(*boltTransaction).tx
-	bTmp, err := boltTx.CreateBucketIfNotExists([]byte(bucketTmp))
-	if err != nil {
+func (z *boltInstance) createTempTopLevelBucket(db Database) error {
+	boltDb := db.(*boltDatabase).db
+	return boltDb.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(bucketTmp))
 		return err
-	}
+	})
+}
+
+func (z *boltInstance) removeTempTopLevelBucket(db Database) error {
+	boltDb := db.(*boltDatabase).db
+	return boltDb.Update(func(tx *bolt.Tx) error {
+		return tx.DeleteBucket([]byte(bucketTmp))
+	})
+}
+
+func (z *boltInstance) createTempBucket(tx Transaction, bucketName string) Bucket {
+
+	boltTx := tx.(*boltTransaction).tx
+	bTmp := boltTx.Bucket([]byte(bucketTmp))
+
+	tempBucketName := []byte(bucketName)
 	bTmp.DeleteBucket(tempBucketName) // ignore error
-	_, err = bTmp.CreateBucket(tempBucketName)
-	return err
+	b, err := bTmp.CreateBucket(tempBucketName)
+	if err != nil {
+		return nil
+	}
+
+	return &boltBucket{bucket: b}
+
 }
 
 type boltDatabase struct {
