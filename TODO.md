@@ -17,10 +17,15 @@
     x Fever redo
     x remove old model
     x rewrite integrity check
+    - bugfix multiple items with same GUID
     - standardize model functions and naming conventions
+      - need specifics here!!!
+
     - use int32 instead of dates
     - use protobuf
 
+  - add maintenance routine for integrity check
+  - add maintenance routine for db backup
 
  - jwt authentication and basic auth
  - gRPC multiplex with JSON API

@@ -214,130 +214,37 @@ func (z *boltInstance) copyBucketsEncodeDecode(srcDb, dstDb Database) error {
 
 }
 
-// findFeedsWithSameLowercaseURL returns a map of feeds with same lowercase URL keyed by lowercase URL
-// TODO: do not return map but iterate over bucket
-// TODO: rename to indexFeedsByLowercaseURL or similar
-// TODO: take transaction as parameter
-func (z *boltInstance) findFeedsWithSameLowercaseURL(tx Transaction) (map[string]Feeds, error) {
-
-	bTmpFeeds := z.createTempBucket(tx, entityFeed)
+func (z *boltInstance) indexFeedsByURLLowercase(bFeeds, bTmp Bucket) error {
 
 	feed := &Feed{}
-	c := tx.Bucket(bucketData, entityFeed).Cursor()
+	c := bFeeds.Cursor()
 	for k, v := c.First(); k != nil; k, v = c.Next() {
 
 		if err := feed.decode(v); err != nil {
-			return nil, err
+			return err
 		}
 
 		key := []byte(strings.ToLower(feed.URL))
 
 		feeds := Feeds{}
-		if value := bTmpFeeds.Get(key); value != nil {
+		if value := bTmp.Get(key); value != nil {
 			if err := feeds.decode(value); err != nil {
-				return nil, err
+				return err
 			}
 		}
 		feeds = append(feeds, feed)
 
 		if value, err := feeds.encode(); err == nil {
-			if err := bTmpFeeds.Put(key, value); err != nil {
-				return nil, err
+			if err := bTmp.Put(key, value); err != nil {
+				return err
 			}
 		} else {
-			return nil, err
+			return err
 		}
 
 	} // cursor
 
-	result := make(map[string]Feeds)
-
-	feeds := Feeds{}
-	c = bTmpFeeds.Cursor()
-	for k, v := c.First(); k != nil; k, v = c.Next() {
-		if err := feeds.decode(v); err != nil {
-			return nil, err
-		}
-		if len(feeds) > 1 {
-			lowercaseURL := string(k)
-			result[lowercaseURL] = feeds
-		}
-	}
-
-	return result, nil
-
-}
-
-// findItemsWithSameGUID returns a map of items with same guids keyed by FeedID|GUID
-// TODO: redo by creating index by FeedID|GUID in tmp bucket
-// TODO: do not return map but iterate over bucket
-// TODO: rename to indexItemsByFeedIDGUID or similar
-// TODO: take transaction as parameter
-func (z *boltInstance) findItemsWithSameGUID(db Database) (map[string]Items, error) {
-
-	err := db.Update(func(tx Transaction) error {
-
-		bTmp := z.createTempBucket(tx, entityItem)
-
-		item := &Item{}
-		c := tx.Bucket(bucketData, entityItem).Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-
-			if err := item.decode(v); err != nil {
-				return err
-			}
-
-			key := []byte(keyEncode(item.FeedID, item.GUID))
-			var itemIDs string
-
-			if value := bTmp.Get(key); value != nil {
-				itemIDs = string(value)
-			}
-			if len(itemIDs) == 0 {
-				itemIDs = item.GetID()
-			} else {
-				itemIDs = itemIDs + " " + item.GetID()
-			}
-
-			if err := bTmp.Put(key, []byte(itemIDs)); err != nil {
-				return err
-			}
-
-		}
-
-		return nil
-
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[string]Items)
-
-	err = db.Update(func(tx Transaction) error {
-
-		bTmpItem := z.createTempBucket(tx, entityItem)
-		c := bTmpItem.Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			itemIDs := strings.Fields(string(v))
-			if len(itemIDs) > 1 {
-				key := string(k)
-				items := result[key]
-				for _, itemID := range itemIDs {
-					if item := I.Get(tx, itemID); item != nil {
-						items = append(items, item)
-					}
-				}
-				result[key] = items
-			}
-		}
-
-		return nil
-
-	})
-
-	return result, err
+	return nil
 
 }
 
@@ -362,6 +269,40 @@ func (z *boltInstance) indexGroupsByUserIDName(bGroups, bTmp Bucket) error {
 		groups = append(groups, group)
 
 		if value, err := groups.encode(); err == nil {
+			if err := bTmp.Put(key, value); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+
+	} // cursor
+
+	return nil
+
+}
+
+func (z *boltInstance) indexItemsByGUID(bItems, bTmp Bucket) error {
+
+	item := &Item{}
+	c := bItems.Cursor()
+	for k, v := c.First(); k != nil; k, v = c.Next() {
+
+		if err := item.decode(v); err != nil {
+			return err
+		}
+
+		key := []byte(item.GUID)
+
+		items := Items{}
+		if value := bTmp.Get(key); value != nil {
+			if err := items.decode(value); err != nil {
+				return err
+			}
+		}
+		items = append(items, item)
+
+		if value, err := items.encode(); err == nil {
 			if err := bTmp.Put(key, value); err != nil {
 				return err
 			}
@@ -409,41 +350,37 @@ func (z *boltInstance) indexSubscriptionsByFeedID(bSubscriptions, bTmp Bucket) e
 
 }
 
-// findUsersWithSameUsername returns a map of users with same usernames keyed by username (lowercase)
-// TODO: redo by creating index by username|Users in tmp bucket
-// TODO: do not return map but iterate over bucket
-// TODO: rename to indexUsersByUsernameLowercase or similar
-// TODO: take transaction as parameter
-func (z *boltInstance) findUsersWithSameUsername(db Database) (map[string]Users, error) {
+func (z *boltInstance) indexUsersByUsernameLowecase(bUsers, bTmp Bucket) error {
 
-	allUsers := make(map[string]Users)
+	user := &User{}
+	c := bUsers.Cursor()
+	for k, v := c.First(); k != nil; k, v = c.Next() {
 
-	err := db.Select(func(tx Transaction) error {
-		user := &User{}
-		c := tx.Bucket(bucketData, entityUser).Cursor()
-		for k, v := c.First(); k != nil; k, v = c.Next() {
-			if err := user.decode(v); err != nil {
+		if err := user.decode(v); err != nil {
+			return err
+		}
+
+		key := []byte(strings.ToLower(user.Username))
+
+		users := Users{}
+		if value := bTmp.Get(key); value != nil {
+			if err := users.decode(value); err != nil {
 				return err
 			}
-			username := strings.ToLower(user.Username)
-			users := allUsers[username]
-			users = append(users, user)
-			allUsers[username] = users
 		}
-		return nil
-	})
+		users = append(users, user)
 
-	if err != nil {
-		return nil, err
-	}
-
-	result := make(map[string]Users)
-	for username, users := range allUsers {
-		if len(users) > 1 {
-			result[username] = users
+		if value, err := users.encode(); err == nil {
+			if err := bTmp.Put(key, value); err != nil {
+				return err
+			}
+		} else {
+			return err
 		}
-	}
-	return result, err
+
+	} // cursor
+
+	return nil
 
 }
 
@@ -505,7 +442,7 @@ func (z *boltInstance) makeLookupItem(tx Transaction) lookupFunc {
 
 }
 
-func (z *boltInstance) makeLookupSubscription(tx Transaction) lookupFunc {
+func (z *boltInstance) makeLookupSubscriptionByFeedID(tx Transaction) lookupFunc {
 
 	bSubscriptions := tx.Bucket(bucketData, entitySubscription)
 	bTmp := z.createTempBucket(tx, entitySubscription)
@@ -545,14 +482,21 @@ func (z *boltInstance) migrateSubscriptionsToFirstOfDuplicateFeeds(db Database) 
 
 	return db.Update(func(tx Transaction) error {
 
-		// mapped by lowercase url
-		feedsByLowercaseURL, errFind := z.findFeedsWithSameLowercaseURL(tx)
-		if errFind != nil {
-			return errFind
+		bFeeds := tx.Bucket(bucketData, entityFeed)
+		bTmp := z.createTempBucket(tx, entityFeed)
+
+		if err := z.indexFeedsByURLLowercase(bFeeds, bTmp); err != nil {
+			return err
 		}
 
-		for url, feeds := range feedsByLowercaseURL {
+		c := bTmp.Cursor()
+		feeds := Feeds{}
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			if err := feeds.decode(v); err != nil {
+				return err
+			}
 			if len(feeds) > 1 {
+				url := string(k)
 				log.Printf("     migrating subscriptions of duplicate feed: %s", url)
 				// find feed with lowest feedID
 				feeds.SortByID()
@@ -874,7 +818,7 @@ func (z *boltInstance) removeFeedsWithoutSubscription(db Database) error {
 
 	return db.Update(func(tx Transaction) error {
 
-		subscriptionExists := z.makeLookupSubscription(tx)
+		subscriptionExists := z.makeLookupSubscriptionByFeedID(tx)
 
 		badIDs := []string{}
 		c := tx.Bucket(bucketData, entityFeed).Cursor()
@@ -950,28 +894,6 @@ func (z *boltInstance) removeSubscriptionsToSameFeed(db Database) error {
 
 }
 
-func (z *boltInstance) warnItemsWithSameGUID(db Database) error {
-
-	log.Printf("%-7s %-7s   warn item with same guid...", logInfo, logName)
-
-	itemsByFeedIDGUID, err := z.findItemsWithSameGUID(db)
-	if err != nil {
-		return err
-	}
-
-	for key, items := range itemsByFeedIDGUID {
-		ids := strings.Split(key, chSep)
-		feedID := ids[0]
-		guid := ids[1]
-		for _, item := range items {
-			log.Printf("    item with duplicate guid: %s %s %s", feedID, item.ID, guid)
-		}
-	}
-
-	return nil
-
-}
-
 func (z *boltInstance) warnGroupsWithSameName(db Database) error {
 
 	log.Printf("%-7s %-7s   warn groups with same name...", logInfo, logName)
@@ -1002,21 +924,62 @@ func (z *boltInstance) warnGroupsWithSameName(db Database) error {
 
 }
 
+func (z *boltInstance) warnItemsWithSameGUID(db Database) error {
+
+	log.Printf("%-7s %-7s   warn item with same guid...", logInfo, logName)
+
+	return db.Update(func(tx Transaction) error {
+
+		bItems := tx.Bucket(bucketData, entityItem)
+		bTmp := z.createTempBucket(tx, entityItem)
+
+		if err := z.indexItemsByGUID(bItems, bTmp); err != nil {
+			return err
+		}
+
+		c := bTmp.Cursor()
+		items := Items{}
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			if err := items.decode(v); err != nil {
+				return err
+			}
+			if len(items) > 1 {
+				log.Printf("    multiple items with same GUID: %s", k)
+			}
+		} // loop
+
+		return nil
+
+	})
+
+}
+
 func (z *boltInstance) warnUsersWithSameUsername(db Database) error {
 
 	log.Printf("%-7s %-7s   warn users with same username...", logInfo, logName)
 
-	usersByUsername, err := z.findUsersWithSameUsername(db)
-	if err != nil {
-		return err
-	}
+	return db.Update(func(tx Transaction) error {
 
-	for username, users := range usersByUsername {
-		for _, user := range users {
-			log.Printf("    user with same username: %s %s", user.ID, username)
+		bUsers := tx.Bucket(bucketData, entityUser)
+		bTmp := z.createTempBucket(tx, entityUser)
+
+		if err := z.indexUsersByUsernameLowecase(bUsers, bTmp); err != nil {
+			return err
 		}
-	}
 
-	return nil
+		c := bTmp.Cursor()
+		users := Users{}
+		for k, v := c.First(); k != nil; k, v = c.Next() {
+			if err := users.decode(v); err != nil {
+				return err
+			}
+			if len(users) > 1 {
+				log.Printf("    multiple users with same name: %s", k)
+			}
+		} // loop
+
+		return nil
+
+	})
 
 }
