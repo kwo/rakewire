@@ -282,7 +282,7 @@ func (z *boltInstance) indexGroupsByUserIDName(bGroups, bTmp Bucket) error {
 
 }
 
-func (z *boltInstance) indexItemsByGUID(bItems, bTmp Bucket) error {
+func (z *boltInstance) indexItemsByFeedIDGUID(bItems, bTmp Bucket) error {
 
 	item := &Item{}
 	c := bItems.Cursor()
@@ -292,7 +292,7 @@ func (z *boltInstance) indexItemsByGUID(bItems, bTmp Bucket) error {
 			return err
 		}
 
-		key := []byte(item.GUID)
+		key := []byte(keyEncode(item.FeedID, item.GUID))
 
 		items := Items{}
 		if value := bTmp.Get(key); value != nil {
@@ -933,7 +933,7 @@ func (z *boltInstance) warnItemsWithSameGUID(db Database) error {
 		bItems := tx.Bucket(bucketData, entityItem)
 		bTmp := z.createTempBucket(tx, entityItem)
 
-		if err := z.indexItemsByGUID(bItems, bTmp); err != nil {
+		if err := z.indexItemsByFeedIDGUID(bItems, bTmp); err != nil {
 			return err
 		}
 
@@ -944,7 +944,7 @@ func (z *boltInstance) warnItemsWithSameGUID(db Database) error {
 				return err
 			}
 			if len(items) > 1 {
-				log.Printf("    multiple items with same GUID: %s", k)
+				log.Printf("    multiple items with same GUID: %02d %s - %s", len(items), items[0].Created.Format(time.RFC3339), k)
 			}
 		} // loop
 
