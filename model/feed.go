@@ -1,7 +1,5 @@
 package model
 
-//go:generate gokv $GOFILE
-
 import (
 	"encoding/json"
 	"sort"
