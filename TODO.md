@@ -4,35 +4,7 @@
 
 ### Immediate
 
-  - modelng
-    x Config
-    x User
-    x Group
-    x Feed
-    x Transmission
-    x Item
-    x Subscription
-    x Entry (key: UserID, ItemID)
-    x OPML - remove from model
-    x Fever redo
-    x remove old model
-    x rewrite integrity check
-    - bugfix multiple items with same GUID
-    - standardize model functions and naming conventions
-      - need specifics here!!!
-
-  - add maintenance routine for integrity check
-  - add maintenance routine for db backup
-
- - jwt authentication and basic auth
- - gRPC multiplex with JSON API
- - native api to manage users
-   - add
-   - remove
-   - change password
- - add maintenance routine to remove feeds with no subscription
-   - to backup database at periodic intervals (use tx.CopyFile)
- - replace logging with homegrown api - current is BS - log to console LogFunc two levels INFO and DEBUG
+  - replace logging with homegrown api - current is BS - log to console LogFunc two levels INFO and DEBUG
 
 ### Goals
   x Save Feed Entries
@@ -40,6 +12,20 @@
   - add support for Hot Links to Fever API support
 
 ### Unsorted
+
+  - command line commands not flags
+    - add admin user (one-time), change password
+    - config
+  - add maintenance routine for integrity check
+  - add maintenance routine for db backup
+
+  - bugfix multiple items with same GUID
+  - standardize model functions and naming conventions
+    - collection methods - which ones return collections, individual elements, maps?
+    - need specifics here!!!
+
+  - jwt authentication and basic auth
+  - gRPC multiplex with JSON API
 
   - create feed item frequency graph per feed for one week
     - allow assigning polling frequency per hour/day for feed
