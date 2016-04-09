@@ -21,9 +21,6 @@
     - standardize model functions and naming conventions
       - need specifics here!!!
 
-    - use int32 instead of dates
-    - use protobuf
-
   - add maintenance routine for integrity check
   - add maintenance routine for db backup
 

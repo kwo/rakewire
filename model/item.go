@@ -3,6 +3,7 @@ package model
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"time"
 )
 
@@ -16,6 +17,71 @@ var (
 		indexItemGUID,
 	}
 )
+
+// Item from a feed
+type Item struct {
+	ID      string    `json:"id"`
+	GUID    string    `json:"guid" `
+	FeedID  string    `json:"feedId"`
+	Created time.Time `json:"created,omitempty"`
+	Updated time.Time `json:"updated,omitempty"`
+	URL     string    `json:"url,omitempty"`
+	Author  string    `json:"author,omitempty"`
+	Title   string    `json:"title,omitempty"`
+	Content string    `json:"content,omitempty"`
+}
+
+// GetID returns the unique ID for the object
+func (z *Item) GetID() string {
+	return z.ID
+}
+
+// Hash generated a fingerprint for the item to test if it has been updated or not.
+func (z *Item) Hash() string {
+	hash := sha256.New()
+	hash.Write([]byte(z.Author))
+	hash.Write([]byte(z.Content))
+	hash.Write([]byte(z.Title))
+	hash.Write([]byte(z.URL))
+	return hex.EncodeToString(hash.Sum(nil))
+}
+
+func (z *Item) clear() {
+	z.ID = empty
+	z.GUID = empty
+	z.FeedID = empty
+	z.Created = time.Time{}
+	z.Updated = time.Time{}
+	z.URL = empty
+	z.Author = empty
+	z.Title = empty
+	z.Content = empty
+}
+
+func (z *Item) decode(data []byte) error {
+	z.clear()
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (z *Item) encode() ([]byte, error) {
+	return json.Marshal(z)
+}
+
+func (z *Item) indexes() map[string][]string {
+	result := make(map[string][]string)
+	result[indexItemGUID] = []string{z.FeedID, z.GUID}
+	return result
+}
+
+func (z *Item) setID(tx Transaction) error {
+	config := C.Get(tx)
+	config.Sequences.Item = config.Sequences.Item + 1
+	z.ID = keyEncodeUint(config.Sequences.Item)
+	return C.Put(tx, config)
+}
 
 // Items is a collection Item objects
 type Items []*Item
@@ -58,25 +124,13 @@ func (z Items) GroupByGUID() map[string]*Item {
 	return result
 }
 
-// Item from a feed
-type Item struct {
-	ID      string    `json:"id"`
-	GUID    string    `json:"guid" `
-	FeedID  string    `json:"feedId"`
-	Created time.Time `json:"created,omitempty"`
-	Updated time.Time `json:"updated,omitempty"`
-	URL     string    `json:"url,omitempty"`
-	Author  string    `json:"author,omitempty"`
-	Title   string    `json:"title,omitempty"`
-	Content string    `json:"content,omitempty"`
+func (z *Items) decode(data []byte) error {
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
+	}
+	return nil
 }
 
-// Hash generated a fingerprint for the item to test if it has been updated or not.
-func (z *Item) Hash() string {
-	hash := sha256.New()
-	hash.Write([]byte(z.Author))
-	hash.Write([]byte(z.Content))
-	hash.Write([]byte(z.Title))
-	hash.Write([]byte(z.URL))
-	return hex.EncodeToString(hash.Sum(nil))
+func (z *Items) encode() ([]byte, error) {
+	return json.Marshal(z)
 }

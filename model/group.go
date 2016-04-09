@@ -1,5 +1,9 @@
 package model
 
+import (
+	"encoding/json"
+)
+
 const (
 	entityGroup        = "Group"
 	indexGroupUserName = "UserName"
@@ -10,6 +14,49 @@ var (
 		indexGroupUserName,
 	}
 )
+
+// Group defines an item status for a user
+type Group struct {
+	ID     string `json:"id"`
+	UserID string `json:"userId"`
+	Name   string `json:"name"`
+}
+
+// GetID returns the unique ID for the object
+func (z *Group) GetID() string {
+	return z.ID
+}
+
+func (z *Group) clear() {
+	z.ID = empty
+	z.UserID = empty
+	z.Name = empty
+}
+
+func (z *Group) decode(data []byte) error {
+	z.clear()
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (z *Group) encode() ([]byte, error) {
+	return json.Marshal(z)
+}
+
+func (z *Group) indexes() map[string][]string {
+	result := make(map[string][]string)
+	result[indexGroupUserName] = []string{z.UserID, z.Name}
+	return result
+}
+
+func (z *Group) setID(tx Transaction) error {
+	config := C.Get(tx)
+	config.Sequences.Group = config.Sequences.Group + 1
+	z.ID = keyEncodeUint(config.Sequences.Group)
+	return C.Put(tx, config)
+}
 
 // Groups is a collection of Group elements
 type Groups []*Group
@@ -32,9 +79,13 @@ func (z Groups) ByName() map[string]*Group {
 	return result
 }
 
-// Group defines an item status for a user
-type Group struct {
-	ID     string `json:"id"`
-	UserID string `json:"userId"`
-	Name   string `json:"name"`
+func (z *Groups) decode(data []byte) error {
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (z *Groups) encode() ([]byte, error) {
+	return json.Marshal(z)
 }

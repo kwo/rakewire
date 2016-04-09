@@ -1,6 +1,7 @@
 package model
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -21,8 +22,67 @@ var (
 	}
 )
 
+// Entry defines an item status for a user
+type Entry struct {
+	UserID  string    `json:"userId"`
+	ItemID  string    `json:"itemId"`
+	FeedID  string    `json:"feedId"`
+	Updated time.Time `json:"updated,omitempty"`
+	Read    bool      `json:"read,omitempty"`
+	Star    bool      `json:"star,omitempty"`
+}
+
+// GetID returns the unique ID for the object
+func (z *Entry) GetID() string {
+	return keyEncode(z.UserID, z.ItemID)
+}
+
+func (z *Entry) clear() {
+	z.UserID = empty
+	z.ItemID = empty
+	z.FeedID = empty
+	z.Updated = time.Time{}
+	z.Read = false
+	z.Star = false
+}
+
+func (z *Entry) decode(data []byte) error {
+	z.clear()
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (z *Entry) encode() ([]byte, error) {
+	return json.Marshal(z)
+}
+
+func (z *Entry) indexes() map[string][]string {
+	result := make(map[string][]string)
+	result[indexEntryFeedReadUpdated] = []string{z.UserID, z.FeedID, keyEncodeBool(z.Read), keyEncodeTime(z.Updated), z.ItemID}
+	result[indexEntryFeedStarUpdated] = []string{z.UserID, z.FeedID, keyEncodeBool(z.Star), keyEncodeTime(z.Updated), z.ItemID}
+	result[indexEntryFeedUpdated] = []string{z.UserID, z.FeedID, keyEncodeTime(z.Updated), z.ItemID}
+	result[indexEntryReadUpdated] = []string{z.UserID, keyEncodeBool(z.Read), keyEncodeTime(z.Updated), z.ItemID}
+	result[indexEntryStarUpdated] = []string{z.UserID, keyEncodeBool(z.Star), keyEncodeTime(z.Updated), z.ItemID}
+	result[indexEntryUpdated] = []string{z.UserID, keyEncodeTime(z.Updated), z.ItemID}
+	return result
+}
+
+func (z *Entry) setID(tx Transaction) error {
+	return nil
+}
+
 // Entries is a collection of Entry elements
 type Entries []*Entry
+
+// Limit truncate the size of the collection to the given number of items.
+func (z Entries) Limit(limit uint) Entries {
+	if len(z) > int(limit) {
+		return z[:limit]
+	}
+	return z
+}
 
 // Reverse reverses the order of the collection
 func (z Entries) Reverse() Entries {
@@ -49,20 +109,13 @@ func (z Entries) Unique() Entries {
 
 }
 
-// Limit truncate the size of the collection to the given number of items.
-func (z Entries) Limit(limit uint) Entries {
-	if len(z) > int(limit) {
-		return z[:limit]
+func (z *Entries) decode(data []byte) error {
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
 	}
-	return z
+	return nil
 }
 
-// Entry defines an item status for a user
-type Entry struct {
-	UserID  string    `json:"userId"`
-	ItemID  string    `json:"itemId"`
-	FeedID  string    `json:"feedId"`
-	Updated time.Time `json:"updated,omitempty"`
-	Read    bool      `json:"read,omitempty"`
-	Star    bool      `json:"star,omitempty"`
+func (z *Entries) encode() ([]byte, error) {
+	return json.Marshal(z)
 }
