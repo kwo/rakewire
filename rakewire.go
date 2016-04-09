@@ -42,8 +42,8 @@ func main() {
 	flag.Parse()
 
 	log.Printf("Rakewire %s\n", model.Version)
-	log.Printf("Build Time: %s\n", model.BuildTime)
-	log.Printf("Build Hash: %s\n", model.BuildHash)
+	log.Printf("Commit Time: %s\n", model.CommitTime)
+	log.Printf("Commit Hash: %s\n", model.CommitHash)
 
 	if *flagVersion {
 		return

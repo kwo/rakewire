@@ -16,10 +16,10 @@ package model
 // This file was automatically generated with the buildinfo tool.
 // Do not modify and do not place under version control.
 
-// BuildInfo variables
+// CommitInfo variables
 var (
-	BuildHash = "{{.Hash}}{{.Dirty}}"
-	BuildTime = "{{.Time}}"
+	CommitHash = "{{.Hash}}{{.Dirty}}"
+	CommitTime = "{{.Time}}"
 )
 `
 
