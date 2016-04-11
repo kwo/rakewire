@@ -111,7 +111,7 @@ func (z *Service) reapHarvest(harvest *model.Harvest) {
 				newItemCount++
 				now := time.Now()
 
-				// prevent items marks with a future date
+				// prevent items marked with a future date
 				if item.Created.IsZero() || item.Created.After(now) {
 					item.Created = now
 				}
@@ -185,6 +185,12 @@ func (z *Service) reapHarvest(harvest *model.Harvest) {
 		// save feed
 		if err := model.F.Save(tx, harvest.Feed); err != nil {
 			log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, harvest.Feed.URL, err.Error())
+			return err
+		}
+
+		// save entries
+		if err := model.E.AddItems(tx, harvest.Items); err != nil {
+			log.Printf("%-7s %-7s Cannot save entries %s: %s", logWarn, logName, harvest.Feed.URL, err.Error())
 			return err
 		}
 
