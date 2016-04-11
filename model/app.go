@@ -4,14 +4,10 @@ import (
 	"time"
 )
 
-// Version number of the app
-const Version = "1.10.0"
-
-// AppStart marks the time the application was started.
-var AppStart time.Time
-
-// Last Commit variables
+// app-level variables
 var (
-	CommitHash = "<COMMITHASH>"
-	CommitTime = "<COMMITTERDATEISO8601>"
+	Version   = "beta"
+	BuildHash = ""
+	BuildTime = time.Now().UTC().Format(time.RFC3339)
+	AppStart  time.Time
 )

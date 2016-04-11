@@ -13,8 +13,8 @@ func statusHandler(w http.ResponseWriter, req *http.Request) {
 
 	w.Header().Set(hContentType, mimeText)
 	w.Write([]byte(fmt.Sprintf("Rakewire %s\n", model.Version)))
-	w.Write([]byte(fmt.Sprintf("Commit Time: %s\n", model.CommitTime)))
-	w.Write([]byte(fmt.Sprintf("Commit Hash: %s\n", model.CommitHash)))
+	w.Write([]byte(fmt.Sprintf("Build Time: %s\n", model.BuildTime)))
+	w.Write([]byte(fmt.Sprintf("Build Hash: %s\n", model.BuildHash)))
 	w.Write([]byte(fmt.Sprintf("Uptime: %s\n", uptimeString)))
 
 }
