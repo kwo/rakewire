@@ -48,20 +48,20 @@ func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx 
 		}
 
 	case "feed":
-		if pAs != "read" {
+		if pAs != itemRead {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
 		feedID := encodeID(idStr)
 		entries := model.E.Query(tx, userID).Feed(feedID).Max(maxTime).Unread()
 		for _, entry := range entries {
-			entry.Read = false
+			entry.Read = true
 		}
 		if err := model.E.SaveAll(tx, entries); err != nil {
 			return err
 		}
 
 	case "group":
-		if pAs != "read" {
+		if pAs != itemRead {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
 		groupID := encodeID(idStr)
@@ -69,7 +69,7 @@ func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx 
 		for _, subscription := range subscriptions {
 			entries := model.E.Query(tx, userID).Feed(subscription.FeedID).Max(maxTime).Unread()
 			for _, entry := range entries {
-				entry.Read = false
+				entry.Read = true
 			}
 			if err := model.E.SaveAll(tx, entries); err != nil {
 				return err
