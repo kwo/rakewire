@@ -8,6 +8,6 @@ import (
 var (
 	Version   = "beta"
 	BuildHash = ""
-	BuildTime = time.Now().UTC().Format(time.RFC3339)
+	BuildTime = ""
 	AppStart  time.Time
 )
