@@ -9,10 +9,6 @@ import (
 
 func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx model.Transaction) error {
 
-	if idStr == "-1" {
-		return fmt.Errorf("sparks not supported")
-	}
-
 	maxTime := time.Time{}
 	if beforeStr != "" {
 		before, err := strconv.ParseInt(beforeStr, 10, 64)
@@ -64,8 +60,11 @@ func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx 
 		if pAs != itemRead {
 			return fmt.Errorf("Invalid value for as parameter: %s", pAs)
 		}
-		groupID := encodeID(idStr)
-		subscriptions := model.S.GetForUser(tx, userID).WithGroup(groupID)
+		subscriptions := model.S.GetForUser(tx, userID)
+		if idStr != "0" && idStr != "-1" {
+			groupID := encodeID(idStr)
+			subscriptions = subscriptions.WithGroup(groupID)
+		}
 		for _, subscription := range subscriptions {
 			entries := model.E.Query(tx, userID).Feed(subscription.FeedID).Max(maxTime).Unread()
 			for _, entry := range entries {
