@@ -102,13 +102,13 @@ func (z *Service) reapHarvest(harvest *model.Harvest) {
 
 		// setIDs, check dates for new items
 		var mostRecent time.Time
-		newItemCount := 0
+		newItems := model.Items{}
 		for _, item := range harvest.Items {
 
 			if dbItem, ok := dbItems[item.GUID]; !ok {
 
 				// new item
-				newItemCount++
+				newItems = append(newItems, item)
 				now := time.Now()
 
 				// prevent items marked with a future date
@@ -159,7 +159,7 @@ func (z *Service) reapHarvest(harvest *model.Harvest) {
 		}
 
 		harvest.Transmission.ItemCount = len(harvest.Items)
-		harvest.Transmission.NewItems = newItemCount
+		harvest.Transmission.NewItems = len(newItems)
 
 		switch harvest.Feed.Status {
 		case model.FetchResultOK:
@@ -189,7 +189,7 @@ func (z *Service) reapHarvest(harvest *model.Harvest) {
 		}
 
 		// save entries
-		if err := model.E.AddItems(tx, harvest.Items); err != nil {
+		if err := model.E.AddItems(tx, newItems); err != nil {
 			log.Printf("%-7s %-7s Cannot save entries %s: %s", logWarn, logName, harvest.Feed.URL, err.Error())
 			return err
 		}

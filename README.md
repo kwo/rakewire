@@ -14,7 +14,7 @@
 
 	go install rakewire.go
 
-	CGO_ENABLED=0; LDFLAGS="-X rakewire/model.Version=1.11.0-beta -X rakewire/model.BuildTime=`date -u +%FT%TZ` -X rakewire/model.BuildHash=`git rev-parse HEAD`"; go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
+	CGO_ENABLED=0; LDFLAGS="-X rakewire/model.Version=1.11.3 -X rakewire/model.BuildTime=`date -u +%FT%TZ` -X rakewire/model.BuildHash=`git rev-parse HEAD`"; go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
 
 ## Dependencies
 
@@ -43,4 +43,4 @@ curl -D - -u karl@ostendorf.com:abcdefg -X PUT --data-binary @rakewire.opml http
 ### Production
 
 curl -u karl@ostendorf.com:abcdefg https://rakewire.kfabrik.de/api/rakewire.opml > rakewire.opml
-curl -u karl@ostendorf.com:abcdefg -X PUT --data-binary @rakewire.opml https://rakewire.kfabrik.de/api/rakewire.opml?replace=true
+curl -u karl@ostendorf.com:abcdefg -X PUT --data-binary @rakewire.opml https://rakewire.kfabrik.de/api/rakewire.opml
