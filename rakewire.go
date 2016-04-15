@@ -81,10 +81,10 @@ func main() {
 		return
 	}
 
-	// initialize logging
-	if *flagDebug || cfg.GetBool("logger.debug", false) {
-		logger.DebugMode = true
-	}
+	// initialize logging - debug statements above this point will never be logged
+	// Forbid debugMode in production.
+	// If model.Version is not an empty string (stamped via LDFLAGS) then we are in production mode.
+	logger.DebugMode = model.Version == "" && *flagDebug
 
 	polld = pollfeed.NewService(cfg, database)
 	reaperd = reaper.NewService(cfg, database)

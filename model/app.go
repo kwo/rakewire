@@ -6,7 +6,7 @@ import (
 
 // app-level variables
 var (
-	Version   = "beta"
+	Version   = ""
 	BuildHash = ""
 	BuildTime = ""
 	AppStart  time.Time

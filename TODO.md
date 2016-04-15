@@ -4,7 +4,9 @@
 
 ### Immediate
 
-  - config commands
+- command line commands not flags
+  - add admin user (one-time), change password
+  - config
 
 ### Goals
   x Save Feed Entries
@@ -13,9 +15,6 @@
 
 ### Unsorted
 
-  - command line commands not flags
-    - add admin user (one-time), change password
-    - config
   - add maintenance routine for integrity check
   - add maintenance routine for db backup
 
