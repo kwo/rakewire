@@ -19,3 +19,6 @@
 [submodule "vendor/github.com/antonholmquist/jason"]
 	path = vendor/github.com/antonholmquist/jason
 	url = https://github.com/antonholmquist/jason
+[submodule "vendor/github.com/codegangsta/cli"]
+	path = vendor/github.com/codegangsta/cli
+	url = https://github.com/codegangsta/cli

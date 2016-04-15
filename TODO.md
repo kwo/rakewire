@@ -7,6 +7,7 @@
 - command line commands not flags
   - add admin user (one-time), change password
   - config
+  - https://github.com/codegangsta/cli
 
 ### Goals
   x Save Feed Entries
@@ -25,6 +26,9 @@
 
   - jwt authentication and basic auth
   - gRPC multiplex with JSON API
+
+  - https://github.com/mmcdole/gofeed
+  - https://github.com/heroku/react-refetch
 
   - create feed item frequency graph per feed for one week
     - allow assigning polling frequency per hour/day for feed
