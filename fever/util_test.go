@@ -9,7 +9,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"rakewire/logging"
 	"rakewire/middleware"
 	"rakewire/model"
 	"strings"
@@ -24,8 +23,6 @@ const (
 )
 
 func TestMain(m *testing.M) {
-	cfg := &logging.Configuration{Level: logging.LogWarn}
-	cfg.Init()
 	status := m.Run()
 	os.Exit(status)
 }

@@ -3,14 +3,11 @@ package rest
 import (
 	"io/ioutil"
 	"os"
-	"rakewire/logging"
 	"rakewire/model"
 	"testing"
 )
 
 func TestMain(m *testing.M) {
-	cfg := &logging.Configuration{Level: logging.LogWarn}
-	cfg.Init()
 	status := m.Run()
 	os.Exit(status)
 }

@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"rakewire/fetch"
 	"rakewire/httpd"
-	"rakewire/logging"
 	"rakewire/model"
 	"rakewire/pollfeed"
 	"rakewire/reaper"
@@ -87,13 +86,7 @@ func main() {
 		return
 	}
 
-	// initialize logging
-	loggingConfiguration := &logging.Configuration{
-		File:    cfg.GetStr("logging.file"),
-		Level:   cfg.GetStr("logging.level", "WARN"),
-		NoColor: cfg.GetBool("logging.nocolor"),
-	}
-	loggingConfiguration.Init()
+	// TODO: initialize logging
 
 	polld = pollfeed.NewService(cfg, database)
 	reaperd = reaper.NewService(cfg, database)
