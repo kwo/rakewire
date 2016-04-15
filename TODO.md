@@ -4,7 +4,7 @@
 
 ### Immediate
 
-  - replace logging with homegrown api - current is BS - log to console LogFunc two levels INFO and DEBUG
+  - config commands
 
 ### Goals
   x Save Feed Entries

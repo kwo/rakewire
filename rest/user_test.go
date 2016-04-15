@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"rakewire/model"
@@ -33,7 +32,7 @@ func TestUserGet(t *testing.T) {
 
 	rsp, err := http.Get(u)
 	if err != nil {
-		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())
+		t.Fatalf("Cannot perform request to %s: %s", u, err.Error())
 	} else if rsp.StatusCode != http.StatusOK {
 		t.Fatalf("Bad error code, url: %s, expected %d, actual %d", u, http.StatusOK, rsp.StatusCode)
 	}

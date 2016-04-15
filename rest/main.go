@@ -2,7 +2,12 @@ package rest
 
 import (
 	"github.com/gorilla/mux"
+	"rakewire/logger"
 	"rakewire/model"
+)
+
+var (
+	log = logger.New("rest")
 )
 
 // NewAPI creates a new REST API instance

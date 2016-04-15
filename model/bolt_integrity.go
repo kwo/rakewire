@@ -2,16 +2,10 @@ package model
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-)
-
-const (
-	logName = "[db]"
-	logInfo = "[INFO]"
 )
 
 type lookupFunc func(id ...string) bool
@@ -50,7 +44,7 @@ func (z *boltInstance) Check(filename string) error {
 		return err
 	}
 
-	log.Printf("%-7s %-7s validating data...", logInfo, logName)
+	z.log.Infof("validating data...")
 
 	if err := z.createTempTopLevelBucket(tmpDb); err != nil {
 		return err
@@ -120,7 +114,7 @@ func (z *boltInstance) Check(filename string) error {
 		return err
 	}
 
-	log.Printf("%-7s %-7s validating data done", logInfo, logName)
+	z.log.Infof("validating data done")
 
 	// open new database
 	var newDb Database
@@ -147,11 +141,11 @@ func (z *boltInstance) Check(filename string) error {
 
 func (z *boltInstance) copyBuckets(srcDb, dstDb Database) error {
 
-	log.Printf("%-7s %-7s copying buckets...", logInfo, logName)
+	z.log.Infof("copying buckets...")
 	err := srcDb.Select(func(srcTx Transaction) error {
 		return dstDb.Update(func(dstTx Transaction) error {
 			for entityName := range allEntities {
-				log.Printf("%-7s %-7s   %s ...", logInfo, logName, entityName)
+				z.log.Infof("  %s ...", entityName)
 				srcBucket := srcTx.Bucket(bucketData, entityName)
 				dstBucket := dstTx.Bucket(bucketData, entityName)
 				c := srcBucket.Cursor()
@@ -169,7 +163,7 @@ func (z *boltInstance) copyBuckets(srcDb, dstDb Database) error {
 		return err
 	}
 
-	log.Printf("%-7s %-7s copying buckets done", logInfo, logName)
+	z.log.Infof("copying buckets done")
 
 	return nil
 
@@ -177,11 +171,11 @@ func (z *boltInstance) copyBuckets(srcDb, dstDb Database) error {
 
 func (z *boltInstance) copyBucketsEncodeDecode(srcDb, dstDb Database) error {
 
-	log.Printf("%-7s %-7s copying buckets...", logInfo, logName)
+	z.log.Infof("copying buckets...")
 	err := srcDb.Select(func(srcTx Transaction) error {
 		return dstDb.Update(func(dstTx Transaction) error {
 			for entityName := range allEntities {
-				log.Printf("%-7s %-7s   %s ...", logInfo, logName, entityName)
+				z.log.Infof("  %s ...", entityName)
 				srcBucket := srcTx.Bucket(bucketData, entityName)
 				dstBucket := dstTx.Bucket(bucketData, entityName)
 				entity := getObject(entityName)
@@ -193,10 +187,10 @@ func (z *boltInstance) copyBucketsEncodeDecode(srcDb, dstDb Database) error {
 								return err
 							}
 						} else {
-							log.Printf("%-7s %-7s     error encoding entity (%s): %s", logInfo, logName, k, errEncode.Error())
+							z.log.Infof("    error encoding entity (%s): %s", k, errEncode.Error())
 						}
 					} else {
-						log.Printf("%-7s %-7s     error decoding entity (%s): %s", logInfo, logName, k, errDecode.Error())
+						z.log.Infof("    error decoding entity (%s): %s", k, errDecode.Error())
 					}
 				} // cursor
 			} // entities
@@ -208,7 +202,7 @@ func (z *boltInstance) copyBucketsEncodeDecode(srcDb, dstDb Database) error {
 		return err
 	}
 
-	log.Printf("%-7s %-7s copying buckets done", logInfo, logName)
+	z.log.Infof("copying buckets done")
 
 	return nil
 
@@ -478,7 +472,7 @@ func (z *boltInstance) makeLookupUser(tx Transaction) lookupFunc {
 
 func (z *boltInstance) migrateSubscriptionsToFirstOfDuplicateFeeds(db Database) error {
 
-	log.Printf("%-7s %-7s   remove feed duplicates...", logInfo, logName)
+	z.log.Infof("  remove feed duplicates...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -497,7 +491,7 @@ func (z *boltInstance) migrateSubscriptionsToFirstOfDuplicateFeeds(db Database) 
 			}
 			if len(feeds) > 1 {
 				url := string(k)
-				log.Printf("     migrating subscriptions of duplicate feed: %s", url)
+				z.log.Infof("migrating subscriptions of duplicate feed: %s", url)
 				// find feed with lowest feedID
 				feeds.SortByID()
 				originalFeed := feeds[0]
@@ -522,11 +516,11 @@ func (z *boltInstance) migrateSubscriptionsToFirstOfDuplicateFeeds(db Database) 
 
 func (z *boltInstance) rebuildIndexes(db Database) error {
 
-	log.Printf("%-7s %-7s rebuild indexes...", logInfo, logName)
+	z.log.Infof("rebuild indexes...")
 
 	err := db.Update(func(tx Transaction) error {
 		for entityName := range allEntities {
-			log.Printf("%-7s %-7s   %s ...", logInfo, logName, entityName)
+			z.log.Infof("  %s ...", entityName)
 			bEntity := tx.Bucket(bucketData, entityName)
 			bEntityIndex := tx.Bucket(bucketIndex, entityName)
 			entity := getObject(entityName)
@@ -544,7 +538,7 @@ func (z *boltInstance) rebuildIndexes(db Database) error {
 					} // indexes
 				} else {
 					// This error should never occur since the entity was freshly encoded when copying the data.
-					log.Printf("%-7s %-7s     error decoding entity (%s): %s", logInfo, logName, k, err.Error())
+					z.log.Infof("    error decoding entity (%s): %s", k, err.Error())
 					// Note: just reporting the error means that there is an entity in data without an index
 				}
 			} // cursor
@@ -556,7 +550,7 @@ func (z *boltInstance) rebuildIndexes(db Database) error {
 		return err
 	}
 
-	log.Printf("%-7s %-7s rebuild indexes done", logInfo, logName)
+	z.log.Infof("rebuild indexes done")
 
 	return nil
 
@@ -564,7 +558,7 @@ func (z *boltInstance) rebuildIndexes(db Database) error {
 
 func (z *boltInstance) removeBogusEntries(db Database) error {
 
-	log.Printf("%-7s %-7s   remove bogus entries...", logInfo, logName)
+	z.log.Infof("  remove bogus entries...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -580,13 +574,13 @@ func (z *boltInstance) removeBogusEntries(db Database) error {
 			entry.clear()
 			if err := entry.decode(v); err == nil {
 				if !userExists(entry.UserID) {
-					log.Printf("    entry without user: %s (%s)", entry.UserID, entry.GetID())
+					z.log.Infof("entry without user: %s (%s)", entry.UserID, entry.GetID())
 					badIDs = append(badIDs, entry.GetID())
 				} else if !feedExists(entry.FeedID) {
-					log.Printf("    entry without feed: %s (%s)", entry.FeedID, entry.GetID())
+					z.log.Infof("entry without feed: %s (%s)", entry.FeedID, entry.GetID())
 					badIDs = append(badIDs, entry.GetID())
 				} else if !itemExists(entry.ItemID) {
-					log.Printf("    entry without item: %s (%s)", entry.ItemID, entry.GetID())
+					z.log.Infof("entry without item: %s (%s)", entry.ItemID, entry.GetID())
 					badIDs = append(badIDs, entry.GetID())
 				}
 			} else {
@@ -609,7 +603,7 @@ func (z *boltInstance) removeBogusEntries(db Database) error {
 
 func (z *boltInstance) removeBogusGroups(db Database) error {
 
-	log.Printf("%-7s %-7s   remove bogus groups...", logInfo, logName)
+	z.log.Infof("  remove bogus groups...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -623,7 +617,7 @@ func (z *boltInstance) removeBogusGroups(db Database) error {
 			group.clear()
 			if err := group.decode(v); err == nil {
 				if !userExists(group.UserID) {
-					log.Printf("    group without user: %s (%s)", group.UserID, group.GetID())
+					z.log.Infof("group without user: %s (%s)", group.UserID, group.GetID())
 					badIDs = append(badIDs, group.GetID())
 				}
 			} else {
@@ -646,7 +640,7 @@ func (z *boltInstance) removeBogusGroups(db Database) error {
 
 func (z *boltInstance) removeBogusGroupsFromSubscriptions(db Database) error {
 
-	log.Printf("%-7s %-7s   remove bogus groups from subscriptions...", logInfo, logName)
+	z.log.Infof("  remove bogus groups from subscriptions...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -664,7 +658,7 @@ func (z *boltInstance) removeBogusGroupsFromSubscriptions(db Database) error {
 				invalidGroupIDs := []string{}
 				for _, groupID := range subscription.GroupIDs {
 					if !groupExists(subscription.UserID, groupID) {
-						log.Printf("    subscription with invalid group: %s (%s %s)", groupID, subscription.GetID(), subscription.Title)
+						z.log.Infof("subscription with invalid group: %s (%s %s)", groupID, subscription.GetID(), subscription.Title)
 						invalidGroupIDs = append(invalidGroupIDs, groupID)
 					}
 				}
@@ -676,7 +670,7 @@ func (z *boltInstance) removeBogusGroupsFromSubscriptions(db Database) error {
 				}
 
 				if len(subscription.GroupIDs) == 0 {
-					log.Printf("    subscription without groups: %s %s", subscription.GetID(), subscription.Title)
+					z.log.Infof("subscription without groups: %s %s", subscription.GetID(), subscription.Title)
 				}
 
 			} else {
@@ -699,7 +693,7 @@ func (z *boltInstance) removeBogusGroupsFromSubscriptions(db Database) error {
 
 func (z *boltInstance) removeBogusItems(db Database) error {
 
-	log.Printf("%-7s %-7s   remove bogus items...", logInfo, logName)
+	z.log.Infof("  remove bogus items...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -713,7 +707,7 @@ func (z *boltInstance) removeBogusItems(db Database) error {
 			item.clear()
 			if err := item.decode(v); err == nil {
 				if !feedExists(item.FeedID) {
-					log.Printf("    item without feed: %s (%s %s)", item.FeedID, item.GetID(), item.GUID)
+					z.log.Infof("item without feed: %s (%s %s)", item.FeedID, item.GetID(), item.GUID)
 					badIDs = append(badIDs, item.GetID())
 				}
 			} else {
@@ -736,7 +730,7 @@ func (z *boltInstance) removeBogusItems(db Database) error {
 
 func (z *boltInstance) removeBogusSubscriptions(db Database) error {
 
-	log.Printf("%-7s %-7s   remove bogus subscriptions...", logInfo, logName)
+	z.log.Infof("  remove bogus subscriptions...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -751,10 +745,10 @@ func (z *boltInstance) removeBogusSubscriptions(db Database) error {
 			subscription.clear()
 			if err := subscription.decode(v); err == nil {
 				if !userExists(subscription.UserID) {
-					log.Printf("    subscription without user: %s (%s %s)", subscription.UserID, subscription.GetID(), subscription.Title)
+					z.log.Infof("subscription without user: %s (%s %s)", subscription.UserID, subscription.GetID(), subscription.Title)
 					badIDs = append(badIDs, subscription.GetID())
 				} else if !feedExists(subscription.FeedID) {
-					log.Printf("    subscription without feed: %s (%s %s)", subscription.FeedID, subscription.GetID(), subscription.Title)
+					z.log.Infof("subscription without feed: %s (%s %s)", subscription.FeedID, subscription.GetID(), subscription.Title)
 					badIDs = append(badIDs, subscription.GetID())
 				}
 			} else {
@@ -777,7 +771,7 @@ func (z *boltInstance) removeBogusSubscriptions(db Database) error {
 
 func (z *boltInstance) removeBogusTransmissions(db Database) error {
 
-	log.Printf("%-7s %-7s   remove bogus transmissions...", logInfo, logName)
+	z.log.Infof("  remove bogus transmissions...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -791,7 +785,7 @@ func (z *boltInstance) removeBogusTransmissions(db Database) error {
 			transmission.clear()
 			if err := transmission.decode(v); err == nil {
 				if !feedExists(transmission.FeedID) {
-					log.Printf("    transmission without feed: %s (%s)", transmission.FeedID, transmission.GetID())
+					z.log.Infof("transmission without feed: %s (%s)", transmission.FeedID, transmission.GetID())
 					badIDs = append(badIDs, transmission.GetID())
 				}
 			} else {
@@ -814,7 +808,7 @@ func (z *boltInstance) removeBogusTransmissions(db Database) error {
 
 func (z *boltInstance) removeFeedsWithoutSubscription(db Database) error {
 
-	log.Printf("%-7s %-7s   remove feeds without subscriptions...", logInfo, logName)
+	z.log.Infof("  remove feeds without subscriptions...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -828,7 +822,7 @@ func (z *boltInstance) removeFeedsWithoutSubscription(db Database) error {
 			feed.clear()
 			if err := feed.decode(v); err == nil {
 				if !subscriptionExists(feed.ID) {
-					log.Printf("    feed without subscription: %s %s", feed.ID, feed.Title)
+					z.log.Infof("feed without subscription: %s %s", feed.ID, feed.Title)
 					badIDs = append(badIDs, feed.ID)
 				}
 			} else {
@@ -851,7 +845,7 @@ func (z *boltInstance) removeFeedsWithoutSubscription(db Database) error {
 
 func (z *boltInstance) removeSubscriptionsToSameFeed(db Database) error {
 
-	log.Printf("%-7s %-7s   remove subscription duplicates...", logInfo, logName)
+	z.log.Infof("  remove subscription duplicates...")
 
 	// loop thru subscriptions per user
 	// groups subscriptions by lowercase feed url
@@ -896,7 +890,7 @@ func (z *boltInstance) removeSubscriptionsToSameFeed(db Database) error {
 
 func (z *boltInstance) warnGroupsWithSameName(db Database) error {
 
-	log.Printf("%-7s %-7s   warn groups with same name...", logInfo, logName)
+	z.log.Infof("  warn groups with same name...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -914,7 +908,7 @@ func (z *boltInstance) warnGroupsWithSameName(db Database) error {
 				return err
 			}
 			if len(groups) > 1 {
-				log.Printf("    multiple groups with same name: %s", k)
+				z.log.Infof("multiple groups with same name: %s", k)
 			}
 		} // loop
 
@@ -926,7 +920,7 @@ func (z *boltInstance) warnGroupsWithSameName(db Database) error {
 
 func (z *boltInstance) warnItemsWithSameGUID(db Database) error {
 
-	log.Printf("%-7s %-7s   warn item with same guid...", logInfo, logName)
+	z.log.Infof("  warn item with same guid...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -944,7 +938,7 @@ func (z *boltInstance) warnItemsWithSameGUID(db Database) error {
 				return err
 			}
 			if len(items) > 1 {
-				log.Printf("    multiple items with same GUID: %02d %s - %s", len(items), items[0].Created.Format(time.RFC3339), k)
+				z.log.Infof("multiple items with same GUID: %02d %s - %s", len(items), items[0].Created.Format(time.RFC3339), k)
 			}
 		} // loop
 
@@ -956,7 +950,7 @@ func (z *boltInstance) warnItemsWithSameGUID(db Database) error {
 
 func (z *boltInstance) warnUsersWithSameUsername(db Database) error {
 
-	log.Printf("%-7s %-7s   warn users with same username...", logInfo, logName)
+	z.log.Infof("  warn users with same username...")
 
 	return db.Update(func(tx Transaction) error {
 
@@ -974,7 +968,7 @@ func (z *boltInstance) warnUsersWithSameUsername(db Database) error {
 				return err
 			}
 			if len(users) > 1 {
-				log.Printf("    multiple users with same name: %s", k)
+				z.log.Infof("multiple users with same name: %s", k)
 			}
 		} // loop
 

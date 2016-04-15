@@ -3,9 +3,9 @@ package fetch
 import (
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"rakewire/feedparser"
+	"rakewire/logger"
 	"rakewire/model"
 	"sync"
 	"time"
@@ -24,14 +24,6 @@ const (
 	mGET             = "GET"
 )
 
-const (
-	logName  = "[fetch]"
-	logDebug = "[DEBUG]"
-	logInfo  = "[INFO]"
-	logWarn  = "[WARN]"
-	logError = "[ERROR]"
-)
-
 var (
 	// ErrRestart indicates that the service cannot be started because it is already running.
 	ErrRestart = errors.New("The service is already started")
@@ -46,6 +38,7 @@ var (
 	fetchTimeoutDefault = time.Second * 20
 	fetchWorkersDefault = 10
 	httpUserAgent       = "Rakewire " + model.Version
+	log                 = logger.New("fetch")
 )
 
 // Service fetches feeds
@@ -79,17 +72,17 @@ func (z *Service) Start() error {
 	z.Lock()
 	defer z.Unlock()
 	if z.running {
-		log.Printf("%-7s %-7s service already started, exiting...", logWarn, logName)
+		log.Debugf("service already started, exiting...")
 		return ErrRestart
 	}
 
-	log.Printf("%-7s %-7s service starting...", logDebug, logName)
+	log.Debugf("service starting...")
 	for i := 0; i < z.workers; i++ {
 		z.latch.Add(1)
 		go z.run(i)
 	}
 	z.running = true
-	log.Printf("%-7s %-7s service started", logInfo, logName)
+	log.Infof("service started")
 	return nil
 
 }
@@ -99,23 +92,23 @@ func (z *Service) Stop() {
 
 	// TODO #RAKEWIRE-55: remove hack because on app close object is apparently already garbage collected
 	if z == nil {
-		log.Printf("%-7s %-7s service is nil, exiting...", logError, logName)
+		log.Debugf("service is nil, exiting...")
 		return
 	}
 
 	z.Lock()
 	defer z.Unlock()
 	if !z.running {
-		log.Printf("%-7s %-7s service already stopped, exiting...", logWarn, logName)
+		log.Debugf("service already stopped, exiting...")
 		return
 	}
 
-	log.Printf("%-7s %-7s service stopping...", logDebug, logName)
+	log.Debugf("service stopping...")
 	z.latch.Wait()
 	z.input = nil
 	z.output = nil
 	z.running = false
-	log.Printf("%-7s %-7s service stopped", logInfo, logName)
+	log.Infof("service stopped")
 
 }
 
@@ -128,13 +121,13 @@ func (z *Service) IsRunning() bool {
 
 func (z *Service) run(id int) {
 
-	log.Printf("%-7s %-7s fetcher %2d starting...", logDebug, logName, id)
+	log.Debugf("fetcher %2d starting...", id)
 
 	for req := range z.input {
 		z.processFeed(req, id)
 	}
 
-	log.Printf("%-7s %-7s fetcher %2d exited", logDebug, logName, id)
+	log.Debugf("fetcher %2d exited", id)
 	z.latch.Done()
 
 }
@@ -184,7 +177,7 @@ func (z *Service) processFeed(feed *model.Feed, id int) {
 			processFeedServerError(harvest, rsp)
 
 		case true:
-			log.Printf("%-7s %-7s Uncaught Status Code: %d", logWarn, logName, rsp.StatusCode)
+			log.Debugf("Uncaught Status Code: %d", rsp.StatusCode)
 
 		} // switch
 

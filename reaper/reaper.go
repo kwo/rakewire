@@ -1,18 +1,15 @@
 package reaper
 
 import (
-	"log"
+	"rakewire/logger"
 	"rakewire/model"
 	"sync"
 	"sync/atomic"
 	"time"
 )
 
-const (
-	logName  = "[reap]"
-	logDebug = "[DEBUG]"
-	logInfo  = "[INFO]"
-	logWarn  = "[WARN]"
+var (
+	log = logger.New("reaper")
 )
 
 // Service for saving fetch responses back to the database
@@ -37,11 +34,11 @@ func NewService(cfg *model.Configuration, database model.Database) *Service {
 
 // Start Service
 func (z *Service) Start() error {
-	log.Printf("%-7s %-7s service starting...", logDebug, logName)
+	log.Debugf("service starting...")
 	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	log.Printf("%-7s %-7s service started", logInfo, logName)
+	log.Infof("service started")
 	return nil
 }
 
@@ -49,14 +46,14 @@ func (z *Service) Start() error {
 func (z *Service) Stop() {
 
 	if !z.IsRunning() {
-		log.Printf("%-7s %-7s service already stopped, exiting...", logWarn, logName)
+		log.Debugf("service already stopped, exiting...")
 		return
 	}
 
-	log.Printf("%-7s %-7s service stopping...", logDebug, logName)
+	log.Debugf("service stopping...")
 	z.killsignal <- true
 	z.runlatch.Wait()
-	log.Printf("%-7s %-7s service stopped", logInfo, logName)
+	log.Infof("service stopped")
 }
 
 // IsRunning status of the service
@@ -74,7 +71,7 @@ func (z *Service) setRunning(running bool) {
 
 func (z *Service) run() {
 
-	log.Printf("%-7s %-7s run starting...", logDebug, logName)
+	log.Debugf("run starting...")
 
 run:
 	for {
@@ -90,7 +87,7 @@ run:
 
 	z.setRunning(false)
 	z.runlatch.Done()
-	log.Printf("%-7s %-7s run exited", logDebug, logName)
+	log.Debugf("run exited")
 
 }
 
@@ -172,36 +169,36 @@ func (z *Service) reapHarvest(harvest *model.Harvest) {
 
 		// save transmission
 		if err := model.T.Save(tx, harvest.Transmission); err != nil {
-			log.Printf("%-7s %-7s Cannot save transmission %s: %s", logWarn, logName, harvest.Transmission.URL, err.Error())
+			log.Debugf("Cannot save transmission %s: %s", harvest.Transmission.URL, err.Error())
 			return err
 		}
 
 		// save items
 		if err := model.I.SaveAll(tx, harvest.Items); err != nil {
-			log.Printf("%-7s %-7s Cannot save items %s: %s", logWarn, logName, harvest.Feed.URL, err.Error())
+			log.Debugf("Cannot save items %s: %s", harvest.Feed.URL, err.Error())
 			return err
 		}
 
 		// save feed
 		if err := model.F.Save(tx, harvest.Feed); err != nil {
-			log.Printf("%-7s %-7s Cannot save feed %s: %s", logWarn, logName, harvest.Feed.URL, err.Error())
+			log.Debugf("Cannot save feed %s: %s", harvest.Feed.URL, err.Error())
 			return err
 		}
 
 		// save entries
 		if err := model.E.AddItems(tx, newItems); err != nil {
-			log.Printf("%-7s %-7s Cannot save entries %s: %s", logWarn, logName, harvest.Feed.URL, err.Error())
+			log.Debugf("Cannot save entries %s: %s", harvest.Feed.URL, err.Error())
 			return err
 		}
 
-		log.Printf("%-7s %-7s %2s  %3d  %s  %3d/%-3d  %s  %s", logDebug, logName, harvest.Feed.Status, harvest.Transmission.StatusCode, harvest.Feed.LastUpdated.Local().Format("02.01.06 15:04"), harvest.Transmission.NewItems, harvest.Transmission.ItemCount, harvest.Feed.URL, harvest.Feed.StatusMessage)
+		log.Debugf("%2s  %3d  %s  %3d/%-3d  %s  %s", harvest.Feed.Status, harvest.Transmission.StatusCode, harvest.Feed.LastUpdated.Local().Format("02.01.06 15:04"), harvest.Transmission.NewItems, harvest.Transmission.ItemCount, harvest.Feed.URL, harvest.Feed.StatusMessage)
 
 		return nil
 
 	})
 
 	if err != nil {
-		log.Printf("%-7s %-7s Error processing feed: %s", logWarn, logName, err.Error())
+		log.Debugf("Error processing feed: %s", err.Error())
 	}
 
 }

@@ -3,7 +3,6 @@ package rest
 import (
 	"fmt"
 	"github.com/gorilla/context"
-	"log"
 	"net/http"
 	"rakewire/model"
 	"rakewire/opml"
@@ -31,7 +30,7 @@ func (z *API) opmlExport(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	err = opml.Format(opmldoc, w)
 	if err != nil {
-		log.Printf("%-7s %-7s Error formatting OPML: %s", logWarn, logName, err.Error())
+		log.Debugf("Error formatting OPML: %s", err.Error())
 	}
 
 }
@@ -43,7 +42,7 @@ func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
 	opmldoc, err := opml.Parse(req.Body)
 	if err != nil {
 		message := fmt.Sprintf("Error parsing OPML: %s\n", err.Error())
-		log.Printf("%-7s %-7s %s", logWarn, logName, message)
+		log.Debugf("%s", message)
 		w.Header().Set(hContentType, "text/plain")
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(message))
@@ -56,7 +55,7 @@ func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		message := fmt.Sprintf("Error importing OPML: %s\n", err.Error())
-		log.Printf("%-7s %-7s %s", logWarn, logName, message)
+		log.Debugf("%s", message)
 		w.Header().Set(hContentType, "text/plain")
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(message))

@@ -5,41 +5,33 @@ import (
 	"errors"
 	"fmt"
 	gorillaHandlers "github.com/gorilla/handlers"
-	"log"
 	"net"
 	"net/http"
+	"rakewire/logger"
 	"rakewire/middleware"
 	"rakewire/model"
 	"sync"
 )
 
 const (
-	logName  = "[httpd]"
-	logInfo  = "[INFO]"
-	logWarn  = "[WARN]"
-	logError = "[ERROR]"
-)
-
-const (
-	httpdAccessLevel        = "httpd.accesslevel"
-	httpdHost               = "httpd.host"
-	httpdPort               = "httpd.port"
-	httpdTLSPort            = "httpd.tls.port"
-	httpdTLSPrivate         = "httpd.tls.private"
-	httpdTLSPublic          = "httpd.tls.public"
-	httpdUseTLS             = "httpd.tls.active"
-	httpdAccessLevelDefault = "DEBUG"
-	httpdHostDefault        = "localhost"
-	httpdPortDefault        = 8888
-	httpdTLSPortDefault     = 4444
-	httpdTLSPrivateDefault  = ""
-	httpdTLSPublicDefault   = ""
-	httpdUseTLSDefault      = false
+	httpdHost              = "httpd.host"
+	httpdPort              = "httpd.port"
+	httpdTLSPort           = "httpd.tls.port"
+	httpdTLSPrivate        = "httpd.tls.private"
+	httpdTLSPublic         = "httpd.tls.public"
+	httpdUseTLS            = "httpd.tls.active"
+	httpdHostDefault       = "localhost"
+	httpdPortDefault       = 8888
+	httpdTLSPortDefault    = 4444
+	httpdTLSPrivateDefault = ""
+	httpdTLSPublicDefault  = ""
+	httpdUseTLSDefault     = false
 )
 
 var (
 	// ErrRestart indicates that the service cannot be started because it is already running.
 	ErrRestart = errors.New("The service is already started")
+	log        = logger.New("httpd")
 )
 
 // Service server
@@ -49,7 +41,6 @@ type Service struct {
 	listener    net.Listener
 	tlsListener net.Listener
 	running     bool
-	accessLevel string
 	address     string // binding address, empty string means 0.0.0.0
 	host        string // discard requests not made to this host
 	port        int
@@ -68,14 +59,13 @@ const (
 // NewService creates a new httpd service.
 func NewService(cfg *model.Configuration, database model.Database) *Service {
 	return &Service{
-		database:    database,
-		accessLevel: cfg.GetStr(httpdAccessLevel, httpdAccessLevelDefault),
-		host:        cfg.GetStr(httpdHost, httpdHostDefault),
-		port:        cfg.GetInt(httpdPort, httpdPortDefault),
-		tlsPort:     cfg.GetInt(httpdTLSPort, httpdTLSPortDefault),
-		tlsPublic:   cfg.GetStr(httpdTLSPublic, httpdTLSPublicDefault),
-		tlsPrivate:  cfg.GetStr(httpdTLSPrivate, httpdTLSPrivateDefault),
-		useTLS:      cfg.GetBool(httpdUseTLS, httpdUseTLSDefault),
+		database:   database,
+		host:       cfg.GetStr(httpdHost, httpdHostDefault),
+		port:       cfg.GetInt(httpdPort, httpdPortDefault),
+		tlsPort:    cfg.GetInt(httpdTLSPort, httpdTLSPortDefault),
+		tlsPublic:  cfg.GetStr(httpdTLSPublic, httpdTLSPublicDefault),
+		tlsPrivate: cfg.GetStr(httpdTLSPrivate, httpdTLSPrivateDefault),
+		useTLS:     cfg.GetBool(httpdUseTLS, httpdUseTLSDefault),
 	}
 }
 
@@ -85,12 +75,12 @@ func (z *Service) Start() error {
 	z.Lock()
 	defer z.Unlock()
 	if z.running {
-		log.Printf("%-7s %-7s service already started, exiting...", logWarn, logName)
+		log.Debugf("service already started, exiting...")
 		return ErrRestart
 	}
 
 	if z.database == nil {
-		log.Printf("%-7s %-7s cannot start httpd, no database provided", logError, logName)
+		log.Debugf("cannot start httpd, no database provided")
 		return errors.New("No database")
 	}
 
@@ -115,15 +105,15 @@ func (z *Service) startHTTP() error {
 	restrictToStatusOnly := z.useTLS
 	router, err := z.mainRouter(restrictToStatusOnly)
 	if err != nil {
-		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
+		log.Debugf("cannot load router: %s", err.Error())
 		return err
 	}
 
-	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter(z.accessLevel))
+	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
 
 	z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.address, z.port))
 	if err != nil {
-		log.Printf("%-7s %-7s cannot start listener: %s", logError, logName, err.Error())
+		log.Debugf("cannot start listener: %s", err.Error())
 		return err
 	}
 
@@ -132,7 +122,7 @@ func (z *Service) startHTTP() error {
 	}
 	go server.Serve(z.listener)
 
-	log.Printf("%-7s %-7s service started on http://%s:%d", logInfo, logName, z.address, z.port)
+	log.Debugf("service started on http://%s:%d", z.address, z.port)
 
 	return nil
 
@@ -142,15 +132,15 @@ func (z *Service) startHTTPS() error {
 
 	router, err := z.mainRouter()
 	if err != nil {
-		log.Printf("%-7s %-7s cannot load router: %s", logError, logName, err.Error())
+		log.Debugf("cannot load router: %s", err.Error())
 		return err
 	}
 
-	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter(z.accessLevel))
+	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
 
 	cert, err := tls.X509KeyPair([]byte(z.tlsPublic), []byte(z.tlsPrivate))
 	if err != nil {
-		log.Printf("%-7s %-7s cannot create tls key pair: %s", logError, logName, err.Error())
+		log.Debugf("cannot create tls key pair: %s", err.Error())
 		return err
 	}
 	tlsConfig := &tls.Config{
@@ -158,7 +148,7 @@ func (z *Service) startHTTPS() error {
 	}
 	z.tlsListener, err = tls.Listen("tcp", fmt.Sprintf("%s:%d", z.address, z.tlsPort), tlsConfig)
 	if err != nil {
-		log.Printf("%-7s %-7s cannot start tls listener: %s", logError, logName, err.Error())
+		log.Debugf("cannot start tls listener: %s", err.Error())
 		return err
 	}
 
@@ -168,7 +158,7 @@ func (z *Service) startHTTPS() error {
 
 	go server.Serve(z.tlsListener)
 
-	log.Printf("%-7s %-7s service started on https://%s:%d", logInfo, logName, z.host, z.tlsPort)
+	log.Debugf("service started on https://%s:%d", z.host, z.tlsPort)
 
 	return nil
 
@@ -180,18 +170,18 @@ func (z *Service) Stop() {
 	z.Lock()
 	defer z.Unlock()
 	if !z.running {
-		log.Printf("%-7s %-7s service already stopped, exiting...", logWarn, logName)
+		log.Debugf("service already stopped, exiting...")
 		return
 	}
 
 	if err := z.listener.Close(); err != nil {
-		log.Printf("%-7s %-7s error stopping httpd: %s", logError, logName, err.Error())
+		log.Debugf("error stopping httpd: %s", err.Error())
 	}
 
 	z.listener = nil
 	z.running = false
 
-	log.Printf("%-7s %-7s service stopped", logInfo, logName)
+	log.Debugf("service stopped")
 
 }
 

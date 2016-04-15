@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -22,7 +21,7 @@ func TestRootNotFound(t *testing.T) {
 
 	rsp, err := http.Get(u)
 	if err != nil {
-		log.Fatalf("Cannot perform request to %s: %s", u, err.Error())
+		t.Fatalf("Cannot perform request to %s: %s", u, err.Error())
 	} else if rsp.StatusCode != http.StatusNotFound {
 		t.Fatalf("Bad error code, url: %s, expected %d, actual %d", u, http.StatusNotFound, rsp.StatusCode)
 	}

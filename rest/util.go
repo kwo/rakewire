@@ -5,11 +5,6 @@ import (
 )
 
 const (
-	logName = "[fever]"
-	logWarn = "[WARN]"
-)
-
-const (
 	hContentType = "Content-Type"
 	mGet         = "GET"
 	//	mPost        = "POST"

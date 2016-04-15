@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/boltdb/bolt"
+	"rakewire/logger"
 	"sync"
 	"time"
 )
@@ -11,9 +12,13 @@ const (
 )
 
 // Instance allows opening and closing new Databases
-var Instance = &boltInstance{}
+var Instance = &boltInstance{
+	log: logger.New("db"),
+}
 
-type boltInstance struct{}
+type boltInstance struct {
+	log *logger.Logger
+}
 
 // Open opens the store at the specified location
 func (z *boltInstance) Open(location string) (Database, error) {

@@ -2,7 +2,6 @@ package httpd
 
 import (
 	"github.com/gorilla/mux"
-	"net/http"
 	"rakewire/fever"
 	"rakewire/middleware"
 	"rakewire/rest"
@@ -60,12 +59,12 @@ func (z *Service) mainRouter(flags ...bool) (*mux.Router, error) {
 
 }
 
-type oneFS struct {
-	name string
-	root http.FileSystem
-}
+// type oneFS struct {
+// 	name string
+// 	root http.FileSystem
+// }
 
-func (z oneFS) Open(name string) (http.File, error) {
-	// ignore name and use z.name
-	return z.root.Open(z.name)
-}
+// func (z oneFS) Open(name string) (http.File, error) {
+// 	// ignore name and use z.name
+// 	return z.root.Open(z.name)
+// }

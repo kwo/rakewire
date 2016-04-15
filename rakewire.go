@@ -4,24 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"rakewire/fetch"
 	"rakewire/httpd"
+	"rakewire/logger"
 	"rakewire/model"
 	"rakewire/pollfeed"
 	"rakewire/reaper"
 	"syscall"
 	"time"
-)
-
-const (
-	logName  = "[main]"
-	logInfo  = "[INFO]"
-	logWarn  = "[WARN]"
-	logError = "[ERROR]"
 )
 
 var (
@@ -30,19 +23,21 @@ var (
 	polld    *pollfeed.Service
 	reaperd  *reaper.Service
 	ws       *httpd.Service
+	log      = logger.New("main")
 )
 
 func main() {
 
+	var flagDebug = flag.Bool("debug", false, "enable debug mode")
 	var flagVersion = flag.Bool("version", false, "print version and exit")
 	var flagFile = flag.String("f", "rakewire.db", "file to open as the rakewire database")
 	var flagCheckDatabase = flag.Bool("check", false, "check database integrity and exit")
 	var flagPidFile = flag.String("pidfile", "/var/run/rakewire.pid", "PID file")
 	flag.Parse()
 
-	log.Printf("Rakewire %s\n", model.Version)
-	log.Printf("Build Time: %s\n", model.BuildTime)
-	log.Printf("Build Hash: %s\n", model.BuildHash)
+	fmt.Printf("Rakewire %s\n", model.Version)
+	fmt.Printf("Build Time: %s\n", model.BuildTime)
+	fmt.Printf("Build Hash: %s\n", model.BuildHash)
 
 	if *flagVersion {
 		return
@@ -54,14 +49,14 @@ func main() {
 	if filename, err := filepath.Abs(*flagFile); err == nil {
 		dbFile = filename
 	} else {
-		log.Printf("Cannot find database file: %s\n", err.Error())
+		log.Infof("Cannot find database file: %s", err.Error())
 		return
 	}
-	log.Printf("Database:   %s\n", dbFile)
+	log.Infof("Database: %s", dbFile)
 
 	if *flagCheckDatabase {
 		if err := model.Instance.Check(dbFile); err != nil {
-			log.Printf("Error: %s\n", err.Error())
+			log.Infof("Error: %s", err.Error())
 			os.Exit(1)
 		}
 		return
@@ -70,7 +65,7 @@ func main() {
 	if db, err := model.Instance.Open(dbFile); db != nil && err == nil {
 		database = db
 	} else if err != nil {
-		log.Println(err.Error())
+		log.Infof(err.Error())
 		model.Instance.Close(db)
 		return
 	} else if db == nil {
@@ -81,12 +76,15 @@ func main() {
 	if c, err := loadConfiguration(database); err == nil {
 		cfg = c
 	} else {
-		log.Printf("Abort! Cannot load configuration: %s", err.Error())
+		log.Infof("Abort! Cannot load configuration: %s", err.Error())
 		model.Instance.Close(database)
 		return
 	}
 
-	// TODO: initialize logging
+	// initialize logging
+	if *flagDebug || cfg.GetBool("logger.debug", false) {
+		logger.DebugMode = true
+	}
 
 	polld = pollfeed.NewService(cfg, database)
 	reaperd = reaper.NewService(cfg, database)
@@ -126,13 +124,13 @@ func monitorShutdown(chErrors chan error, pidFile string) {
 
 	select {
 	case err := <-chErrors:
-		log.Printf("%-7s %-7s received error: %s", logError, logName, err.Error())
+		log.Infof("received error: %s", err.Error())
 	case <-chSignals:
 		fmt.Println()
-		log.Printf("%-7s %-7s caught signal", logInfo, logName)
+		log.Infof("caught signal")
 	}
 
-	log.Printf("%-7s %-7s stopping... ", logInfo, logName)
+	log.Infof("stopping... ")
 
 	// shutdown httpd
 	ws.Stop()
@@ -140,12 +138,12 @@ func monitorShutdown(chErrors chan error, pidFile string) {
 	fetchd.Stop()
 	reaperd.Stop()
 	if err := model.Instance.Close(database); err != nil {
-		log.Printf("%-7s %-7s Error closing database: %s", logWarn, logName, err.Error())
+		log.Infof("Error closing database: %s", err.Error())
 	}
 
 	pidFileRemove(pidFile)
 
-	log.Printf("%-7s %-7s done", logInfo, logName)
+	log.Infof("done")
 
 }
 
@@ -160,12 +158,12 @@ func loadConfiguration(db model.Database) (*model.Configuration, error) {
 
 func pidFileWrite(pidFile string) {
 	if err := ioutil.WriteFile(pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), os.FileMode(int(0644))); err != nil {
-		log.Printf("%-7s %-7s Cannot write pid file: %s", logError, logName, err.Error())
+		log.Infof("Cannot write pid file: %s", err.Error())
 	}
 }
 
 func pidFileRemove(pidFile string) {
 	if err := os.Remove(pidFile); err != nil {
-		log.Printf("%-7s %-7s Cannot remove pid file: %s", logError, logName, err.Error())
+		log.Infof("Cannot remove pid file: %s", err.Error())
 	}
 }

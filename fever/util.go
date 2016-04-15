@@ -8,12 +8,6 @@ import (
 )
 
 const (
-	logName  = "[fever]"
-	logDebug = "[DEBUG]"
-	logWarn  = "[WARN]"
-)
-
-const (
 	hContentType = "Content-Type"
 	mimeJSON     = "text/json; charset=utf-8"
 	mPost        = "POST"

@@ -19,8 +19,6 @@ func Export(tx model.Transaction, user *model.User) (*OPML, error) {
 	categories := make(map[string]*Outline)
 	for group, groupSubscriptions := range subscriptionsByGroup {
 
-		//log.Printf("%-7s %-7s category: %s", logDebug, logName, group.Name)
-
 		if _, ok := categories[group.Name]; !ok {
 			category := &Outline{
 				Title: group.Name,
@@ -73,14 +71,12 @@ func Export(tx model.Transaction, user *model.User) (*OPML, error) {
 				XMLURL:      feed.URL,
 				HTMLURL:     feed.SiteURL,
 			}
-			//log.Printf("%-7s %-7s feed: %s", logDebug, logName, outline.Title)
 			category.Outlines = append(category.Outlines, outline)
 		}
 	}
 
 	outlines := Outlines{}
 	for _, category := range categories {
-		//log.Printf("%-7s %-7s outline %s: %d", logDebug, logName, category.Title, len(category.Outlines))
 		outlines = append(outlines, category)
 	}
 
@@ -104,8 +100,6 @@ func Export(tx model.Transaction, user *model.User) (*OPML, error) {
 
 // Import OPML document into database
 func Import(tx model.Transaction, userID string, opml *OPML) error {
-
-	//log.Printf("%-7s %-7s importing opml for user %s, replace: %t", logDebug, logName, userID, replace)
 
 	flatOPML := flatten(opml.Body.Outlines)
 
@@ -144,14 +138,12 @@ func Import(tx model.Transaction, userID string, opml *OPML) error {
 				feed = model.F.GetByURL(tx, outline.XMLURL)
 				if feed == nil {
 					feed = model.F.New(outline.XMLURL)
-					//log.Printf("%-7s %-7s adding feed: %s", logDebug, logName, f.URL)
 					if err := model.F.Save(tx, feed); err != nil {
 						return err
 					}
 				}
 
 				subscription = model.S.New(userID, feed.ID)
-				//log.Printf("%-7s %-7s adding subscription: %s", logDebug, logName, uf.Feed.URL)
 
 				subscriptions = append(subscriptions, subscription)
 				feedsByID[feed.ID] = feed

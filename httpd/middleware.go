@@ -2,34 +2,26 @@ package httpd
 
 import (
 	gorillaHandlers "github.com/gorilla/handlers"
-	"log"
 	"net/http"
+	"rakewire/logger"
 	"rakewire/middleware"
 )
 
 // LogWriter is an io.Writer than writes to the log facility.
 type LogWriter struct {
-	name  string
-	level string
+	accessLogger *logger.Logger
 }
 
 func (z *LogWriter) Write(p []byte) (n int, err error) {
-	log.Printf("%-7s %-7s %s", z.level, z.name, string(p))
+	log.Debugf("%s", string(p))
 	return len(p), nil
 }
 
 // LogAdapter log requests and responses
-func LogAdapter(level string) middleware.Adapter {
-
-	if level != "" {
-		level = "[" + level + "]"
-	} else {
-		level = "[TRACE]"
-	}
+func LogAdapter() middleware.Adapter {
 
 	logWriter := &LogWriter{
-		name:  "[access]",
-		level: level,
+		accessLogger: logger.New("access"),
 	}
 
 	return func(h http.Handler) http.Handler {

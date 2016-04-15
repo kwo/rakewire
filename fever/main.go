@@ -3,8 +3,8 @@ package fever
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"log"
 	"net/http"
+	"rakewire/logger"
 	"rakewire/model"
 	"strings"
 )
@@ -15,6 +15,8 @@ const (
 	// AuthParam must be sent with ever Fever request to authenticate to the service.
 	AuthParam = "api_key"
 )
+
+var log = logger.New("fever")
 
 // NewAPI creates a new Fever API instance
 func NewAPI(prefix string, db model.Database) *API {
@@ -67,15 +69,15 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 				u := model.U.GetByFeverhash(tx, apiKey)
 				if u != nil {
 					rsp.Authorized = 1
-					log.Printf("%-7s %-7s authorized: %s", logDebug, logName, u.Username)
+					log.Debugf("authorized: %s", u.Username)
 					user = u
 				}
 				return nil
 			})
 		}
 
-		log.Printf("%-7s %-7s request query: %v", logDebug, logName, req.URL.Query())
-		log.Printf("%-7s %-7s request form:  %v", logDebug, logName, req.PostForm)
+		log.Debugf("request query: %v", req.URL.Query())
+		log.Debugf("request form:  %v", req.PostForm)
 
 		if rsp.Authorized == 1 {
 
@@ -87,7 +89,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 					if tr != nil {
 						rsp.LastRefreshed = tr.StartTime.Unix()
 					} else {
-						log.Printf("%-7s %-7s error retrieving last transmission fetch time: %s", logWarn, logName, "not found")
+						log.Debugf("error retrieving last transmission fetch time: %s", "not found")
 					}
 
 					uMark := req.PostFormValue("mark")
@@ -96,7 +98,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 					uBefore := req.PostFormValue("before")
 					if uMark != "" {
 						if err := z.updateItems(user.ID, uMark, uAs, uID, uBefore, tx); err != nil {
-							log.Printf("%-7s %-7s error updating items: %s", logWarn, logName, err.Error())
+							log.Debugf("error updating items: %s", err.Error())
 						}
 					}
 
@@ -105,7 +107,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 						rsp.Feeds = feeds
 						rsp.FeedGroups = feedGroups
 					} else {
-						log.Printf("%-7s %-7s error retrieving feeds and feed_groups: %s", logWarn, logName, err.Error())
+						log.Debugf("error retrieving feeds and feed_groups: %s", err.Error())
 					}
 
 				case "groups":
@@ -113,7 +115,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 						rsp.Groups = groups
 						rsp.FeedGroups = feedGroups
 					} else {
-						log.Printf("%-7s %-7s error retrieving groups and feed_groups: %s", logWarn, logName, err.Error())
+						log.Debugf("error retrieving groups and feed_groups: %s", err.Error())
 					}
 
 				case "items":
@@ -123,14 +125,14 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 						if err == nil {
 							rsp.Items = items
 						} else {
-							log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
+							log.Debugf("error retrieving items: %s", err.Error())
 						}
 					} else if id := req.URL.Query().Get("max_id"); len(id) > 0 {
 						items, err := z.getItemsPrev(user.ID, id, tx)
 						if err == nil {
 							rsp.Items = items
 						} else {
-							log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
+							log.Debugf("error retrieving items: %s", err.Error())
 						}
 					} else if ids := req.URL.Query().Get("with_ids"); len(ids) > 0 {
 						idArray := strings.Split(ids, ",")
@@ -138,14 +140,14 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 						if err == nil {
 							rsp.Items = items
 						} else {
-							log.Printf("%-7s %-7s error retrieving items: %s", logWarn, logName, err.Error())
+							log.Debugf("error retrieving items: %s", err.Error())
 						}
 					} else {
 						items, err := z.getItemsAll(user.ID, tx)
 						if err == nil {
 							rsp.Items = items
 						} else {
-							log.Printf("%-7s %-7s error retrieving items all: %s", logWarn, logName, err.Error())
+							log.Debugf("error retrieving items all: %s", err.Error())
 						}
 					}
 
@@ -153,14 +155,14 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 					if itemIDs, err := z.getUnreadItemIDs(user.ID, tx); err == nil {
 						rsp.UnreadItemIDs = itemIDs
 					} else {
-						log.Printf("%-7s %-7s error retrieving unread item IDs: %s", logWarn, logName, err.Error())
+						log.Debugf("error retrieving unread item IDs: %s", err.Error())
 					}
 
 				case "saved_item_ids":
 					if itemIDs, err := z.getSavedItemIDs(user.ID, tx); err == nil {
 						rsp.SavedItemIDs = itemIDs
 					} else {
-						log.Printf("%-7s %-7s error retrieving saved item IDs: %s", logWarn, logName, err.Error())
+						log.Debugf("error retrieving saved item IDs: %s", err.Error())
 					}
 
 				}
@@ -175,7 +177,7 @@ func (z *API) mux(w http.ResponseWriter, req *http.Request) {
 	w.Header().Set(hContentType, mimeJSON)
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(&rsp); err != nil {
-		log.Printf("%-7s %-7s cannot serialize fever JSON response: %s", logWarn, logName, err.Error())
+		log.Debugf("cannot serialize fever JSON response: %s", err.Error())
 	}
 
 }
