@@ -90,12 +90,6 @@ func (z *Service) Start() error {
 // Stop service
 func (z *Service) Stop() {
 
-	// TODO #RAKEWIRE-55: remove hack because on app close object is apparently already garbage collected
-	if z == nil {
-		log.Debugf("service is nil, exiting...")
-		return
-	}
-
 	z.Lock()
 	defer z.Unlock()
 	if !z.running {
