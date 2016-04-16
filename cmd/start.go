@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"rakewire/fetch"
 	"rakewire/httpd"
 	"rakewire/logger"
@@ -31,35 +30,25 @@ type startContext struct {
 // Start the app
 func Start(c *cli.Context) {
 
-	fmt.Printf("Rakewire %s\n", model.Version)
-	fmt.Printf("Build Time: %s\n", model.BuildTime)
-	fmt.Printf("Build Hash: %s\n", model.BuildHash)
-
+	showVersionInformation(c)
 	model.AppStart = time.Now()
+
+	dbFile := c.String("file")
+	pidFile := c.String("pid")
+	verbose := c.GlobalBool("verbose")
 
 	ctx := &startContext{
 		log:     logger.New("start"),
-		pidFile: c.String("pidfile"),
+		pidFile: pidFile,
 	}
 
-	var dbFile string
-	if filename, err := filepath.Abs(c.String("f")); err == nil {
-		dbFile = filename
-	} else {
-		ctx.log.Infof("Cannot find database file: %s", err.Error())
-		return
-	}
-	ctx.log.Infof("Database: %s", dbFile)
-
-	if db, err := model.Instance.Open(dbFile); db != nil && err == nil {
+	if db, err := openDatabase(dbFile); err == nil {
 		ctx.database = db
-	} else if err != nil {
-		ctx.log.Infof(err.Error())
-		model.Instance.Close(db)
-		return
-	} else if db == nil {
+	} else {
+		ctx.log.Infof("Error: Cannot open database: %s", err.Error())
 		return
 	}
+	ctx.log.Infof("Database: %s", ctx.database.Location())
 
 	var cfg *model.Configuration
 	if c, err := loadConfiguration(ctx.database); err == nil {
@@ -73,7 +62,7 @@ func Start(c *cli.Context) {
 	// initialize logging - debug statements above this point will never be logged
 	// Forbid debugMode in production.
 	// If model.Version is not an empty string (stamped via LDFLAGS) then we are in production mode.
-	logger.DebugMode = model.Version == "" && c.Bool("debug")
+	logger.DebugMode = model.Version == "" && verbose
 
 	ctx.polld = pollfeed.NewService(cfg, ctx.database)
 	ctx.reaperd = reaper.NewService(cfg, ctx.database)

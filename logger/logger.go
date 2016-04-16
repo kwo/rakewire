@@ -23,19 +23,22 @@ func New(name string) *Logger {
 
 // Logger defines the logger
 type Logger struct {
-	Name string
+	Silent bool
+	Name   string
 }
 
 // Debugf writes a debug message to the console.
 func (z *Logger) Debugf(format string, a ...interface{}) {
-	if DebugMode {
+	if !z.Silent && DebugMode {
 		z.logf(levelDebug, format, a...)
 	}
 }
 
 // Infof writes an info message to the console.
 func (z *Logger) Infof(format string, a ...interface{}) {
-	z.logf(levelInfo, format, a...)
+	if !z.Silent {
+		z.logf(levelInfo, format, a...)
+	}
 }
 
 func (z *Logger) logf(level, format string, a ...interface{}) {
