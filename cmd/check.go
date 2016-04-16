@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/codegangsta/cli"
 	"os"
 	"path/filepath"
-	"rakewire/logger"
 	"rakewire/model"
 )
 
@@ -18,19 +18,18 @@ func Check(c *cli.Context) {
 		showVersionInformation(c)
 	}
 
-	log := logger.New("check")
-	log.Silent = !verbose
-
 	if filename, err := filepath.Abs(dbFile); err == nil {
 		dbFile = filename
 	} else {
-		log.Infof("Cannot find database file: %s", err.Error())
+		fmt.Printf("Cannot find database file: %s\n", err.Error())
 		return
 	}
-	log.Infof("Database: %s", dbFile)
+	if verbose {
+		fmt.Printf("Database: %s\n", dbFile)
+	}
 
 	if err := model.Instance.Check(dbFile); err != nil {
-		log.Infof("Error: %s", err.Error())
+		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(1)
 	}
 

@@ -36,7 +36,7 @@ func Start(c *cli.Context) {
 	verbose := c.GlobalBool("verbose")
 
 	ctx := &startContext{
-		log:     logger.New("start"),
+		log:     logger.New("main"),
 		pidFile: pidFile,
 	}
 

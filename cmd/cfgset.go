@@ -12,7 +12,7 @@ import (
 // ConfigSet sets a configuration parameter
 func ConfigSet(c *cli.Context) {
 
-	db, cfg, _, err := initConfig(c)
+	db, cfg, err := initConfig(c)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(1)

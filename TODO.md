@@ -8,8 +8,7 @@
   x config
   x remove version from model
   x make version a one-liner with build time and commit hash
-  - separate out sequences
-  - make Configuration type of map[string]string
+  x remove log from cmds
   - add user / --admin flag for admin user
   - eliminate tools
 

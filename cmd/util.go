@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/codegangsta/cli"
 	"path/filepath"
-	"rakewire/logger"
 	"rakewire/model"
 	"strings"
 )
@@ -34,7 +33,7 @@ func closeDatabase(db model.Database) error {
 	return model.Instance.Close(db)
 }
 
-func initConfig(c *cli.Context) (model.Database, *model.Configuration, *logger.Logger, error) {
+func initConfig(c *cli.Context) (model.Database, *model.Configuration, error) {
 
 	dbFile := c.Parent().String("file")
 	verbose := c.GlobalBool("verbose")
@@ -43,21 +42,20 @@ func initConfig(c *cli.Context) (model.Database, *model.Configuration, *logger.L
 		showVersionInformation(c)
 	}
 
-	log := logger.New("config")
-	log.Silent = !verbose
-
 	db, errDb := openDatabase(dbFile)
 	if errDb != nil {
-		return nil, nil, nil, errDb
+		return nil, nil, errDb
 	}
-	log.Infof("Database: %s", db.Location())
+	if verbose {
+		fmt.Printf("Database: %s\n", db.Location())
+	}
 
 	cfg, errCfg := loadConfiguration(db)
 	if errCfg != nil {
-		return nil, nil, nil, errCfg
+		return nil, nil, errCfg
 	}
 
-	return db, cfg, log, nil
+	return db, cfg, nil
 
 }
 
