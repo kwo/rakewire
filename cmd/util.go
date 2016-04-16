@@ -10,11 +10,7 @@ import (
 )
 
 func showVersionInformation(c *cli.Context) {
-
-	fmt.Printf("Rakewire %s\n", model.Version)
-	fmt.Printf("Build Time: %s\n", model.BuildTime)
-	fmt.Printf("Build Hash: %s\n", model.BuildHash)
-
+	fmt.Printf("Rakewire %s\n", c.App.Version)
 }
 
 func openDatabase(dbFile string) (model.Database, error) {

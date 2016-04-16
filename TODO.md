@@ -5,9 +5,14 @@
 ### Immediate
 
 - command line commands not flags
-  - add admin user (one-time), change password
-  - config
-  - https://github.com/codegangsta/cli
+  x config
+  x remove version from model
+  x make version a one-liner with build time and commit hash
+  - separate out sequences
+  - make Configuration type of map[string]string
+  - add user / --admin flag for admin user
+  - eliminate tools
+
 
 ### Goals
   x Save Feed Entries

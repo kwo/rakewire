@@ -63,10 +63,32 @@ func (z *Configuration) GetInt(name string, defaultValue ...int) int {
 	return 0
 }
 
+// GetInt64 returns the given value if exists otherwise the default value
+func (z *Configuration) GetInt64(name string, defaultValue ...int64) int64 {
+	if valueStr, ok := z.Values[name]; ok {
+		if value, err := strconv.ParseInt(valueStr, 10, 64); err == nil {
+			return value
+		}
+	}
+	if len(defaultValue) > 0 {
+		return defaultValue[0]
+	}
+	return 0
+}
+
 // SetInt sets an integer configuration value
 func (z *Configuration) SetInt(name string, value int) {
 	if value != 0 {
 		z.Values[name] = strconv.FormatInt(int64(value), 10)
+	} else {
+		delete(z.Values, name)
+	}
+}
+
+// SetInt64 sets an integer configuration value
+func (z *Configuration) SetInt64(name string, value int64) {
+	if value != 0 {
+		z.Values[name] = strconv.FormatInt(value, 10)
 	} else {
 		delete(z.Values, name)
 	}

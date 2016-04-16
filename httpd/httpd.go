@@ -11,6 +11,7 @@ import (
 	"rakewire/middleware"
 	"rakewire/model"
 	"sync"
+	"time"
 )
 
 const (
@@ -48,6 +49,8 @@ type Service struct {
 	tlsPublic   string
 	tlsPrivate  string
 	useTLS      bool
+	version     string
+	appstart    time.Time
 }
 
 const (
@@ -66,6 +69,8 @@ func NewService(cfg *model.Configuration, database model.Database) *Service {
 		tlsPublic:  cfg.GetStr(httpdTLSPublic, httpdTLSPublicDefault),
 		tlsPrivate: cfg.GetStr(httpdTLSPrivate, httpdTLSPrivateDefault),
 		useTLS:     cfg.GetBool(httpdUseTLS, httpdUseTLSDefault),
+		version:    cfg.GetStr("app.version", "Rakewire"),
+		appstart:   time.Unix(cfg.GetInt64("app.start", time.Now().Unix()), 0).Truncate(time.Second),
 	}
 }
 

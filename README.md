@@ -14,7 +14,7 @@
 
 	go install rakewire.go
 
-	CGO_ENABLED=0; LDFLAGS="-X rakewire/model.Version=1.11.3 -X rakewire/model.BuildTime=`date -u +%FT%TZ` -X rakewire/model.BuildHash=`git rev-parse HEAD`"; go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
+	CGO_ENABLED=0; LDFLAGS="-X main.Version=1.12.0-beta -X main.BuildTime=`date -u +%FT%TZ` -X main.BuildHash=`git rev-parse HEAD`"; go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
 
 ## Dependencies
 

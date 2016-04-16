@@ -37,19 +37,19 @@ const (
 var (
 	fetchTimeoutDefault = time.Second * 20
 	fetchWorkersDefault = 10
-	httpUserAgent       = "Rakewire " + model.Version
 	log                 = logger.New("fetch")
 )
 
 // Service fetches feeds
 type Service struct {
 	sync.Mutex
-	running bool
-	input   chan *model.Feed
-	output  chan *model.Harvest
-	workers int
-	latch   sync.WaitGroup
-	client  *http.Client
+	running   bool
+	input     chan *model.Feed
+	output    chan *model.Harvest
+	workers   int
+	latch     sync.WaitGroup
+	client    *http.Client
+	userAgent string
 }
 
 // NewService create new fetcher service
@@ -59,10 +59,11 @@ func NewService(cfg *model.Configuration, input chan *model.Feed, output chan *m
 		timeout = fetchTimeoutDefault
 	}
 	return &Service{
-		input:   input,
-		output:  output,
-		workers: cfg.GetInt(fetchWorkers, fetchWorkersDefault),
-		client:  newInternalClient(timeout),
+		input:     input,
+		output:    output,
+		workers:   cfg.GetInt(fetchWorkers, fetchWorkersDefault),
+		client:    newInternalClient(timeout),
+		userAgent: cfg.GetStr("app.version", "Rakewire"),
 	}
 }
 
@@ -139,7 +140,7 @@ func (z *Service) processFeed(feed *model.Feed, id int) {
 	harvest.Transmission.URL = feed.URL
 	harvest.Transmission.StartTime = now
 
-	rsp, err := z.client.Do(newRequest(feed))
+	rsp, err := z.client.Do(z.newRequest(feed))
 	if err != nil && (rsp == nil || rsp.StatusCode != http.StatusMovedPermanently) {
 		processFeedClientError(harvest, err)
 	} else {
@@ -252,9 +253,9 @@ func processFeedNotModified(harvest *model.Harvest, rsp *http.Response) {
 	harvest.Transmission.LastModified = parseDateHeader(rsp.Header.Get(hLastModified))
 }
 
-func newRequest(feed *model.Feed) *http.Request {
+func (z *Service) newRequest(feed *model.Feed) *http.Request {
 	req, _ := http.NewRequest(mGET, feed.URL, nil)
-	req.Header.Set(hUserAgent, httpUserAgent)
+	req.Header.Set(hUserAgent, z.userAgent)
 	req.Header.Set(hAcceptEncoding, "gzip")
 	if !feed.LastModified.IsZero() {
 		req.Header.Set(hIfModifiedSince, feed.LastModified.UTC().Format(http.TimeFormat))

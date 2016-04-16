@@ -13,7 +13,6 @@ import (
 	"rakewire/pollfeed"
 	"rakewire/reaper"
 	"syscall"
-	"time"
 )
 
 type startContext struct {
@@ -31,7 +30,6 @@ type startContext struct {
 func Start(c *cli.Context) {
 
 	showVersionInformation(c)
-	model.AppStart = time.Now()
 
 	dbFile := c.String("file")
 	pidFile := c.String("pid")
@@ -59,10 +57,14 @@ func Start(c *cli.Context) {
 		return
 	}
 
+	// add version and process start time to config
+	cfg.SetStr("app.version", c.App.Version)
+	cfg.SetInt64("app.start", c.App.Compiled.Unix())
+
 	// initialize logging - debug statements above this point will never be logged
 	// Forbid debugMode in production.
 	// If model.Version is not an empty string (stamped via LDFLAGS) then we are in production mode.
-	logger.DebugMode = model.Version == "" && verbose
+	logger.DebugMode = c.App.Version == "" && verbose
 
 	ctx.polld = pollfeed.NewService(cfg, ctx.database)
 	ctx.reaperd = reaper.NewService(cfg, ctx.database)

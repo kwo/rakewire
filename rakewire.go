@@ -1,19 +1,25 @@
 package main
 
 import (
+	"fmt"
 	"github.com/codegangsta/cli"
 	"os"
 	"rakewire/cmd"
 )
 
-// TODO: remove model as import, move version to main package?
+// application level variables
+var (
+	Version   = ""
+	BuildTime = ""
+	BuildHash = ""
+)
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "Rakewire"
 	app.Usage = "Feed Reader"
 	app.HideVersion = true
-	app.Version = ""
+	app.Version = fmt.Sprintf("%s %s %s", Version, BuildTime, BuildHash)
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:   "v, verbose",

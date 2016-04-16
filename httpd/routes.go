@@ -14,8 +14,8 @@ func (z *Service) mainRouter(flags ...bool) (*mux.Router, error) {
 	router := mux.NewRouter()
 
 	// status api router
-	router.Path("/").Methods(mGet).HandlerFunc(statusHandler)
-	router.Path("/status").Methods(mGet).HandlerFunc(statusHandler)
+	router.Path("/").Methods(mGet).HandlerFunc(z.statusHandler)
+	router.Path("/status").Methods(mGet).HandlerFunc(z.statusHandler)
 
 	if flagStatusOnly {
 		return router, nil
