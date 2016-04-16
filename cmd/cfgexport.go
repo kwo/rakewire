@@ -17,7 +17,7 @@ func ConfigExport(c *cli.Context) {
 	}
 	defer closeDatabase(db)
 
-	data, err := json.MarshalIndent(cfg, "", "  ")
+	data, err := json.MarshalIndent(cfg.Values, "", "  ")
 	if err != nil {
 		fmt.Printf("Cannot export JSON: %s\n", err.Error())
 		os.Exit(1)

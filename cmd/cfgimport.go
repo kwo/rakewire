@@ -25,10 +25,12 @@ func ConfigImport(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	if err := json.Unmarshal(data, cfg); err != nil {
+	var values map[string]string
+	if err := json.Unmarshal(data, &values); err != nil {
 		fmt.Printf("Cannot decode JSON: %s\n", err.Error())
 		os.Exit(1)
 	}
+	cfg.Values = values
 
 	if err := db.Update(func(tx model.Transaction) error {
 		return model.C.Put(tx, cfg)
