@@ -106,13 +106,13 @@ func (z Users) ByID() map[string]*User {
 	return result
 }
 
-func (z Users) decode(data []byte) error {
+func (z *Users) decode(data []byte) error {
 	if err := json.Unmarshal(data, z); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (z Users) encode() ([]byte, error) {
+func (z *Users) encode() ([]byte, error) {
 	return json.Marshal(z)
 }

@@ -10,7 +10,7 @@
   x make version a one-liner with build time and commit hash
   x remove log from cmds
   - add user / --admin flag for admin user
-  - eliminate tools
+  x eliminate tools
 
 
 ### Goals
