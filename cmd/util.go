@@ -58,13 +58,3 @@ func initConfig(c *cli.Context) (model.Database, *model.Configuration, error) {
 	return db, cfg, nil
 
 }
-
-func truncateValue(value string, maxlen int) string {
-	if len(value) > maxlen {
-		value = value[:maxlen] + "..."
-	}
-	if pos := strings.IndexAny(value, "\r\n"); pos > -1 {
-		value = value[:pos] + " ..."
-	}
-	return value
-}
