@@ -88,10 +88,10 @@ func (z *User) indexes() map[string][]string {
 }
 
 func (z *User) setID(tx Transaction) error {
-	seq := C.getSequences(tx)
-	seq.User = seq.User + 1
-	z.ID = keyEncodeUint(seq.User)
-	return C.putSequences(tx, seq)
+	config := C.Get(tx)
+	config.Sequences.User = config.Sequences.User + 1
+	z.ID = keyEncodeUint(config.Sequences.User)
+	return C.Put(tx, config)
 }
 
 // Users is a collection of User objects
