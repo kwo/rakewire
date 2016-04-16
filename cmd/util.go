@@ -5,7 +5,6 @@ import (
 	"github.com/codegangsta/cli"
 	"path/filepath"
 	"rakewire/model"
-	"strings"
 )
 
 func showVersionInformation(c *cli.Context) {

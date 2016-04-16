@@ -110,6 +110,26 @@ func main() {
 			},
 		},
 		{
+			Name:    "user",
+			Aliases: []string{"u"},
+			Usage:   "manage application users",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "f, file",
+					Value: "rakewire.db",
+					Usage: "location of the database file",
+				},
+			},
+			Subcommands: []cli.Command{
+				{
+					Name:    "ls",
+					Aliases: []string{"list"},
+					Usage:   "list users.",
+					Action:  cmd.UserList,
+				},
+			},
+		},
+		{
 			Name:   "version",
 			Usage:  "print version and exit",
 			Action: cmd.Version,
