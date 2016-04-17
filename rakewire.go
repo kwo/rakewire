@@ -129,6 +129,12 @@ func main() {
 					Usage:   "list users.",
 					Action:  cmd.UserList,
 				},
+				{
+					Name:      "add",
+					Usage:     "add user.",
+					ArgsUsage: "<username>",
+					Action:    cmd.UserAdd,
+				},
 			},
 		},
 		{
