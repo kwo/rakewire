@@ -12,8 +12,10 @@ import (
 func UserAdd(c *cli.Context) {
 
 	var username string
-	if c.NArg() == 1 {
+	var rolestr string
+	if c.NArg() == 2 {
 		username = c.Args().First()
+		rolestr = c.Args()[1]
 	} else {
 		cli.ShowCommandHelp(c, c.Command.Name)
 		os.Exit(1)
@@ -66,6 +68,7 @@ func UserAdd(c *cli.Context) {
 	if err := db.Update(func(tx model.Transaction) error {
 		user := model.U.New(username)
 		user.SetPassword(password)
+		user.SetRoles(rolestr)
 		return model.U.Save(tx, user)
 	}); err != nil {
 		fmt.Printf("Error adding user: %s\n", err.Error())
@@ -92,8 +95,9 @@ func UserList(c *cli.Context) {
 		return nil
 	})
 
+	fmt.Printf("%-10s %-30s %-20s\n", "id", "username", "roles")
 	for _, user := range users {
-		fmt.Printf("%s: %s\n", user.ID, user.Username)
+		fmt.Printf("%-10s %-30s %-20s\n", user.ID, user.Username, user.RoleString())
 	}
 
 }
@@ -205,5 +209,51 @@ func UserRemove(c *cli.Context) {
 	}
 
 	fmt.Printf("user removed: %s\n", username)
+
+}
+
+// UserRoles update a user's roles
+func UserRoles(c *cli.Context) {
+
+	var username string
+	var rolestr string
+	if c.NArg() == 2 {
+		username = c.Args().First()
+		rolestr = c.Args()[1]
+	} else {
+		cli.ShowCommandHelp(c, c.Command.Name)
+		os.Exit(1)
+	}
+
+	db, _, err := initConfig(c)
+	if err != nil {
+		fmt.Printf("Error: %s\n", err.Error())
+		os.Exit(1)
+	}
+	defer closeDatabase(db)
+
+	var user *model.User
+	if err := db.Select(func(tx model.Transaction) error {
+		user = model.U.GetByUsername(tx, username)
+		return nil
+	}); err != nil {
+		fmt.Printf("Error retrieving user: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	if user == nil {
+		fmt.Printf("User does not exist: %s.\n", username)
+		os.Exit(1)
+	}
+
+	if err := db.Update(func(tx model.Transaction) error {
+		user.SetRoles(rolestr)
+		return model.U.Save(tx, user)
+	}); err != nil {
+		fmt.Printf("Error updating user: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	fmt.Printf("User roles updated: %s\n", user.RoleString())
 
 }

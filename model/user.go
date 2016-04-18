@@ -22,10 +22,11 @@ var (
 
 // User defines a system user
 type User struct {
-	ID           string `json:"id"`
-	Username     string `json:"username"`
-	PasswordHash string `json:"passwordhash"`
-	FeverHash    string `json:"feverhash"`
+	ID           string   `json:"id"`
+	Username     string   `json:"username"`
+	Roles        []string `json:"roles"`
+	PasswordHash string   `json:"passwordhash"`
+	FeverHash    string   `json:"feverhash"`
 }
 
 // GetID returns the unique ID for the object
@@ -61,11 +62,62 @@ func (z *User) SetPassword(password string) error {
 
 }
 
+// AddRole adds the given role to the user.
+func (z *User) AddRole(role string) {
+	if !z.HasRole(role) {
+		z.Roles = append(z.Roles, role)
+	}
+}
+
+// HasRole tests if the user has been assigned the given role
+func (z *User) HasRole(role string) bool {
+	result := false
+	if len(z.Roles) > 0 {
+		for _, value := range z.Roles {
+			if value == role {
+				return true
+			}
+		}
+	}
+	return result
+}
+
+// RemoveRole removes a role from the user.
+func (z *User) RemoveRole(role string) {
+	for i, value := range z.Roles {
+		if value == role {
+			z.Roles = append(z.Roles[:i], z.Roles[i+1:]...)
+		}
+	}
+}
+
+// RoleString formats all roles as a comma-separated string
+func (z *User) RoleString() string {
+	var result string
+	for i, role := range z.Roles {
+		if i > 0 {
+			result = result + ", "
+		}
+		result = result + role
+	}
+	return result
+}
+
+// SetRoles replaces roles with the roles contained withing the given comma-separated string.
+func (z *User) SetRoles(rolestr string) {
+	roles := strings.Split(rolestr, ",")
+	z.Roles = []string{}
+	for _, role := range roles {
+		z.AddRole(strings.TrimSpace(role))
+	}
+}
+
 func (z *User) clear() {
 	z.ID = empty
 	z.Username = empty
 	z.PasswordHash = empty
 	z.FeverHash = empty
+	z.Roles = []string{}
 }
 
 func (z *User) decode(data []byte) error {

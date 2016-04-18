@@ -2,17 +2,6 @@
 
 ## Roadmap
 
-### Immediate
-
-- command line commands not flags
-  x config
-  x remove version from model
-  x make version a one-liner with build time and commit hash
-  x remove log from cmds
-  - add user / --admin flag for admin user
-  x eliminate tools
-
-
 ### Goals
   x Save Feed Entries
   x implememt Fever API
@@ -43,11 +32,6 @@
   - integrate boltview into rakewire for config
   - store subscription count in Feed
   - add subscribers count to user-agent when fetching
-  - rackt redux (flux like state replay)
-    - http://merrickchristensen.com/articles/single-state-tree.html
-    - http://teropa.info/blog/2015/09/10/full-stack-redux-tutorial.html
-    - http://konkle.us/state-management-with-redux/
-    - https://github.com/rackt/redux#simple-examples
   - add client sort to feed list
   - list fetcher activity
   - have fetchers signal when they are idle, FetcherService signal when it is idle

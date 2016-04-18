@@ -132,7 +132,7 @@ func main() {
 				{
 					Name:      "add",
 					Usage:     "add user",
-					ArgsUsage: "<username>",
+					ArgsUsage: "<username> <roles>",
 					Action:    cmd.UserAdd,
 				},
 				{
@@ -140,6 +140,12 @@ func main() {
 					Usage:     "change user password",
 					ArgsUsage: "<username>",
 					Action:    cmd.UserPasswordChange,
+				},
+				{
+					Name:      "roles",
+					Usage:     "update user roles",
+					ArgsUsage: "<username> <roles>",
+					Action:    cmd.UserRoles,
 				},
 				{
 					Name:      "rm",
