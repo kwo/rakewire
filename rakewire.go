@@ -20,7 +20,6 @@ func main() {
 	app.Name = "Rakewire"
 	app.Usage = "Feed Reader"
 	app.HideVersion = true
-	app.Compiled = time.Now() // misuse time for app start time
 	app.Version = fmt.Sprintf("%s %s %s", Version, BuildTime, BuildHash)
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{

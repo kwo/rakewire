@@ -13,6 +13,7 @@ import (
 	"rakewire/pollfeed"
 	"rakewire/reaper"
 	"syscall"
+	"time"
 )
 
 type startContext struct {
@@ -59,7 +60,7 @@ func Start(c *cli.Context) {
 
 	// add version and process start time to config
 	cfg.SetStr("app.version", c.App.Version)
-	cfg.SetInt64("app.start", c.App.Compiled.Unix())
+	cfg.SetInt64("app.start", time.Now().Unix())
 
 	// initialize logging - debug statements above this point will never be logged
 	// Forbid debugMode in production.
