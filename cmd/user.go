@@ -95,9 +95,9 @@ func UserList(c *cli.Context) {
 		return nil
 	})
 
-	fmt.Printf("%-10s %-30s %-20s\n", "id", "username", "roles")
+	fmt.Printf("%-30s %-20s\n", "username", "roles")
 	for _, user := range users {
-		fmt.Printf("%-10s %-30s %-20s\n", user.ID, user.Username, user.RoleString())
+		fmt.Printf("%-30s %-20s\n", user.Username, user.RoleString())
 	}
 
 }
