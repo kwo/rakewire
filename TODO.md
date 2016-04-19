@@ -11,14 +11,15 @@
 
   - add maintenance routine for integrity check
   - add maintenance routine for db backup
+  - jwt authentication and basic auth
+  - add subscription api
+  - expire entries/items by date/feed size
+  - filter httpd requests on hostname
 
   - bugfix multiple items with same GUID
   - standardize model functions and naming conventions
     - collection methods - which ones return collections, individual elements, maps?
     - need specifics here!!!
-
-  - jwt authentication and basic auth
-  - gRPC multiplex with JSON API
 
   - https://github.com/mmcdole/gofeed
   - https://github.com/heroku/react-refetch
@@ -26,10 +27,6 @@
   - create feed item frequency graph per feed for one week
     - allow assigning polling frequency per hour/day for feed
 
-  - expire entries/items by date/feed size
-  - filter httpd requests on hostname
-
-  - integrate boltview into rakewire for config
   - store subscription count in Feed
   - add subscribers count to user-agent when fetching
   - add client sort to feed list

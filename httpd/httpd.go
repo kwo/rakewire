@@ -7,6 +7,7 @@ import (
 	gorillaHandlers "github.com/gorilla/handlers"
 	"net"
 	"net/http"
+	"rakewire/api"
 	"rakewire/logger"
 	"rakewire/middleware"
 	"rakewire/model"
@@ -15,12 +16,14 @@ import (
 )
 
 const (
+	httpdAddress           = "httpd.address"
 	httpdHost              = "httpd.host"
 	httpdPort              = "httpd.port"
 	httpdTLSPort           = "httpd.tls.port"
 	httpdTLSPrivate        = "httpd.tls.private"
 	httpdTLSPublic         = "httpd.tls.public"
 	httpdUseTLS            = "httpd.tls.active"
+	httpdAddressDefault    = ""
 	httpdHostDefault       = "localhost"
 	httpdPortDefault       = 8888
 	httpdTLSPortDefault    = 4444
@@ -63,6 +66,7 @@ const (
 func NewService(cfg *model.Configuration, database model.Database) *Service {
 	return &Service{
 		database:   database,
+		address:    cfg.GetStr(httpdAddress, httpdAddressDefault),
 		host:       cfg.GetStr(httpdHost, httpdHostDefault),
 		port:       cfg.GetInt(httpdPort, httpdPortDefault),
 		tlsPort:    cfg.GetInt(httpdTLSPort, httpdTLSPortDefault),
@@ -116,7 +120,8 @@ func (z *Service) startHTTP() error {
 
 	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
 
-	z.listener, err = net.Listen("tcp", fmt.Sprintf("%s:%d", z.address, z.port))
+	endpoint := fmt.Sprintf("%s:%d", z.address, z.port)
+	z.listener, err = net.Listen("tcp", endpoint)
 	if err != nil {
 		log.Debugf("cannot start listener: %s", err.Error())
 		return err
@@ -127,7 +132,7 @@ func (z *Service) startHTTP() error {
 	}
 	go server.Serve(z.listener)
 
-	log.Debugf("service started on http://%s:%d", z.address, z.port)
+	log.Debugf("service started on http://%s", endpoint)
 
 	return nil
 
@@ -135,35 +140,54 @@ func (z *Service) startHTTP() error {
 
 func (z *Service) startHTTPS() error {
 
-	router, err := z.mainRouter()
-	if err != nil {
-		log.Debugf("cannot load router: %s", err.Error())
-		return err
-	}
-
-	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
-
 	cert, err := tls.X509KeyPair([]byte(z.tlsPublic), []byte(z.tlsPrivate))
 	if err != nil {
 		log.Debugf("cannot create tls key pair: %s", err.Error())
 		return err
 	}
-	tlsConfig := &tls.Config{
+
+	endpointListen := fmt.Sprintf("%s:%d", z.address, z.tlsPort)
+	endpointConnect := fmt.Sprintf("%s:%d", z.host, z.tlsPort)
+	tlsConfigListen := &tls.Config{
 		Certificates: []tls.Certificate{cert},
 	}
-	z.tlsListener, err = tls.Listen("tcp", fmt.Sprintf("%s:%d", z.address, z.tlsPort), tlsConfig)
+	tlsConfigConnect := &tls.Config{
+		ServerName:   z.host,
+		Certificates: []tls.Certificate{cert},
+	}
+
+	// TODO: integrate old router into this router
+	// migrate status handler in this package to api package
+	// employ subrouters
+
+	// router, err := z.mainRouter()
+	// if err != nil {
+	// 	log.Debugf("cannot load router: %s", err.Error())
+	// 	return err
+	// }
+
+	router, grpcServer, err := api.NewAPI(z.database).Router(endpointConnect, tlsConfigConnect)
+	if err != nil {
+		log.Debugf("cannot start API: %s", err.Error())
+		return err
+	}
+	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
+
+	z.tlsListener, err = tls.Listen("tcp", endpointListen, tlsConfigListen)
 	if err != nil {
 		log.Debugf("cannot start tls listener: %s", err.Error())
 		return err
 	}
 
 	server := http.Server{
-		Handler: mainHandler,
+		Addr:      endpointListen,
+		Handler:   grpcHandler(grpcServer, mainHandler),
+		TLSConfig: tlsConfigListen,
 	}
 
 	go server.Serve(z.tlsListener)
 
-	log.Debugf("service started on https://%s:%d", z.host, z.tlsPort)
+	log.Debugf("service started on https://%s", endpointListen)
 
 	return nil
 
