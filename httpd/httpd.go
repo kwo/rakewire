@@ -19,17 +19,17 @@ const (
 	httpdAddress           = "httpd.address"
 	httpdHost              = "httpd.host"
 	httpdPort              = "httpd.port"
+	httpdTLSActive         = "httpd.tls.active"
 	httpdTLSPort           = "httpd.tls.port"
 	httpdTLSPrivate        = "httpd.tls.private"
 	httpdTLSPublic         = "httpd.tls.public"
-	httpdUseTLS            = "httpd.tls.active"
 	httpdAddressDefault    = ""
 	httpdHostDefault       = "localhost"
 	httpdPortDefault       = 8888
+	httpdTLSActiveDefault  = false
 	httpdTLSPortDefault    = 4444
 	httpdTLSPrivateDefault = ""
 	httpdTLSPublicDefault  = ""
-	httpdUseTLSDefault     = false
 )
 
 var (
@@ -46,12 +46,12 @@ type Service struct {
 	tlsListener net.Listener
 	running     bool
 	address     string // binding address, empty string means 0.0.0.0
-	host        string // discard requests not made to this host
+	host        string // TODO: discard requests not made to this host
 	port        int
+	tlsActive   bool
 	tlsPort     int
 	tlsPublic   string
 	tlsPrivate  string
-	useTLS      bool
 	version     string
 	appstart    time.Time
 }
@@ -69,10 +69,10 @@ func NewService(cfg *model.Configuration, database model.Database) *Service {
 		address:    cfg.GetStr(httpdAddress, httpdAddressDefault),
 		host:       cfg.GetStr(httpdHost, httpdHostDefault),
 		port:       cfg.GetInt(httpdPort, httpdPortDefault),
+		tlsActive:  cfg.GetBool(httpdTLSActive, httpdTLSActiveDefault),
 		tlsPort:    cfg.GetInt(httpdTLSPort, httpdTLSPortDefault),
 		tlsPublic:  cfg.GetStr(httpdTLSPublic, httpdTLSPublicDefault),
 		tlsPrivate: cfg.GetStr(httpdTLSPrivate, httpdTLSPrivateDefault),
-		useTLS:     cfg.GetBool(httpdUseTLS, httpdUseTLSDefault),
 		version:    cfg.GetStr("app.version", "Rakewire"),
 		appstart:   time.Unix(cfg.GetInt64("app.start", time.Now().Unix()), 0).Truncate(time.Second),
 	}
@@ -93,7 +93,7 @@ func (z *Service) Start() error {
 		return errors.New("No database")
 	}
 
-	if z.useTLS {
+	if z.tlsActive {
 		if err := z.startHTTPS(); err != nil {
 			return err
 		}
@@ -111,7 +111,7 @@ func (z *Service) Start() error {
 
 func (z *Service) startHTTP() error {
 
-	restrictToStatusOnly := z.useTLS
+	restrictToStatusOnly := z.tlsActive
 	router, err := z.mainRouter(restrictToStatusOnly)
 	if err != nil {
 		log.Debugf("cannot load router: %s", err.Error())
@@ -156,21 +156,28 @@ func (z *Service) startHTTPS() error {
 		Certificates: []tls.Certificate{cert},
 	}
 
-	// TODO: integrate old router into this router
+	// TODO
+	// incorporate routes right here into this function
 	// migrate status handler in this package to api package
-	// employ subrouters
+	// migrate opml
+	// shitcan rest package
+	// authentication
+	// add static pages
 
-	// router, err := z.mainRouter()
-	// if err != nil {
-	// 	log.Debugf("cannot load router: %s", err.Error())
-	// 	return err
-	// }
+	router, err := z.mainRouter()
+	if err != nil {
+		log.Debugf("cannot load router: %s", err.Error())
+		return err
+	}
 
-	router, grpcServer, err := api.NewAPI(z.database).Router(endpointConnect, tlsConfigConnect)
+	apiHandler, apiGRPCServer, err := api.NewAPI(z.database).Router(endpointConnect, tlsConfigConnect)
 	if err != nil {
 		log.Debugf("cannot start API: %s", err.Error())
 		return err
 	}
+
+	router.PathPrefix("/api").Handler(apiHandler)
+
 	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
 
 	z.tlsListener, err = tls.Listen("tcp", endpointListen, tlsConfigListen)
@@ -181,7 +188,7 @@ func (z *Service) startHTTPS() error {
 
 	server := http.Server{
 		Addr:      endpointListen,
-		Handler:   grpcHandler(grpcServer, mainHandler),
+		Handler:   grpcHandler(apiGRPCServer, mainHandler),
 		TLSConfig: tlsConfigListen,
 	}
 

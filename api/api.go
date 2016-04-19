@@ -29,7 +29,7 @@ type API struct {
 }
 
 // Router returns the top-level router
-func (z *API) Router(endpointConnect string, tlsConfig *tls.Config) (*http.ServeMux, *grpc.Server, error) {
+func (z *API) Router(endpointConnect string, tlsConfig *tls.Config) (http.Handler, *grpc.Server, error) {
 
 	opts := []grpc.ServerOption{grpc.Creds(credentials.NewServerTLSFromCert(&tlsConfig.Certificates[0]))}
 	grpcServer := grpc.NewServer(opts...)

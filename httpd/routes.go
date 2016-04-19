@@ -3,8 +3,6 @@ package httpd
 import (
 	"github.com/gorilla/mux"
 	"rakewire/fever"
-	"rakewire/middleware"
-	"rakewire/rest"
 )
 
 func (z *Service) mainRouter(flags ...bool) (*mux.Router, error) {
@@ -21,14 +19,14 @@ func (z *Service) mainRouter(flags ...bool) (*mux.Router, error) {
 		return router, nil
 	}
 
-	// rest api router
-	restPrefix := "/api"
-	restAPI := rest.NewAPI(restPrefix, z.database)
-	router.PathPrefix(restPrefix).Handler(
-		middleware.Adapt(restAPI.Router(), middleware.BasicAuth(&middleware.BasicAuthOptions{
-			Database: z.database, Realm: "Rakewire",
-		})),
-	)
+	// // rest api router
+	// restPrefix := "/api"
+	// restAPI := rest.NewAPI(restPrefix, z.database)
+	// router.PathPrefix(restPrefix).Handler(
+	// 	middleware.Adapt(restAPI.Router(), middleware.BasicAuth(&middleware.BasicAuthOptions{
+	// 		Database: z.database, Realm: "Rakewire",
+	// 	})),
+	// )
 
 	// fever api router
 	feverPrefix := "/fever/"
