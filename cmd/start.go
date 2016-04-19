@@ -65,7 +65,14 @@ func Start(c *cli.Context) {
 	// initialize logging - debug statements above this point will never be logged
 	// Forbid debugMode in production.
 	// If model.Version is not an empty string (stamped via LDFLAGS) then we are in production mode.
-	logger.DebugMode = c.App.Version == "" && verbose
+	if verbose {
+		if c.App.Version == "" {
+			logger.DebugMode = true
+		} else {
+			fmt.Println("verbose logging not available in production mode")
+			fmt.Println(c.App.Version)
+		}
+	}
 
 	ctx.polld = pollfeed.NewService(cfg, ctx.database)
 	ctx.reaperd = reaper.NewService(cfg, ctx.database)

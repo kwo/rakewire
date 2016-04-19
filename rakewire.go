@@ -5,6 +5,7 @@ import (
 	"github.com/codegangsta/cli"
 	"os"
 	"rakewire/cmd"
+	"strings"
 )
 
 // application level variables
@@ -19,7 +20,7 @@ func main() {
 	app.Name = "Rakewire"
 	app.Usage = "Feed Reader"
 	app.HideVersion = true
-	app.Version = fmt.Sprintf("%s %s %s", Version, BuildTime, BuildHash)
+	app.Version = strings.TrimSpace(fmt.Sprintf("%s %s %s", Version, BuildTime, BuildHash))
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:   "v, verbose",
