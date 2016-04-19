@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"rakewire/logger"
 	"rakewire/middleware"
+	"strings"
 )
 
 // LogWriter is an io.Writer than writes to the log facility.
@@ -13,7 +14,7 @@ type LogWriter struct {
 }
 
 func (z *LogWriter) Write(p []byte) (n int, err error) {
-	log.Debugf("%s", string(p))
+	z.accessLogger.Debugf("%s", strings.TrimRight(string(p), "\r\n"))
 	return len(p), nil
 }
 

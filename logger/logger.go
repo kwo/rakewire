@@ -30,24 +30,26 @@ type Logger struct {
 // Debugf writes a debug message to the console.
 func (z *Logger) Debugf(format string, a ...interface{}) {
 	if !z.Silent && DebugMode {
-		z.logf(levelDebug, format, a...)
+		z.logf(levelDebug, format, a)
 	}
 }
 
 // Infof writes an info message to the console.
 func (z *Logger) Infof(format string, a ...interface{}) {
 	if !z.Silent {
-		z.logf(levelInfo, format, a...)
+		z.logf(levelInfo, format, a)
 	}
 }
 
-func (z *Logger) logf(level, format string, a ...interface{}) {
-	dateStr := time.Now().Format(DateFormat)
-	if DebugMode {
-		fmt.Printf("%s %-5s %-10s - ", dateStr, level, z.Name)
-	} else {
-		fmt.Printf("%s %-10s - ", dateStr, z.Name)
+func (z *Logger) logf(level, format0 string, a []interface{}) {
+
+	var format = "%s %s: " + format0 + "\n"
+	var args []interface{}
+	args = append(args, time.Now().Format(DateFormat))
+	args = append(args, z.Name)
+	for _, arg := range a {
+		args = append(args, arg)
 	}
-	fmt.Printf(format, a...)
-	fmt.Println()
+	fmt.Printf(format, args...)
+
 }
