@@ -5,7 +5,6 @@ import (
 	"github.com/codegangsta/cli"
 	"os"
 	"rakewire/cmd"
-	"time"
 )
 
 // application level variables
