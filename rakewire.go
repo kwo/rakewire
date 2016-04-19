@@ -5,6 +5,7 @@ import (
 	"github.com/codegangsta/cli"
 	"os"
 	"rakewire/cmd"
+	"rakewire/cmd/remote"
 	"strings"
 )
 
@@ -152,6 +153,19 @@ func main() {
 					Usage:     "remove user",
 					ArgsUsage: "<username>",
 					Action:    cmd.UserRemove,
+				},
+			},
+		},
+		{
+			Name:    "remote",
+			Aliases: []string{"r"},
+			Usage:   "manage remote rakewire instance",
+			Subcommands: []cli.Command{
+				{
+					Name:      "echo",
+					Usage:     "test echo service",
+					ArgsUsage: "<remote address> [message]",
+					Action:    remote.Echo,
 				},
 			},
 		},

@@ -2,7 +2,7 @@ package api
 
 import (
 	"golang.org/x/net/context"
-	"rakewire/api/internal/pb"
+	"rakewire/api/pb"
 )
 
 type echoer struct{}

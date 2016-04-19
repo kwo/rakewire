@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"net/http"
-	"rakewire/api/internal/pb"
+	"rakewire/api/pb"
 	"rakewire/logger"
 	"rakewire/model"
 )
