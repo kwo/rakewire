@@ -25,7 +25,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:   "v, verbose",
-			EnvVar: "VERBOSE",
+			EnvVar: "RAKEWIRE_VERBOSE,VERBOSE",
 			Usage:  "log more information to console",
 		},
 	}
@@ -160,11 +160,28 @@ func main() {
 			Name:    "remote",
 			Aliases: []string{"r"},
 			Usage:   "manage remote rakewire instance",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:   "i, instance",
+					EnvVar: "RAKEWIRE_INSTANCE",
+					Usage:  "name of remote rakewire instance in the format host:port",
+				},
+				cli.StringFlag{
+					Name:   "u, username",
+					EnvVar: "RAKEWIRE_USERNAME",
+					Usage:  "name of rakewire user",
+				},
+				cli.StringFlag{
+					Name:   "p, password",
+					EnvVar: "RAKEWIRE_PASSWORD",
+					Usage:  "password for the rakewire user",
+				},
+			},
 			Subcommands: []cli.Command{
 				{
 					Name:      "echo",
 					Usage:     "test echo service",
-					ArgsUsage: "<remote address> [message]",
+					ArgsUsage: "[message]",
 					Action:    remote.Echo,
 				},
 			},
