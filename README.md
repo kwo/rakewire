@@ -33,6 +33,11 @@ additionally, vendetta does not install dependencies of test files by default so
 	git submodule add https://github.com/antonholmquist/jason
 
 
+## Test Echo service
+
+		curl -X POST https://rw.kfabrik.de:4444/api/echo -H "Content-Type: application/json" -d '{"value": "foo"}'
+
+
 ## OPML
 
 ### Local
