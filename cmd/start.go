@@ -69,8 +69,7 @@ func Start(c *cli.Context) {
 		if c.App.Version == "" {
 			logger.DebugMode = true
 		} else {
-			fmt.Println("verbose logging not available in production mode")
-			fmt.Println(c.App.Version)
+			ctx.log.Infof("verbose logging not available in production mode")
 		}
 	}
 

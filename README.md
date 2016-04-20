@@ -35,7 +35,7 @@ additionally, vendetta does not install dependencies of test files by default so
 
 ## Test Echo service
 
-		curl -X POST https://rw.kfabrik.de:4444/api/echo -H "Content-Type: application/json" -d '{"value": "foo"}'
+		curl -X POST https://rw.kfabrik.de:4444/api/status -H "Content-Type: application/json" -d '{}'
 
 
 ## OPML

@@ -29,22 +29,22 @@ var _ = runtime.String
 var _ = json.Marshal
 var _ = utilities.NewDoubleArray
 
-func request_EchoService_Echo_0(ctx context.Context, client EchoServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq EchoMessage
+func request_StatusService_GetStatus_0(ctx context.Context, client StatusServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq StatusRequest
 	var metadata runtime.ServerMetadata
 
 	if err := json.NewDecoder(req.Body).Decode(&protoReq); err != nil {
 		return nil, metadata, grpc.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.Echo(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetStatus(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-// RegisterEchoServiceHandlerFromEndpoint is same as RegisterEchoServiceHandler but
+// RegisterStatusServiceHandlerFromEndpoint is same as RegisterStatusServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterEchoServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterStatusServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.Dial(endpoint, opts...)
 	if err != nil {
 		return err
@@ -64,15 +64,15 @@ func RegisterEchoServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.Se
 		}()
 	}()
 
-	return RegisterEchoServiceHandler(ctx, mux, conn)
+	return RegisterStatusServiceHandler(ctx, mux, conn)
 }
 
-// RegisterEchoServiceHandler registers the http handlers for service EchoService to "mux".
+// RegisterStatusServiceHandler registers the http handlers for service StatusService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterEchoServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	client := NewEchoServiceClient(conn)
+func RegisterStatusServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	client := NewStatusServiceClient(conn)
 
-	mux.Handle("POST", pattern_EchoService_Echo_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_StatusService_GetStatus_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(ctx)
 		defer cancel()
 		if cn, ok := w.(http.CloseNotifier); ok {
@@ -84,14 +84,14 @@ func RegisterEchoServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn
 				}
 			}(ctx.Done(), cn.CloseNotify())
 		}
-		resp, md, err := request_EchoService_Echo_0(runtime.AnnotateContext(ctx, req), client, req, pathParams)
+		resp, md, err := request_StatusService_GetStatus_0(runtime.AnnotateContext(ctx, req), client, req, pathParams)
 		ctx = runtime.NewServerMetadataContext(ctx, md)
 		if err != nil {
 			runtime.HTTPError(ctx, w, req, err)
 			return
 		}
 
-		forward_EchoService_Echo_0(ctx, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_StatusService_GetStatus_0(ctx, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -99,9 +99,9 @@ func RegisterEchoServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn
 }
 
 var (
-	pattern_EchoService_Echo_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "echo"}, ""))
+	pattern_StatusService_GetStatus_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"api", "status"}, ""))
 )
 
 var (
-	forward_EchoService_Echo_0 = runtime.ForwardResponseMessage
+	forward_StatusService_GetStatus_0 = runtime.ForwardResponseMessage
 )

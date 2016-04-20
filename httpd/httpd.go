@@ -170,11 +170,13 @@ func (z *Service) startHTTPS() error {
 		return err
 	}
 
-	apiHandler, apiGRPCServer, err := api.NewAPI(z.database).Router(endpointConnect, tlsConfigConnect)
+	apiHandler, apiGRPCServer, err := api.NewAPI(z.database, z.version, z.appstart).Router(endpointConnect, tlsConfigConnect)
 	if err != nil {
 		log.Debugf("cannot start API: %s", err.Error())
 		return err
 	}
+
+	// TODO: api authentication
 
 	router.PathPrefix("/api").Handler(apiHandler)
 

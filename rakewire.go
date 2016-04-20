@@ -179,10 +179,9 @@ func main() {
 			},
 			Subcommands: []cli.Command{
 				{
-					Name:      "echo",
-					Usage:     "test echo service",
-					ArgsUsage: "[message]",
-					Action:    remote.Echo,
+					Name:   "status",
+					Usage:  "get instance status",
+					Action: remote.Status,
 				},
 			},
 		},

@@ -3,14 +3,19 @@ package pb;
 
 import "google/api/annotations.proto";
 
-message EchoMessage {
- string value = 1;
+message StatusRequest {}
+
+message StatusResponse {
+  string version   = 1;
+  int64  buildTime = 2;
+  string buildHash = 3;
+  int64  appStart  = 4;
 }
 
-service EchoService {
-  rpc Echo(EchoMessage) returns (EchoMessage) {
+service StatusService {
+  rpc GetStatus(StatusRequest) returns (StatusResponse) {
     option (google.api.http) = {
-      post: "/api/echo"
+      post: "/api/status"
       body: "*"
     };
   }
