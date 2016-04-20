@@ -9,12 +9,21 @@
 
 ### Unsorted
 
-  - add maintenance routine for integrity check
-  - add maintenance routine for db backup
-  - jwt authentication and basic auth
+  - eliminate sequences from config - back to incrementing bucket
+  - 12 factor app - configuration - eliminate config table, use environment for all config parameters
+  - remove config bucket
+  - remove config subcomand
+  - remove user subcommand, leave only add a user with roles (everything else runs via the grpc api)
+  - add insecure option
+  - add static pages
+  - run only on https, generate certs if necessary
+  - filter httpd requests on hostname
+
+  - add jwt authentication
   - add subscription api
   - expire entries/items by date/feed size
-  - filter httpd requests on hostname
+  - add maintenance routine for integrity check
+  - add maintenance routine for db backup
 
   - bugfix multiple items with same GUID
   - standardize model functions and naming conventions

@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 	gorillaHandlers "github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 	"net"
 	"net/http"
 	"rakewire/api"
+	"rakewire/fever"
 	"rakewire/logger"
-	"rakewire/middleware"
 	"rakewire/model"
 	"sync"
 	"time"
@@ -19,15 +20,11 @@ const (
 	httpdAddress           = "httpd.address"
 	httpdHost              = "httpd.host"
 	httpdPort              = "httpd.port"
-	httpdTLSActive         = "httpd.tls.active"
-	httpdTLSPort           = "httpd.tls.port"
 	httpdTLSPrivate        = "httpd.tls.private"
 	httpdTLSPublic         = "httpd.tls.public"
 	httpdAddressDefault    = ""
 	httpdHostDefault       = "localhost"
 	httpdPortDefault       = 8888
-	httpdTLSActiveDefault  = false
-	httpdTLSPortDefault    = 4444
 	httpdTLSPrivateDefault = ""
 	httpdTLSPublicDefault  = ""
 )
@@ -41,25 +38,22 @@ var (
 // Service server
 type Service struct {
 	sync.Mutex
-	database    model.Database
-	listener    net.Listener
-	tlsListener net.Listener
-	running     bool
-	address     string // binding address, empty string means 0.0.0.0
-	host        string // TODO: discard requests not made to this host
-	port        int
-	tlsActive   bool
-	tlsPort     int
-	tlsPublic   string
-	tlsPrivate  string
-	version     string
-	appstart    time.Time
+	database   model.Database
+	listener   net.Listener
+	running    bool
+	address    string // binding address, empty string means 0.0.0.0
+	host       string // TODO: discard requests not made to this host
+	port       int
+	tlsPublic  string
+	tlsPrivate string
+	version    string
+	appstart   time.Time
 }
 
 const (
 	hContentType = "Content-Type"
 	mGet         = "GET"
-	mimeText     = "text/plain; charset=utf-8"
+	mPut         = "PUT"
 )
 
 // NewService creates a new httpd service.
@@ -69,8 +63,6 @@ func NewService(cfg *model.Configuration, database model.Database) *Service {
 		address:    cfg.GetStr(httpdAddress, httpdAddressDefault),
 		host:       cfg.GetStr(httpdHost, httpdHostDefault),
 		port:       cfg.GetInt(httpdPort, httpdPortDefault),
-		tlsActive:  cfg.GetBool(httpdTLSActive, httpdTLSActiveDefault),
-		tlsPort:    cfg.GetInt(httpdTLSPort, httpdTLSPortDefault),
 		tlsPublic:  cfg.GetStr(httpdTLSPublic, httpdTLSPublicDefault),
 		tlsPrivate: cfg.GetStr(httpdTLSPrivate, httpdTLSPrivateDefault),
 		version:    cfg.GetStr("app.version", "Rakewire"),
@@ -93,110 +85,41 @@ func (z *Service) Start() error {
 		return errors.New("No database")
 	}
 
-	if z.tlsActive {
-		if err := z.startHTTPS(); err != nil {
-			return err
-		}
-	}
-
-	if err := z.startHTTP(); err != nil {
-		return err
-	}
-
-	z.running = true
-
-	return nil
-
-}
-
-func (z *Service) startHTTP() error {
-
-	restrictToStatusOnly := z.tlsActive
-	router, err := z.mainRouter(restrictToStatusOnly)
-	if err != nil {
-		log.Debugf("cannot load router: %s", err.Error())
-		return err
-	}
-
-	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
-
-	endpoint := fmt.Sprintf("%s:%d", z.address, z.port)
-	z.listener, err = net.Listen("tcp", endpoint)
-	if err != nil {
-		log.Debugf("cannot start listener: %s", err.Error())
-		return err
-	}
-
-	server := http.Server{
-		Handler: mainHandler,
-	}
-	go server.Serve(z.listener)
-
-	log.Debugf("service started on http://%s", endpoint)
-
-	return nil
-
-}
-
-func (z *Service) startHTTPS() error {
-
 	cert, err := tls.X509KeyPair([]byte(z.tlsPublic), []byte(z.tlsPrivate))
 	if err != nil {
 		log.Debugf("cannot create tls key pair: %s", err.Error())
 		return err
 	}
 
-	endpointListen := fmt.Sprintf("%s:%d", z.address, z.tlsPort)
-	endpointConnect := fmt.Sprintf("%s:%d", z.host, z.tlsPort)
-	tlsConfigListen := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-	}
-	tlsConfigConnect := &tls.Config{
+	endpointListen := fmt.Sprintf("%s:%d", z.address, z.port)
+	endpointConnect := fmt.Sprintf("%s:%d", z.host, z.port)
+	tlsConfig := &tls.Config{
 		ServerName:   z.host,
 		Certificates: []tls.Certificate{cert},
 	}
 
-	// TODO
-	// incorporate routes right here into this function
-	// migrate status handler in this package to api package
-	// migrate opml
-	// shitcan rest package
-	// authentication
-	// add static pages
-
-	router, err := z.mainRouter()
-	if err != nil {
-		log.Debugf("cannot load router: %s", err.Error())
-		return err
-	}
-
-	apiHandler, apiGRPCServer, err := api.NewAPI(z.database, z.version, z.appstart).Router(endpointConnect, tlsConfigConnect)
-	if err != nil {
-		log.Debugf("cannot start API: %s", err.Error())
-		return err
-	}
-
-	// TODO: api authentication
-
-	router.PathPrefix("/api").Handler(apiHandler)
-
-	mainHandler := middleware.Adapt(router, middleware.NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
-
-	z.tlsListener, err = tls.Listen("tcp", endpointListen, tlsConfigListen)
+	z.listener, err = tls.Listen("tcp", endpointListen, tlsConfig)
 	if err != nil {
 		log.Debugf("cannot start tls listener: %s", err.Error())
 		return err
 	}
 
-	server := http.Server{
-		Addr:      endpointListen,
-		Handler:   grpcHandler(apiGRPCServer, mainHandler),
-		TLSConfig: tlsConfigListen,
+	handler, errHandler := z.router(endpointConnect, tlsConfig)
+	if errHandler != nil {
+		return errHandler
 	}
 
-	go server.Serve(z.tlsListener)
+	server := http.Server{
+		Addr:      endpointListen,
+		Handler:   handler,
+		TLSConfig: tlsConfig,
+	}
+
+	go server.Serve(z.listener)
 
 	log.Debugf("service started on https://%s", endpointListen)
+
+	z.running = true
 
 	return nil
 
@@ -228,4 +151,37 @@ func (z *Service) IsRunning() bool {
 	z.Lock()
 	defer z.Unlock()
 	return z.running
+}
+
+func (z *Service) router(endpoint string, tlsConfig *tls.Config) (http.Handler, error) {
+
+	router := mux.NewRouter()
+
+	// fever api router
+	// no authentication necessary as it uses apiKey and feverhash
+	feverPrefix := "/fever/"
+	feverAPI := fever.NewAPI(feverPrefix, z.database)
+	router.PathPrefix(feverPrefix).Handler(
+		feverAPI.Router(),
+	)
+
+	apiHandler, apiGRPCServer, err := api.NewAPI(z.database, z.version, z.appstart).Router(endpoint, tlsConfig)
+	if err != nil {
+		log.Debugf("cannot start API: %s", err.Error())
+		return nil, err
+	}
+	// Note: the api prefix must match the path in api/pb/api.proto
+	// No authentication necessary because each GRPC method authenticates
+	router.PathPrefix("/api").Handler(apiHandler)
+
+	// oddballs router
+	oddballsAPI := &oddballs{db: z.database}
+	router.PathPrefix("/").Handler(
+		Adapt(oddballsAPI.router(), Authenticator(z.database)),
+	)
+
+	mainHandler := Adapt(router, NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
+
+	return grpcHandler(apiGRPCServer, mainHandler), nil
+
 }

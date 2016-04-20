@@ -4,7 +4,6 @@ import (
 	gorillaHandlers "github.com/gorilla/handlers"
 	"net/http"
 	"rakewire/logger"
-	"rakewire/middleware"
 	"strings"
 )
 
@@ -19,7 +18,7 @@ func (z *LogWriter) Write(p []byte) (n int, err error) {
 }
 
 // LogAdapter log requests and responses
-func LogAdapter() middleware.Adapter {
+func LogAdapter() Adapter {
 
 	logWriter := &LogWriter{
 		accessLogger: logger.New("access"),

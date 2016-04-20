@@ -1,15 +1,12 @@
 package fever
 
 import (
-	"compress/gzip"
 	"fmt"
-	gorillaHandlers "github.com/gorilla/handlers"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"rakewire/middleware"
 	"rakewire/model"
 	"strings"
 	"testing"
@@ -17,9 +14,7 @@ import (
 )
 
 const (
-	hAcceptEncoding  = "Accept-Encoding"
-	hContentEncoding = "Content-Encoding"
-	testUsername     = "jeff"
+	testUsername = "jeff"
 )
 
 func TestMain(m *testing.M) {
@@ -29,7 +24,7 @@ func TestMain(m *testing.M) {
 
 func newServer(database model.Database) *httptest.Server {
 	apiFever := NewAPI("/fever", database)
-	return httptest.NewServer(middleware.Adapt(apiFever.Router(), middleware.NoCache(), gorillaHandlers.CompressHandler))
+	return httptest.NewServer(apiFever.Router())
 }
 
 func makeRequest(user *model.User, target string, formValues ...string) ([]byte, error) {
@@ -57,7 +52,7 @@ func makeRequest(user *model.User, target string, formValues ...string) ([]byte,
 		return nil, err
 	}
 	req.Header.Set(hContentType, "application/x-www-form-urlencoded")
-	req.Header.Set(hAcceptEncoding, "gzip")
+	//req.Header.Set(hAcceptEncoding, "gzip")
 
 	rsp, err := client.Do(req)
 	if err != nil {
@@ -66,15 +61,9 @@ func makeRequest(user *model.User, target string, formValues ...string) ([]byte,
 		return nil, fmt.Errorf("Bad error code, expected %d, actual %d", http.StatusOK, rsp.StatusCode)
 	} else if rsp.Header.Get(hContentType) != mimeJSON {
 		return nil, fmt.Errorf("Bad content type, expected %s, actual %s", mimeJSON, rsp.Header.Get(hContentType))
-	} else if rsp.Header.Get(hContentEncoding) != "gzip" {
-		return nil, fmt.Errorf("Bad content encoding, expected %s, actual %s", "gzip", rsp.Header.Get(hContentEncoding))
 	}
 
-	gzipReader, err := gzip.NewReader(rsp.Body)
-	if err != nil {
-		return nil, err
-	}
-	data, err := ioutil.ReadAll(gzipReader)
+	data, err := ioutil.ReadAll(rsp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -141,8 +130,7 @@ func getUser(t *testing.T, db model.Database) *model.User {
 func populateDatabase(tx model.Transaction) error {
 
 	// add test user
-	user := model.U.New(testUsername)
-	user.SetPassword("abcdefg")
+	user := model.U.New(testUsername, "abcdefg")
 	if err := model.U.Save(tx, user); err != nil {
 		return err
 	}

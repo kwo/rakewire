@@ -33,9 +33,12 @@ additionally, vendetta does not install dependencies of test files by default so
 	git submodule add https://github.com/antonholmquist/jason
 
 
-## Test Echo service
+## Test Service
 
-		curl -X POST https://rw.kfabrik.de:4444/api/status -H "Content-Type: application/json" -d '{}'
+		curl -D - -H "Content-Type: application/json" -d '{}' https://rw.kfabrik.de:8888/api/status -X POST
+		curl -D - -u ko:abcdefg -H "Content-Type: application/json" -d '{}' https://rw.kfabrik.de:8888/api/status -X POST
+
+		curl -D - -u ko:abcdefg https://rw.kfabrik.de:8888/subscriptions.opml
 
 
 ## OPML

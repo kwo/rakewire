@@ -2,7 +2,6 @@ package api
 
 import (
 	"crypto/tls"
-	"encoding/base64"
 	"fmt"
 	gateway "github.com/gengo/grpc-gateway/runtime"
 	"golang.org/x/net/context"
@@ -12,13 +11,10 @@ import (
 	"google.golang.org/grpc/metadata"
 	"net/http"
 	"rakewire/api/pb"
+	"rakewire/auth"
 	"rakewire/model"
 	"strings"
 	"time"
-)
-
-const (
-	authBasic = "Basic "
 )
 
 // NewAPI creates a new REST API instance
@@ -68,7 +64,7 @@ func (z *API) Router(endpointConnect string, tlsConfig *tls.Config) (http.Handle
 
 }
 
-func (z *API) authorize(ctx context.Context, roles ...string) (*model.User, error) {
+func (z *API) authenticate(ctx context.Context, roles ...string) (*model.User, error) {
 
 	var authHeader string
 	if md, ok := metadata.FromContext(ctx); ok {
@@ -77,74 +73,17 @@ func (z *API) authorize(ctx context.Context, roles ...string) (*model.User, erro
 		}
 	}
 
-	if authHeader == "" {
+	if user, errAuth := auth.Authenticate(z.db, authHeader, roles...); errAuth == nil {
+		return user, nil
+	} else if errAuth == auth.ErrUnauthenticated {
 		return nil, grpc.Errorf(codes.Unauthenticated, codes.Unauthenticated.String())
-	} else if strings.HasPrefix(authHeader, authBasic) {
-		return z.authorizeBasic(authHeader, roles...)
-	}
-
-	return nil, grpc.Errorf(codes.Unauthenticated, fmt.Sprintf("%s: %s", codes.Unauthenticated.String(), "unknown authentication scheme"))
-
-}
-
-func (z *API) authorizeBasic(authHeader string, roles ...string) (*model.User, error) {
-
-	errParse := grpc.Errorf(codes.Unauthenticated, fmt.Sprintf("%s: %s", codes.Unauthenticated.String(), "cannot parse basic authorization header"))
-	errInternal := grpc.Errorf(codes.Internal, codes.Internal.String())
-	errUnauthenticated := grpc.Errorf(codes.Unauthenticated, codes.Unauthenticated.String())
-	errUnauthorized := grpc.Errorf(codes.PermissionDenied, codes.PermissionDenied.String())
-
-	fields := strings.Fields(authHeader)
-	if len(fields) != 2 {
-		return nil, errParse
-	}
-
-	var username, password string
-	if data, err := base64.StdEncoding.DecodeString(fields[1]); err == nil {
-		creds := strings.SplitN(string(data), ":", 2)
-		if len(creds) != 2 {
-			return nil, errParse
-		}
-		username = creds[0]
-		password = creds[1]
+	} else if errAuth == auth.ErrUnauthorized {
+		return nil, grpc.Errorf(codes.PermissionDenied, codes.PermissionDenied.String())
+	} else if errAuth == auth.ErrBadHeader {
+		return nil, grpc.Errorf(codes.InvalidArgument, codes.InvalidArgument.String())
 	} else {
-		return nil, errParse
+		return nil, grpc.Errorf(codes.Internal, fmt.Sprintf("%s: %s", codes.Internal.String(), errAuth.Error()))
 	}
-
-	// lookup user
-	var user *model.User
-	errDb := z.db.Select(func(tx model.Transaction) error {
-		u := model.U.GetByUsername(tx, username)
-		user = u
-		return nil
-	})
-	if errDb != nil {
-		return nil, errInternal
-	}
-
-	// check username
-	if user == nil {
-		return nil, errUnauthenticated
-	}
-
-	// check password
-	if !user.MatchPassword(password) {
-		return nil, errUnauthenticated
-	}
-
-	// check roles
-	hasAllRoles := true
-	for _, role := range roles {
-		if !user.HasRole(role) {
-			hasAllRoles = false
-		}
-		break
-	}
-	if !hasAllRoles {
-		return nil, errUnauthorized
-	}
-
-	return user, nil
 
 }
 

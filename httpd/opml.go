@@ -1,14 +1,30 @@
-package rest
+package httpd
 
 import (
 	"fmt"
 	"github.com/gorilla/context"
+	"github.com/gorilla/mux"
 	"net/http"
 	"rakewire/model"
 	"rakewire/opml"
 )
 
-func (z *API) opmlExport(w http.ResponseWriter, req *http.Request) {
+type oddballs struct {
+	db model.Database
+}
+
+func (z *oddballs) router() *mux.Router {
+
+	router := mux.NewRouter()
+
+	router.Path("/subscriptions.opml").Methods(mGet).HandlerFunc(z.opmlExport)
+	router.Path("/subscriptions.opml").Methods(mPut).HandlerFunc(z.opmlImport)
+
+	return router
+
+}
+
+func (z *oddballs) opmlExport(w http.ResponseWriter, req *http.Request) {
 
 	user := context.Get(req, "user").(*model.User)
 
@@ -35,7 +51,7 @@ func (z *API) opmlExport(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func (z *API) opmlImport(w http.ResponseWriter, req *http.Request) {
+func (z *oddballs) opmlImport(w http.ResponseWriter, req *http.Request) {
 
 	user := context.Get(req, "user").(*model.User)
 
