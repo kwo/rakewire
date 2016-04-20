@@ -21,7 +21,7 @@ func Echo(c *cli.Context) {
 	}
 
 	authTransport := grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, ""))
-	authUser := grpc.WithPerRPCCredentials(&UsernamePasswordCredential{Username: username, Password: password})
+	authUser := grpc.WithPerRPCCredentials(&BasicAuthCredentials{Username: username, Password: password})
 	conn, err := grpc.Dial(instance, authTransport, authUser)
 	if err != nil {
 		fmt.Printf("Error connecting to remote (%s): %s\n", instance, err.Error())

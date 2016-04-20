@@ -38,26 +38,26 @@ func getInstanceUsernamePassword(c *cli.Context) (instance, username, password s
 
 }
 
-// UsernamePasswordCredential implements Credentials for username/password authentication.
-type UsernamePasswordCredential struct {
+// BasicAuthCredentials implements Credentials for username/password authentication.
+type BasicAuthCredentials struct {
 	Username string
 	Password string
 }
 
 // GetRequestMetadata is part of the Credential interface,
-func (z *UsernamePasswordCredential) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+func (z *BasicAuthCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
 	return map[string]string{
 		"authorization": z.makeAuthorizationToken(),
 	}, nil
 }
 
 // RequireTransportSecurity is part of the Credential interface,
-func (z *UsernamePasswordCredential) RequireTransportSecurity() bool {
+func (z *BasicAuthCredentials) RequireTransportSecurity() bool {
 	return true
 }
 
 // RequireTransportSecurity is part of the Credential interface,
-func (z *UsernamePasswordCredential) makeAuthorizationToken() string {
+func (z *BasicAuthCredentials) makeAuthorizationToken() string {
 	auth := base64.StdEncoding.EncodeToString([]byte(z.Username + ":" + z.Password))
 	return "Basic " + auth
 }
