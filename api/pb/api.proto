@@ -3,6 +3,21 @@ package pb;
 
 import "google/api/annotations.proto";
 
+message PingRequest {}
+
+message PingResponse {
+  int64  time = 1;
+}
+
+service PingService {
+  rpc Ping(PingRequest) returns (stream PingResponse) {
+    option (google.api.http) = {
+      post: "/api/ping"
+      body: "*"
+    };
+  }
+}
+
 message StatusRequest {}
 
 message StatusResponse {

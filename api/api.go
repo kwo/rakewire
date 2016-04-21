@@ -47,12 +47,18 @@ func (z *API) Router(endpointConnect string, tlsConfig *tls.Config) (http.Handle
 	opts := []grpc.ServerOption{grpc.Creds(credentials.NewServerTLSFromCert(&tlsConfig.Certificates[0]))}
 	grpcServer := grpc.NewServer(opts...)
 
+	pb.RegisterPingServiceServer(grpcServer, z)
 	pb.RegisterStatusServiceServer(grpcServer, z)
 
 	ctx := context.Background()
 	dcreds := credentials.NewTLS(tlsConfig)
 	dopts := []grpc.DialOption{grpc.WithTransportCredentials(dcreds)}
 	gwmux := gateway.NewServeMux()
+
+	if err := pb.RegisterPingServiceHandlerFromEndpoint(ctx, gwmux, endpointConnect, dopts); err != nil {
+		return nil, nil, err
+	}
+
 	if err := pb.RegisterStatusServiceHandlerFromEndpoint(ctx, gwmux, endpointConnect, dopts); err != nil {
 		return nil, nil, err
 	}

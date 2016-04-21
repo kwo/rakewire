@@ -35,10 +35,11 @@ additionally, vendetta does not install dependencies of test files by default so
 
 ## Test Service
 
-		curl -D - -H "Content-Type: application/json" -d '{}' https://rw.kfabrik.de:8888/api/status -X POST
-		curl -D - -u ko:abcdefg -H "Content-Type: application/json" -d '{}' https://rw.kfabrik.de:8888/api/status -X POST
+	curl -D - -u karl@ostendorf.com:abcdefg -H "Content-Type: application/json" -d '{}' https://rw.kfabrik.de:8888/api/status -X POST
+	curl -D - -H "Content-Type: application/json" -d '{}' https://rw.kfabrik.de:8888/api/status -X POST
+	curl -D - -u karl@ostendorf.com:abcdefg https://rw.kfabrik.de:8888/api/status -X POST
 
-		curl -D - -u ko:abcdefg https://rw.kfabrik.de:8888/subscriptions.opml
+	curl -D - -u ko:abcdefg https://rw.kfabrik.de:8888/subscriptions.opml
 
 
 ## OPML
