@@ -121,6 +121,41 @@ func main() {
 			Action: cmd.Check,
 		},
 		{
+			Name:   "certgen",
+			Usage:  "generate tls certificate",
+			Action: cmd.CertGen,
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:  "host",
+					Value: "localhost",
+					Usage: "Comma-separated hostnames and IPs to generate a certificate for",
+				},
+				cli.StringFlag{
+					Name:  "start-date",
+					Value: "",
+					Usage: "Creation date formatted as Jan 1 15:04:05 2011",
+				},
+				cli.IntFlag{
+					Name:  "duration-days",
+					Value: 365,
+					Usage: "Number of days that certificate is valid for",
+				},
+				cli.BoolFlag{
+					Name:  "ca",
+					Usage: "whether this cert should be its own Certificate Authority",
+				},
+				cli.IntFlag{
+					Name:  "rsa-bits",
+					Value: 2048,
+					Usage: "Size of RSA key to generate. Ignored if --ecdsa-curve is set",
+				},
+				cli.StringFlag{
+					Name:  "ecdsa-curve",
+					Value: "",
+					Usage: "ECDSA curve to use to generate a key. Valid values are P224, P256, P384, P521",
+				},
+			},
+		},
 		{
 			Name:      "useradd",
 			Usage:     "add user",
