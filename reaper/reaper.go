@@ -34,11 +34,11 @@ func NewService(database model.Database) *Service {
 
 // Start Service
 func (z *Service) Start() error {
-	log.Debugf("service starting...")
+	log.Debugf("starting...")
 	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	log.Infof("service started")
+	log.Infof("started")
 	return nil
 }
 
@@ -50,10 +50,10 @@ func (z *Service) Stop() {
 		return
 	}
 
-	log.Debugf("service stopping...")
+	log.Debugf("stopping...")
 	z.killsignal <- true
 	z.runlatch.Wait()
-	log.Infof("service stopped")
+	log.Infof("stopped")
 }
 
 // IsRunning status of the service

@@ -81,6 +81,13 @@ func (z *Service) Start() error {
 		return errors.New("No database")
 	}
 
+	log.Infof("starting...")
+	log.Infof("address:  %s", z.address)
+	log.Infof("host:     %s", z.host)
+	log.Infof("port:     %d", z.port)
+	log.Infof("tls cert: %s", z.tlsCertFile)
+	log.Infof("tls key:  %s", z.tlsKeyFile)
+
 	cert, err := tls.LoadX509KeyPair(z.tlsCertFile, z.tlsKeyFile)
 	if err != nil {
 		log.Debugf("cannot create tls key pair: %s", err.Error())
@@ -113,7 +120,7 @@ func (z *Service) Start() error {
 
 	go server.Serve(z.listener)
 
-	log.Debugf("service listening on %s, reachable at %s", endpointListen, endpointConnect)
+	log.Infof("listening on %s, reachable at %s", endpointListen, endpointConnect)
 
 	z.running = true
 
@@ -138,7 +145,7 @@ func (z *Service) Stop() {
 	z.listener = nil
 	z.running = false
 
-	log.Debugf("service stopped")
+	log.Infof("stopped")
 
 }
 

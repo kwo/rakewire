@@ -15,6 +15,7 @@
   - filter httpd requests on hostname
 
   - add jwt authentication
+  - add user api
   - add subscription api
   - expire entries/items by date/feed size
   - add maintenance routine for integrity check

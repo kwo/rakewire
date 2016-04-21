@@ -14,8 +14,8 @@ var (
 
 // Configuration contains all parameters for the PollFeed service
 type Configuration struct {
-	IntervalSeconds int
 	BatchMax        int
+	IntervalSeconds int
 }
 
 // Service for pumping feeds between fetcher and database
@@ -47,11 +47,15 @@ func NewService(cfg *Configuration, database model.Database) *Service {
 
 // Start Service
 func (z *Service) Start() error {
-	log.Debugf("service starting...")
+
+	log.Infof("starting...")
+	log.Infof("batch max: %d", z.batchMax)
+	log.Infof("interval:  %s", z.pollInterval.String())
+
 	z.setRunning(true)
 	z.runlatch.Add(1)
 	go z.run()
-	log.Infof("service started")
+	log.Infof("started")
 	return nil
 }
 
@@ -63,12 +67,12 @@ func (z *Service) Stop() {
 		return
 	}
 
-	log.Debugf("service stopping...")
+	log.Debugf("stopping...")
 	log.Debugf("killing...")
 	z.kill()
 	log.Debugf("waiting on latch")
 	z.runlatch.Wait()
-	log.Infof("service stopped")
+	log.Infof("stopped")
 }
 
 func (z *Service) run() {

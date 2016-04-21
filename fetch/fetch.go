@@ -70,13 +70,17 @@ func (z *Service) Start() error {
 		return ErrRestart
 	}
 
-	log.Debugf("service starting...")
+	log.Infof("starting...")
+	log.Infof("timeout:    %s", z.client.Timeout.String())
+	log.Infof("workers:    %d", z.workers)
+	log.Infof("user agent: %s", z.userAgent)
+
 	for i := 0; i < z.workers; i++ {
 		z.latch.Add(1)
 		go z.run(i)
 	}
 	z.running = true
-	log.Infof("service started")
+	log.Infof("started")
 	return nil
 
 }
@@ -91,12 +95,12 @@ func (z *Service) Stop() {
 		return
 	}
 
-	log.Debugf("service stopping...")
+	log.Debugf("stopping...")
 	z.latch.Wait()
 	z.input = nil
 	z.output = nil
 	z.running = false
-	log.Infof("service stopped")
+	log.Infof("stopped")
 
 }
 

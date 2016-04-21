@@ -27,7 +27,7 @@ One tool, esc, must be installed manually to the tools directory as follows
 
 additionally, vendetta does not install dependencies of test files by default so they must be installed manually as well
 
- 	cd vendor/github.com
+	cd vendor/github.com
 	mkdir antonholmquist
 	cd antonholmquist
 	git submodule add https://github.com/antonholmquist/jason
@@ -43,12 +43,9 @@ additionally, vendetta does not install dependencies of test files by default so
 
 ## OPML
 
-### Local
+curl -u karl@ostendorf.com:abcdefg https://${RAKEWIRE_INSTANCE}/subscriptions.opml > rakewire.opml
+curl -u karl@ostendorf.com:abcdefg -X PUT --data-binary @rakewire.opml https://${RAKEWIRE_INSTANCE}/subscriptions.opml
 
-curl -D - -u karl@ostendorf.com:abcdefg http://localhost:8888/api/rakewire.opml > rakewire.opml
-curl -D - -u karl@ostendorf.com:abcdefg -X PUT --data-binary @rakewire.opml http://localhost:8888/api/rakewire.opml
-
-### Production
-
+### obsolete
 curl -u karl@ostendorf.com:abcdefg https://rakewire.kfabrik.de/api/rakewire.opml > rakewire.opml
 curl -u karl@ostendorf.com:abcdefg -X PUT --data-binary @rakewire.opml https://rakewire.kfabrik.de/api/rakewire.opml
