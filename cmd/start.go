@@ -144,12 +144,3 @@ func monitorShutdown(ctx *startContext) {
 	ctx.log.Infof("done")
 
 }
-
-func loadConfiguration(db model.Database) (*model.Configuration, error) {
-	cfg := model.C.New()
-	err := db.Select(func(tx model.Transaction) error {
-		cfg = model.C.Get(tx)
-		return nil
-	})
-	return cfg, err
-}

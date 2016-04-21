@@ -32,7 +32,7 @@ func closeDatabase(db model.Database) error {
 	return model.Instance.Close(db)
 }
 
-func initConfig(c *cli.Context) (model.Database, *model.Configuration, error) {
+func initCmd(c *cli.Context) (model.Database, error) {
 
 	dbFile := c.Parent().String("file")
 	verbose := c.GlobalBool("verbose")
@@ -43,17 +43,13 @@ func initConfig(c *cli.Context) (model.Database, *model.Configuration, error) {
 
 	db, errDb := openDatabase(dbFile)
 	if errDb != nil {
-		return nil, nil, errDb
+		return nil, errDb
 	}
+
 	if verbose {
 		fmt.Printf("Database: %s\n", db.Location())
 	}
 
-	cfg, errCfg := loadConfiguration(db)
-	if errCfg != nil {
-		return nil, nil, errCfg
-	}
-
-	return db, cfg, nil
+	return db, nil
 
 }

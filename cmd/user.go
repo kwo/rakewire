@@ -21,7 +21,7 @@ func UserAdd(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	db, _, err := initConfig(c)
+	db, err := initCmd(c)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(1)
@@ -81,7 +81,7 @@ func UserAdd(c *cli.Context) {
 // UserList lists users in the system.
 func UserList(c *cli.Context) {
 
-	db, _, err := initConfig(c)
+	db, err := initCmd(c)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(1)
@@ -112,7 +112,7 @@ func UserPasswordChange(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	db, _, err := initConfig(c)
+	db, err := initCmd(c)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(1)
@@ -179,7 +179,7 @@ func UserRemove(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	db, _, err := initConfig(c)
+	db, err := initCmd(c)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(1)
@@ -224,7 +224,7 @@ func UserRoles(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	db, _, err := initConfig(c)
+	db, err := initCmd(c)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(1)

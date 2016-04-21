@@ -21,7 +21,6 @@ const (
 
 var (
 	allEntities = map[string][]string{
-		entityConfig:       indexesConfig,
 		entityEntry:        indexesEntry,
 		entityFeed:         indexesFeed,
 		entityGroup:        indexesGroup,

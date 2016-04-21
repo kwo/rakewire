@@ -18,8 +18,6 @@ type Object interface {
 
 func getObject(entityName string) Object {
 	switch entityName {
-	case entityConfig:
-		return &Configuration{}
 	case entityEntry:
 		return &Entry{}
 	case entityFeed:

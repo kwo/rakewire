@@ -9,9 +9,6 @@
 
 ### Unsorted
 
-  - 12 factor app - configuration - eliminate config table, use environment for all config parameters
-  - remove config bucket
-  - remove config subcomand
   - remove user subcommand, leave only add a user with roles (everything else runs via the grpc api)
   - add insecure option
   - add static pages

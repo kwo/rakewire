@@ -119,58 +119,6 @@ func main() {
 			Action: cmd.Check,
 		},
 		{
-			Name:    "config",
-			Aliases: []string{"c"},
-			Usage:   "manage application configuration",
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:  "f, file",
-					Value: "rakewire.db",
-					Usage: "location of the database file",
-				},
-			},
-			Subcommands: []cli.Command{
-				{
-					Name:        "ls",
-					Aliases:     []string{"list"},
-					Usage:       "list the configuration parameters",
-					ArgsUsage:   "[prefix]",
-					Description: "List the configuration parameters. If an optional prefix is given, restrict listing to parameters names beginning with prefix.",
-					Action:      cmd.ConfigList,
-				},
-				{
-					Name:      "get",
-					Usage:     "get a configuration parameter",
-					ArgsUsage: "<name>",
-					Action:    cmd.ConfigGet,
-				},
-				{
-					Name:        "set",
-					Usage:       "set a configuration parameter",
-					ArgsUsage:   "<name> <value>",
-					Description: "Set a configuration parameter. If the value begins with a @ character, it will be read in from @filename.",
-					Action:      cmd.ConfigSet,
-				},
-				{
-					Name:      "rm",
-					Aliases:   []string{"remove"},
-					Usage:     "remove a configuration parameter",
-					ArgsUsage: "<name>",
-					Action:    cmd.ConfigRemove,
-				},
-				{
-					Name:   "export",
-					Usage:  "export the configuration as JSON to stdout",
-					Action: cmd.ConfigExport,
-				},
-				{
-					Name:   "import",
-					Usage:  "import the configuration as JSON from stdin",
-					Action: cmd.ConfigImport,
-				},
-			},
-		},
-		{
 			Name:    "user",
 			Aliases: []string{"u"},
 			Usage:   "manage application users",
