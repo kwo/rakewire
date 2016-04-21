@@ -121,23 +121,17 @@ func main() {
 			Action: cmd.Check,
 		},
 		{
-			Name:    "user",
-			Aliases: []string{"u"},
-			Usage:   "manage application users",
+		{
+			Name:      "useradd",
+			Usage:     "add user",
+			ArgsUsage: "<username> <roles>",
+			Action:    cmd.UserAdd,
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:   "f, file",
 					Value:  "rakewire.db",
 					EnvVar: "RAKEWIRE_FILE",
 					Usage:  "location of the database file",
-				},
-			},
-			Subcommands: []cli.Command{
-				{
-					Name:      "add",
-					Usage:     "add user",
-					ArgsUsage: "<username> <roles>",
-					Action:    cmd.UserAdd,
 				},
 			},
 		},
