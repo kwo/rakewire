@@ -37,7 +37,7 @@ func TestUnreadIDs(t *testing.T) {
 	itemIDStr, err := response.GetString("unread_item_ids")
 	if err != nil {
 		t.Fatalf("Cannot read unread item ids: %s", err.Error())
-	} else if itemIDStr == "" {
+	} else if len(itemIDStr) == 0 {
 		t.Fatal("Blank item IDs")
 	} else {
 
@@ -105,7 +105,7 @@ func TestSavedIDs(t *testing.T) {
 	itemIDStr, err := response.GetString("saved_item_ids")
 	if err != nil {
 		t.Fatalf("Cannot read saved item ids: %s", err.Error())
-	} else if itemIDStr == "" {
+	} else if len(itemIDStr) == 0 {
 		t.Fatal("Blank item IDs")
 	} else {
 

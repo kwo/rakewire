@@ -361,7 +361,7 @@ func (z *Parser) doEndFeedAtom(e *element) {
 		// finished: clean up atom feed here
 		z.feed.LinkSelf = z.feed.Links[linkSelf]
 		z.feed.LinkAlternate = z.feed.Links[linkAlternate]
-		if z.feed.LinkAlternate == "" {
+		if len(z.feed.LinkAlternate) == 0 {
 			z.feed.LinkAlternate = z.feed.Links[""]
 		}
 	}
@@ -380,7 +380,7 @@ func (z *Parser) doEndFeedRSS(e *element) {
 		z.feed.Flavor = flavorRSS + z.stack.Attr(nsRSS, "version")
 		z.feed.LinkSelf = z.feed.Links[linkSelf]
 		z.feed.LinkAlternate = z.feed.Links[linkAlternate]
-		if z.feed.LinkAlternate == "" {
+		if len(z.feed.LinkAlternate) == 0 {
 			z.feed.LinkAlternate = z.feed.Links[""]
 		}
 	}
@@ -402,7 +402,7 @@ func (z *Parser) doEndEntryAtom(e *element) {
 
 		z.entry.LinkSelf = z.entry.Links[linkSelf]
 		z.entry.LinkAlternate = z.entry.Links[linkAlternate]
-		if z.entry.LinkAlternate == "" {
+		if len(z.entry.LinkAlternate) == 0 {
 			z.entry.LinkAlternate = z.entry.Links[""]
 		}
 
@@ -432,7 +432,7 @@ func (z *Parser) doEndEntryRSS(e *element) {
 
 		z.entry.LinkSelf = z.entry.Links[linkSelf]
 		z.entry.LinkAlternate = z.entry.Links[linkAlternate]
-		if z.entry.LinkAlternate == "" {
+		if len(z.entry.LinkAlternate) == 0 {
 			z.entry.LinkAlternate = z.entry.Links[""]
 		}
 

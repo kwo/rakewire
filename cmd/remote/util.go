@@ -66,17 +66,17 @@ func getInstanceUsernamePassword(c *cli.Context) (instance, username, password s
 	username = c.Parent().String("username")
 	password = c.Parent().String("password")
 
-	if instance == "" {
+	if len(instance) == 0 {
 		err = errMissingInstance
 		return
 	}
 
-	if username == "" {
+	if len(username) == 0 {
 		err = errMissingUsername
 		return
 	}
 
-	if password == "" {
+	if len(password) == 0 {
 		err = errMissingPassword
 		return
 	}

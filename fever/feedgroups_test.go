@@ -72,7 +72,7 @@ func TestGroups(t *testing.T) {
 			}
 			if feedIDs, err := feedGroup.GetString("feed_ids"); err != nil {
 				t.Errorf("Cannot retrieve feed_group.feed_ids: %s", err.Error())
-			} else if feedIDs == "" {
+			} else if len(feedIDs) == 0 {
 				t.Error("feed_group.feed_ids is empty")
 			} else {
 				feedIDElements := strings.Split(feedIDs, ",")
@@ -159,7 +159,7 @@ func TestFeeds(t *testing.T) {
 			}
 			if feedIDs, err := feedGroup.GetString("feed_ids"); err != nil {
 				t.Errorf("Cannot retrieve feed_group.feed_ids: %s", err.Error())
-			} else if feedIDs == "" {
+			} else if len(feedIDs) == 0 {
 				t.Error("feed_group.feed_ids is empty")
 			} else {
 				feedIDElements := strings.Split(feedIDs, ",")

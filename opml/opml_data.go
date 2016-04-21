@@ -53,10 +53,10 @@ func Export(tx model.Transaction, user *model.User) (*OPML, error) {
 
 			getTitle := func(s *model.Subscription) string {
 				result := subscription.Title
-				if result == "" {
+				if len(result) == 0 {
 					result = feed.Title
 				}
-				if result == "" {
+				if len(result) == 0 {
 					result = feed.URL
 				}
 				return result
@@ -153,16 +153,16 @@ func Import(tx model.Transaction, userID string, opml *OPML) error {
 
 			getTitle := func() string {
 				result := outline.Title
-				if result == "" {
+				if len(result) == 0 {
 					result = outline.Text
 				}
-				if result == "" {
+				if len(result) == 0 {
 					result = feed.Title
 				}
-				if result == "" {
+				if len(result) == 0 {
 					result = feed.SiteURL
 				}
-				if result == "" {
+				if len(result) == 0 {
 					result = feed.URL
 				}
 				return result

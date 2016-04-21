@@ -54,7 +54,7 @@ func Start(c *cli.Context) {
 	// Forbid debugMode in production.
 	// If model.Version is not an empty string (stamped via LDFLAGS) then we are in production mode.
 	if verbose {
-		if c.App.Version == "" {
+		if len(c.App.Version) == 0 {
 			logger.DebugMode = true
 		} else {
 			ctx.log.Infof("verbose logging not available in production mode")

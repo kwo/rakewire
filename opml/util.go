@@ -20,7 +20,7 @@ func _flatten(outlines Outlines, branch *Outline, result map[*Outline]Outlines) 
 			b := &Outline{}
 			b.SetAutoRead(branch.IsAutoRead() || outline.IsAutoRead())
 			b.SetAutoStar(branch.IsAutoStar() || outline.IsAutoStar())
-			if branch.Title == "" {
+			if len(branch.Title) == 0 {
 				b.Title = outline.Title
 				b.Text = outline.Text
 				_flatten(outline.Outlines, b, result) // 2nd level

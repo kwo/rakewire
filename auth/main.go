@@ -20,7 +20,7 @@ var (
 // Authenticate will authenticate and authorize a user
 func Authenticate(db model.Database, authHeader string, roles ...string) (*model.User, error) {
 
-	if authHeader == "" {
+	if len(authHeader) == 0 {
 		return nil, ErrUnauthenticated
 	} else if strings.HasPrefix(authHeader, schemeBasic) {
 		return authenticateBasic(db, authHeader, roles...)

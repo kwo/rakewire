@@ -48,7 +48,7 @@ func TestAuth(t *testing.T) {
 
 	if v, err := response.GetString("last_refreshed_on_time"); err != nil {
 		t.Errorf("last_refreshed_on_time not quoted as a string: %s", err.Error())
-	} else if v == "" {
+	} else if len(v) == 0 {
 		t.Error("empty last_refreshed_on_time value")
 	} else {
 		if lastRefreshed, err := strconv.Atoi(v); err != nil {
