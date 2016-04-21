@@ -32,6 +32,7 @@ func Start(c *cli.Context) {
 
 	showVersionInformation(c)
 
+	appStart := time.Now()
 	dbFile := c.String("file")
 	pidFile := c.String("pid")
 	verbose := c.GlobalBool("verbose")
@@ -49,17 +50,6 @@ func Start(c *cli.Context) {
 	}
 	ctx.log.Infof("Database: %s", ctx.database.Location())
 
-	var cfg *model.Configuration
-	if c, err := loadConfiguration(ctx.database); err == nil {
-		cfg = c
-	} else {
-		ctx.log.Infof("Abort! Cannot load configuration: %s", err.Error())
-		model.Instance.Close(ctx.database)
-		return
-	}
-
-	appStart := time.Now()
-
 	// initialize logging - debug statements above this point will never be logged
 	// Forbid debugMode in production.
 	// If model.Version is not an empty string (stamped via LDFLAGS) then we are in production mode.
@@ -76,7 +66,7 @@ func Start(c *cli.Context) {
 		IntervalSeconds: c.Int("poll.intervalsecs"),
 	}
 	ctx.polld = pollfeed.NewService(pollConfig, ctx.database)
-	ctx.reaperd = reaper.NewService(cfg, ctx.database)
+	ctx.reaperd = reaper.NewService(ctx.database)
 
 	fetchConfig := &fetch.Configuration{
 		TimeoutSeconds: c.Int("fetch.timeoutsecs"),
