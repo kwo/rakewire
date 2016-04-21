@@ -58,9 +58,7 @@ func Start(c *cli.Context) {
 		return
 	}
 
-	// add version and process start time to config
-	cfg.SetStr("app.version", c.App.Version)
-	cfg.SetInt64("app.start", time.Now().Unix())
+	appStart := time.Now()
 
 	// initialize logging - debug statements above this point will never be logged
 	// Forbid debugMode in production.
@@ -86,7 +84,15 @@ func Start(c *cli.Context) {
 		UserAgent:      c.String("fetch.useragent"),
 	}
 	ctx.fetchd = fetch.NewService(fetchConfig, ctx.polld.Output, ctx.reaperd.Input)
-	ctx.httpd = httpd.NewService(cfg, ctx.database)
+
+	httpdConfig := &httpd.Configuration{
+		Address:     c.String("httpd.address"),
+		Host:        c.String("httpd.host"),
+		Port:        c.Int("httpd.port"),
+		TLSCertFile: c.String("httpd.tlscertfile"),
+		TLSKeyFile:  c.String("httpd.tlskeyfile"),
+	}
+	ctx.httpd = httpd.NewService(httpdConfig, ctx.database, c.App.Version, appStart.Unix())
 
 	chErrors := make(chan error, 1)
 	for i := 0; i < 4; i++ {

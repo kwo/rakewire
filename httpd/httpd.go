@@ -16,38 +16,34 @@ import (
 	"time"
 )
 
-const (
-	httpdAddress           = "httpd.address"
-	httpdHost              = "httpd.host"
-	httpdPort              = "httpd.port"
-	httpdTLSPrivate        = "httpd.tls.private"
-	httpdTLSPublic         = "httpd.tls.public"
-	httpdAddressDefault    = ""
-	httpdHostDefault       = "localhost"
-	httpdPortDefault       = 8888
-	httpdTLSPrivateDefault = ""
-	httpdTLSPublicDefault  = ""
-)
-
 var (
 	// ErrRestart indicates that the service cannot be started because it is already running.
 	ErrRestart = errors.New("The service is already started")
 	log        = logger.New("httpd")
 )
 
+// Configuration contains all parameters for the httpd service
+type Configuration struct {
+	Address     string
+	Host        string
+	Port        int
+	TLSCertFile string
+	TLSKeyFile  string
+}
+
 // Service server
 type Service struct {
 	sync.Mutex
-	database   model.Database
-	listener   net.Listener
-	running    bool
-	address    string // binding address, empty string means 0.0.0.0
-	host       string // TODO: discard requests not made to this host
-	port       int
-	tlsPublic  string
-	tlsPrivate string
-	version    string
-	appstart   time.Time
+	database    model.Database
+	listener    net.Listener
+	running     bool
+	address     string // binding address, empty string means 0.0.0.0
+	host        string // TODO: discard requests not made to this host
+	port        int
+	tlsCertFile string
+	tlsKeyFile  string
+	version     string
+	appstart    time.Time
 }
 
 const (
@@ -57,16 +53,16 @@ const (
 )
 
 // NewService creates a new httpd service.
-func NewService(cfg *model.Configuration, database model.Database) *Service {
+func NewService(cfg *Configuration, database model.Database, version string, appStart int64) *Service {
 	return &Service{
-		database:   database,
-		address:    cfg.GetStr(httpdAddress, httpdAddressDefault),
-		host:       cfg.GetStr(httpdHost, httpdHostDefault),
-		port:       cfg.GetInt(httpdPort, httpdPortDefault),
-		tlsPublic:  cfg.GetStr(httpdTLSPublic, httpdTLSPublicDefault),
-		tlsPrivate: cfg.GetStr(httpdTLSPrivate, httpdTLSPrivateDefault),
-		version:    cfg.GetStr("app.version", "Rakewire"),
-		appstart:   time.Unix(cfg.GetInt64("app.start", time.Now().Unix()), 0).Truncate(time.Second),
+		database:    database,
+		address:     cfg.Address,
+		host:        cfg.Host,
+		port:        cfg.Port,
+		tlsCertFile: cfg.TLSCertFile,
+		tlsKeyFile:  cfg.TLSKeyFile,
+		version:     version,
+		appstart:    time.Unix(appStart, 0).Truncate(time.Second),
 	}
 }
 
@@ -85,7 +81,7 @@ func (z *Service) Start() error {
 		return errors.New("No database")
 	}
 
-	cert, err := tls.X509KeyPair([]byte(z.tlsPublic), []byte(z.tlsPrivate))
+	cert, err := tls.LoadX509KeyPair(z.tlsCertFile, z.tlsKeyFile)
 	if err != nil {
 		log.Debugf("cannot create tls key pair: %s", err.Error())
 		return err
@@ -117,7 +113,7 @@ func (z *Service) Start() error {
 
 	go server.Serve(z.listener)
 
-	log.Debugf("service started on https://%s", endpointListen)
+	log.Debugf("service listening on %s, reachable at %s", endpointListen, endpointConnect)
 
 	z.running = true
 

@@ -64,6 +64,33 @@ func main() {
 					EnvVar: "RAKEWIRE_FETCH_USERAGENT",
 					Usage:  "fetcher useragent string",
 				},
+				cli.StringFlag{
+					Name:   "httpd.address",
+					EnvVar: "RAKEWIRE_HTTPD_ADDRESS",
+					Usage:  "ip address on which httpd should listen",
+				},
+				cli.StringFlag{
+					Name:   "httpd.host",
+					Value:  "localhost",
+					EnvVar: "RAKEWIRE_HTTPD_HOST",
+					Usage:  "domain name at which httpd service can be reached",
+				},
+				cli.IntFlag{
+					Name:   "httpd.port",
+					Value:  8888,
+					EnvVar: "RAKEWIRE_HTTPD_PORT",
+					Usage:  "httpd port",
+				},
+				cli.StringFlag{
+					Name:   "httpd.tlscertfile",
+					EnvVar: "RAKEWIRE_HTTPD_TLSCERTFILE",
+					Usage:  "TLS certificate file",
+				},
+				cli.StringFlag{
+					Name:   "httpd.tlskeyfile",
+					EnvVar: "RAKEWIRE_HTTPD_TLSKEYFILE",
+					Usage:  "TLS key file",
+				},
 				cli.IntFlag{
 					Name:   "poll.batchmax",
 					Value:  10,
