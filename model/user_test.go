@@ -11,15 +11,41 @@ func TestUserSetup(t *testing.T) {
 
 	if obj := getObject(entityUser); obj == nil {
 		t.Error("missing getObject entry")
+	} else if !obj.hasIncrementingID() {
+		t.Error("users have incrementing IDs")
 	}
 
 	if obj := allEntities[entityUser]; obj == nil {
 		t.Error("missing allEntities entry")
 	}
 
-	c := C.New()
-	if obj := c.Sequences.User; obj != 0 {
-		t.Error("missing sequences entry")
+}
+
+func TestUserIncrementingID(t *testing.T) {
+
+	t.Parallel()
+
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
+
+	if err := db.Update(func(tx Transaction) error {
+		u := U.New("username", "hello")
+		return U.Save(tx, u)
+	}); err != nil {
+		t.Fatalf("error adding new user: %s", err.Error())
+	}
+
+	if err := db.Update(func(tx Transaction) error {
+		id, err := tx.Bucket(bucketData, entityUser).NextID()
+		if err != nil {
+			return err
+		}
+		if id != 2 {
+			t.Errorf("bad next id: %d, expected %d", id, 2)
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("error getting next id: %s", err.Error())
 	}
 
 }
@@ -31,7 +57,7 @@ func TestUserPassword(t *testing.T) {
 	username := "jeff@jarvis.com"
 	password := "abcedfghijklmnopqrstuvwxyz"
 
-	u := U.New(username)
+	u := U.New(username, password)
 	if u.ID != empty {
 		t.Error("User ID not set properly by factory method")
 	}
@@ -121,10 +147,7 @@ func TestUserAddDelete(t *testing.T) {
 
 	// add user to database
 	if err := database.Update(func(tx Transaction) error {
-		user := U.New(fakeUsername)
-		if err := user.SetPassword(fakePassword); err != nil {
-			return err
-		}
+		user := U.New(fakeUsername, fakePassword)
 		if err := U.Save(tx, user); err != nil {
 			return err
 		}
@@ -185,10 +208,7 @@ func TestUserGets(t *testing.T) {
 
 	// add user to database
 	if err := database.Update(func(tx Transaction) error {
-		user := U.New(fakeUsername)
-		if err := user.SetPassword(fakePassword); err != nil {
-			return err
-		}
+		user := U.New(fakeUsername, fakePassword)
 		fakeFeverhash = user.FeverHash
 		return U.Save(tx, user)
 	}); err != nil {
@@ -227,10 +247,7 @@ func TestUserGets(t *testing.T) {
 
 	// add new user with same username to database, expect error
 	if err := database.Update(func(tx Transaction) error {
-		user := U.New(strings.ToUpper(fakeUsername)) // test case-insensitivity
-		if err := user.SetPassword(fakePassword); err != nil {
-			return err
-		}
+		user := U.New(strings.ToUpper(fakeUsername), fakePassword) // test case-insensitivity
 		if err := U.Save(tx, user); err != ErrUsernameTaken {
 			t.Error("Expected error saving user with non-unique username.")
 		}
@@ -245,10 +262,7 @@ func TestUserJson(t *testing.T) {
 
 	t.Parallel()
 
-	user := U.New("karl@ostendorf.com")
-	if err := user.SetPassword("abcdefg"); err != nil {
-		t.Errorf("Error setting user password: %s", err.Error())
-	}
+	user := U.New("karl@ostendorf.com", "abcdefg")
 	data, err := user.encode()
 	if err != nil {
 		t.Errorf("Error encoding user: %s", err.Error())

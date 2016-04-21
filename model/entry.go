@@ -58,6 +58,10 @@ func (z *Entry) encode() ([]byte, error) {
 	return json.Marshal(z)
 }
 
+func (z *Entry) hasIncrementingID() bool {
+	return false
+}
+
 func (z *Entry) indexes() map[string][]string {
 	result := make(map[string][]string)
 	result[indexEntryFeedReadUpdated] = []string{z.UserID, z.FeedID, keyEncodeBool(z.Read), keyEncodeTime(z.Updated), z.ItemID}

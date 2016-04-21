@@ -70,6 +70,10 @@ func (z *Item) encode() ([]byte, error) {
 	return json.Marshal(z)
 }
 
+func (z *Item) hasIncrementingID() bool {
+	return true
+}
+
 func (z *Item) indexes() map[string][]string {
 	result := make(map[string][]string)
 	result[indexItemGUID] = []string{z.FeedID, z.GUID}
@@ -77,10 +81,12 @@ func (z *Item) indexes() map[string][]string {
 }
 
 func (z *Item) setID(tx Transaction) error {
-	config := C.Get(tx)
-	config.Sequences.Item = config.Sequences.Item + 1
-	z.ID = keyEncodeUint(config.Sequences.Item)
-	return C.Put(tx, config)
+	id, err := tx.Bucket(bucketData, entityItem).NextID()
+	if err != nil {
+		return err
+	}
+	z.ID = keyEncodeUint(id)
+	return nil
 }
 
 // Items is a collection Item objects

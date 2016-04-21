@@ -3,12 +3,33 @@ package model
 import (
 	"github.com/boltdb/bolt"
 	"rakewire/logger"
+	"strconv"
 	"sync"
 	"time"
 )
 
 const (
-	bucketTmp = "tmp"
+	bucketData  = "Data"
+	bucketIndex = "Index"
+	bucketTmp   = "tmp"
+	chMax       = "~"
+	chSep       = "|"
+	empty       = ""
+	fmtTime     = "20060102150405Z0700"
+	fmtUint     = "%010d" // 1, 234, 567, 890
+)
+
+var (
+	allEntities = map[string][]string{
+		entityConfig:       indexesConfig,
+		entityEntry:        indexesEntry,
+		entityFeed:         indexesFeed,
+		entityGroup:        indexesGroup,
+		entityItem:         indexesItem,
+		entitySubscription: indexesSubscription,
+		entityTransmission: indexesTransmission,
+		entityUser:         indexesUser,
+	}
 )
 
 // Instance allows opening and closing new Databases
@@ -194,6 +215,10 @@ func (z *boltBucket) Get(key []byte) []byte {
 	return z.bucket.Get(key)
 }
 
+func (z *boltBucket) NextID() (uint64, error) {
+	return z.bucket.NextSequence()
+}
+
 func (z *boltBucket) Put(key, value []byte) error {
 	return z.bucket.Put(key, value)
 }
@@ -220,4 +245,25 @@ func (z *boltCursor) Prev() ([]byte, []byte) {
 
 func (z *boltCursor) Seek(seek []byte) ([]byte, []byte) {
 	return z.cursor.Seek(seek)
+}
+
+func incrementNextSequence(maxIDStr string, b Bucket) error {
+
+	maxID, errParse := strconv.ParseUint(maxIDStr, 10, 64)
+	if errParse != nil {
+		return errParse
+	}
+
+	for {
+		id, err := b.NextID()
+		if err != nil {
+			return err
+		}
+		if id >= maxID {
+			break
+		}
+	}
+
+	return nil
+
 }

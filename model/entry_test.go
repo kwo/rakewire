@@ -13,6 +13,8 @@ func TestEntrySetup(t *testing.T) {
 
 	if obj := getObject(entityEntry); obj == nil {
 		t.Error("missing getObject entry")
+	} else if obj.hasIncrementingID() {
+		t.Error("entries do not have incrementing IDs")
 	}
 
 	if obj := allEntities[entityEntry]; obj == nil {
@@ -180,10 +182,7 @@ func TestEntryQueries(t *testing.T) {
 
 		// add users
 		for uu := 0; uu < 2; uu++ {
-			u := U.New(fmt.Sprintf("User%02d", uu+1))
-			if err := u.SetPassword("ancdefg"); err != nil {
-				t.Errorf("Cannot set user password: %s", err.Error())
-			}
+			u := U.New(fmt.Sprintf("User%02d", uu+1), "ancdefg")
 			if err := U.Save(tx, u); err != nil {
 				return err
 			}

@@ -18,6 +18,7 @@ type Bucket interface {
 	Cursor() Cursor
 	Delete(key []byte) error
 	Get(key []byte) []byte
+	NextID() (uint64, error)
 	Put(key, value []byte) error
 }
 

@@ -16,16 +16,7 @@ var (
 
 // Configuration defines the application configurtion.
 type Configuration struct {
-	Sequences sequences
-	Values    map[string]string
-}
-
-type sequences struct {
-	User         uint64
-	Feed         uint64
-	Item         uint64
-	Group        uint64
-	Transmission uint64
+	Values map[string]string
 }
 
 // GetBool returns the given value if exists otherwise the default value
@@ -120,7 +111,6 @@ func (z *Configuration) GetID() string {
 }
 
 func (z *Configuration) clear() {
-	z.Sequences = sequences{}
 	z.Values = make(map[string]string)
 }
 
@@ -130,6 +120,10 @@ func (z *Configuration) decode(data []byte) error {
 		return err
 	}
 	return nil
+}
+
+func (z *Configuration) hasIncrementingID() bool {
+	return false
 }
 
 func (z *Configuration) encode() ([]byte, error) {

@@ -9,10 +9,33 @@ import (
 // Object defines the functions necessary for objects to be persisted to a store
 type Object interface {
 	GetID() string
-	setID(Transaction) error
-	encode() ([]byte, error)
 	decode([]byte) error
+	encode() ([]byte, error)
+	hasIncrementingID() bool
 	indexes() map[string][]string
+	setID(Transaction) error
+}
+
+func getObject(entityName string) Object {
+	switch entityName {
+	case entityConfig:
+		return &Configuration{}
+	case entityEntry:
+		return &Entry{}
+	case entityFeed:
+		return &Feed{}
+	case entityGroup:
+		return &Group{}
+	case entityItem:
+		return &Item{}
+	case entitySubscription:
+		return &Subscription{}
+	case entityTransmission:
+		return &Transmission{}
+	case entityUser:
+		return &User{}
+	}
+	return nil
 }
 
 func deleteObject(tx Transaction, entityName string, id string) error {

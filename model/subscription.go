@@ -74,25 +74,6 @@ func (z *Subscription) clear() {
 	z.AutoStar = false
 }
 
-func (z *Subscriptions) decode(data []byte) error {
-	if err := json.Unmarshal(data, z); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (z *Subscriptions) encode() ([]byte, error) {
-	return json.Marshal(z)
-}
-
-func (z *Subscription) setID(tx Transaction) error {
-	return nil
-}
-
-func (z *Subscription) encode() ([]byte, error) {
-	return json.Marshal(z)
-}
-
 func (z *Subscription) decode(data []byte) error {
 	z.clear()
 	if err := json.Unmarshal(data, z); err != nil {
@@ -101,10 +82,22 @@ func (z *Subscription) decode(data []byte) error {
 	return nil
 }
 
+func (z *Subscription) encode() ([]byte, error) {
+	return json.Marshal(z)
+}
+
+func (z *Subscription) hasIncrementingID() bool {
+	return false
+}
+
 func (z *Subscription) indexes() map[string][]string {
 	result := make(map[string][]string)
 	result[indexSubscriptionFeed] = []string{z.FeedID, z.UserID}
 	return result
+}
+
+func (z *Subscription) setID(tx Transaction) error {
+	return nil
 }
 
 // Subscriptions is a collection of Subscription objects.
@@ -150,4 +143,15 @@ func (z Subscriptions) WithGroup(groupID string) Subscriptions {
 		}
 	}
 	return result
+}
+
+func (z *Subscriptions) decode(data []byte) error {
+	if err := json.Unmarshal(data, z); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (z *Subscriptions) encode() ([]byte, error) {
+	return json.Marshal(z)
 }

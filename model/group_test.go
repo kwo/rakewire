@@ -11,15 +11,41 @@ func TestGroupSetup(t *testing.T) {
 
 	if obj := getObject(entityGroup); obj == nil {
 		t.Error("missing getObject entry")
+	} else if !obj.hasIncrementingID() {
+		t.Error("groups have incrementing IDs")
 	}
 
 	if obj := allEntities[entityGroup]; obj == nil {
 		t.Error("missing allEntities entry")
 	}
 
-	c := C.New()
-	if obj := c.Sequences.Group; obj != 0 {
-		t.Error("missing sequences entry")
+}
+
+func TestGroupIncrementingID(t *testing.T) {
+
+	t.Parallel()
+
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
+
+	if err := db.Update(func(tx Transaction) error {
+		g := G.New("0000000001", "G1")
+		return G.Save(tx, g)
+	}); err != nil {
+		t.Fatalf("error adding new group: %s", err.Error())
+	}
+
+	if err := db.Update(func(tx Transaction) error {
+		id, err := tx.Bucket(bucketData, entityGroup).NextID()
+		if err != nil {
+			return err
+		}
+		if id != 2 {
+			t.Errorf("bad next id: %d, expected %d", id, 2)
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("error getting next id: %s", err.Error())
 	}
 
 }
@@ -54,8 +80,7 @@ func TestGroups(t *testing.T) {
 
 	err := db.Update(func(tx Transaction) error {
 
-		user := U.New("user1")
-		user.SetPassword("password")
+		user := U.New("user1", "password")
 		if err := U.Save(tx, user); err != nil {
 			return err
 		}

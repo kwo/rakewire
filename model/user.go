@@ -132,6 +132,10 @@ func (z *User) encode() ([]byte, error) {
 	return json.Marshal(z)
 }
 
+func (z *User) hasIncrementingID() bool {
+	return true
+}
+
 func (z *User) indexes() map[string][]string {
 	result := make(map[string][]string)
 	result[indexUserUsername] = []string{strings.ToLower(z.Username)}
@@ -140,10 +144,12 @@ func (z *User) indexes() map[string][]string {
 }
 
 func (z *User) setID(tx Transaction) error {
-	config := C.Get(tx)
-	config.Sequences.User = config.Sequences.User + 1
-	z.ID = keyEncodeUint(config.Sequences.User)
-	return C.Put(tx, config)
+	id, err := tx.Bucket(bucketData, entityUser).NextID()
+	if err != nil {
+		return err
+	}
+	z.ID = keyEncodeUint(id)
+	return nil
 }
 
 // Users is a collection of User objects

@@ -13,15 +13,41 @@ func TestFeedSetup(t *testing.T) {
 
 	if obj := getObject(entityFeed); obj == nil {
 		t.Error("missing getObject entry")
+	} else if !obj.hasIncrementingID() {
+		t.Error("feeds have incrementing IDs")
 	}
 
 	if obj := allEntities[entityFeed]; obj == nil {
 		t.Error("missing allEntities entry")
 	}
 
-	c := C.New()
-	if obj := c.Sequences.Feed; obj != 0 {
-		t.Error("missing sequences entry")
+}
+
+func TestFeedIncrementingID(t *testing.T) {
+
+	t.Parallel()
+
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
+
+	if err := db.Update(func(tx Transaction) error {
+		f := F.New("blah")
+		return F.Save(tx, f)
+	}); err != nil {
+		t.Fatalf("error adding new feed: %s", err.Error())
+	}
+
+	if err := db.Update(func(tx Transaction) error {
+		id, err := tx.Bucket(bucketData, entityFeed).NextID()
+		if err != nil {
+			return err
+		}
+		if id != 2 {
+			t.Errorf("bad next id: %d, expected %d", id, 2)
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("error getting next id: %s", err.Error())
 	}
 
 }

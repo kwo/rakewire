@@ -9,7 +9,6 @@
 
 ### Unsorted
 
-  - eliminate sequences from config - back to incrementing bucket
   - 12 factor app - configuration - eliminate config table, use environment for all config parameters
   - remove config bucket
   - remove config subcomand

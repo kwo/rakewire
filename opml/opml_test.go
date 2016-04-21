@@ -482,10 +482,7 @@ func addUser(t *testing.T, db model.Database) *model.User {
 	err := db.Update(func(tx model.Transaction) error {
 
 		// add user
-		user = model.U.New("opml.ninja")
-		if err := user.SetPassword("abcdefg"); err != nil {
-			return err
-		}
+		user = model.U.New("opml.ninja", "abcdefg")
 		if err := model.U.Save(tx, user); err != nil {
 			return err
 		}

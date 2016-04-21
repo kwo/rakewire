@@ -45,6 +45,10 @@ func (z *Group) encode() ([]byte, error) {
 	return json.Marshal(z)
 }
 
+func (z *Group) hasIncrementingID() bool {
+	return true
+}
+
 func (z *Group) indexes() map[string][]string {
 	result := make(map[string][]string)
 	result[indexGroupUserName] = []string{z.UserID, z.Name}
@@ -52,10 +56,12 @@ func (z *Group) indexes() map[string][]string {
 }
 
 func (z *Group) setID(tx Transaction) error {
-	config := C.Get(tx)
-	config.Sequences.Group = config.Sequences.Group + 1
-	z.ID = keyEncodeUint(config.Sequences.Group)
-	return C.Put(tx, config)
+	id, err := tx.Bucket(bucketData, entityGroup).NextID()
+	if err != nil {
+		return err
+	}
+	z.ID = keyEncodeUint(id)
+	return nil
 }
 
 // Groups is a collection of Group elements

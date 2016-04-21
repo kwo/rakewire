@@ -11,15 +11,41 @@ func TestTransmissionSetup(t *testing.T) {
 
 	if obj := getObject(entityTransmission); obj == nil {
 		t.Error("missing getObject entry")
+	} else if !obj.hasIncrementingID() {
+		t.Error("transmissions have incrementing IDs")
 	}
 
 	if obj := allEntities[entityTransmission]; obj == nil {
 		t.Error("missing allEntities entry")
 	}
 
-	c := C.New()
-	if obj := c.Sequences.Transmission; obj != 0 {
-		t.Error("missing sequences entry")
+}
+
+func TestTransmissionIncrementingID(t *testing.T) {
+
+	t.Parallel()
+
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
+
+	if err := db.Update(func(tx Transaction) error {
+		t := T.New("0000000001")
+		return T.Save(tx, t)
+	}); err != nil {
+		t.Fatalf("error adding new transmission: %s", err.Error())
+	}
+
+	if err := db.Update(func(tx Transaction) error {
+		id, err := tx.Bucket(bucketData, entityTransmission).NextID()
+		if err != nil {
+			return err
+		}
+		if id != 2 {
+			t.Errorf("bad next id: %d, expected %d", id, 2)
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("error getting next id: %s", err.Error())
 	}
 
 }

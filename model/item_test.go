@@ -12,15 +12,41 @@ func TestItemSetup(t *testing.T) {
 
 	if obj := getObject(entityItem); obj == nil {
 		t.Error("missing getObject entry")
+	} else if !obj.hasIncrementingID() {
+		t.Error("items have incrementing IDs")
 	}
 
 	if obj := allEntities[entityItem]; obj == nil {
 		t.Error("missing allEntities entry")
 	}
 
-	c := C.New()
-	if obj := c.Sequences.Item; obj != 0 {
-		t.Error("missing sequences entry")
+}
+
+func TestItemIncrementingID(t *testing.T) {
+
+	t.Parallel()
+
+	db := openTestDatabase(t)
+	defer closeTestDatabase(t, db)
+
+	if err := db.Update(func(tx Transaction) error {
+		i := I.New("0000000001", "guid1")
+		return I.Save(tx, i)
+	}); err != nil {
+		t.Fatalf("error adding new item: %s", err.Error())
+	}
+
+	if err := db.Update(func(tx Transaction) error {
+		id, err := tx.Bucket(bucketData, entityItem).NextID()
+		if err != nil {
+			return err
+		}
+		if id != 2 {
+			t.Errorf("bad next id: %d, expected %d", id, 2)
+		}
+		return nil
+	}); err != nil {
+		t.Fatalf("error getting next id: %s", err.Error())
 	}
 
 }

@@ -66,8 +66,7 @@ func UserAdd(c *cli.Context) {
 	}
 
 	if err := db.Update(func(tx model.Transaction) error {
-		user := model.U.New(username)
-		user.SetPassword(password)
+		user := model.U.New(username, password)
 		user.SetRoles(rolestr)
 		return model.U.Save(tx, user)
 	}); err != nil {

@@ -98,6 +98,10 @@ func (z *Feed) encode() ([]byte, error) {
 	return json.Marshal(z)
 }
 
+func (z *Feed) hasIncrementingID() bool {
+	return true
+}
+
 func (z *Feed) indexes() map[string][]string {
 	result := make(map[string][]string)
 	result[indexFeedNextFetch] = []string{keyEncodeTime(z.NextFetch), z.ID}
@@ -106,10 +110,12 @@ func (z *Feed) indexes() map[string][]string {
 }
 
 func (z *Feed) setID(tx Transaction) error {
-	config := C.Get(tx)
-	config.Sequences.Feed = config.Sequences.Feed + 1
-	z.ID = keyEncodeUint(config.Sequences.Feed)
-	return C.Put(tx, config)
+	id, err := tx.Bucket(bucketData, entityFeed).NextID()
+	if err != nil {
+		return err
+	}
+	z.ID = keyEncodeUint(id)
+	return nil
 }
 
 // Feeds is a collection of Feed elements

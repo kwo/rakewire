@@ -39,8 +39,8 @@ func (z *boltInstance) Check(filename string) error {
 	defer z.Close(tmpDb)
 	defer os.Remove(tmpFilename)
 
-	// copy buckets (decoding and re-encoding)
-	if err := z.copyBucketsEncodeDecode(oldDb, tmpDb); err != nil {
+	// copy buckets
+	if err := z.copyBuckets(oldDb, tmpDb); err != nil {
 		return err
 	}
 
@@ -148,36 +148,8 @@ func (z *boltInstance) copyBuckets(srcDb, dstDb Database) error {
 				z.log.Infof("  %s ...", entityName)
 				srcBucket := srcTx.Bucket(bucketData, entityName)
 				dstBucket := dstTx.Bucket(bucketData, entityName)
-				c := srcBucket.Cursor()
-				for k, v := c.First(); k != nil; k, v = c.Next() {
-					if err := dstBucket.Put(k, v); err != nil {
-						return err
-					}
-				} // cursor
-			} // entities
-			return nil
-		}) // update
-	}) // select
 
-	if err != nil {
-		return err
-	}
-
-	z.log.Infof("copying buckets done")
-
-	return nil
-
-}
-
-func (z *boltInstance) copyBucketsEncodeDecode(srcDb, dstDb Database) error {
-
-	z.log.Infof("copying buckets...")
-	err := srcDb.Select(func(srcTx Transaction) error {
-		return dstDb.Update(func(dstTx Transaction) error {
-			for entityName := range allEntities {
-				z.log.Infof("  %s ...", entityName)
-				srcBucket := srcTx.Bucket(bucketData, entityName)
-				dstBucket := dstTx.Bucket(bucketData, entityName)
+				// copy objects
 				entity := getObject(entityName)
 				c := srcBucket.Cursor()
 				for k, v := c.First(); k != nil; k, v = c.Next() {
@@ -193,6 +165,16 @@ func (z *boltInstance) copyBucketsEncodeDecode(srcDb, dstDb Database) error {
 						z.log.Infof("    error decoding entity (%s): %s", k, errDecode.Error())
 					}
 				} // cursor
+
+				// increment next sequence on dstBucket
+				if entity.hasIncrementingID() {
+					if k, _ := c.Last(); k != nil {
+						if err := incrementNextSequence(string(k), dstBucket); err != nil {
+							return err
+						}
+					}
+				}
+
 			} // entities
 			return nil
 		}) // update

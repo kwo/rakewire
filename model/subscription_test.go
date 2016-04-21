@@ -10,6 +10,8 @@ func TestSubscriptionSetup(t *testing.T) {
 
 	if obj := getObject(entitySubscription); obj == nil {
 		t.Error("missing getObject entry")
+	} else if obj.hasIncrementingID() {
+		t.Error("subscriptions do not have incrementing IDs")
 	}
 
 	if obj := allEntities[entitySubscription]; obj == nil {

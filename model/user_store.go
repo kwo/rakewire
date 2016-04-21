@@ -47,10 +47,14 @@ func (z *userStore) GetByUsername(tx Transaction, username string) *User {
 	return nil
 }
 
-func (z *userStore) New(username string) *User {
-	return &User{
+func (z *userStore) New(username, password string) *User {
+	u := &User{
 		Username: username,
 	}
+	if err := u.SetPassword(password); err != nil {
+		return nil
+	}
+	return u
 }
 
 func (z *userStore) Range(tx Transaction) Users {

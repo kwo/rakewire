@@ -88,6 +88,10 @@ func (z *Transmission) encode() ([]byte, error) {
 	return json.Marshal(z)
 }
 
+func (z *Transmission) hasIncrementingID() bool {
+	return true
+}
+
 func (z *Transmission) indexes() map[string][]string {
 	result := make(map[string][]string)
 	result[indexTransmissionTime] = []string{keyEncodeTime(z.StartTime), z.ID}
@@ -96,10 +100,12 @@ func (z *Transmission) indexes() map[string][]string {
 }
 
 func (z *Transmission) setID(tx Transaction) error {
-	config := C.Get(tx)
-	config.Sequences.Transmission = config.Sequences.Transmission + 1
-	z.ID = keyEncodeUint(config.Sequences.Transmission)
-	return C.Put(tx, config)
+	id, err := tx.Bucket(bucketData, entityTransmission).NextID()
+	if err != nil {
+		return err
+	}
+	z.ID = keyEncodeUint(id)
+	return nil
 }
 
 // Transmissions is a collection Transmission objects
