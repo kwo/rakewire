@@ -9,7 +9,6 @@
 
 ### Unsorted
 
-  - remove user subcommand, leave only add a user with roles (everything else runs via the grpc api)
   - add insecure option
   - add static pages
   - run only on https, generate certs if necessary
