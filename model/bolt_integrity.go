@@ -169,7 +169,9 @@ func (z *boltInstance) copyBuckets(srcDb, dstDb Database) error {
 				// increment next sequence on dstBucket
 				if entity.hasIncrementingID() {
 					if k, _ := c.Last(); k != nil {
-						if err := incrementNextSequence(string(k), dstBucket); err != nil {
+						if lastID, err := incrementNextSequence(string(k), dstBucket); err == nil {
+							z.log.Infof("    max %d", lastID)
+						} else {
 							return err
 						}
 					}

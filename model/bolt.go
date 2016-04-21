@@ -246,23 +246,26 @@ func (z *boltCursor) Seek(seek []byte) ([]byte, []byte) {
 	return z.cursor.Seek(seek)
 }
 
-func incrementNextSequence(maxIDStr string, b Bucket) error {
+func incrementNextSequence(maxIDStr string, b Bucket) (uint64, error) {
 
 	maxID, errParse := strconv.ParseUint(maxIDStr, 10, 64)
 	if errParse != nil {
-		return errParse
+		return 0, errParse
 	}
+
+	var lastID uint64
 
 	for {
 		id, err := b.NextID()
 		if err != nil {
-			return err
+			return id, err
 		}
 		if id >= maxID {
+			lastID = id
 			break
 		}
 	}
 
-	return nil
+	return lastID, nil
 
 }
