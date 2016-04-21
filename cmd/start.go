@@ -75,7 +75,13 @@ func Start(c *cli.Context) {
 
 	ctx.polld = pollfeed.NewService(cfg, ctx.database)
 	ctx.reaperd = reaper.NewService(cfg, ctx.database)
-	ctx.fetchd = fetch.NewService(cfg, ctx.polld.Output, ctx.reaperd.Input)
+
+	fetchConfig := &fetch.Configuration{
+		TimeoutSeconds: c.Int("fetch.timeoutsecs"),
+		Workers:        c.Int("fetch.workers"),
+		UserAgent:      c.String("fetch.useragent"),
+	}
+	ctx.fetchd = fetch.NewService(fetchConfig, ctx.polld.Output, ctx.reaperd.Input)
 	ctx.httpd = httpd.NewService(cfg, ctx.database)
 
 	chErrors := make(chan error, 1)

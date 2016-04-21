@@ -27,18 +27,15 @@ const (
 var (
 	// ErrRestart indicates that the service cannot be started because it is already running.
 	ErrRestart = errors.New("The service is already started")
+	log        = logger.New("fetch")
 )
 
-const (
-	fetchTimeout = "fetch.timeout"
-	fetchWorkers = "fetch.workers"
-)
-
-var (
-	fetchTimeoutDefault = time.Second * 20
-	fetchWorkersDefault = 10
-	log                 = logger.New("fetch")
-)
+// Configuration contains all parameters for the Fetch service
+type Configuration struct {
+	TimeoutSeconds int
+	Workers        int
+	UserAgent      string
+}
 
 // Service fetches feeds
 type Service struct {
@@ -53,17 +50,13 @@ type Service struct {
 }
 
 // NewService create new fetcher service
-func NewService(cfg *model.Configuration, input chan *model.Feed, output chan *model.Harvest) *Service {
-	timeout, err := time.ParseDuration(cfg.GetStr(fetchTimeout, fetchTimeoutDefault.String()))
-	if err != nil {
-		timeout = fetchTimeoutDefault
-	}
+func NewService(cfg *Configuration, input chan *model.Feed, output chan *model.Harvest) *Service {
 	return &Service{
 		input:     input,
 		output:    output,
-		workers:   cfg.GetInt(fetchWorkers, fetchWorkersDefault),
-		client:    newInternalClient(timeout),
-		userAgent: cfg.GetStr("app.version", "Rakewire"),
+		workers:   cfg.Workers,
+		client:    newInternalClient(cfg.TimeoutSeconds),
+		userAgent: cfg.UserAgent,
 	}
 }
 

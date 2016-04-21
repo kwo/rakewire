@@ -11,11 +11,11 @@ var (
 	ErrRedirected = errors.New("Fetch URL redirected")
 )
 
-func newInternalClient(timeout time.Duration) *http.Client {
+func newInternalClient(timeoutSeconds int) *http.Client {
 	return &http.Client{
 		Transport:     &internalTransport{},
 		CheckRedirect: noFlaggedRequestsRedirectPolicy,
-		Timeout:       timeout,
+		Timeout:       time.Duration(timeoutSeconds) * time.Second,
 	}
 }
 

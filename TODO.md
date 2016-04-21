@@ -10,6 +10,11 @@
 ### Unsorted
 
   - 12 factor app - configuration - eliminate config table, use environment for all config parameters
+    - create config object for each service
+      - httpd
+      - pollfeed
+    - pass cfg to service.New instead of old cfg
+    - populate service configs from cli context
   - remove config bucket
   - remove config subcomand
   - remove user subcommand, leave only add a user with roles (everything else runs via the grpc api)
