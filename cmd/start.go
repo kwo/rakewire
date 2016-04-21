@@ -73,7 +73,11 @@ func Start(c *cli.Context) {
 		}
 	}
 
-	ctx.polld = pollfeed.NewService(cfg, ctx.database)
+	pollConfig := &pollfeed.Configuration{
+		BatchMax:        c.Int("poll.batchmax"),
+		IntervalSeconds: c.Int("poll.intervalsecs"),
+	}
+	ctx.polld = pollfeed.NewService(pollConfig, ctx.database)
 	ctx.reaperd = reaper.NewService(cfg, ctx.database)
 
 	fetchConfig := &fetch.Configuration{

@@ -24,9 +24,11 @@ func TestPoll(t *testing.T) {
 	defer closeTestDatabase(t, database)
 
 	// create service
-	cfg := model.C.New()
+	cfg := &Configuration{
+		BatchMax:        10,
+		IntervalSeconds: 1,
+	}
 	pf := NewService(cfg, database)
-	pf.pollInterval = 50 * time.Millisecond
 
 	pf.Start()
 	if !pf.IsRunning() {

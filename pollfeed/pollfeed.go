@@ -8,22 +8,21 @@ import (
 	"time"
 )
 
-const (
-	pollInterval        = "poll.interval"
-	pollIntervalDefault = time.Second * 5
-	pollLimit           = "poll.limit"
-	pollLimitDefault    = 10
-)
-
 var (
 	log = logger.New("pollfeed")
 )
+
+// Configuration contains all parameters for the PollFeed service
+type Configuration struct {
+	IntervalSeconds int
+	BatchMax        int
+}
 
 // Service for pumping feeds between fetcher and database
 type Service struct {
 	Output       chan *model.Feed
 	database     model.Database
-	limit        int
+	batchMax     int
 	pollInterval time.Duration
 	killsignal   chan bool
 	killed       int32
@@ -34,19 +33,13 @@ type Service struct {
 }
 
 // NewService create a new service
-func NewService(cfg *model.Configuration, database model.Database) *Service {
-
-	interval, err := time.ParseDuration(cfg.GetStr(pollInterval, pollIntervalDefault.String()))
-	if err != nil {
-		interval = pollIntervalDefault
-		log.Debugf("Bad or missing poll interval configuration parameter, setting to default of %s.", pollIntervalDefault.String())
-	}
+func NewService(cfg *Configuration, database model.Database) *Service {
 
 	return &Service{
 		Output:       make(chan *model.Feed),
-		limit:        cfg.GetInt(pollLimit, pollLimitDefault),
+		batchMax:     cfg.BatchMax,
 		database:     database,
-		pollInterval: interval,
+		pollInterval: time.Duration(cfg.IntervalSeconds) * time.Second,
 		killsignal:   make(chan bool),
 	}
 
@@ -126,8 +119,8 @@ func (z *Service) poll(t time.Time) {
 		feeds := model.F.GetNext(tx, t)
 
 		// limit runs to X feeds
-		if z.limit > 0 && len(feeds) > z.limit {
-			feeds = feeds[:z.limit]
+		if z.batchMax > 0 && len(feeds) > z.batchMax {
+			feeds = feeds[:z.batchMax]
 		}
 
 		// convert feeds

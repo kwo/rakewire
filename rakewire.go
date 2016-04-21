@@ -64,6 +64,18 @@ func main() {
 					EnvVar: "RAKEWIRE_FETCH_USERAGENT",
 					Usage:  "fetcher useragent string",
 				},
+				cli.IntFlag{
+					Name:   "poll.batchmax",
+					Value:  10,
+					EnvVar: "RAKEWIRE_POLL_BATCHMAX",
+					Usage:  "maximum number of feeds to poll at once",
+				},
+				cli.IntFlag{
+					Name:   "poll.intervalsecs",
+					Value:  5,
+					EnvVar: "RAKEWIRE_POLL_INTERVALSECS",
+					Usage:  "how often to poll feeds",
+				},
 			},
 			Action: cmd.Start,
 		},
