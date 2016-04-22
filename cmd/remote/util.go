@@ -7,11 +7,6 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
-	"time"
-)
-
-const (
-	timeoutSeconds = 10
 )
 
 var (
@@ -46,8 +41,6 @@ func (z *BasicAuthCredentials) makeAuthorizationToken() string {
 
 func connect(c *cli.Context) (*grpc.ClientConn, error) {
 
-	// TODO: backoff strategy
-
 	instance, username, password, errCredentials := getInstanceUsernamePassword(c)
 	if errCredentials != nil {
 		return nil, errCredentials
@@ -55,8 +48,7 @@ func connect(c *cli.Context) (*grpc.ClientConn, error) {
 
 	authTransport := grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, ""))
 	authUser := grpc.WithPerRPCCredentials(&BasicAuthCredentials{Username: username, Password: password})
-	timeout := grpc.WithTimeout(timeoutSeconds * time.Second)
-	return grpc.Dial(instance, authTransport, authUser, timeout)
+	return grpc.Dial(instance, authTransport, authUser)
 
 }
 
