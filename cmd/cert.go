@@ -60,7 +60,7 @@ func CertGen(c *cli.Context) {
 	if len(validFrom) == 0 {
 		notBefore = time.Now()
 	} else {
-		notBefore, err = time.Parse("Jan 2 15:04:05 2006", validFrom)
+		notBefore, err = time.Parse("2006-01-02 15:04:05", validFrom)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to parse creation date: %s\n", err)
 			os.Exit(1)

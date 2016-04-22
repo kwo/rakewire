@@ -146,7 +146,7 @@ func main() {
 				cli.StringFlag{
 					Name:  "start-date",
 					Value: "",
-					Usage: "Creation date formatted as Jan 1 15:04:05 2011",
+					Usage: "Creation date formatted as 2006-01-02 15:04:05",
 				},
 				cli.IntFlag{
 					Name:  "duration-days",
