@@ -32,9 +32,9 @@ func closeDatabase(db model.Database) error {
 	return model.Instance.Close(db)
 }
 
-func initCmd(c *cli.Context) (model.Database, error) {
+func initDb(c *cli.Context) (model.Database, error) {
 
-	dbFile := c.Parent().String("file")
+	dbFile := c.String("file")
 	verbose := c.GlobalBool("verbose")
 
 	if verbose {

@@ -21,7 +21,7 @@ func UserAdd(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	db, err := initCmd(c)
+	db, err := initDb(c)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(1)

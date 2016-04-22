@@ -9,15 +9,23 @@
 
 ### Unsorted
 
+  - add install command
+  - do not create db if none exists, explicit
   - add insecure option OR run only on https, generate certs if necessary / add CA option for self-signed
   - add static pages
   - filter httpd requests on hostname
   - add jwt authentication
+  - add opml to api remove oddballs
   - add user api
   - add subscription api
   - expire entries/items by date/feed size
   - add maintenance routine for integrity check
   - add maintenance routine for db backup
+
+  Version 1.12
+
+  - pubsub
+  - long-polling
 
   - bugfix multiple items with same GUID
   - standardize model functions and naming conventions
