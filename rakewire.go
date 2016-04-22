@@ -31,6 +31,19 @@ func main() {
 	}
 	app.Commands = []cli.Command{
 		{
+			Name:  "init",
+			Usage: "initialize database",
+			Flags: []cli.Flag{
+				cli.StringFlag{
+					Name:   "f, file",
+					Value:  "rakewire.db",
+					EnvVar: "RAKEWIRE_FILE",
+					Usage:  "location of the database file",
+				},
+			},
+			Action: cmd.Init,
+		},
+		{
 			Name:  "start",
 			Usage: "start rakewire",
 			Flags: []cli.Flag{

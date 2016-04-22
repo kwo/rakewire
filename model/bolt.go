@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/boltdb/bolt"
+	"os"
 	"rakewire/logger"
 	"strconv"
 	"sync"
@@ -42,6 +43,10 @@ type boltInstance struct {
 
 // Open opens the store at the specified location
 func (z *boltInstance) Open(location string) (Database, error) {
+
+	if _, err := os.Stat(location); os.IsNotExist(err) {
+		return nil, err
+	}
 
 	boltDB, err := bolt.Open(location, 0600, &bolt.Options{Timeout: 1 * time.Second})
 	if err != nil {
