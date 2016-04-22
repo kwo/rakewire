@@ -95,6 +95,11 @@ func main() {
 					EnvVar: "RAKEWIRE_HTTPD_PORT",
 					Usage:  "httpd port",
 				},
+				cli.BoolFlag{
+					Name:   "k, insecure",
+					EnvVar: "RAKEWIRE_INSECURE",
+					Usage:  "Skip verification of TLS certificate, use with a self-signed certificate",
+				},
 				cli.StringFlag{
 					Name:   "httpd.tlscertfile",
 					EnvVar: "RAKEWIRE_HTTPD_TLSCERTFILE",
@@ -202,6 +207,11 @@ func main() {
 					Name:   "p, password",
 					EnvVar: "RAKEWIRE_PASSWORD",
 					Usage:  "password for the rakewire user",
+				},
+				cli.BoolFlag{
+					Name:   "k, insecure",
+					EnvVar: "RAKEWIRE_INSECURE",
+					Usage:  "Skip verification of remote instance TLS certificate",
 				},
 			},
 			Subcommands: []cli.Command{

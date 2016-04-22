@@ -13,10 +13,11 @@
     - add certs command
     - add user command
     - generate env vars
-  - generate certs if necessary / add CA option for self-signed
+  - generate certs if necessary / do not need self signed
   - add static pages
   - filter httpd requests on hostname
   - add opml to api remove oddballs
+  - replace RAKEWIRE_INSTANCE with RAKEWIRE_HOST and RAKEWIRE_PORT
 
   Version 1.12
 
@@ -28,6 +29,9 @@
   - expire entries/items by date/feed size
   - add maintenance routine for integrity check
   - add maintenance routine for db backup
+
+  - move fever off of model to api
+  - move poll/fetch/reap off of model to api
 
   - bugfix multiple items with same GUID
   - standardize model functions and naming conventions

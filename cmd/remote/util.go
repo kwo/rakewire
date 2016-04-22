@@ -1,6 +1,7 @@
 package remote
 
 import (
+	"crypto/tls"
 	"encoding/base64"
 	"errors"
 	"github.com/codegangsta/cli"
@@ -41,12 +42,18 @@ func (z *BasicAuthCredentials) makeAuthorizationToken() string {
 
 func connect(c *cli.Context) (*grpc.ClientConn, error) {
 
+	insecureSkipVerify := c.Parent().Bool("insecure")
+
 	instance, username, password, errCredentials := getInstanceUsernamePassword(c)
 	if errCredentials != nil {
 		return nil, errCredentials
 	}
 
-	authTransport := grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, ""))
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: insecureSkipVerify,
+	}
+
+	authTransport := grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))
 	authUser := grpc.WithPerRPCCredentials(&BasicAuthCredentials{Username: username, Password: password})
 	return grpc.Dial(instance, authTransport, authUser)
 

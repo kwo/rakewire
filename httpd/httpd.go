@@ -24,26 +24,28 @@ var (
 
 // Configuration contains all parameters for the httpd service
 type Configuration struct {
-	Address     string
-	Host        string
-	Port        int
-	TLSCertFile string
-	TLSKeyFile  string
+	Address            string
+	Host               string
+	Port               int
+	InsecureSkipVerify bool
+	TLSCertFile        string
+	TLSKeyFile         string
 }
 
 // Service server
 type Service struct {
 	sync.Mutex
-	database    model.Database
-	listener    net.Listener
-	running     bool
-	address     string // binding address, empty string means 0.0.0.0
-	host        string // TODO: discard requests not made to this host
-	port        int
-	tlsCertFile string
-	tlsKeyFile  string
-	version     string
-	appstart    time.Time
+	database           model.Database
+	listener           net.Listener
+	running            bool
+	address            string // binding address, empty string means 0.0.0.0
+	host               string // TODO: discard requests not made to this host
+	insecureSkipVerify bool
+	port               int
+	tlsCertFile        string
+	tlsKeyFile         string
+	version            string
+	appstart           time.Time
 }
 
 const (
@@ -55,14 +57,15 @@ const (
 // NewService creates a new httpd service.
 func NewService(cfg *Configuration, database model.Database, version string, appStart int64) *Service {
 	return &Service{
-		database:    database,
-		address:     cfg.Address,
-		host:        cfg.Host,
-		port:        cfg.Port,
-		tlsCertFile: cfg.TLSCertFile,
-		tlsKeyFile:  cfg.TLSKeyFile,
-		version:     version,
-		appstart:    time.Unix(appStart, 0).Truncate(time.Second),
+		database:           database,
+		address:            cfg.Address,
+		host:               cfg.Host,
+		insecureSkipVerify: cfg.InsecureSkipVerify,
+		port:               cfg.Port,
+		tlsCertFile:        cfg.TLSCertFile,
+		tlsKeyFile:         cfg.TLSKeyFile,
+		version:            version,
+		appstart:           time.Unix(appStart, 0).Truncate(time.Second),
 	}
 }
 
@@ -85,6 +88,7 @@ func (z *Service) Start() error {
 	log.Infof("address:  %s", z.address)
 	log.Infof("host:     %s", z.host)
 	log.Infof("port:     %d", z.port)
+	log.Infof("insecure: %t", z.insecureSkipVerify)
 	log.Infof("tls cert: %s", z.tlsCertFile)
 	log.Infof("tls key:  %s", z.tlsKeyFile)
 
@@ -97,8 +101,9 @@ func (z *Service) Start() error {
 	endpointListen := fmt.Sprintf("%s:%d", z.address, z.port)
 	endpointConnect := fmt.Sprintf("%s:%d", z.host, z.port)
 	tlsConfig := &tls.Config{
-		ServerName:   z.host,
-		Certificates: []tls.Certificate{cert},
+		ServerName:         z.host,
+		InsecureSkipVerify: z.insecureSkipVerify,
+		Certificates:       []tls.Certificate{cert},
 	}
 
 	z.listener, err = tls.Listen("tcp", endpointListen, tlsConfig)
