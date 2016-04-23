@@ -152,19 +152,13 @@ func main() {
 					Usage:  "Comma-separated hostnames and IPs to generate a certificate for",
 				},
 				cli.IntFlag{
-					Name:  "duration",
-					Value: 90,
-					Usage: "Number of days that certificate is valid for",
-				},
-				cli.IntFlag{
-					Name:  "rsa-bits",
+					Name:  "bits",
 					Value: 2048,
-					Usage: "Size of RSA key to generate. Ignored if --ecdsa-curve is set",
+					Usage: "Size of RSA key to generate. Ignored if --curve is set",
 				},
 				cli.StringFlag{
-					Name:  "ecdsa-curve",
-					Value: "",
-					Usage: "ECDSA curve to use to generate a key. Valid values are P224, P256, P384, P521",
+					Name:  "curve",
+					Usage: "ECDSA curve to use to generate a key. Valid values are P224, P256, P384 and P521",
 				},
 				cli.StringFlag{
 					Name:   "tlscert",

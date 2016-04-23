@@ -24,9 +24,8 @@ import (
 func CertGen(c *cli.Context) {
 
 	host := c.String("host")
-	validFor := time.Duration(c.Int("duration")) * 24 * time.Hour
-	rsaBits := c.Int("rsa-bits")
-	ecdsaCurve := c.String("ecdsa-curve")
+	rsaBits := c.Int("bits")
+	ecdsaCurve := c.String("curve")
 	tlsCertFile := c.String("tlscert")
 	tlsKeyFile := c.String("tlskey")
 
@@ -44,7 +43,7 @@ func CertGen(c *cli.Context) {
 	case "P521":
 		priv, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 	default:
-		fmt.Fprintf(os.Stderr, "Unrecognized elliptic curve: %q", ecdsaCurve)
+		fmt.Printf("Unrecognized elliptic curve: %s\n", ecdsaCurve)
 		os.Exit(1)
 	}
 	if err != nil {
@@ -52,8 +51,8 @@ func CertGen(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	notBefore := time.Now()
-	notAfter := notBefore.Add(validFor)
+	notBefore := time.Now().Truncate(time.Hour)
+	notAfter := notBefore.Add(90 * 24 * time.Hour) // cert expires after 90 days
 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
@@ -63,16 +62,15 @@ func CertGen(c *cli.Context) {
 	}
 
 	template := x509.Certificate{
-		SerialNumber: serialNumber,
-		Subject: pkix.Name{
-			Organization: []string{"Acme Co"},
-		},
-		NotBefore: notBefore,
-		NotAfter:  notAfter,
-
+		SerialNumber:          serialNumber,
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
+		Subject: pkix.Name{
+			Organization: []string{c.App.Version},
+		},
 	}
 
 	hosts := strings.Split(host, ",")
