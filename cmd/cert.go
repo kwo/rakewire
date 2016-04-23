@@ -13,7 +13,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/codegangsta/cli"
-	"log"
 	"math/big"
 	"net"
 	"os"
@@ -32,7 +31,8 @@ func CertGen(c *cli.Context) {
 	ecdsaCurve := c.String("ecdsa-curve")
 
 	if len(host) == 0 {
-		log.Fatalf("Missing required --host parameter")
+		fmt.Println("Missing required --host parameter")
+		os.Exit(1)
 	}
 
 	var priv interface{}
@@ -53,7 +53,8 @@ func CertGen(c *cli.Context) {
 		os.Exit(1)
 	}
 	if err != nil {
-		log.Fatalf("failed to generate private key: %s", err)
+		fmt.Printf("failed to generate private key: %s\n", err)
+		os.Exit(1)
 	}
 
 	var notBefore time.Time
@@ -62,7 +63,7 @@ func CertGen(c *cli.Context) {
 	} else {
 		notBefore, err = time.Parse("2006-01-02 15:04:05", validFrom)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Failed to parse creation date: %s\n", err)
+			fmt.Printf("Failed to parse creation date: %s\n", err)
 			os.Exit(1)
 		}
 	}
@@ -72,7 +73,8 @@ func CertGen(c *cli.Context) {
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		log.Fatalf("failed to generate serial number: %s", err)
+		fmt.Printf("failed to generate serial number: %s\n", err)
+		os.Exit(1)
 	}
 
 	template := x509.Certificate{
@@ -104,25 +106,27 @@ func CertGen(c *cli.Context) {
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey(priv), priv)
 	if err != nil {
-		log.Fatalf("Failed to create certificate: %s", err)
+		fmt.Printf("Failed to create certificate: %s\n", err)
+		os.Exit(1)
 	}
 
 	certOut, err := os.Create("cert.pem")
 	if err != nil {
-		log.Fatalf("failed to open cert.pem for writing: %s", err)
+		fmt.Printf("failed to open cert.pem for writing: %s\n", err)
+		os.Exit(1)
 	}
 	pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	certOut.Close()
-	log.Print("written cert.pem\n")
+	fmt.Println("written cert.pem")
 
 	keyOut, err := os.OpenFile("key.pem", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		log.Print("failed to open key.pem for writing:", err)
-		return
+		fmt.Printf("failed to open key.pem for writing: %s\n", err)
+		os.Exit(1)
 	}
 	pem.Encode(keyOut, pemBlockForKey(priv))
 	keyOut.Close()
-	log.Print("written key.pem\n")
+	fmt.Println("written key.pem")
 }
 
 func publicKey(priv interface{}) interface{} {
