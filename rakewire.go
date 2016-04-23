@@ -177,7 +177,7 @@ func main() {
 		{
 			Name:      "useradd",
 			Usage:     "add user",
-			ArgsUsage: "<username> <roles>",
+			ArgsUsage: "<username> <password> [role[,role]]",
 			Action:    cmd.UserAdd,
 			Flags: []cli.Flag{
 				cli.StringFlag{

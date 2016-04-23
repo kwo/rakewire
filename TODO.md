@@ -2,10 +2,18 @@
 
 ## Roadmap
 
-### Goals
-  x Save Feed Entries
-  x implememt Fever API
-  - add support for Hot Links to Fever API support
+### Infrastructure
+  - model to use Protobuf
+  - API to implement model
+  - extract fever
+  - extract feed/reap/poll
+  - pluggable k/v store
+
+### Features
+  - UI
+  - full text search
+  - event stream
+  - hot links
 
 ### Unsorted
 

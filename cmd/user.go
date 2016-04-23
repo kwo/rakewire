@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"github.com/codegangsta/cli"
-	"github.com/howeyc/gopass"
 	"os"
 	"rakewire/model"
 )
@@ -12,13 +11,18 @@ import (
 func UserAdd(c *cli.Context) {
 
 	var username string
+	var password string
 	var rolestr string
-	if c.NArg() == 2 {
-		username = c.Args().First()
-		rolestr = c.Args()[1]
+	if c.NArg() >= 2 {
+		username = c.Args()[0]
+		password = c.Args()[1]
 	} else {
 		cli.ShowCommandHelp(c, c.Command.Name)
 		os.Exit(1)
+	}
+
+	if c.NArg() > 2 {
+		rolestr = c.Args()[2]
 	}
 
 	db, err := initDb(c)
@@ -39,29 +43,6 @@ func UserAdd(c *cli.Context) {
 
 	if user != nil {
 		fmt.Printf("Username already exists. Cannot add new user %s.\n", username)
-		os.Exit(1)
-	}
-
-	var password string
-	fmt.Printf("password: ")
-	if pass, err := gopass.GetPasswd(); err == nil {
-		password = string(pass)
-	} else {
-		fmt.Printf("Cannot read password: %s\n", err.Error())
-		os.Exit(1)
-	}
-
-	var password2 string
-	fmt.Printf("confirm password: ")
-	if pass, err := gopass.GetPasswd(); err == nil {
-		password2 = string(pass)
-	} else {
-		fmt.Printf("Cannot read password: %s\n", err.Error())
-		os.Exit(1)
-	}
-
-	if password != password2 {
-		fmt.Println("Passwords do not match.")
 		os.Exit(1)
 	}
 

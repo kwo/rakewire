@@ -22,9 +22,6 @@
 [submodule "vendor/github.com/codegangsta/cli"]
 	path = vendor/github.com/codegangsta/cli
 	url = https://github.com/codegangsta/cli
-[submodule "vendor/github.com/howeyc/gopass"]
-	path = vendor/github.com/howeyc/gopass
-	url = https://github.com/howeyc/gopass
 [submodule "vendor/github.com/gengo/grpc-gateway"]
 	path = vendor/github.com/gengo/grpc-gateway
 	url = https://github.com/gengo/grpc-gateway
