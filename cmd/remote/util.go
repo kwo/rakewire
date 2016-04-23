@@ -4,6 +4,7 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"github.com/codegangsta/cli"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -11,7 +12,7 @@ import (
 )
 
 var (
-	errMissingInstance = errors.New("Missing instance, try setting the --instance option")
+	errMissingInstance = errors.New("Missing host/port, try setting the --host/--port options")
 	errMissingUsername = errors.New("Missing username, try setting the --username option")
 	errMissingPassword = errors.New("Missing password, try setting the --password option")
 )
@@ -61,7 +62,9 @@ func connect(c *cli.Context) (*grpc.ClientConn, error) {
 
 func getInstanceUsernamePassword(c *cli.Context) (instance, username, password string, err error) {
 
-	instance = c.Parent().String("instance")
+	host := c.Parent().String("host")
+	port := c.Parent().Int("port")
+	instance = fmt.Sprintf("%s:%d", host, port)
 	username = c.Parent().String("username")
 	password = c.Parent().String("password")
 

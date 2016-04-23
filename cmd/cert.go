@@ -24,16 +24,11 @@ import (
 func CertGen(c *cli.Context) {
 
 	host := c.String("host")
-	validFrom := c.String("start-date")
 	validFor := time.Duration(c.Int("duration")) * 24 * time.Hour
-	isCA := c.Bool("ca")
 	rsaBits := c.Int("rsa-bits")
 	ecdsaCurve := c.String("ecdsa-curve")
-
-	if len(host) == 0 {
-		fmt.Println("Missing required --host parameter")
-		os.Exit(1)
-	}
+	tlsCertFile := c.String("tlscert")
+	tlsKeyFile := c.String("tlskey")
 
 	var priv interface{}
 	var err error
@@ -57,17 +52,7 @@ func CertGen(c *cli.Context) {
 		os.Exit(1)
 	}
 
-	var notBefore time.Time
-	if len(validFrom) == 0 {
-		notBefore = time.Now()
-	} else {
-		notBefore, err = time.Parse("2006-01-02 15:04:05", validFrom)
-		if err != nil {
-			fmt.Printf("Failed to parse creation date: %s\n", err)
-			os.Exit(1)
-		}
-	}
-
+	notBefore := time.Now()
 	notAfter := notBefore.Add(validFor)
 
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
@@ -99,34 +84,47 @@ func CertGen(c *cli.Context) {
 		}
 	}
 
-	if isCA {
-		template.IsCA = true
-		template.KeyUsage |= x509.KeyUsageCertSign
-	}
-
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey(priv), priv)
 	if err != nil {
 		fmt.Printf("Failed to create certificate: %s\n", err)
 		os.Exit(1)
 	}
 
-	certOut, err := os.Create("cert.pem")
-	if err != nil {
-		fmt.Printf("failed to open cert.pem for writing: %s\n", err)
+	statCertFile, errCertFile := os.Stat(tlsCertFile)
+	statKeyFile, errKeyFile := os.Stat(tlsKeyFile)
+	exitFlag := false
+	if statCertFile != nil && errCertFile == nil {
+		fmt.Printf("File already exists, will not overwrite: %s\n", tlsCertFile)
+		exitFlag = true
+	}
+	if statKeyFile != nil && errKeyFile == nil {
+		fmt.Printf("File already exists, will not overwrite: %s\n", tlsKeyFile)
+		exitFlag = true
+	}
+	if exitFlag {
 		os.Exit(1)
 	}
+
+	certOut, err := os.OpenFile(tlsCertFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		fmt.Printf("failed to open %s for writing: %s\n", tlsCertFile, err)
+		os.Exit(1)
+	}
+
+	keyOut, err := os.OpenFile(tlsKeyFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		fmt.Printf("Failed to open %s for writing: %s\n", tlsKeyFile, err)
+		os.Exit(1)
+	}
+
 	pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
 	certOut.Close()
-	fmt.Println("written cert.pem")
+	fmt.Printf("TLS certificate saved to %s\n", tlsCertFile)
 
-	keyOut, err := os.OpenFile("key.pem", os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		fmt.Printf("failed to open key.pem for writing: %s\n", err)
-		os.Exit(1)
-	}
 	pem.Encode(keyOut, pemBlockForKey(priv))
 	keyOut.Close()
-	fmt.Println("written key.pem")
+	fmt.Printf("TLS key saved to %s\n", tlsKeyFile)
+
 }
 
 func publicKey(priv interface{}) interface{} {

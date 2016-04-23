@@ -71,17 +71,17 @@ func Start(c *cli.Context) {
 	fetchConfig := &fetch.Configuration{
 		TimeoutSeconds: c.Int("fetch.timeoutsecs"),
 		Workers:        c.Int("fetch.workers"),
-		UserAgent:      c.String("fetch.useragent"),
+		UserAgent:      c.String("useragent"),
 	}
 	ctx.fetchd = fetch.NewService(fetchConfig, ctx.polld.Output, ctx.reaperd.Input)
 
 	httpdConfig := &httpd.Configuration{
-		Address:            c.String("httpd.address"),
-		Host:               c.String("httpd.host"),
-		Port:               c.Int("httpd.port"),
+		Address:            c.String("bind"),
+		Host:               c.String("host"),
+		Port:               c.Int("port"),
 		InsecureSkipVerify: c.Bool("insecure"),
-		TLSCertFile:        c.String("httpd.tlscertfile"),
-		TLSKeyFile:         c.String("httpd.tlskeyfile"),
+		TLSCertFile:        c.String("tlscert"),
+		TLSKeyFile:         c.String("tlskey"),
 	}
 	ctx.httpd = httpd.NewService(httpdConfig, ctx.database, c.App.Version, appStart.Unix())
 

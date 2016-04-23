@@ -59,6 +59,47 @@ func main() {
 					EnvVar: "RAKEWIRE_PID",
 					Usage:  "location of the pid file",
 				},
+				cli.BoolFlag{
+					Name:   "k, insecure",
+					EnvVar: "RAKEWIRE_INSECURE",
+					Usage:  "Skip verification of TLS certificate, use with a self-signed certificate",
+				},
+				cli.StringFlag{
+					Name:   "bind",
+					Value:  "",
+					EnvVar: "RAKEWIRE_BIND",
+					Usage:  "ip address on which httpd should listen, defaults to all addresses",
+				},
+				cli.StringFlag{
+					Name:   "host",
+					Value:  "localhost",
+					EnvVar: "RAKEWIRE_HOST",
+					Usage:  "domain name at which httpd service can be reached",
+				},
+				cli.IntFlag{
+					Name:   "port",
+					Value:  8888,
+					EnvVar: "RAKEWIRE_PORT",
+					Usage:  "httpd port",
+				},
+				cli.StringFlag{
+					Name:   "tlscert",
+					Value:  "rakewire.crt",
+					EnvVar: "RAKEWIRE_TLSCERT",
+					Usage:  "TLS certificate file",
+				},
+				cli.StringFlag{
+					Name:   "tlskey",
+					Value:  "rakewire.key",
+					EnvVar: "RAKEWIRE_TLSKEY",
+					Usage:  "TLS key file",
+				},
+				cli.StringFlag{
+					Name:   "useragent",
+					Value:  strings.TrimSpace("Rakewire " + Version),
+					EnvVar: "RAKEWIRE_USERAGENT",
+					Usage:  "useragent string",
+				},
 				cli.IntFlag{
 					Name:   "fetch.timeoutsecs",
 					Value:  20,
@@ -70,45 +111,6 @@ func main() {
 					Value:  10,
 					EnvVar: "RAKEWIRE_FETCH_WORKERS",
 					Usage:  "fetcher workers",
-				},
-				cli.StringFlag{
-					Name:   "fetch.useragent",
-					Value:  strings.TrimSpace("Rakewire " + Version),
-					EnvVar: "RAKEWIRE_FETCH_USERAGENT",
-					Usage:  "fetcher useragent string",
-				},
-				cli.StringFlag{
-					Name:   "httpd.address",
-					Value:  "",
-					EnvVar: "RAKEWIRE_HTTPD_ADDRESS",
-					Usage:  "ip address on which httpd should listen",
-				},
-				cli.StringFlag{
-					Name:   "httpd.host",
-					Value:  "localhost",
-					EnvVar: "RAKEWIRE_HTTPD_HOST",
-					Usage:  "domain name at which httpd service can be reached",
-				},
-				cli.IntFlag{
-					Name:   "httpd.port",
-					Value:  8888,
-					EnvVar: "RAKEWIRE_HTTPD_PORT",
-					Usage:  "httpd port",
-				},
-				cli.BoolFlag{
-					Name:   "k, insecure",
-					EnvVar: "RAKEWIRE_INSECURE",
-					Usage:  "Skip verification of TLS certificate, use with a self-signed certificate",
-				},
-				cli.StringFlag{
-					Name:   "httpd.tlscertfile",
-					EnvVar: "RAKEWIRE_HTTPD_TLSCERTFILE",
-					Usage:  "TLS certificate file",
-				},
-				cli.StringFlag{
-					Name:   "httpd.tlskeyfile",
-					EnvVar: "RAKEWIRE_HTTPD_TLSKEYFILE",
-					Usage:  "TLS key file",
 				},
 				cli.IntFlag{
 					Name:   "poll.batchmax",
@@ -127,7 +129,7 @@ func main() {
 		},
 		{
 			Name:  "check",
-			Usage: "check database",
+			Usage: "perform a data integrity check on the database",
 			Flags: []cli.Flag{
 				cli.StringFlag{
 					Name:   "f, file",
@@ -144,23 +146,15 @@ func main() {
 			Action: cmd.CertGen,
 			Flags: []cli.Flag{
 				cli.StringFlag{
-					Name:  "host",
-					Value: "localhost",
-					Usage: "Comma-separated hostnames and IPs to generate a certificate for",
-				},
-				cli.StringFlag{
-					Name:  "start-date",
-					Value: "",
-					Usage: "Creation date formatted as 2006-01-02 15:04:05",
+					Name:   "host",
+					Value:  "localhost",
+					EnvVar: "RAKEWIRE_HOST",
+					Usage:  "Comma-separated hostnames and IPs to generate a certificate for",
 				},
 				cli.IntFlag{
-					Name:  "duration-days",
-					Value: 365,
+					Name:  "duration",
+					Value: 90,
 					Usage: "Number of days that certificate is valid for",
-				},
-				cli.BoolFlag{
-					Name:  "ca",
-					Usage: "whether this cert should be its own Certificate Authority",
 				},
 				cli.IntFlag{
 					Name:  "rsa-bits",
@@ -171,6 +165,18 @@ func main() {
 					Name:  "ecdsa-curve",
 					Value: "",
 					Usage: "ECDSA curve to use to generate a key. Valid values are P224, P256, P384, P521",
+				},
+				cli.StringFlag{
+					Name:   "tlscert",
+					Value:  "rakewire.crt",
+					EnvVar: "RAKEWIRE_TLSCERT",
+					Usage:  "Location of the certificate file to generate. Will not overwrite existing file.",
+				},
+				cli.StringFlag{
+					Name:   "tlskey",
+					Value:  "rakewire.key",
+					EnvVar: "RAKEWIRE_TLSKEY",
+					Usage:  "Location of the key file to generate. Will not overwrite existing file.",
 				},
 			},
 		},
@@ -193,25 +199,32 @@ func main() {
 			Aliases: []string{"r"},
 			Usage:   "manage remote rakewire instance",
 			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:   "i, instance",
-					EnvVar: "RAKEWIRE_INSTANCE",
-					Usage:  "name of remote rakewire instance in the format host:port",
-				},
-				cli.StringFlag{
-					Name:   "u, username",
-					EnvVar: "RAKEWIRE_USERNAME",
-					Usage:  "name of rakewire user",
-				},
-				cli.StringFlag{
-					Name:   "p, password",
-					EnvVar: "RAKEWIRE_PASSWORD",
-					Usage:  "password for the rakewire user",
-				},
 				cli.BoolFlag{
 					Name:   "k, insecure",
 					EnvVar: "RAKEWIRE_INSECURE",
 					Usage:  "Skip verification of remote instance TLS certificate",
+				},
+				cli.StringFlag{
+					Name:   "host",
+					Value:  "localhost",
+					EnvVar: "RAKEWIRE_HOST",
+					Usage:  "domain name at which httpd service can be reached",
+				},
+				cli.IntFlag{
+					Name:   "port",
+					Value:  8888,
+					EnvVar: "RAKEWIRE_PORT",
+					Usage:  "httpd port",
+				},
+				cli.StringFlag{
+					Name:   "username",
+					EnvVar: "RAKEWIRE_USERNAME",
+					Usage:  "name of rakewire user",
+				},
+				cli.StringFlag{
+					Name:   "password",
+					EnvVar: "RAKEWIRE_PASSWORD",
+					Usage:  "password for the rakewire user",
 				},
 			},
 			Subcommands: []cli.Command{
