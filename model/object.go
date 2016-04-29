@@ -6,6 +6,29 @@ import (
 	"time"
 )
 
+const (
+	bucketData  = "Data"
+	bucketIndex = "Index"
+	bucketTmp   = "tmp"
+	chMax       = "~"
+	chSep       = "|"
+	empty       = ""
+	fmtTime     = "20060102150405Z0700"
+	fmtUint     = "%010d" // 1, 234, 567, 890
+)
+
+var (
+	allEntities = map[string][]string{
+		entityEntry:        indexesEntry,
+		entityFeed:         indexesFeed,
+		entityGroup:        indexesGroup,
+		entityItem:         indexesItem,
+		entitySubscription: indexesSubscription,
+		entityTransmission: indexesTransmission,
+		entityUser:         indexesUser,
+	}
+)
+
 // Object defines the functions necessary for objects to be persisted to a store
 type Object interface {
 	GetID() string

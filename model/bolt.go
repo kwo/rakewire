@@ -9,29 +9,6 @@ import (
 	"time"
 )
 
-const (
-	bucketData  = "Data"
-	bucketIndex = "Index"
-	bucketTmp   = "tmp"
-	chMax       = "~"
-	chSep       = "|"
-	empty       = ""
-	fmtTime     = "20060102150405Z0700"
-	fmtUint     = "%010d" // 1, 234, 567, 890
-)
-
-var (
-	allEntities = map[string][]string{
-		entityEntry:        indexesEntry,
-		entityFeed:         indexesFeed,
-		entityGroup:        indexesGroup,
-		entityItem:         indexesItem,
-		entitySubscription: indexesSubscription,
-		entityTransmission: indexesTransmission,
-		entityUser:         indexesUser,
-	}
-)
-
 // Instance allows opening and closing new Databases
 var Instance = &boltInstance{
 	log: logger.New("db"),
@@ -189,6 +166,14 @@ func (z *boltTransaction) Bucket(names ...string) Bucket {
 		}
 	}
 	return &boltBucket{bucket: b}
+}
+
+func (z *boltTransaction) UniqueID(name string) (string, error) {
+	id, err := z.tx.Bucket([]byte(bucketData)).Bucket([]byte(name)).NextSequence()
+	if err != nil {
+		return "", err
+	}
+	return keyEncodeUint(id), nil
 }
 
 type boltBucket struct {
