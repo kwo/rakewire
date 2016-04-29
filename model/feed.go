@@ -110,7 +110,7 @@ func (z *Feed) indexes() map[string][]string {
 }
 
 func (z *Feed) setID(tx Transaction) error {
-	id, err := tx.Bucket(bucketData, entityFeed).NextID()
+	id, err := tx.NextID(entityFeed)
 	if err != nil {
 		return err
 	}

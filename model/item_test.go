@@ -37,7 +37,7 @@ func TestItemIncrementingID(t *testing.T) {
 	}
 
 	if err := db.Update(func(tx Transaction) error {
-		id, err := tx.Bucket(bucketData, entityItem).NextID()
+		id, err := tx.NextID(entityItem)
 		if err != nil {
 			return err
 		}

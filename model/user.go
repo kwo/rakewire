@@ -144,7 +144,7 @@ func (z *User) indexes() map[string][]string {
 }
 
 func (z *User) setID(tx Transaction) error {
-	id, err := tx.Bucket(bucketData, entityUser).NextID()
+	id, err := tx.NextID(entityUser)
 	if err != nil {
 		return err
 	}

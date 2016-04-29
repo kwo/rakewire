@@ -100,7 +100,7 @@ func (z *Transmission) indexes() map[string][]string {
 }
 
 func (z *Transmission) setID(tx Transaction) error {
-	id, err := tx.Bucket(bucketData, entityTransmission).NextID()
+	id, err := tx.NextID(entityTransmission)
 	if err != nil {
 		return err
 	}

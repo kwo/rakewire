@@ -56,7 +56,7 @@ func (z *Group) indexes() map[string][]string {
 }
 
 func (z *Group) setID(tx Transaction) error {
-	id, err := tx.Bucket(bucketData, entityGroup).NextID()
+	id, err := tx.NextID(entityGroup)
 	if err != nil {
 		return err
 	}

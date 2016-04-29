@@ -10,6 +10,7 @@ type Database interface {
 // Transaction represents an atomic operation to the database
 type Transaction interface {
 	Bucket(name ...string) Bucket
+	NextID(name string) (uint64, error)
 }
 
 // Bucket holds key-values
@@ -18,7 +19,6 @@ type Bucket interface {
 	Cursor() Cursor
 	Delete(key []byte) error
 	Get(key []byte) []byte
-	NextID() (uint64, error)
 	Put(key, value []byte) error
 }
 

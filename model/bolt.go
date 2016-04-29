@@ -168,12 +168,8 @@ func (z *boltTransaction) Bucket(names ...string) Bucket {
 	return &boltBucket{bucket: b}
 }
 
-func (z *boltTransaction) UniqueID(name string) (string, error) {
-	id, err := z.tx.Bucket([]byte(bucketData)).Bucket([]byte(name)).NextSequence()
-	if err != nil {
-		return "", err
-	}
-	return keyEncodeUint(id), nil
+func (z *boltTransaction) NextID(name string) (uint64, error) {
+	return z.tx.Bucket([]byte(bucketData)).Bucket([]byte(name)).NextSequence()
 }
 
 type boltBucket struct {
@@ -204,10 +200,6 @@ func (z *boltBucket) Get(key []byte) []byte {
 	return z.bucket.Get(key)
 }
 
-func (z *boltBucket) NextID() (uint64, error) {
-	return z.bucket.NextSequence()
-}
-
 func (z *boltBucket) Put(key, value []byte) error {
 	return z.bucket.Put(key, value)
 }
@@ -236,7 +228,7 @@ func (z *boltCursor) Seek(seek []byte) ([]byte, []byte) {
 	return z.cursor.Seek(seek)
 }
 
-func incrementNextSequence(maxIDStr string, b Bucket) (uint64, error) {
+func incrementNextSequence(maxIDStr string, tx Transaction, name string) (uint64, error) {
 
 	maxID, errParse := strconv.ParseUint(maxIDStr, 10, 64)
 	if errParse != nil {
@@ -246,7 +238,7 @@ func incrementNextSequence(maxIDStr string, b Bucket) (uint64, error) {
 	var lastID uint64
 
 	for {
-		id, err := b.NextID()
+		id, err := tx.NextID(name)
 		if err != nil {
 			return id, err
 		}

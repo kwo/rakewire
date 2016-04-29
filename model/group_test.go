@@ -36,7 +36,7 @@ func TestGroupIncrementingID(t *testing.T) {
 	}
 
 	if err := db.Update(func(tx Transaction) error {
-		id, err := tx.Bucket(bucketData, entityGroup).NextID()
+		id, err := tx.NextID(entityGroup)
 		if err != nil {
 			return err
 		}
