@@ -19,6 +19,7 @@ func (z *API) Ping(req *pb.PingRequest, stream pb.PingService_PingServer) error 
 
 	log := logger.New("ping")
 	ticker := time.NewTicker(time.Second)
+	quitter := z.NewQuitter()
 	done := ctx.Done()
 
 sending:
@@ -27,6 +28,8 @@ sending:
 		stream.Send(&pb.PingResponse{Time: time.Now().Unix()})
 		select {
 		case <-ticker.C:
+		case <-quitter.C:
+			break sending
 		case <-done:
 			break sending
 		}
@@ -34,6 +37,7 @@ sending:
 
 	log.Debugf("exiting...")
 	ticker.Stop()
+	quitter.Stop()
 	return nil
 
 }

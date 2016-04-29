@@ -14,6 +14,7 @@ import (
 	"rakewire/auth"
 	"rakewire/model"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -28,17 +29,61 @@ func NewAPI(database model.Database, versionString string, appStart time.Time) *
 		buildTime: buildTime,
 		buildHash: buildHash,
 		appStart:  appStart.Unix(),
+		quitters:  make(map[uint64]chan bool),
 	}
 
 }
 
 // API top level struct
 type API struct {
-	db        model.Database
-	version   string
-	buildTime int64
-	buildHash string
-	appStart  int64
+	db             model.Database
+	version        string
+	buildTime      int64
+	buildHash      string
+	appStart       int64
+	quitterLock    sync.Mutex
+	quitterCounter uint64
+	quitters       map[uint64]chan bool
+}
+
+type Quitter struct {
+	api *API
+	id  uint64
+	C   <-chan bool
+}
+
+func (z *Quitter) Stop() {
+	z.api.quitterLock.Lock()
+	defer z.api.quitterLock.Unlock()
+	quitterChannel := z.api.quitters[z.id]
+	delete(z.api.quitters, z.id)
+	close(quitterChannel)
+}
+
+func (z *API) NewQuitter() *Quitter {
+	z.quitterLock.Lock()
+	defer z.quitterLock.Unlock()
+	z.quitterCounter++
+	id := z.quitterCounter
+	quitterChannel := make(chan bool)
+	z.quitters[id] = quitterChannel
+	return &Quitter{
+		api: z,
+		id:  id,
+		C:   quitterChannel,
+	}
+}
+
+func (z *API) Stop() {
+
+	// TODO: need wait group
+
+	z.quitterLock.Lock()
+	defer z.quitterLock.Unlock()
+	for _, quitterChannel := range z.quitters {
+		quitterChannel <- true
+	}
+
 }
 
 // Router returns the top-level router

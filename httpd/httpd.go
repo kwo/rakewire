@@ -37,6 +37,7 @@ type Service struct {
 	sync.Mutex
 	database           model.Database
 	listener           net.Listener
+	api                *api.API
 	running            bool
 	address            string // binding address, empty string means 0.0.0.0
 	host               string // TODO: discard requests not made to this host
@@ -147,6 +148,8 @@ func (z *Service) Stop() {
 		log.Debugf("error stopping httpd: %s", err.Error())
 	}
 
+	z.api.Stop()
+
 	z.listener = nil
 	z.running = false
 
@@ -173,7 +176,9 @@ func (z *Service) router(endpoint string, tlsConfig *tls.Config) (http.Handler, 
 		feverAPI.Router(),
 	)
 
-	apiHandler, apiGRPCServer, err := api.NewAPI(z.database, z.version, z.appstart).Router(endpoint, tlsConfig)
+	z.api = api.NewAPI(z.database, z.version, z.appstart)
+
+	apiHandler, apiGRPCServer, err := z.api.Router(endpoint, tlsConfig)
 	if err != nil {
 		log.Debugf("cannot start API: %s", err.Error())
 		return nil, err
