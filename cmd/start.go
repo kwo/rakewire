@@ -40,6 +40,7 @@ func Start(c *cli.Context) {
 	ctx := &startContext{
 		log:     logger.New("main"),
 		pidFile: pidFile,
+		errors:  make(chan error, 1),
 	}
 
 	if db, err := openDatabase(dbFile); err == nil {
@@ -85,7 +86,6 @@ func Start(c *cli.Context) {
 	}
 	ctx.httpd = httpd.NewService(httpdConfig, ctx.database, c.App.Version, appStart.Unix())
 
-	chErrors := make(chan error, 1)
 	for i := 0; i < 4; i++ {
 		var err error
 		switch i {
@@ -99,7 +99,7 @@ func Start(c *cli.Context) {
 			err = ctx.httpd.Start()
 		} // select
 		if err != nil {
-			chErrors <- err
+			ctx.errors <- err
 			break
 		}
 	}
