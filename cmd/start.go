@@ -77,9 +77,8 @@ func Start(c *cli.Context) {
 	ctx.fetchd = fetch.NewService(fetchConfig, ctx.polld.Output, ctx.reaperd.Input)
 
 	httpdConfig := &httpd.Configuration{
-		Address:            c.String("bind"),
-		Host:               c.String("host"),
-		Port:               c.Int("port"),
+		ListenHostPort:     c.String("bind"),
+		PublicHostPort:     c.String("host"),
 		InsecureSkipVerify: c.Bool("insecure"),
 		TLSCertFile:        c.String("tlscert"),
 		TLSKeyFile:         c.String("tlskey"),

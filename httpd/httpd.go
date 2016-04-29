@@ -3,7 +3,6 @@ package httpd
 import (
 	"crypto/tls"
 	"errors"
-	"fmt"
 	gorillaHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"net"
@@ -24,9 +23,8 @@ var (
 
 // Configuration contains all parameters for the httpd service
 type Configuration struct {
-	Address            string
-	Host               string
-	Port               int
+	ListenHostPort     string
+	PublicHostPort     string
 	InsecureSkipVerify bool
 	TLSCertFile        string
 	TLSKeyFile         string
@@ -39,10 +37,9 @@ type Service struct {
 	listener           net.Listener
 	api                *api.API
 	running            bool
-	address            string // binding address, empty string means 0.0.0.0
-	host               string // TODO: discard requests not made to this host
+	listenHostPort     string // listening address
+	publicHostPort     string // TODO: discard requests not made to this host
 	insecureSkipVerify bool
-	port               int
 	tlsCertFile        string
 	tlsKeyFile         string
 	version            string
@@ -59,10 +56,9 @@ const (
 func NewService(cfg *Configuration, database model.Database, version string, appStart int64) *Service {
 	return &Service{
 		database:           database,
-		address:            cfg.Address,
-		host:               cfg.Host,
+		listenHostPort:     cfg.ListenHostPort,
+		publicHostPort:     cfg.PublicHostPort,
 		insecureSkipVerify: cfg.InsecureSkipVerify,
-		port:               cfg.Port,
 		tlsCertFile:        cfg.TLSCertFile,
 		tlsKeyFile:         cfg.TLSKeyFile,
 		version:            version,
@@ -86,47 +82,59 @@ func (z *Service) Start() error {
 	}
 
 	log.Infof("starting...")
-	log.Infof("address:  %s", z.address)
-	log.Infof("host:     %s", z.host)
-	log.Infof("port:     %d", z.port)
+	log.Infof("listen:   %s", z.listenHostPort)
+	log.Infof("public:   %s", z.publicHostPort)
 	log.Infof("insecure: %t", z.insecureSkipVerify)
 	log.Infof("tls cert: %s", z.tlsCertFile)
 	log.Infof("tls key:  %s", z.tlsKeyFile)
 
+	// extract the hostname from public hostport - assign to tlsConfig servername
+	publicFQDN, _, errSplitPublic := net.SplitHostPort(z.publicHostPort)
+	if errSplitPublic != nil {
+		log.Debugf("cannot split public hostport: %s", errSplitPublic.Error())
+		return errSplitPublic
+	}
 	cert, err := tls.LoadX509KeyPair(z.tlsCertFile, z.tlsKeyFile)
 	if err != nil {
 		log.Debugf("cannot create tls key pair: %s", err.Error())
 		return err
 	}
-
-	endpointListen := fmt.Sprintf("%s:%d", z.address, z.port)
-	endpointConnect := fmt.Sprintf("%s:%d", z.host, z.port)
 	tlsConfig := &tls.Config{
-		ServerName:         z.host,
+		ServerName:         publicFQDN,
 		InsecureSkipVerify: z.insecureSkipVerify,
 		Certificates:       []tls.Certificate{cert},
 	}
 
-	z.listener, err = tls.Listen("tcp", endpointListen, tlsConfig)
+	z.listener, err = tls.Listen("tcp", z.listenHostPort, tlsConfig)
 	if err != nil {
 		log.Debugf("cannot start tls listener: %s", err.Error())
 		return err
 	}
 
-	handler, errHandler := z.router(endpointConnect, tlsConfig)
+	localHostname, localPort, errSplitLocal := net.SplitHostPort(z.listenHostPort)
+	if errSplitLocal != nil {
+		log.Debugf("cannot split listen hostport: %s", errSplitLocal.Error())
+		return errSplitLocal
+	}
+	if localHostname == net.IPv4zero.String() {
+		localHostname = "localhost"
+	}
+	localHostPort := net.JoinHostPort(localHostname, localPort)
+
+	handler, errHandler := z.router(localHostPort, tlsConfig)
 	if errHandler != nil {
 		return errHandler
 	}
 
 	server := http.Server{
-		Addr:      endpointListen,
+		Addr:      z.listenHostPort,
 		Handler:   handler,
 		TLSConfig: tlsConfig,
 	}
 
 	go server.Serve(z.listener)
 
-	log.Infof("listening on %s, reachable at %s", endpointListen, endpointConnect)
+	log.Infof("listening on %s, reachable at %s, local %s", z.listenHostPort, z.publicHostPort, localHostPort)
 
 	z.running = true
 

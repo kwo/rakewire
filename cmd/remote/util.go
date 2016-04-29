@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"github.com/codegangsta/cli"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
@@ -62,9 +61,7 @@ func connect(c *cli.Context) (*grpc.ClientConn, error) {
 
 func getInstanceUsernamePassword(c *cli.Context) (instance, username, password string, err error) {
 
-	host := c.Parent().String("host")
-	port := c.Parent().Int("port")
-	instance = fmt.Sprintf("%s:%d", host, port)
+	instance = c.Parent().String("host")
 	username = c.Parent().String("username")
 	password = c.Parent().String("password")
 

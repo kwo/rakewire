@@ -74,7 +74,12 @@ func CertGen(c *cli.Context) {
 	}
 
 	hosts := strings.Split(host, ",")
-	for _, h := range hosts {
+	for _, hostport := range hosts {
+		h, _, errSplit := net.SplitHostPort(hostport)
+		if errSplit != nil {
+			fmt.Printf("failed to split host:port: %s\n", err.Error())
+			os.Exit(1)
+		}
 		if ip := net.ParseIP(h); ip != nil {
 			template.IPAddresses = append(template.IPAddresses, ip)
 		} else {

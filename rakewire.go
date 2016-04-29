@@ -66,21 +66,15 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:   "bind",
-					Value:  "",
+					Value:  "0.0.0.0:8888",
 					EnvVar: "RAKEWIRE_BIND",
-					Usage:  "ip address on which httpd should listen, defaults to all addresses",
+					Usage:  "host:port on which httpd should listen, defaults to 0.0.0.0:8888",
 				},
 				cli.StringFlag{
 					Name:   "host",
-					Value:  "localhost",
+					Value:  "localhost:8888",
 					EnvVar: "RAKEWIRE_HOST",
-					Usage:  "domain name at which httpd service can be reached",
-				},
-				cli.IntFlag{
-					Name:   "port",
-					Value:  8888,
-					EnvVar: "RAKEWIRE_PORT",
-					Usage:  "httpd port",
+					Usage:  "host:port on which httpd will be (publicly) accessible, defaults to localhost:8888",
 				},
 				cli.StringFlag{
 					Name:   "tlscert",
@@ -149,7 +143,7 @@ func main() {
 					Name:   "host",
 					Value:  "localhost",
 					EnvVar: "RAKEWIRE_HOST",
-					Usage:  "Comma-separated hostnames and IPs to generate a certificate for",
+					Usage:  "Comma-separated hostnames and IPs to generate a certificate for, :port will be removed",
 				},
 				cli.IntFlag{
 					Name:  "bits",
@@ -200,15 +194,9 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:   "host",
-					Value:  "localhost",
+					Value:  "localhost:8888",
 					EnvVar: "RAKEWIRE_HOST",
-					Usage:  "domain name at which httpd service can be reached",
-				},
-				cli.IntFlag{
-					Name:   "port",
-					Value:  8888,
-					EnvVar: "RAKEWIRE_PORT",
-					Usage:  "httpd port",
+					Usage:  "fqdn:port of the remote server, defaults to localhost:8888",
 				},
 				cli.StringFlag{
 					Name:   "username",

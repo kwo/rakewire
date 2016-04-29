@@ -6,7 +6,7 @@
 	go test $(go list ./... | grep -v /vendor/)
 	#go generate $(go list ./... | grep -v /vendor/)
 
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 LDFLAGS="-X main.Version=1.12.0 -X main.BuildTime=`date -u +%FT%TZ` -X main.BuildHash=`git rev-parse HEAD`" go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 LDFLAGS="-X main.Version=1.12.2 -X main.BuildTime=`date -u +%FT%TZ` -X main.BuildHash=`git rev-parse HEAD`" go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
 
 ## Dependencies
 
@@ -33,6 +33,8 @@ additionally, vendetta does not install dependencies of test files by default so
 	curl -D - -u karl@ostendorf.com:abcdefg https://rw.kfabrik.de:8888/api/status -X POST
 
 	curl -D - -u ko:abcdefg https://rw.kfabrik.de:8888/subscriptions.opml
+
+	/usr/local/Cellar/curl/7.48.0/bin/curl -D - -u karl@ostendorf.com:abcdefg -H "Content-Type: application/json" -d '{}' https://rakewire.kfabrik.de/api/status -X POST
 
 
 ## OPML
