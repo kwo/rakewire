@@ -17,11 +17,11 @@
 
 ### Unsorted
 
+  - gracefully shut down server api streams when server ends
   - add init command
     - add certs command
     - add user command
     - generate env vars
-  - generate certs if necessary / do not need self signed
   - add static pages
   - filter httpd requests on hostname
   - add opml to api remove oddballs
