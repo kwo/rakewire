@@ -28,7 +28,7 @@ func Status(c *cli.Context) {
 		duration := time.Now().Truncate(time.Second).Sub(time.Unix(status.AppStart, 0))
 		fmt.Printf("uptime: %s\n", duration.String())
 
-		if status.Version != "" {
+		if len(status.Version) != 0 {
 			fmt.Printf("version: %s\n", status.Version)
 		}
 
@@ -36,7 +36,7 @@ func Status(c *cli.Context) {
 			fmt.Printf("build time: %s\n", time.Unix(status.BuildTime, 0).UTC().Format(time.RFC3339))
 		}
 
-		if status.BuildHash != "" {
+		if len(status.BuildHash) != 0 {
 			fmt.Printf("build hash: %s\n", status.BuildHash)
 		}
 
