@@ -1,5 +1,13 @@
 package model
 
+// Instanz performs high level function upon databases
+type Instanz interface {
+	Open(location string) (Database, error)
+	Close(db Database) error
+	// CheckSchema
+	// CheckIntegrity
+}
+
 // Database defines the interface to a key-value store
 type Database interface {
 	Location() string
