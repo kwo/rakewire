@@ -14,7 +14,7 @@ const (
 	chSep       = "|"
 	empty       = ""
 	fmtTime     = "20060102150405Z0700"
-	fmtUint     = "%010d" // 1, 234, 567, 890
+	fmtUint     = "%010d"
 )
 
 var (
