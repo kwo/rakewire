@@ -16,7 +16,7 @@ func TestBoltDB(t *testing.T) {
 
 }
 
-func openTestDatabase(t *testing.T, flags ...bool) Database {
+func openTestDatabase(t *testing.T) Database {
 
 	f, err := ioutil.TempFile("", "bolt-")
 	if err != nil {

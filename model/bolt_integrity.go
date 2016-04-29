@@ -18,8 +18,6 @@ func (z *boltInstance) Check(filename string) error {
 		return err
 	}
 
-	tmpFilename := z.makeFilenameTemp(filename)
-
 	// open both old, new and tmp databases
 	// check schema of all databases (in Open)
 	var oldDb Database
@@ -31,6 +29,14 @@ func (z *boltInstance) Check(filename string) error {
 	defer z.Close(oldDb)
 
 	var tmpDb Database
+	tmpFilename := z.makeFilenameTemp(filename)
+	if tmpFile, err := os.Create(tmpFilename); err == nil {
+		if err := tmpFile.Close(); err != nil {
+			return err
+		}
+	} else {
+		return err
+	}
 	if db, err := z.Open(tmpFilename); err == nil {
 		tmpDb = db
 	} else {
@@ -116,7 +122,14 @@ func (z *boltInstance) Check(filename string) error {
 
 	z.log.Infof("validating data done")
 
-	// open new database
+	// create new database with original file name
+	if f, err := os.Create(filename); err == nil {
+		if err := f.Close(); err != nil {
+			return err
+		}
+	} else {
+		return err
+	}
 	var newDb Database
 	if db, err := z.Open(filename); err == nil {
 		newDb = db
