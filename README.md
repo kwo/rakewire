@@ -6,7 +6,7 @@
 	go test $(go list ./... | grep -v /vendor/)
 	#go generate $(go list ./... | grep -v /vendor/)
 
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 LDFLAGS="-X main.Version=1.12.2 -X main.BuildTime=`date -u +%FT%TZ` -X main.BuildHash=`git rev-parse HEAD`"; go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 LDFLAGS="-X main.Version=1.12.3 -X main.BuildTime=`date -u +%FT%TZ` -X main.BuildHash=`git rev-parse HEAD`"; go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
 
 ## Dependencies
 
