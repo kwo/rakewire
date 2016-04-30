@@ -3,11 +3,12 @@
 ## Roadmap
 
 ### Infrastructure
-  - model to use Protobuf
-  - API to implement model
-  - extract fever
-  - extract feed/reap/poll
   - pluggable k/v store
+  - integrity check to use Database object - copy db to db
+  - add init command
+    - add certs command
+    - add user command
+    - generate env vars
 
 ### Features
   - UI
@@ -17,15 +18,8 @@
 
 ### Unsorted
 
-  - gracefully shut down server api streams when server ends
-  - add init command
-    - add certs command
-    - add user command
-    - generate env vars
   - add static pages
   - filter httpd requests on hostname
-  - add opml to api remove oddballs
-  - replace RAKEWIRE_INSTANCE with RAKEWIRE_HOST and RAKEWIRE_PORT
 
   Version 1.12
 

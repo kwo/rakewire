@@ -19,7 +19,7 @@ func (z *API) Ping(req *pb.PingRequest, stream pb.PingService_PingServer) error 
 
 	log := logger.New("ping")
 	ticker := time.NewTicker(time.Second)
-	quitter := z.NewQuitter()
+	quitter := z.newQuitter()
 	done := ctx.Done()
 
 sending:

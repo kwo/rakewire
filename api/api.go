@@ -29,61 +29,77 @@ func NewAPI(database model.Database, versionString string, appStart time.Time) *
 		buildTime: buildTime,
 		buildHash: buildHash,
 		appStart:  appStart.Unix(),
-		quitters:  make(map[uint64]chan bool),
+		quitters:  make(map[time.Time]chan bool),
 	}
 
 }
 
 // API top level struct
 type API struct {
-	db             model.Database
-	version        string
-	buildTime      int64
-	buildHash      string
-	appStart       int64
-	quitterLock    sync.Mutex
-	quitterCounter uint64
-	quitters       map[uint64]chan bool
+	db          model.Database
+	version     string
+	buildTime   int64
+	buildHash   string
+	appStart    int64
+	quitterLock sync.Mutex
+	quitters    map[time.Time]chan bool
 }
 
-type Quitter struct {
-	api *API
-	id  uint64
-	C   <-chan bool
+type fnDone func()
+
+type quitter struct {
+	C    <-chan bool
+	Stop fnDone
 }
 
-func (z *Quitter) Stop() {
-	z.api.quitterLock.Lock()
-	defer z.api.quitterLock.Unlock()
-	quitterChannel := z.api.quitters[z.id]
-	delete(z.api.quitters, z.id)
-	close(quitterChannel)
-}
+func (z *API) newQuitter() *quitter {
 
-func (z *API) NewQuitter() *Quitter {
 	z.quitterLock.Lock()
 	defer z.quitterLock.Unlock()
-	z.quitterCounter++
-	id := z.quitterCounter
+
+	id := time.Now()
 	quitterChannel := make(chan bool)
 	z.quitters[id] = quitterChannel
-	return &Quitter{
-		api: z,
-		id:  id,
-		C:   quitterChannel,
+
+	done := func() {
+		close(quitterChannel)
+		z.quitterLock.Lock()
+		defer z.quitterLock.Unlock()
+		delete(z.quitters, id)
 	}
+
+	return &quitter{
+		C:    quitterChannel,
+		Stop: done,
+	}
+
 }
 
-func (z *API) Stop() {
-
-	// TODO: need wait group
-
+func (z *API) notifyQuitters() {
 	z.quitterLock.Lock()
 	defer z.quitterLock.Unlock()
 	for _, quitterChannel := range z.quitters {
 		quitterChannel <- true
 	}
+}
 
+func (z *API) quitterCount() int {
+	z.quitterLock.Lock()
+	defer z.quitterLock.Unlock()
+	return len(z.quitters)
+}
+
+func (z *API) waitQuitters() {
+	for {
+		if z.quitterCount() == 0 {
+			break
+		}
+	}
+}
+
+func (z *API) Stop() {
+	z.notifyQuitters()
+	z.waitQuitters()
 }
 
 // Router returns the top-level router
