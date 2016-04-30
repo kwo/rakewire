@@ -10,12 +10,12 @@
 	export GOOS=linux
 	export GOARCH=amd64
 	export CGO_ENABLED=0
-	export LDFLAGS="-X main.Version=1.12.4 -X main.BuildTime=`date -u +%FT%TZ` -X main.BuildHash=`git rev-parse HEAD`"
+	export LDFLAGS="-X main.Version=$(cat VERSION) -X main.BuildTime=`date -u +%FT%TZ` -X main.BuildHash=`git rev-parse HEAD`"
 	go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
 
 	macOS:
 	export CGO_ENABLED=0
-	export LDFLAGS="-X main.Version=1.12.4 -X main.BuildTime=`date -u +%FT%TZ` -X main.BuildHash=`git rev-parse HEAD`"
+	export LDFLAGS="-X main.Version=$(cat VERSION) -X main.BuildTime=`date -u +%FT%TZ` -X main.BuildHash=`git rev-parse HEAD`"
 	go install -tags netgo -ldflags "$LDFLAGS" rakewire.go
 
 ## Dependencies
@@ -49,7 +49,7 @@ additionally, vendetta does not install dependencies of test files by default so
 
 ## OPML
 
-curl -u karl@ostendorf.com:abcdefg https://${RAKEWIRE_INSTANCE}/subscriptions.opml > rakewire.opml
+curl -u karl@ostendorf.com:abcdefg https://${RAKEWIRE_HOST}/subscriptions.opml > rakewire.opml
 curl -u karl@ostendorf.com:abcdefg -X PUT --data-binary @rakewire.opml https://${RAKEWIRE_INSTANCE}/subscriptions.opml
 
 ### obsolete
