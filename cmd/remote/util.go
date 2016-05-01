@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	errMissingInstance = errors.New("Missing host/port, try setting the --host/--port options")
+	errMissingHost     = errors.New("Missing host/port, try setting the --host option")
 	errMissingUsername = errors.New("Missing username, try setting the --username option")
 	errMissingPassword = errors.New("Missing password, try setting the --password option")
 )
@@ -24,8 +24,9 @@ type BasicAuthCredentials struct {
 
 // GetRequestMetadata is part of the Credential interface,
 func (z *BasicAuthCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	auth := base64.StdEncoding.EncodeToString([]byte(z.Username + ":" + z.Password))
 	return map[string]string{
-		"authorization": z.makeAuthorizationToken(),
+		"authorization": "Basic " + auth,
 	}, nil
 }
 
@@ -34,17 +35,28 @@ func (z *BasicAuthCredentials) RequireTransportSecurity() bool {
 	return true
 }
 
+// TokenCredentials implements Credentials for JWT authentication.
+type TokenCredentials struct {
+	Token string
+}
+
+// GetRequestMetadata is part of the Credential interface,
+func (z *TokenCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
+	return map[string]string{
+		"authorization": "Bearer " + z.Token,
+	}, nil
+}
+
 // RequireTransportSecurity is part of the Credential interface,
-func (z *BasicAuthCredentials) makeAuthorizationToken() string {
-	auth := base64.StdEncoding.EncodeToString([]byte(z.Username + ":" + z.Password))
-	return "Basic " + auth
+func (z *TokenCredentials) RequireTransportSecurity() bool {
+	return true
 }
 
 func connect(c *cli.Context) (*grpc.ClientConn, error) {
 
 	insecureSkipVerify := c.Parent().Bool("insecure")
 
-	instance, username, password, errCredentials := getInstanceUsernamePassword(c)
+	addr, username, password, token, errCredentials := getHostUsernamePasswordToken(c)
 	if errCredentials != nil {
 		return nil, errCredentials
 	}
@@ -53,31 +65,43 @@ func connect(c *cli.Context) (*grpc.ClientConn, error) {
 		InsecureSkipVerify: insecureSkipVerify,
 	}
 
+	var creds credentials.Credentials
+	if len(token) == 0 {
+		creds = &BasicAuthCredentials{Username: username, Password: password}
+	} else {
+		creds = &TokenCredentials{Token: token}
+	}
+
 	authTransport := grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))
-	authUser := grpc.WithPerRPCCredentials(&BasicAuthCredentials{Username: username, Password: password})
-	return grpc.Dial(instance, authTransport, authUser)
+	authUser := grpc.WithPerRPCCredentials(creds)
+	return grpc.Dial(addr, authTransport, authUser)
 
 }
 
-func getInstanceUsernamePassword(c *cli.Context) (instance, username, password string, err error) {
+func getHostUsernamePasswordToken(c *cli.Context) (host, username, password, token string, err error) {
 
-	instance = c.Parent().String("host")
+	host = c.Parent().String("host")
 	username = c.Parent().String("username")
 	password = c.Parent().String("password")
+	token = c.Parent().String("token")
 
-	if len(instance) == 0 {
-		err = errMissingInstance
+	if len(host) == 0 {
+		err = errMissingHost
 		return
 	}
 
-	if len(username) == 0 {
-		err = errMissingUsername
-		return
-	}
+	if len(token) == 0 {
 
-	if len(password) == 0 {
-		err = errMissingPassword
-		return
+		if len(username) == 0 {
+			err = errMissingUsername
+			return
+		}
+
+		if len(password) == 0 {
+			err = errMissingPassword
+			return
+		}
+
 	}
 
 	return

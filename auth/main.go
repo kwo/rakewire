@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"rakewire/logger"
 	"rakewire/model"
 	"strings"
 )
@@ -16,6 +17,7 @@ var (
 	ErrBadHeader       = errors.New("Cannot parse authorization header")
 	ErrUnauthenticated = errors.New("Unauthenticated")
 	ErrUnauthorized    = errors.New("Unauthorized")
+	log                = logger.New("auth")
 )
 
 // User contains the username and roles of a user
@@ -25,16 +27,26 @@ type User struct {
 }
 
 // Authenticate will authenticate and authorize a user
-func Authenticate(db model.Database, authHeader string, roles ...string) (*User, error) {
+func Authenticate(db model.Database, authHeader string, roles ...string) (user *User, err error) {
+
+	var scheme string
 
 	if len(authHeader) == 0 {
-		return nil, ErrUnauthenticated
+		err = ErrUnauthenticated
 	} else if strings.HasPrefix(authHeader, schemeBasic) {
-		return authenticateBasic(db, authHeader, roles...)
+		scheme = schemeBasic
+		user, err = authenticateBasic(db, authHeader, roles...)
 	} else if strings.HasPrefix(authHeader, schemeJWT) {
-		return authenticateJWT(authHeader, roles...)
+		scheme = schemeJWT
+		user, err = authenticateJWT(authHeader, roles...)
+	} else {
+		err = ErrUnauthenticated // unknown authentication scheme
 	}
 
-	return nil, ErrUnauthenticated // unknown authentication scheme
+	if err == nil {
+		log.Infof("%s%s", scheme, user.Name)
+	}
+
+	return
 
 }

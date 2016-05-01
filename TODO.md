@@ -21,11 +21,8 @@
   - add static pages
   - filter httpd requests on hostname
 
-  Version 1.12
-
   - pubsub
   - long-polling
-  - add jwt authentication - add RAKEWIRE_TOKEN for token grpc authentication
   - add user api
   - add subscription api
   - expire entries/items by date/feed size

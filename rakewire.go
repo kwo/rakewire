@@ -208,6 +208,11 @@ func main() {
 					EnvVar: "RAKEWIRE_PASSWORD",
 					Usage:  "password for the rakewire user",
 				},
+				cli.StringFlag{
+					Name:   "token",
+					EnvVar: "RAKEWIRE_TOKEN",
+					Usage:  "jwt authentication as alternative to username/password",
+				},
 			},
 			Subcommands: []cli.Command{
 				{
@@ -224,6 +229,12 @@ func main() {
 					Name:   "token",
 					Usage:  "get authentication token",
 					Action: remote.Token,
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "x, export",
+							Usage: "generate shell command to store token in environment variable",
+						},
+					},
 				},
 			},
 		},
