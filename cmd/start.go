@@ -28,7 +28,7 @@ type startContext struct {
 }
 
 // Start the app
-func Start(c *cli.Context) {
+func Start(c *cli.Context) error {
 
 	showVersionInformation(c)
 
@@ -47,7 +47,7 @@ func Start(c *cli.Context) {
 		ctx.database = db
 	} else {
 		ctx.log.Infof("Error: Cannot open database: %s", err.Error())
-		return
+		return nil
 	}
 	ctx.log.Infof("Database: %s", ctx.database.Location())
 
@@ -105,6 +105,8 @@ func Start(c *cli.Context) {
 
 	// we want this to run in the main goroutine
 	monitorShutdown(ctx)
+
+	return nil
 
 }
 

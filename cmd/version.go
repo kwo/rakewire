@@ -5,6 +5,7 @@ import (
 )
 
 // Version show version information and exit
-func Version(c *cli.Context) {
+func Version(c *cli.Context) error {
 	showVersionInformation(c)
+	return nil
 }

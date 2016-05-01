@@ -13,7 +13,7 @@ import (
 )
 
 // Ping retrieves the pings of a remote instance
-func Ping(c *cli.Context) {
+func Ping(c *cli.Context) error {
 
 	conn, errConnect := connect(c)
 	if errConnect != nil {
@@ -57,5 +57,7 @@ func Ping(c *cli.Context) {
 		fmt.Printf("Error: %s\n", errRequest.Error())
 		os.Exit(1)
 	}
+
+	return nil
 
 }

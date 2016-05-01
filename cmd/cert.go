@@ -21,7 +21,7 @@ import (
 )
 
 // CertGen generates certificates
-func CertGen(c *cli.Context) {
+func CertGen(c *cli.Context) error {
 
 	host := c.String("host")
 	rsaBits := c.Int("bits")
@@ -127,6 +127,8 @@ func CertGen(c *cli.Context) {
 	pem.Encode(keyOut, pemBlockForKey(priv))
 	keyOut.Close()
 	fmt.Printf("TLS key saved to %s\n", tlsKeyFile)
+
+	return nil
 
 }
 

@@ -10,7 +10,7 @@ import (
 )
 
 // Status retrieves the status of a remote instance
-func Status(c *cli.Context) {
+func Status(c *cli.Context) error {
 
 	conn, errConnect := connect(c)
 	if errConnect != nil {
@@ -44,5 +44,7 @@ func Status(c *cli.Context) {
 		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(1)
 	}
+
+	return nil
 
 }

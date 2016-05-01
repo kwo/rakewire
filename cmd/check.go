@@ -9,7 +9,7 @@ import (
 )
 
 // Check the database
-func Check(c *cli.Context) {
+func Check(c *cli.Context) error {
 
 	dbFile := c.String("file")
 	verbose := c.GlobalBool("verbose")
@@ -22,7 +22,7 @@ func Check(c *cli.Context) {
 		dbFile = filename
 	} else {
 		fmt.Printf("Cannot find database file: %s\n", err.Error())
-		return
+		return nil
 	}
 	if verbose {
 		fmt.Printf("Database: %s\n", dbFile)
@@ -32,5 +32,7 @@ func Check(c *cli.Context) {
 		fmt.Printf("Error: %s\n", err.Error())
 		os.Exit(1)
 	}
+
+	return nil
 
 }

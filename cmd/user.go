@@ -8,7 +8,7 @@ import (
 )
 
 // UserAdd adds a user
-func UserAdd(c *cli.Context) {
+func UserAdd(c *cli.Context) error {
 
 	var username string
 	var password string
@@ -56,5 +56,7 @@ func UserAdd(c *cli.Context) {
 	}
 
 	fmt.Printf("User added: %s\n", username)
+
+	return nil
 
 }

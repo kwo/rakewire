@@ -9,7 +9,7 @@ import (
 )
 
 // Init initializes a new rakewire database.
-func Init(c *cli.Context) {
+func Init(c *cli.Context) error {
 
 	dbFile := c.String("file")
 	if filename, err := filepath.Abs(dbFile); err == nil {
@@ -45,5 +45,7 @@ func Init(c *cli.Context) {
 	}
 
 	fmt.Printf("database initialized at %s\n", dbFile)
+
+	return nil
 
 }
