@@ -6,15 +6,12 @@ import (
 	"strings"
 )
 
-func authenticateBasic(db model.Database, authHeader string, roles ...string) (*model.User, error) {
+func authenticateBasic(db model.Database, authHeader string, roles ...string) (*User, error) {
 
-	fields := strings.Fields(authHeader)
-	if len(fields) != 2 {
-		return nil, ErrBadHeader
-	}
+	tokenString := strings.TrimPrefix(authHeader, schemeBasic)
 
 	var username, password string
-	if data, err := base64.StdEncoding.DecodeString(fields[1]); err == nil {
+	if data, err := base64.StdEncoding.DecodeString(tokenString); err == nil {
 		creds := strings.SplitN(string(data), ":", 2)
 		if len(creds) != 2 {
 			return nil, ErrBadHeader
@@ -47,17 +44,15 @@ func authenticateBasic(db model.Database, authHeader string, roles ...string) (*
 	}
 
 	// check roles
-	hasAllRoles := true
-	for _, role := range roles {
-		if !user.HasRole(role) {
-			hasAllRoles = false
-		}
-		break
-	}
-	if !hasAllRoles {
+	if !user.HasAllRoles(roles...) {
 		return nil, ErrUnauthorized
 	}
 
-	return user, nil
+	authuser := &User{
+		Name:  user.Username,
+		Roles: user.Roles,
+	}
+
+	return authuser, nil
 
 }
