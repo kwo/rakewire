@@ -82,6 +82,16 @@ func (z *User) HasRole(role string) bool {
 	return result
 }
 
+// HasAllRoles tests if the user has all the given roles
+func (z *User) HasAllRoles(roles ...string) bool {
+	for _, role := range roles {
+		if !z.HasRole(role) {
+			return false
+		}
+	}
+	return true
+}
+
 // RemoveRole removes a role from the user.
 func (z *User) RemoveRole(role string) {
 	for i, value := range z.Roles {
