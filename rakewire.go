@@ -220,6 +220,11 @@ func main() {
 					Usage:  "get instance status",
 					Action: remote.Status,
 				},
+				{
+					Name:   "token",
+					Usage:  "get authentication token",
+					Action: remote.Token,
+				},
 			},
 		},
 		{
