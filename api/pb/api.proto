@@ -35,3 +35,19 @@ service StatusService {
     };
   }
 }
+
+message TokenRequest {}
+
+message TokenResponse {
+  string token = 1;
+  int64  expiration = 2;
+}
+
+service TokenService {
+  rpc GetToken(TokenRequest) returns (TokenResponse) {
+    option (google.api.http) = {
+      post: "/api/token"
+      body: "*"
+    };
+  }
+}

@@ -110,6 +110,7 @@ func (z *API) Router(endpointConnect string, tlsConfig *tls.Config) (http.Handle
 
 	pb.RegisterPingServiceServer(grpcServer, z)
 	pb.RegisterStatusServiceServer(grpcServer, z)
+	pb.RegisterTokenServiceServer(grpcServer, z)
 
 	ctx := context.Background()
 	dcreds := credentials.NewTLS(tlsConfig)
@@ -119,8 +120,10 @@ func (z *API) Router(endpointConnect string, tlsConfig *tls.Config) (http.Handle
 	if err := pb.RegisterPingServiceHandlerFromEndpoint(ctx, gwmux, endpointConnect, dopts); err != nil {
 		return nil, nil, err
 	}
-
 	if err := pb.RegisterStatusServiceHandlerFromEndpoint(ctx, gwmux, endpointConnect, dopts); err != nil {
+		return nil, nil, err
+	}
+	if err := pb.RegisterTokenServiceHandlerFromEndpoint(ctx, gwmux, endpointConnect, dopts); err != nil {
 		return nil, nil, err
 	}
 
@@ -131,7 +134,7 @@ func (z *API) Router(endpointConnect string, tlsConfig *tls.Config) (http.Handle
 
 }
 
-func (z *API) authenticate(ctx context.Context, roles ...string) (*model.User, error) {
+func (z *API) authenticate(ctx context.Context, roles ...string) (*auth.User, error) {
 
 	var authHeader string
 	if md, ok := metadata.FromContext(ctx); ok {

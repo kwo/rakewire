@@ -25,7 +25,7 @@
 
   - pubsub
   - long-polling
-  - add jwt authentication
+  - add jwt authentication - add RAKEWIRE_TOKEN for token grpc authentication
   - add user api
   - add subscription api
   - expire entries/items by date/feed size
