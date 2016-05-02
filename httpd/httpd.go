@@ -178,6 +178,8 @@ func (z *Service) IsRunning() bool {
 
 func (z *Service) router(endpoint string, tlsConfig *tls.Config) (http.Handler, error) {
 
+	// TODO: subrouters or remove gorilla http mux
+
 	router := mux.NewRouter()
 
 	// fever api router
@@ -200,12 +202,18 @@ func (z *Service) router(endpoint string, tlsConfig *tls.Config) (http.Handler, 
 	router.PathPrefix("/api").Handler(apiHandler)
 
 	// oddballs router
-	// oddballsAPI := &oddballs{db: z.database}
-	// router.PathPrefix("/").Handler(
-	// 	Adapt(oddballsAPI.router(), Authenticator(z.database)),
-	// )
+	oddballsAPI := &oddballs{db: z.database}
+	router.PathPrefix("/x/").Handler(
+		Adapt(oddballsAPI.router(), Authenticator(z.database)),
+	)
 
-	router.PathPrefix("/").Handler(http.FileServer(web.FS(z.debugMode)))
+	var fs http.FileSystem
+	if z.debugMode {
+		fs = http.Dir("web/public") // debug mode assumes the application is being started from within the project root
+	} else {
+		fs = web.FS(false)
+	}
+	router.PathPrefix("/").Handler(http.FileServer(fs))
 
 	mainHandler := Adapt(router, NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
 

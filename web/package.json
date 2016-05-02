@@ -33,6 +33,9 @@
     "webpack": "^1.0"
   },
   "scripts": {
-    "webpack": "webpack"
+    "postinstall": "webpack",
+    "start": "webpack --debug --watch --progress --colors",
+    "webpack": "webpack",
+    "webpackd": "webpack --debug --watch --progress --colors"
   }
 }

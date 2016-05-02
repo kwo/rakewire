@@ -5,6 +5,7 @@ import (
 	"github.com/gorilla/context"
 	"github.com/gorilla/mux"
 	"net/http"
+	"rakewire/auth"
 	"rakewire/model"
 	"rakewire/opml"
 )
@@ -17,8 +18,8 @@ func (z *oddballs) router() *mux.Router {
 
 	router := mux.NewRouter()
 
-	router.Path("/subscriptions.opml").Methods(mGet).HandlerFunc(z.opmlExport)
-	router.Path("/subscriptions.opml").Methods(mPut).HandlerFunc(z.opmlImport)
+	router.Path("/x/subscriptions.opml").Methods(mGet).HandlerFunc(z.opmlExport)
+	router.Path("/x/subscriptions.opml").Methods(mPut).HandlerFunc(z.opmlImport)
 
 	return router
 
@@ -26,19 +27,27 @@ func (z *oddballs) router() *mux.Router {
 
 func (z *oddballs) opmlExport(w http.ResponseWriter, req *http.Request) {
 
-	user := context.Get(req, "user").(*model.User)
+	user := context.Get(req, "user").(*auth.User)
 
 	var opmldoc *opml.OPML
 	err := z.db.Select(func(tx model.Transaction) error {
-		doc, err := opml.Export(tx, user)
-		if err == nil {
+		if u := model.U.GetByUsername(tx, user.Name); u != nil {
+			doc, errExport := opml.Export(tx, u)
+			if errExport != nil {
+				return errExport
+			}
 			opmldoc = doc
+			return nil
 		}
-		return err
+		return fmt.Errorf("User not found: %s", user.Name)
 	})
 
 	if err != nil {
+		message := fmt.Sprintf("Error creating OPML: %s\n", err.Error())
+		log.Debugf("%s", message)
+		w.Header().Set(hContentType, "text/plain")
 		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(message))
 		return
 	}
 
@@ -53,7 +62,7 @@ func (z *oddballs) opmlExport(w http.ResponseWriter, req *http.Request) {
 
 func (z *oddballs) opmlImport(w http.ResponseWriter, req *http.Request) {
 
-	user := context.Get(req, "user").(*model.User)
+	user := context.Get(req, "user").(*auth.User)
 
 	opmldoc, err := opml.Parse(req.Body)
 	if err != nil {
@@ -66,7 +75,10 @@ func (z *oddballs) opmlImport(w http.ResponseWriter, req *http.Request) {
 	}
 
 	err = z.db.Update(func(tx model.Transaction) error {
-		return opml.Import(tx, user.ID, opmldoc)
+		if u := model.U.GetByUsername(tx, user.Name); u != nil {
+			return opml.Import(tx, u.ID, opmldoc)
+		}
+		return fmt.Errorf("User not found: %s", user.Name)
 	})
 
 	if err != nil {

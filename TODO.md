@@ -2,14 +2,6 @@
 
 ## Roadmap
 
-### Infrastructure
-  - pluggable k/v store
-  - integrity check to use Database object - copy db to db
-  - add init command
-    - add certs command
-    - add user command
-    - generate env vars
-
 ### Features
   - UI
   - full text search
@@ -18,6 +10,8 @@
 
 ### Unsorted
 
+  - user API
+  - init command to create initial user
   - add static pages
   - filter httpd requests on hostname
 
@@ -31,6 +25,15 @@
 
   - move fever off of model to api
   - move poll/fetch/reap off of model to api
+
+  - pluggable k/v store
+  - integrity check to use Database object - copy db to db
+  - add init command
+    - add certs command
+    - add user command
+    - generate env vars
+
+
 
   - bugfix multiple items with same GUID
   - standardize model functions and naming conventions
