@@ -186,7 +186,7 @@ func FSMustString(useLocal bool, name string) string {
 
 var _escData = map[string]*_escFile{
 
-	"/public/app.js": {
+	"/app.js": {
 		local:   "public/app.js",
 		size:    173,
 		modtime: 1462189050,
@@ -197,7 +197,7 @@ LlGyztMw1NTJ0zACEWYgwkKzVge7vhI9KMc2T69AW6koPym/pFivpKJECZsOzepaHSDAKhGraQ0IAAD/
 `,
 	},
 
-	"/public/index.html": {
+	"/index.html": {
 		local:   "public/index.html",
 		size:    366,
 		modtime: 1462189050,
@@ -210,7 +210,7 @@ AP//nZp0qG4BAAA=
 `,
 	},
 
-	"/public/robots.txt": {
+	"/robots.txt": {
 		local:   "public/robots.txt",
 		size:    26,
 		modtime: 1462189050,
@@ -219,7 +219,7 @@ H4sIAAAJbogA/wotTi3STUxPzSuxUtDicsksTszJyS+3UtDnAgQAAP//QoSkjxoAAAA=
 `,
 	},
 
-	"/public/styles.css": {
+	"/styles.css": {
 		local:   "public/styles.css",
 		size:    16583,
 		modtime: 1462189050,
@@ -310,7 +310,7 @@ AAA=
 `,
 	},
 
-	"/public/vendor.js": {
+	"/vendor.js": {
 		local:   "public/vendor.js",
 		size:    422087,
 		modtime: 1462189050,
@@ -2211,11 +2211,6 @@ pE0ToJnWICXvRswXWRc1sUbWptJ4YFF7tWgta8TIF2Cp0y/rdYv/6IXpjKC+2VKDlXtIynnplL8HSoC9
 
 	"/": {
 		isDir: true,
-		local: "/",
-	},
-
-	"/public": {
-		isDir: true,
-		local: "/public",
+		local: "public",
 	},
 }

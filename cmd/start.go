@@ -77,9 +77,10 @@ func Start(c *cli.Context) error {
 	ctx.fetchd = fetch.NewService(fetchConfig, ctx.polld.Output, ctx.reaperd.Input)
 
 	httpdConfig := &httpd.Configuration{
+		DebugMode:          len(c.App.Version) == 0,
+		InsecureSkipVerify: c.Bool("insecure"),
 		ListenHostPort:     c.String("bind"),
 		PublicHostPort:     c.String("host"),
-		InsecureSkipVerify: c.Bool("insecure"),
 		TLSCertFile:        c.String("tlscert"),
 		TLSKeyFile:         c.String("tlskey"),
 	}

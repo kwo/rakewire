@@ -11,6 +11,7 @@ import (
 	"rakewire/fever"
 	"rakewire/logger"
 	"rakewire/model"
+	"rakewire/web"
 	"sync"
 	"time"
 )
@@ -23,9 +24,10 @@ var (
 
 // Configuration contains all parameters for the httpd service
 type Configuration struct {
+	DebugMode          bool
+	InsecureSkipVerify bool
 	ListenHostPort     string
 	PublicHostPort     string
-	InsecureSkipVerify bool
 	TLSCertFile        string
 	TLSKeyFile         string
 }
@@ -33,17 +35,18 @@ type Configuration struct {
 // Service server
 type Service struct {
 	sync.Mutex
-	database           model.Database
-	listener           net.Listener
 	api                *api.API
-	running            bool
+	appstart           time.Time
+	database           model.Database
+	debugMode          bool
+	insecureSkipVerify bool
+	listener           net.Listener
 	listenHostPort     string // listening address
 	publicHostPort     string // TODO: discard requests not made to this host
-	insecureSkipVerify bool
+	running            bool
 	tlsCertFile        string
 	tlsKeyFile         string
 	version            string
-	appstart           time.Time
 }
 
 const (
@@ -56,9 +59,10 @@ const (
 func NewService(cfg *Configuration, database model.Database, version string, appStart int64) *Service {
 	return &Service{
 		database:           database,
+		debugMode:          cfg.DebugMode,
+		insecureSkipVerify: cfg.InsecureSkipVerify,
 		listenHostPort:     cfg.ListenHostPort,
 		publicHostPort:     cfg.PublicHostPort,
-		insecureSkipVerify: cfg.InsecureSkipVerify,
 		tlsCertFile:        cfg.TLSCertFile,
 		tlsKeyFile:         cfg.TLSKeyFile,
 		version:            version,
@@ -196,10 +200,12 @@ func (z *Service) router(endpoint string, tlsConfig *tls.Config) (http.Handler, 
 	router.PathPrefix("/api").Handler(apiHandler)
 
 	// oddballs router
-	oddballsAPI := &oddballs{db: z.database}
-	router.PathPrefix("/").Handler(
-		Adapt(oddballsAPI.router(), Authenticator(z.database)),
-	)
+	// oddballsAPI := &oddballs{db: z.database}
+	// router.PathPrefix("/").Handler(
+	// 	Adapt(oddballsAPI.router(), Authenticator(z.database)),
+	// )
+
+	router.PathPrefix("/").Handler(http.FileServer(web.FS(z.debugMode)))
 
 	mainHandler := Adapt(router, NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
 
