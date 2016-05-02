@@ -12,8 +12,7 @@ func (z *API) Ping(req *pb.PingRequest, stream pb.PingService_PingServer) error 
 	// TODO: allow client to set interval
 
 	ctx := stream.Context()
-	_, errAuthorize := z.authenticate(ctx)
-	if errAuthorize != nil {
+	if _, errAuthorize := z.authenticate(ctx); errAuthorize != nil {
 		return errAuthorize
 	}
 

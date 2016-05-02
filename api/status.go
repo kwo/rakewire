@@ -8,8 +8,7 @@ import (
 // GetStatus implements the Status service.
 func (z *API) GetStatus(ctx context.Context, req *pb.StatusRequest) (*pb.StatusResponse, error) {
 
-	_, errAuthorize := z.authenticate(ctx)
-	if errAuthorize != nil {
+	if _, errAuthorize := z.authenticate(ctx); errAuthorize != nil {
 		return nil, errAuthorize
 	}
 
