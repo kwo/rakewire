@@ -55,6 +55,16 @@ const (
 	mPut         = "PUT"
 )
 
+type oneFS struct {
+	name string
+	root http.FileSystem
+}
+
+func (z oneFS) Open(name string) (http.File, error) {
+	// ignore name and use z.name
+	return z.root.Open(z.name)
+}
+
 // NewService creates a new httpd service.
 func NewService(cfg *Configuration, database model.Database, version string, appStart int64) *Service {
 	return &Service{
@@ -207,12 +217,27 @@ func (z *Service) router(endpoint string, tlsConfig *tls.Config) (http.Handler, 
 		Adapt(oddballsAPI.router(), Authenticator(z.database)),
 	)
 
+	// begin static web pages
+
+	// create the static filesystem
 	var fs http.FileSystem
 	if z.debugMode {
 		fs = http.Dir("web/public") // debug mode assumes the application is being started from within the project root
 	} else {
 		fs = web.FS(false)
 	}
+
+	// HTML5 routes: any path without a dot (thus an extension)
+	router.Path("/{route:[a-z0-9/-]+}").Handler(
+		http.FileServer(oneFS{name: "/index.html", root: fs}),
+	)
+
+	// always redirect /index.html to /
+	router.Path("/index.html").Handler(
+		http.RedirectHandler("/", http.StatusMovedPermanently),
+	)
+
+	// finally mount the static web pages
 	router.PathPrefix("/").Handler(http.FileServer(fs))
 
 	mainHandler := Adapt(router, NoCache(), gorillaHandlers.CompressHandler, LogAdapter())

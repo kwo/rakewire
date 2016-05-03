@@ -6,7 +6,6 @@
   "author": "Karl Ostendorf <karl@ostendorf.com> (https://ostendorf.com/)",
   "license": "Copyright 2015 Karl Ostendorf",
   "dependencies": {
-    "history": "^2.0",
     "milligram": "^1.1.0",
     "moment": "^2.0",
     "react": "^15.0",

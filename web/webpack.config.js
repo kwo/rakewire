@@ -6,7 +6,7 @@ const HtmlPlugin = require('html-webpack-plugin');
 
 const config = {
 	entry: {
-		app: path.resolve(__dirname, 'index.js'),
+		app: path.resolve(__dirname, 'app.js'),
 		vendor: ['history', 'moment', 'react', 'react-dom', 'react-router', 'whatwg-fetch']
 	},
 	output: {
