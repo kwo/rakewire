@@ -10,6 +10,7 @@ import (
 func TestJWT(t *testing.T) {
 
 	user1 := &User{
+		ID:    "0000000001",
 		Name:  "jake",
 		Roles: []string{"admin", "operator"},
 	}

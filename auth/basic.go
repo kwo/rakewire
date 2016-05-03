@@ -49,6 +49,7 @@ func authenticateBasic(db model.Database, authHeader string, roles ...string) (*
 	}
 
 	authuser := &User{
+		ID:    user.ID,
 		Name:  user.Username,
 		Roles: user.Roles,
 	}

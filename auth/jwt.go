@@ -10,6 +10,7 @@ import (
 )
 
 const (
+	claimUserID         = "userid"
 	claimName           = "name"
 	claimRoles          = "roles"
 	jwtExpiration       = time.Hour
@@ -28,6 +29,7 @@ func GenerateToken(user *User) ([]byte, time.Time, error) {
 	expiration := time.Now().Add(jwtExpiration)
 	claims := jws.Claims{}
 	claims.SetExpiration(float64(expiration.Unix()))
+	claims.Set(claimUserID, user.ID)
 	claims.Set(claimName, user.Name)
 	claims.Set(claimRoles, strings.Join(user.Roles, " "))
 	token := jws.NewJWT(claims, jwtSigningMethod)
@@ -61,6 +63,11 @@ func authenticateJWT(authHeader string, roles ...string) (*User, error) {
 	}
 
 	user := &User{}
+	if claim := token.Claims().Get(claimUserID); claim != nil {
+		if id, ok := claim.(string); ok {
+			user.ID = id
+		}
+	}
 	if claim := token.Claims().Get(claimName); claim != nil {
 		if name, ok := claim.(string); ok {
 			user.Name = name
@@ -72,7 +79,7 @@ func authenticateJWT(authHeader string, roles ...string) (*User, error) {
 		}
 	}
 
-	if len(user.Name) > 0 {
+	if len(user.ID) > 0 {
 		return user, nil
 	}
 

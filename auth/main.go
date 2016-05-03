@@ -22,6 +22,7 @@ var (
 
 // User contains the username and roles of a user
 type User struct {
+	ID    string
 	Name  string
 	Roles []string
 }
