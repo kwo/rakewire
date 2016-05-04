@@ -2,6 +2,7 @@ package fever
 
 import (
 	"fmt"
+	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -23,8 +24,11 @@ func TestMain(m *testing.M) {
 }
 
 func newServer(database model.Database) *httptest.Server {
-	apiFever := NewAPI("/fever", database)
-	return httptest.NewServer(apiFever.Router())
+	apiFever := New(database)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		apiFever.ServeHTTPC(context.Background(), w, r)
+	})
+	return httptest.NewServer(handler)
 }
 
 func makeRequest(user *model.User, target string, formValues ...string) ([]byte, error) {
@@ -47,7 +51,7 @@ func makeRequest(user *model.User, target string, formValues ...string) ([]byte,
 	}
 
 	client := http.Client{}
-	req, err := http.NewRequest(mPost, target, strings.NewReader(values.Encode()))
+	req, err := http.NewRequest(http.MethodPost, target, strings.NewReader(values.Encode()))
 	if err != nil {
 		return nil, err
 	}

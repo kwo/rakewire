@@ -18,8 +18,19 @@ import (
 	"time"
 )
 
-// NewAPI creates a new REST API instance
-func NewAPI(database model.Database, versionString string, appStart time.Time) *API {
+// API top level struct
+type API struct {
+	db          model.Database
+	version     string
+	buildTime   int64
+	buildHash   string
+	appStart    int64
+	quitterLock sync.Mutex
+	quitters    map[time.Time]chan bool
+}
+
+// New creates a new REST API instance
+func New(database model.Database, versionString string, appStart time.Time) *API {
 
 	version, buildTime, buildHash := parseVersionString(versionString)
 
@@ -34,15 +45,44 @@ func NewAPI(database model.Database, versionString string, appStart time.Time) *
 
 }
 
-// API top level struct
-type API struct {
-	db          model.Database
-	version     string
-	buildTime   int64
-	buildHash   string
-	appStart    int64
-	quitterLock sync.Mutex
-	quitters    map[time.Time]chan bool
+// NewServer returns a new GRPC server
+func (z *API) NewServer(tlsConfig *tls.Config) *grpc.Server {
+
+	opts := []grpc.ServerOption{grpc.Creds(credentials.NewServerTLSFromCert(&tlsConfig.Certificates[0]))}
+	rpc := grpc.NewServer(opts...)
+	pb.RegisterPingServiceServer(rpc, z)
+	pb.RegisterStatusServiceServer(rpc, z)
+	pb.RegisterTokenServiceServer(rpc, z)
+
+	return rpc
+
+}
+
+// NewHandler returns a new JSON gateway to a GRPC server
+func (z *API) NewHandler(ctx context.Context, endpoint string, tlsConfig *tls.Config) (http.Handler, error) {
+
+	dcreds := credentials.NewTLS(tlsConfig)
+	dopts := []grpc.DialOption{grpc.WithTransportCredentials(dcreds)}
+	router := gateway.NewServeMux()
+
+	if err := pb.RegisterPingServiceHandlerFromEndpoint(ctx, router, endpoint, dopts); err != nil {
+		return nil, err
+	}
+	if err := pb.RegisterStatusServiceHandlerFromEndpoint(ctx, router, endpoint, dopts); err != nil {
+		return nil, err
+	}
+	if err := pb.RegisterTokenServiceHandlerFromEndpoint(ctx, router, endpoint, dopts); err != nil {
+		return nil, err
+	}
+
+	return router, nil
+
+}
+
+// Shutdown gracefully shutdowns all connections to the API
+func (z *API) Shutdown() {
+	z.notifyQuitters()
+	z.waitQuitters()
 }
 
 type fnDone func()
@@ -97,49 +137,12 @@ func (z *API) waitQuitters() {
 	}
 }
 
-func (z *API) Stop() {
-	z.notifyQuitters()
-	z.waitQuitters()
-}
-
-// Router returns the top-level router
-func (z *API) Router(endpointConnect string, tlsConfig *tls.Config) (http.Handler, *grpc.Server, error) {
-
-	opts := []grpc.ServerOption{grpc.Creds(credentials.NewServerTLSFromCert(&tlsConfig.Certificates[0]))}
-	grpcServer := grpc.NewServer(opts...)
-
-	pb.RegisterPingServiceServer(grpcServer, z)
-	pb.RegisterStatusServiceServer(grpcServer, z)
-	pb.RegisterTokenServiceServer(grpcServer, z)
-
-	ctx := context.Background()
-	dcreds := credentials.NewTLS(tlsConfig)
-	dopts := []grpc.DialOption{grpc.WithTransportCredentials(dcreds)}
-	gwmux := gateway.NewServeMux()
-
-	if err := pb.RegisterPingServiceHandlerFromEndpoint(ctx, gwmux, endpointConnect, dopts); err != nil {
-		return nil, nil, err
-	}
-	if err := pb.RegisterStatusServiceHandlerFromEndpoint(ctx, gwmux, endpointConnect, dopts); err != nil {
-		return nil, nil, err
-	}
-	if err := pb.RegisterTokenServiceHandlerFromEndpoint(ctx, gwmux, endpointConnect, dopts); err != nil {
-		return nil, nil, err
-	}
-
-	router := http.NewServeMux()
-	router.Handle("/", gwmux)
-
-	return router, grpcServer, nil
-
-}
-
 func (z *API) authenticate(ctx context.Context, roles ...string) (*auth.User, error) {
 
 	var authHeader string
 	if md, ok := metadata.FromContext(ctx); ok {
-		if auth, okAuth := md["authorization"]; okAuth {
-			authHeader = auth[0]
+		if header, okAuth := md["authorization"]; okAuth {
+			authHeader = header[0]
 		}
 	}
 

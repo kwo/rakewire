@@ -1,21 +1,19 @@
 package httpd
 
 import (
-	"github.com/gorilla/context"
+	"github.com/rs/xhandler"
+	"golang.org/x/net/context"
 	"net/http"
 	"rakewire/auth"
 	"rakewire/model"
 )
 
-// TODO: use x/net/context instead of gorilla context
-
 // Authenticator authenticates requests, placing the user object in the request context
-func Authenticator(db model.Database) Adapter {
-	return func(h http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
+func Authenticator(db model.Database) func(xhandler.HandlerC) xhandler.HandlerC {
+	return func(next xhandler.HandlerC) xhandler.HandlerC {
+		return xhandler.HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 			if user, err := auth.Authenticate(db, r.Header.Get("Authorization")); err == nil {
-				context.Set(r, "user", user)
+				ctx = context.WithValue(ctx, "user", user)
 			} else if err == auth.ErrUnauthenticated {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
@@ -31,7 +29,7 @@ func Authenticator(db model.Database) Adapter {
 			}
 
 			// Call the next handler on success.
-			h.ServeHTTP(w, r)
+			next.ServeHTTPC(ctx, w, r)
 
 		})
 	}

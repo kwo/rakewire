@@ -3,15 +3,15 @@ package httpd
 import (
 	"crypto/tls"
 	"errors"
-	gorillaHandlers "github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
+	"github.com/rs/xhandler"
+	"golang.org/x/net/context"
 	"net"
 	"net/http"
 	"rakewire/api"
 	"rakewire/fever"
 	"rakewire/logger"
 	"rakewire/model"
-	"rakewire/web"
+	"strings"
 	"sync"
 	"time"
 )
@@ -51,19 +51,7 @@ type Service struct {
 
 const (
 	hContentType = "Content-Type"
-	mGet         = "GET"
-	mPut         = "PUT"
 )
-
-type oneFS struct {
-	name string
-	root http.FileSystem
-}
-
-func (z oneFS) Open(name string) (http.File, error) {
-	// ignore name and use z.name
-	return z.root.Open(z.name)
-}
 
 // NewService creates a new httpd service.
 func NewService(cfg *Configuration, database model.Database, version string, appStart int64) *Service {
@@ -135,7 +123,7 @@ func (z *Service) Start() error {
 	}
 	localHostPort := net.JoinHostPort(localHostname, localPort)
 
-	handler, errHandler := z.router(localHostPort, tlsConfig)
+	handler, errHandler := z.newHandler(localHostPort, tlsConfig)
 	if errHandler != nil {
 		return errHandler
 	}
@@ -170,7 +158,7 @@ func (z *Service) Stop() {
 		log.Debugf("error stopping httpd: %s", err.Error())
 	}
 
-	z.api.Stop()
+	z.api.Shutdown()
 
 	z.listener = nil
 	z.running = false
@@ -186,62 +174,52 @@ func (z *Service) IsRunning() bool {
 	return z.running
 }
 
-func (z *Service) router(endpoint string, tlsConfig *tls.Config) (http.Handler, error) {
+func (z *Service) newHandler(endpoint string, tlsConfig *tls.Config) (http.Handler, error) {
 
-	// TODO: subrouters or remove gorilla http mux
+	rootContext := context.Background()
+	// TODO: grpc server.Stop() instead of quitters
 
-	router := mux.NewRouter()
+	z.api = api.New(z.database, z.version, z.appstart)
 
-	// fever api router
-	// no authentication necessary as it uses apiKey and feverhash
-	feverPrefix := "/fever/"
-	feverAPI := fever.NewAPI(feverPrefix, z.database)
-	router.PathPrefix(feverPrefix).Handler(
-		feverAPI.Router(),
-	)
+	feverHandler := fever.New(z.database)
+	opmlHandler := &opmlAPI{db: z.database}
+	staticHandler := newStaticAPI(z.debugMode)
 
-	z.api = api.NewAPI(z.database, z.version, z.appstart)
-
-	apiHandler, apiGRPCServer, err := z.api.Router(endpoint, tlsConfig)
+	apiHandler, err := z.api.NewHandler(rootContext, endpoint, tlsConfig)
 	if err != nil {
 		log.Debugf("cannot start API: %s", err.Error())
 		return nil, err
 	}
-	// Note: the api prefix must match the path in api/pb/api.proto
-	// No authentication necessary because each GRPC method authenticates
-	router.PathPrefix("/api").Handler(apiHandler)
+	apiServer := z.api.NewServer(tlsConfig)
 
-	// oddballs router
-	oddballsAPI := &oddballs{db: z.database}
-	router.PathPrefix("/x/").Handler(
-		Adapt(oddballsAPI.router(), Authenticator(z.database)),
-	)
+	coreHandler := xhandler.HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, "/fever/") {
+			feverHandler.ServeHTTPC(ctx, w, r)
+		} else if r.URL.Path == "/subscriptions.opml" {
+			c := xhandler.Chain{}
+			c.UseC(Authenticator(z.database))
+			c.HandlerC(opmlHandler).ServeHTTPC(ctx, w, r)
+		} else {
+			staticHandler.ServeHTTPC(ctx, w, r)
+		}
+	})
 
-	// begin static web pages
+	handler := xhandler.HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		// TODO: logging, access
+		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get(hContentType), "application/grpc") {
+			apiServer.ServeHTTP(w, r) // no context
+		} else if strings.HasPrefix(r.URL.Path, "/api/") {
+			apiHandler.ServeHTTP(w, r) // no context as this calls the grpc server
+		} else {
+			c := xhandler.Chain{}
+			c.UseC(NoCache)
+			c.HandlerC(coreHandler).ServeHTTPC(ctx, w, r)
+		}
+	})
 
-	// create the static filesystem
-	var fs http.FileSystem
-	if z.debugMode {
-		fs = http.Dir("web/public") // debug mode assumes the application is being started from within the project root
-	} else {
-		fs = web.FS(false)
-	}
+	c := xhandler.Chain{}
+	c.UseC(xhandler.CloseHandler)
 
-	// HTML5 routes: any path without a dot (thus an extension)
-	router.Path("/{route:[a-z0-9/-]+}").Handler(
-		http.FileServer(oneFS{name: "/index.html", root: fs}),
-	)
-
-	// always redirect /index.html to /
-	router.Path("/index.html").Handler(
-		http.RedirectHandler("/", http.StatusMovedPermanently),
-	)
-
-	// finally mount the static web pages
-	router.PathPrefix("/").Handler(http.FileServer(fs))
-
-	mainHandler := Adapt(router, NoCache(), gorillaHandlers.CompressHandler, LogAdapter())
-
-	return grpcHandler(apiGRPCServer, mainHandler), nil
+	return xhandler.New(rootContext, c.HandlerC(handler)), nil // TODO: logging
 
 }

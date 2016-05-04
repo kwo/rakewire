@@ -7,15 +7,6 @@
 [submodule "vendor/golang.org/x/crypto"]
 	path = vendor/golang.org/x/crypto
 	url = https://go.googlesource.com/crypto
-[submodule "vendor/github.com/gorilla/handlers"]
-	path = vendor/github.com/gorilla/handlers
-	url = https://github.com/gorilla/handlers
-[submodule "vendor/github.com/gorilla/mux"]
-	path = vendor/github.com/gorilla/mux
-	url = https://github.com/gorilla/mux
-[submodule "vendor/github.com/gorilla/context"]
-	path = vendor/github.com/gorilla/context
-	url = https://github.com/gorilla/context
 [submodule "vendor/github.com/antonholmquist/jason"]
 	path = vendor/github.com/antonholmquist/jason
 	url = https://github.com/antonholmquist/jason
@@ -37,3 +28,6 @@
 [submodule "vendor/github.com/SermoDigital/jose"]
 	path = vendor/github.com/SermoDigital/jose
 	url = https://github.com/SermoDigital/jose
+[submodule "vendor/github.com/rs/xhandler"]
+	path = vendor/github.com/rs/xhandler
+	url = https://github.com/rs/xhandler

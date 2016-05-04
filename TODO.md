@@ -10,6 +10,11 @@
 
 ### Unsorted
 
+  - ContextHandler
+  - handle auth for grpc and opml api in httpd
+  - move opml to /api
+  - remove gorilla crap
+
   - user API
   - init command to create initial user
   - add static pages
