@@ -2,26 +2,32 @@ package api
 
 import (
 	"golang.org/x/net/context"
-	"rakewire/api/pb"
 	"rakewire/auth"
+	"time"
 )
 
-// GetToken implements the Token service.
-func (z *API) GetToken(ctx context.Context, req *pb.TokenRequest) (*pb.TokenResponse, error) {
+// TokenRequest defines the token request
+type TokenRequest struct{}
 
-	user, errAuthorize := z.authenticate(ctx)
-	if errAuthorize != nil {
-		return nil, errAuthorize
-	}
+// TokenResponse defines the token response
+type TokenResponse struct {
+	Token      string    `json:"token"`
+	Expiration time.Time `json:"expiration"`
+}
+
+// GetToken implements the Token service.
+func (z *API) GetToken(ctx context.Context, req *TokenRequest) (*TokenResponse, error) {
+
+	user := ctx.Value("user").(*auth.User)
 
 	token, exp, errGenerate := auth.GenerateToken(user)
 	if errGenerate != nil {
 		return nil, errGenerate
 	}
 
-	rsp := &pb.TokenResponse{
+	rsp := &TokenResponse{
 		Token:      string(token),
-		Expiration: exp.Unix(),
+		Expiration: exp.Truncate(time.Second),
 	}
 
 	return rsp, nil

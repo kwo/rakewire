@@ -3,37 +3,30 @@ package remote
 import (
 	"fmt"
 	"github.com/codegangsta/cli"
-	"golang.org/x/net/context"
 	"os"
-	"rakewire/api/pb"
+	"rakewire/api"
 	"time"
 )
 
 // Status retrieves the status of a remote instance
 func Status(c *cli.Context) error {
 
-	conn, errConnect := connect(c)
-	if errConnect != nil {
-		fmt.Printf("Error: %s\n", errConnect.Error())
-		os.Exit(1)
-	}
-	defer conn.Close()
+	req := &api.StatusRequest{}
+	status := &api.StatusResponse{}
 
-	client := pb.NewStatusServiceClient(conn)
-
-	if status, err := client.GetStatus(context.Background(), &pb.StatusRequest{}); err == nil {
+	if err := makeRequest(c, "status", req, status); err == nil {
 
 		// TODO: better formatting, include days
 
-		duration := time.Now().Truncate(time.Second).Sub(time.Unix(status.AppStart, 0))
+		duration := time.Now().Truncate(time.Second).Sub(status.AppStart)
 		fmt.Printf("uptime: %s\n", duration.String())
 
 		if len(status.Version) != 0 {
 			fmt.Printf("version: %s\n", status.Version)
 		}
 
-		if status.BuildTime != 0 {
-			fmt.Printf("build time: %s\n", time.Unix(status.BuildTime, 0).UTC().Format(time.RFC3339))
+		if !status.BuildTime.IsZero() {
+			fmt.Printf("build time: %s\n", status.BuildTime.UTC().Format(time.RFC3339))
 		}
 
 		if len(status.BuildHash) != 0 {

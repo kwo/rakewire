@@ -1,4 +1,4 @@
-package httpd
+package api
 
 import (
 	"fmt"
@@ -9,21 +9,7 @@ import (
 	"rakewire/opml"
 )
 
-type opmlAPI struct {
-	db model.Database
-}
-
-func (z *opmlAPI) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		z.opmlExport(ctx, w, r)
-	} else if r.Method == http.MethodPut {
-		z.opmlImport(ctx, w, r)
-	} else {
-		http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-	}
-}
-
-func (z *opmlAPI) opmlExport(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (z *API) opmlExport(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	user := ctx.Value("user").(*auth.User)
 
@@ -58,7 +44,7 @@ func (z *opmlAPI) opmlExport(ctx context.Context, w http.ResponseWriter, r *http
 
 }
 
-func (z *opmlAPI) opmlImport(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func (z *API) opmlImport(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 
 	user := ctx.Value("user").(*auth.User)
 

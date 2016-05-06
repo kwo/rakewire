@@ -11,6 +11,7 @@ import (
 	"rakewire/fever"
 	"rakewire/logger"
 	"rakewire/model"
+	"rakewire/web"
 	"strings"
 	"sync"
 	"time"
@@ -35,7 +36,6 @@ type Configuration struct {
 // Service server
 type Service struct {
 	sync.Mutex
-	api                *api.API
 	appstart           time.Time
 	database           model.Database
 	debugMode          bool
@@ -48,10 +48,6 @@ type Service struct {
 	tlsKeyFile         string
 	version            string
 }
-
-const (
-	hContentType = "Content-Type"
-)
 
 // NewService creates a new httpd service.
 func NewService(cfg *Configuration, database model.Database, version string, appStart int64) *Service {
@@ -113,20 +109,7 @@ func (z *Service) Start() error {
 		return err
 	}
 
-	localHostname, localPort, errSplitLocal := net.SplitHostPort(z.listenHostPort)
-	if errSplitLocal != nil {
-		log.Debugf("cannot split listen hostport: %s", errSplitLocal.Error())
-		return errSplitLocal
-	}
-	if localHostname == net.IPv4zero.String() {
-		localHostname = "localhost"
-	}
-	localHostPort := net.JoinHostPort(localHostname, localPort)
-
-	handler, errHandler := z.newHandler(localHostPort, tlsConfig)
-	if errHandler != nil {
-		return errHandler
-	}
+	handler := z.newHandler()
 
 	server := http.Server{
 		Addr:      z.listenHostPort,
@@ -136,7 +119,7 @@ func (z *Service) Start() error {
 
 	go server.Serve(z.listener)
 
-	log.Infof("listening on %s, reachable at %s, local %s", z.listenHostPort, z.publicHostPort, localHostPort)
+	log.Infof("listening on %s, reachable at %s", z.listenHostPort, z.publicHostPort)
 
 	z.running = true
 
@@ -158,8 +141,6 @@ func (z *Service) Stop() {
 		log.Debugf("error stopping httpd: %s", err.Error())
 	}
 
-	z.api.Shutdown()
-
 	z.listener = nil
 	z.running = false
 
@@ -174,52 +155,29 @@ func (z *Service) IsRunning() bool {
 	return z.running
 }
 
-func (z *Service) newHandler(endpoint string, tlsConfig *tls.Config) (http.Handler, error) {
-
-	rootContext := context.Background()
-	// TODO: grpc server.Stop() instead of quitters
-
-	z.api = api.New(z.database, z.version, z.appstart)
+func (z *Service) newHandler() http.Handler {
 
 	feverHandler := fever.New(z.database)
-	opmlHandler := &opmlAPI{db: z.database}
-	staticHandler := newStaticAPI(z.debugMode)
-
-	apiHandler, err := z.api.NewHandler(rootContext, endpoint, tlsConfig)
-	if err != nil {
-		log.Debugf("cannot start API: %s", err.Error())
-		return nil, err
-	}
-	apiServer := z.api.NewServer(tlsConfig)
-
-	coreHandler := xhandler.HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/fever/") {
-			feverHandler.ServeHTTPC(ctx, w, r)
-		} else if r.URL.Path == "/subscriptions.opml" {
-			c := xhandler.Chain{}
-			c.UseC(Authenticator(z.database))
-			c.HandlerC(opmlHandler).ServeHTTPC(ctx, w, r)
-		} else {
-			staticHandler.ServeHTTPC(ctx, w, r)
-		}
-	})
+	apiHandler := api.New(z.database, "/api/", z.version, z.appstart)
+	webHandler := web.New(z.debugMode)
 
 	handler := xhandler.HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		// TODO: logging, access
-		if r.ProtoMajor == 2 && strings.Contains(r.Header.Get(hContentType), "application/grpc") {
-			apiServer.ServeHTTP(w, r) // no context
-		} else if strings.HasPrefix(r.URL.Path, "/api/") {
-			apiHandler.ServeHTTP(w, r) // no context as this calls the grpc server
-		} else {
+		if strings.HasPrefix(r.URL.Path, "/api/") {
 			c := xhandler.Chain{}
-			c.UseC(NoCache)
-			c.HandlerC(coreHandler).ServeHTTPC(ctx, w, r)
+			c.UseC(Authenticator(z.database))
+			c.HandlerC(apiHandler).ServeHTTPC(ctx, w, r)
+		} else if strings.HasPrefix(r.URL.Path, "/fever/") {
+			feverHandler.ServeHTTPC(ctx, w, r)
+		} else {
+			webHandler.ServeHTTPC(ctx, w, r)
 		}
 	})
 
 	c := xhandler.Chain{}
 	c.UseC(xhandler.CloseHandler)
+	c.UseC(NoCache)
+	c.HandlerC(handler)
 
-	return xhandler.New(rootContext, c.HandlerC(handler)), nil // TODO: logging
+	return xhandler.New(context.Background(), c.HandlerC(handler)) // TODO: logging
 
 }

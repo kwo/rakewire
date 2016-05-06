@@ -216,11 +216,6 @@ func main() {
 			},
 			Subcommands: []cli.Command{
 				{
-					Name:   "ping",
-					Usage:  "get ping stream from server",
-					Action: remote.Ping,
-				},
-				{
 					Name:   "status",
 					Usage:  "get instance status",
 					Action: remote.Status,

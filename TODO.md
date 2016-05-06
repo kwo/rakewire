@@ -2,6 +2,10 @@
 
 ## Roadmap
 
+  - go back to go-jwt
+  - httpd logging, compression
+  - remove xhandler?
+
 ### Features
   - UI
   - full text search
@@ -9,11 +13,6 @@
   - hot links
 
 ### Unsorted
-
-  - ContextHandler
-  - handle auth for grpc and opml api in httpd
-  - move opml to /api
-  - remove gorilla crap
 
   - user API
   - init command to create initial user

@@ -1,13 +1,13 @@
 package remote
 
 import (
-	"crypto/tls"
+	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"github.com/codegangsta/cli"
-	"golang.org/x/net/context"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
+	"io/ioutil"
+	"net/http"
 )
 
 var (
@@ -16,65 +16,47 @@ var (
 	errMissingPassword = errors.New("Missing password, try setting the --password option")
 )
 
-// BasicAuthCredentials implements Credentials for username/password authentication.
-type BasicAuthCredentials struct {
-	Username string
-	Password string
-}
-
-// GetRequestMetadata is part of the Credential interface,
-func (z *BasicAuthCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
-	auth := base64.StdEncoding.EncodeToString([]byte(z.Username + ":" + z.Password))
-	return map[string]string{
-		"authorization": "Basic " + auth,
-	}, nil
-}
-
-// RequireTransportSecurity is part of the Credential interface,
-func (z *BasicAuthCredentials) RequireTransportSecurity() bool {
-	return true
-}
-
-// TokenCredentials implements Credentials for JWT authentication.
-type TokenCredentials struct {
-	Token string
-}
-
-// GetRequestMetadata is part of the Credential interface,
-func (z *TokenCredentials) GetRequestMetadata(ctx context.Context, uri ...string) (map[string]string, error) {
-	return map[string]string{
-		"authorization": "Bearer " + z.Token,
-	}, nil
-}
-
-// RequireTransportSecurity is part of the Credential interface,
-func (z *TokenCredentials) RequireTransportSecurity() bool {
-	return true
-}
-
-func connect(c *cli.Context) (*grpc.ClientConn, error) {
-
-	insecureSkipVerify := c.Parent().Bool("insecure")
+func makeRequest(c *cli.Context, path string, req interface{}, rsp interface{}) error {
 
 	addr, username, password, token, errCredentials := getHostUsernamePasswordToken(c)
 	if errCredentials != nil {
-		return nil, errCredentials
+		return errCredentials
 	}
 
-	tlsConfig := &tls.Config{
-		InsecureSkipVerify: insecureSkipVerify,
-	}
-
-	var creds credentials.Credentials
+	var auth string
 	if len(token) == 0 {
-		creds = &BasicAuthCredentials{Username: username, Password: password}
+		content := base64.StdEncoding.EncodeToString([]byte(username + ":" + password))
+		auth = "Basic " + content
 	} else {
-		creds = &TokenCredentials{Token: token}
+		auth = "Bearer " + token
 	}
 
-	authTransport := grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig))
-	authUser := grpc.WithPerRPCCredentials(creds)
-	return grpc.Dial(addr, authTransport, authUser)
+	reqData, errMarshal := json.Marshal(req)
+	if errMarshal != nil {
+		return errMarshal
+	}
+
+	request, errRequest := http.NewRequest(http.MethodPost, "https://"+addr+"/api/"+path, bytes.NewBuffer(reqData))
+	if errRequest != nil {
+		return errRequest
+	}
+	request.Header.Add("Authorization", auth)
+	client := &http.Client{}
+	response, errResponse := client.Do(request)
+	if errResponse != nil {
+		return errResponse
+	}
+
+	defer response.Body.Close()
+	rspData, errRead := ioutil.ReadAll(response.Body)
+	if errRead != nil {
+		return errRead
+	}
+	if errUnmarshal := json.Unmarshal(rspData, rsp); errUnmarshal != nil {
+		return errUnmarshal
+	}
+
+	return nil
 
 }
 
