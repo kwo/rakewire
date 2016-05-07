@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"io"
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 	"strings"
 	"testing"
 )

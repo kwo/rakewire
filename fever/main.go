@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"golang.org/x/net/context"
 	"net/http"
-	"rakewire/logger"
-	"rakewire/model"
+	"github.com/kwo/rakewire/logger"
+	"github.com/kwo/rakewire/model"
 	"strings"
 )
 

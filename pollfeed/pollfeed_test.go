@@ -3,7 +3,7 @@ package pollfeed
 import (
 	"io/ioutil"
 	"os"
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 	"testing"
 	"time"
 )

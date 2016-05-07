@@ -1,7 +1,7 @@
 package fever
 
 import (
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 )
 
 func (z *API) getItemsAll(userID string, tx model.Transaction) ([]*Item, error) {

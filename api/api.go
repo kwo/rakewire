@@ -5,8 +5,8 @@ import (
 	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
-	"rakewire/logger"
-	"rakewire/model"
+	"github.com/kwo/rakewire/logger"
+	"github.com/kwo/rakewire/model"
 	"strings"
 	"time"
 )

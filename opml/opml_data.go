@@ -2,7 +2,7 @@ package opml
 
 import (
 	"fmt"
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 	"strings"
 	"time"
 )

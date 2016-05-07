@@ -3,7 +3,7 @@ package fever
 import (
 	"fmt"
 	"github.com/antonholmquist/jason"
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 	"testing"
 )
 

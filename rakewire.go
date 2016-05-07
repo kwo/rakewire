@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/codegangsta/cli"
 	"os"
-	"rakewire/cmd"
-	"rakewire/cmd/remote"
+	"github.com/kwo/rakewire/cmd"
+	"github.com/kwo/rakewire/cmd/remote"
 	"strings"
 )
 

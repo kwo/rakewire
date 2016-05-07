@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"rakewire/feedparser"
-	"rakewire/logger"
-	"rakewire/model"
+	"github.com/kwo/rakewire/feedparser"
+	"github.com/kwo/rakewire/logger"
+	"github.com/kwo/rakewire/model"
 	"sync"
 	"time"
 )

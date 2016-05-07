@@ -2,7 +2,7 @@ package fever
 
 import (
 	"fmt"
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 	"strconv"
 	"time"
 )

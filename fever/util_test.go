@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 	"strings"
 	"testing"
 	"time"

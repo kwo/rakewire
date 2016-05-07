@@ -2,7 +2,7 @@ package auth
 
 import (
 	"encoding/base64"
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 	"strings"
 )
 

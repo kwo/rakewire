@@ -3,7 +3,7 @@ package model
 import (
 	"github.com/boltdb/bolt"
 	"os"
-	"rakewire/logger"
+	"github.com/kwo/rakewire/logger"
 	"strconv"
 	"sync"
 	"time"

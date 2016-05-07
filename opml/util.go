@@ -1,7 +1,7 @@
 package opml
 
 import (
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 )
 
 // Flatten pulls nested groups up to the top level, modifing the group name.

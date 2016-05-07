@@ -2,7 +2,7 @@ package api
 
 import (
 	"golang.org/x/net/context"
-	"rakewire/auth"
+	"github.com/kwo/rakewire/auth"
 	"time"
 )
 

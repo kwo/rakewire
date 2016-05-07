@@ -1,8 +1,8 @@
 package pollfeed
 
 import (
-	"rakewire/logger"
-	"rakewire/model"
+	"github.com/kwo/rakewire/logger"
+	"github.com/kwo/rakewire/model"
 	"sync"
 	"sync/atomic"
 	"time"

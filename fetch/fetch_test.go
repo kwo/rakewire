@@ -1,7 +1,7 @@
 package fetch
 
 import (
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 	"testing"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/codegangsta/cli"
 	"path/filepath"
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 )
 
 func showVersionInformation(c *cli.Context) {

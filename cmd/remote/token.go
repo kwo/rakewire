@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/codegangsta/cli"
 	"os"
-	"rakewire/api"
+	"github.com/kwo/rakewire/api"
 	"time"
 )
 

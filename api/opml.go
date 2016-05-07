@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"golang.org/x/net/context"
 	"net/http"
-	"rakewire/auth"
-	"rakewire/model"
-	"rakewire/opml"
+	"github.com/kwo/rakewire/auth"
+	"github.com/kwo/rakewire/model"
+	"github.com/kwo/rakewire/opml"
 )
 
 func (z *API) opmlExport(ctx context.Context, w http.ResponseWriter, r *http.Request) {

@@ -5,7 +5,7 @@ import (
 	"github.com/codegangsta/cli"
 	"os"
 	"path/filepath"
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 )
 
 // Check the database

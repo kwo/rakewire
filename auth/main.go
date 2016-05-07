@@ -2,8 +2,8 @@ package auth
 
 import (
 	"errors"
-	"rakewire/logger"
-	"rakewire/model"
+	"github.com/kwo/rakewire/logger"
+	"github.com/kwo/rakewire/model"
 	"strings"
 )
 

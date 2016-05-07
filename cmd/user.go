@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/codegangsta/cli"
 	"os"
-	"rakewire/model"
+	"github.com/kwo/rakewire/model"
 )
 
 // UserAdd adds a user

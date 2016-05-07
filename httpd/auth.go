@@ -4,8 +4,8 @@ import (
 	"github.com/rs/xhandler"
 	"golang.org/x/net/context"
 	"net/http"
-	"rakewire/auth"
-	"rakewire/model"
+	"github.com/kwo/rakewire/auth"
+	"github.com/kwo/rakewire/model"
 )
 
 // Authenticator authenticates requests, placing the user object in the request context
