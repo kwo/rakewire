@@ -156,16 +156,18 @@ func (z *Service) IsRunning() bool {
 
 func (z *Service) newHandler() http.Handler {
 
+	apiPath := "/api/"
+	apiChain := xhandler.Chain{}
+	apiChain.UseC(Authenticator(z.database))
+	apiHandler := apiChain.HandlerC(api.New(z.database, apiPath, z.version, z.appstart))
+	feverPath := "/fever/"
 	feverHandler := fever.New(z.database)
-	apiHandler := api.New(z.database, "/api/", z.version, z.appstart)
 	webHandler := web.New(z.debugMode)
 
-	handler := xhandler.HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/api/") {
-			c := xhandler.Chain{}
-			c.UseC(Authenticator(z.database))
-			c.HandlerC(apiHandler).ServeHTTPC(ctx, w, r)
-		} else if strings.HasPrefix(r.URL.Path, "/fever/") {
+	router := xhandler.HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		if strings.HasPrefix(r.URL.Path, apiPath) {
+			apiHandler.ServeHTTPC(ctx, w, r)
+		} else if strings.HasPrefix(r.URL.Path, feverPath) {
 			feverHandler.ServeHTTPC(ctx, w, r)
 		} else {
 			webHandler.ServeHTTPC(ctx, w, r)
@@ -175,8 +177,7 @@ func (z *Service) newHandler() http.Handler {
 	c := xhandler.Chain{}
 	c.UseC(xhandler.CloseHandler)
 	c.UseC(NoCache)
-	c.HandlerC(handler)
 
-	return xhandler.New(context.Background(), c.HandlerC(handler)) // TODO: logging
+	return xhandler.New(context.Background(), c.HandlerC(router)) // TODO: logging
 
 }
