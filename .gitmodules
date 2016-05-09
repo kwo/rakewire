@@ -7,9 +7,6 @@
 [submodule "vendor/golang.org/x/crypto"]
 	path = vendor/golang.org/x/crypto
 	url = https://go.googlesource.com/crypto
-[submodule "vendor/github.com/antonholmquist/jason"]
-	path = vendor/github.com/antonholmquist/jason
-	url = https://github.com/antonholmquist/jason
 [submodule "vendor/github.com/codegangsta/cli"]
 	path = vendor/github.com/codegangsta/cli
 	url = https://github.com/codegangsta/cli
@@ -22,3 +19,9 @@
 [submodule "vendor/github.com/dgrijalva/jwt-go"]
 	path = vendor/github.com/dgrijalva/jwt-go
 	url = https://github.com/dgrijalva/jwt-go
+[submodule "vendor/github.com/matryer/silk"]
+	path = vendor/github.com/matryer/silk
+	url = https://github.com/matryer/silk
+[submodule "vendor/github.com/matryer/m"]
+	path = vendor/github.com/matryer/m
+	url = https://github.com/matryer/m
