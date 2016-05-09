@@ -1,8 +1,7 @@
 package auth
 
 import (
-	"github.com/SermoDigital/jose/crypto"
-	"github.com/SermoDigital/jose/jws"
+	"github.com/dgrijalva/jwt-go"
 	"math/rand"
 	"strings"
 	"sync"
@@ -13,28 +12,28 @@ const (
 	claimUserID         = "userid"
 	claimName           = "name"
 	claimRoles          = "roles"
+	claimExpiration     = "exp"
 	jwtExpiration       = time.Hour
 	jwtSigningKeyLength = 64
 	letters             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 )
 
 var (
-	jwtSigningMethod = crypto.SigningMethodHS256
+	jwtSigningMethod = jwt.SigningMethodHS256
 	signingKey       []byte
 	signingKeyLock   sync.Mutex
 )
 
 // GenerateToken creates a new JWT encoded with the username and roles of the given user, returns the token and expiration
-func GenerateToken(user *User) ([]byte, time.Time, error) {
+func GenerateToken(user *User) (string, time.Time, error) {
 	expiration := time.Now().Add(jwtExpiration)
-	claims := jws.Claims{}
-	claims.SetExpiration(float64(expiration.Unix()))
-	claims.Set(claimUserID, user.ID)
-	claims.Set(claimName, user.Name)
-	claims.Set(claimRoles, strings.Join(user.Roles, " "))
-	token := jws.NewJWT(claims, jwtSigningMethod)
-	tokenBytes, err := token.Serialize(getSigningKey())
-	return tokenBytes, expiration, err
+	token := jwt.New(jwtSigningMethod)
+	token.Claims[claimExpiration] = expiration.Unix()
+	token.Claims[claimUserID] = user.ID
+	token.Claims[claimName] = user.Name
+	token.Claims[claimRoles] = strings.Join(user.Roles, " ")
+	tokenString, err := token.SignedString(getSigningKey())
+	return tokenString, expiration, err
 }
 
 // RegenerateSigningKey generates the signing key
@@ -48,32 +47,28 @@ func RegenerateSigningKey() error {
 func authenticateJWT(authHeader string, roles ...string) (*User, error) {
 
 	tokenString := strings.TrimPrefix(authHeader, schemeJWT)
-	token, errParse := jws.ParseJWT([]byte(tokenString))
+	token, errParse := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, ErrUnauthenticated
+		}
+		return getSigningKey(), nil
+	})
 	if errParse != nil {
-		return nil, ErrBadHeader
-	}
-
-	if err := token.Validate(getSigningKey(), jwtSigningMethod); err != nil {
-		return nil, ErrUnauthenticated
-	}
-
-	// test for missing expiration; already expired tokens are validated above in token.Validate
-	if _, ok := token.Claims().Expiration(); !ok {
 		return nil, ErrUnauthenticated
 	}
 
 	user := &User{}
-	if claim := token.Claims().Get(claimUserID); claim != nil {
+	if claim := token.Claims[claimUserID]; claim != nil {
 		if id, ok := claim.(string); ok {
 			user.ID = id
 		}
 	}
-	if claim := token.Claims().Get(claimName); claim != nil {
+	if claim := token.Claims[claimName]; claim != nil {
 		if name, ok := claim.(string); ok {
 			user.Name = name
 		}
 	}
-	if claim := token.Claims().Get(claimRoles); claim != nil {
+	if claim := token.Claims[claimRoles]; claim != nil {
 		if roles, ok := claim.(string); ok {
 			user.Roles = strings.Fields(roles)
 		}

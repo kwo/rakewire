@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"github.com/SermoDigital/jose/jws"
+	"github.com/dgrijalva/jwt-go"
 	"strings"
 	"testing"
 	"time"
@@ -44,10 +44,9 @@ func TestJWT(t *testing.T) {
 
 func TestNoExp(t *testing.T) {
 
-	claims := jws.Claims{}
-	claims.Set(claimName, "jake")
-	token := jws.NewJWT(claims, jwtSigningMethod)
-	tokenString, errSign := token.Serialize(getSigningKey())
+	token := jwt.New(jwtSigningMethod)
+	token.Claims[claimName] = "jake"
+	tokenString, errSign := token.SignedString(getSigningKey())
 	if errSign != nil {
 		t.Fatalf("Failed to sign token: %s", errSign.Error())
 	}
@@ -64,11 +63,10 @@ func TestNoExp(t *testing.T) {
 
 func TestExpired(t *testing.T) {
 
-	claims := jws.Claims{}
-	claims.Set(claimName, "jake")
-	claims.SetExpiration(float64(time.Now().Add(time.Second * -1).Unix()))
-	token := jws.NewJWT(claims, jwtSigningMethod)
-	tokenString, errSign := token.Serialize(getSigningKey())
+	token := jwt.New(jwtSigningMethod)
+	token.Claims[claimName] = "jake"
+	token.Claims[claimExpiration] = time.Now().Add(time.Second * -1).Unix()
+	tokenString, errSign := token.SignedString(getSigningKey())
 	if errSign != nil {
 		t.Fatalf("Failed to sign token: %s", errSign.Error())
 	}
@@ -85,11 +83,10 @@ func TestExpired(t *testing.T) {
 
 func TestWrongSignature(t *testing.T) {
 
-	claims := jws.Claims{}
-	claims.Set(claimName, "jake")
-	claims.SetExpiration(float64(time.Now().Add(time.Minute * 20).Unix()))
-	token := jws.NewJWT(claims, jwtSigningMethod)
-	tokenString, errSign := token.Serialize(getSigningKey())
+	token := jwt.New(jwtSigningMethod)
+	token.Claims[claimName] = "jake"
+	token.Claims[claimExpiration] = time.Now().Add(time.Second * -1).Unix()
+	tokenString, errSign := token.SignedString(getSigningKey())
 	if errSign != nil {
 		t.Fatalf("Failed to sign token: %s", errSign.Error())
 	}
@@ -108,10 +105,9 @@ func TestWrongSignature(t *testing.T) {
 
 func TestNoUser(t *testing.T) {
 
-	claims := jws.Claims{}
-	claims.SetExpiration(float64(time.Now().Add(time.Minute * 20).Unix()))
-	token := jws.NewJWT(claims, jwtSigningMethod)
-	tokenString, errSign := token.Serialize(getSigningKey())
+	token := jwt.New(jwtSigningMethod)
+	token.Claims[claimExpiration] = time.Now().Add(time.Second * -1).Unix()
+	tokenString, errSign := token.SignedString(getSigningKey())
 	if errSign != nil {
 		t.Fatalf("Failed to sign token: %s", errSign.Error())
 	}

@@ -2,7 +2,6 @@
 
 ## Roadmap
 
-  - go back to go-jwt
   - httpd logging, compression
   - remove xhandler?
 
