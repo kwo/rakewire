@@ -1,25 +1,14 @@
 package api
 
 import (
+	"github.com/kwo/rakewire/api/msg"
 	"golang.org/x/net/context"
-	"time"
 )
 
-// StatusRequest defines the status request
-type StatusRequest struct{}
-
-// StatusResponse defines the status response
-type StatusResponse struct {
-	Version   string    `json:"version"`
-	BuildTime time.Time `json:"buildTime"`
-	BuildHash string    `json:"buildHash"`
-	AppStart  time.Time `json:"appStart"`
-}
-
 // GetStatus implements the Status service.
-func (z *API) GetStatus(ctx context.Context, req *StatusRequest) (*StatusResponse, error) {
+func (z *API) GetStatus(ctx context.Context, req *msg.StatusRequest) (*msg.StatusResponse, error) {
 
-	rsp := &StatusResponse{
+	rsp := &msg.StatusResponse{
 		Version:   z.version,
 		BuildTime: z.buildTime,
 		BuildHash: z.buildHash,

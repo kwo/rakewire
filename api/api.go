@@ -2,11 +2,12 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/kwo/rakewire/api/msg"
+	"github.com/kwo/rakewire/logger"
+	"github.com/kwo/rakewire/model"
 	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
-	"github.com/kwo/rakewire/logger"
-	"github.com/kwo/rakewire/model"
 	"strings"
 	"time"
 )
@@ -25,13 +26,13 @@ type API struct {
 	db        model.Database
 	mountPath string
 	version   string
-	buildTime time.Time
+	buildTime int64
 	buildHash string
-	appStart  time.Time
+	appStart  int64
 }
 
 // New creates a new REST API instance
-func New(database model.Database, mountPath, versionString string, appStart time.Time) *API {
+func New(database model.Database, mountPath, versionString string, appStart int64) *API {
 
 	version, buildTime, buildHash := parseVersionString(versionString)
 
@@ -51,7 +52,7 @@ func (z *API) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Req
 	path := strings.TrimPrefix(r.URL.Path, z.mountPath)
 	if path == "token" {
 		if r.Method == http.MethodPost {
-			req := &TokenRequest{}
+			req := &msg.TokenRequest{}
 			if errRequest := readRequest(ctx, r, req); errRequest == nil {
 				rsp, errToken := z.GetToken(ctx, req)
 				sendResponse(ctx, w, rsp, errToken)
@@ -63,9 +64,9 @@ func (z *API) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Req
 		}
 	} else if path == "status" {
 		if r.Method == http.MethodPost {
-			req := &StatusRequest{}
+			req := &msg.StatusRequest{}
 			if errRequest := readRequest(ctx, r, req); errRequest == nil {
-				rsp, errStatus := z.GetStatus(ctx, &StatusRequest{})
+				rsp, errStatus := z.GetStatus(ctx, &msg.StatusRequest{})
 				sendResponse(ctx, w, rsp, errStatus)
 			} else {
 				sendResponse(ctx, w, nil, errRequest)
@@ -92,14 +93,17 @@ func readRequest(ctx context.Context, r *http.Request, req interface{}) error {
 	if errRead != nil {
 		return errRead
 	}
+	if len(data) == 0 {
+		return msg.ErrEmptyRequest
+	}
 	if errJSON := json.Unmarshal(data, req); errJSON != nil {
 		return errJSON
 	}
 	return nil
 }
 
-func sendResponse(ctx context.Context, w http.ResponseWriter, rsp interface{}, err error) {
-	if err == nil {
+func sendResponse(ctx context.Context, w http.ResponseWriter, rsp interface{}, errRequest error) {
+	if errRequest == nil {
 		data, errJSON := json.Marshal(rsp)
 		if errJSON == nil {
 			w.Header().Set(hContentType, mimeJSON)
@@ -111,6 +115,8 @@ func sendResponse(ctx context.Context, w http.ResponseWriter, rsp interface{}, e
 			log.Debugf("Cannot serialize response: %s", errJSON.Error())
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		}
+	} else if errRequest == msg.ErrEmptyRequest {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	} else {
 		// TODO: senteniel errors for triage
 		// not authorized
@@ -119,7 +125,7 @@ func sendResponse(ctx context.Context, w http.ResponseWriter, rsp interface{}, e
 	}
 }
 
-func parseVersionString(versionString string) (string, time.Time, string) {
+func parseVersionString(versionString string) (string, int64, string) {
 
 	// parse version string
 	fields := strings.Fields(versionString)
@@ -133,10 +139,10 @@ func parseVersionString(versionString string) (string, time.Time, string) {
 			log.Debugf("Cannot parse build time: %s", err.Error())
 		}
 
-		return version, buildTime, buildHash
+		return version, buildTime.Unix(), buildHash
 
 	}
 
-	return "", time.Time{}, ""
+	return "", 0, ""
 
 }

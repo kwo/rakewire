@@ -3,18 +3,17 @@ package httpd
 import (
 	"crypto/tls"
 	"errors"
-	"github.com/rs/xhandler"
-	"golang.org/x/net/context"
-	"net"
-	"net/http"
 	"github.com/kwo/rakewire/api"
 	"github.com/kwo/rakewire/fever"
 	"github.com/kwo/rakewire/logger"
 	"github.com/kwo/rakewire/model"
 	"github.com/kwo/rakewire/web"
+	"github.com/rs/xhandler"
+	"golang.org/x/net/context"
+	"net"
+	"net/http"
 	"strings"
 	"sync"
-	"time"
 )
 
 var (
@@ -36,7 +35,7 @@ type Configuration struct {
 // Service server
 type Service struct {
 	sync.Mutex
-	appstart           time.Time
+	appstart           int64
 	database           model.Database
 	debugMode          bool
 	insecureSkipVerify bool
@@ -60,7 +59,7 @@ func NewService(cfg *Configuration, database model.Database, version string, app
 		tlsCertFile:        cfg.TLSCertFile,
 		tlsKeyFile:         cfg.TLSKeyFile,
 		version:            version,
-		appstart:           time.Unix(appStart, 0).Truncate(time.Second),
+		appstart:           appStart,
 	}
 }
 

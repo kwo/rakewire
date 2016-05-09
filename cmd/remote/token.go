@@ -3,8 +3,8 @@ package remote
 import (
 	"fmt"
 	"github.com/codegangsta/cli"
+	"github.com/kwo/rakewire/api/msg"
 	"os"
-	"github.com/kwo/rakewire/api"
 	"time"
 )
 
@@ -13,15 +13,15 @@ func Token(c *cli.Context) error {
 
 	shellExport := c.Bool("export")
 
-	req := &api.TokenRequest{}
-	rsp := &api.TokenResponse{}
+	req := &msg.TokenRequest{}
+	rsp := &msg.TokenResponse{}
 
 	if err := makeRequest(c, "token", req, rsp); err == nil {
 		if shellExport {
 			fmt.Printf("export RAKEWIRE_TOKEN=\"%s\"\n", rsp.Token)
 		} else {
 			fmt.Printf("token: %s\n", rsp.Token)
-			fmt.Printf("expires: %s\n", rsp.Expiration.Format(time.RFC3339))
+			fmt.Printf("expires: %s\n", time.Unix(rsp.Expiration, 0).Format(time.RFC3339))
 		}
 	} else {
 		fmt.Printf("Error: %s\n", err.Error())

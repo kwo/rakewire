@@ -3,15 +3,15 @@ package cmd
 import (
 	"fmt"
 	"github.com/codegangsta/cli"
-	"io/ioutil"
-	"os"
-	"os/signal"
 	"github.com/kwo/rakewire/fetch"
 	"github.com/kwo/rakewire/httpd"
 	"github.com/kwo/rakewire/logger"
 	"github.com/kwo/rakewire/model"
 	"github.com/kwo/rakewire/pollfeed"
 	"github.com/kwo/rakewire/reaper"
+	"io/ioutil"
+	"os"
+	"os/signal"
 	"syscall"
 	"time"
 )
@@ -32,7 +32,7 @@ func Start(c *cli.Context) error {
 
 	showVersionInformation(c)
 
-	appStart := time.Now()
+	appStart := time.Now().Unix()
 	dbFile := c.String("file")
 	pidFile := c.String("pid")
 	verbose := c.GlobalBool("verbose")
@@ -84,7 +84,7 @@ func Start(c *cli.Context) error {
 		TLSCertFile:        c.String("tlscert"),
 		TLSKeyFile:         c.String("tlskey"),
 	}
-	ctx.httpd = httpd.NewService(httpdConfig, ctx.database, c.App.Version, appStart.Unix())
+	ctx.httpd = httpd.NewService(httpdConfig, ctx.database, c.App.Version, appStart)
 
 	for i := 0; i < 4; i++ {
 		var err error

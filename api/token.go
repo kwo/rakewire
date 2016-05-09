@@ -1,22 +1,13 @@
 package api
 
 import (
-	"golang.org/x/net/context"
+	"github.com/kwo/rakewire/api/msg"
 	"github.com/kwo/rakewire/auth"
-	"time"
+	"golang.org/x/net/context"
 )
 
-// TokenRequest defines the token request
-type TokenRequest struct{}
-
-// TokenResponse defines the token response
-type TokenResponse struct {
-	Token      string    `json:"token"`
-	Expiration time.Time `json:"expiration"`
-}
-
 // GetToken implements the Token service.
-func (z *API) GetToken(ctx context.Context, req *TokenRequest) (*TokenResponse, error) {
+func (z *API) GetToken(ctx context.Context, req *msg.TokenRequest) (*msg.TokenResponse, error) {
 
 	user := ctx.Value("user").(*auth.User)
 
@@ -25,9 +16,9 @@ func (z *API) GetToken(ctx context.Context, req *TokenRequest) (*TokenResponse, 
 		return nil, errGenerate
 	}
 
-	rsp := &TokenResponse{
+	rsp := &msg.TokenResponse{
 		Token:      string(token),
-		Expiration: exp.Truncate(time.Second),
+		Expiration: exp.Unix(),
 	}
 
 	return rsp, nil
