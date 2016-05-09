@@ -3,7 +3,6 @@
 ## Roadmap
 
   - httpd logging, compression
-  - remove xhandler?
 
 ### Features
   - UI

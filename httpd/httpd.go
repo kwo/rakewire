@@ -8,7 +8,6 @@ import (
 	"github.com/kwo/rakewire/logger"
 	"github.com/kwo/rakewire/model"
 	"github.com/kwo/rakewire/web"
-	"github.com/rs/xhandler"
 	"golang.org/x/net/context"
 	"net"
 	"net/http"
@@ -157,14 +156,12 @@ func (z *Service) IsRunning() bool {
 func (z *Service) newHandler() http.Handler {
 
 	apiPath := "/api/"
-	apiChain := xhandler.Chain{}
-	apiChain.UseC(Authenticator(z.database))
-	apiHandler := apiChain.HandlerC(api.New(z.database, apiPath, z.version, z.appstart))
+	apiHandler := Chain(api.New(z.database, apiPath, z.version, z.appstart), Authenticator(z.database))
 	feverPath := "/fever/"
 	feverHandler := fever.New(z.database)
 	webHandler := web.New(z.debugMode)
 
-	router := xhandler.HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+	router := HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, apiPath) {
 			apiHandler.ServeHTTPC(ctx, w, r)
 		} else if strings.HasPrefix(r.URL.Path, feverPath) {
@@ -174,10 +171,8 @@ func (z *Service) newHandler() http.Handler {
 		}
 	})
 
-	c := xhandler.Chain{}
-	c.UseC(xhandler.CloseHandler)
-	c.UseC(NoCache)
+	handler := Chain(router, NoCache())
 
-	return xhandler.New(context.Background(), c.HandlerC(router)) // TODO: logging
+	return Adapt(context.Background(), handler) // TODO: logging
 
 }

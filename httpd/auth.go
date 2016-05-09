@@ -1,17 +1,16 @@
 package httpd
 
 import (
-	"github.com/rs/xhandler"
-	"golang.org/x/net/context"
-	"net/http"
 	"github.com/kwo/rakewire/auth"
 	"github.com/kwo/rakewire/model"
+	"golang.org/x/net/context"
+	"net/http"
 )
 
 // Authenticator authenticates requests, placing the user object in the request context
-func Authenticator(db model.Database) func(xhandler.HandlerC) xhandler.HandlerC {
-	return func(next xhandler.HandlerC) xhandler.HandlerC {
-		return xhandler.HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+func Authenticator(db model.Database) Middleware {
+	return func(next HandlerC) HandlerC {
+		return HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 			if user, err := auth.Authenticate(db, r.Header.Get("Authorization")); err == nil {
 				ctx = context.WithValue(ctx, "user", user)
 			} else if err == auth.ErrUnauthenticated {
