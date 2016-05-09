@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 )
 
 var (
@@ -171,7 +172,12 @@ func (z *Service) newHandler() http.Handler {
 		}
 	})
 
-	handler := Chain(router, NoCache())
+	handler := Chain(
+		router,
+		NoCache(),
+		TimeoutHandler(10*time.Second), // TODO: configurable request timeout
+		CloseHandler(),
+	)
 
 	return Adapt(context.Background(), handler) // TODO: logging
 
