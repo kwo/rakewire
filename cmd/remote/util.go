@@ -2,10 +2,12 @@ package remote
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"github.com/codegangsta/cli"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -43,14 +45,27 @@ func makeRequest(c *cli.Context, path string, req interface{}, rsp interface{}) 
 	}
 	request.Header.Set("User-Agent", getAppNameAndVersion(c))
 	request.Header.Add("Authorization", auth)
+	request.Header.Add("Accept-Encoding", "gzip")
 	client := &http.Client{}
 	response, errResponse := client.Do(request)
 	if errResponse != nil {
 		return errResponse
 	}
 
-	defer response.Body.Close()
-	rspData, errRead := ioutil.ReadAll(response.Body)
+	usesGzip := strings.Contains(response.Header.Get("Content-Encoding"), "gzip")
+	var body io.ReadCloser
+	if usesGzip {
+		if b, errGzip := gzip.NewReader(response.Body); errGzip == nil {
+			body = b
+		} else {
+			body = response.Body
+		}
+	} else {
+		body = response.Body
+	}
+	defer body.Close()
+
+	rspData, errRead := ioutil.ReadAll(body)
 	if errRead != nil {
 		return errRead
 	}

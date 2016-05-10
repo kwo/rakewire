@@ -174,6 +174,7 @@ func (z *Service) newHandler() http.Handler {
 
 	handler := Chain(
 		router,
+		CompressHandler(),
 		NoCache(),
 		CanonicalHost(z.publicHostPort, http.StatusMovedPermanently),
 		AccessLog(),
