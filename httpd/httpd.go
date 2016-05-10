@@ -157,7 +157,7 @@ func (z *Service) IsRunning() bool {
 func (z *Service) newHandler() http.Handler {
 
 	apiPath := "/api/"
-	apiHandler := Chain(api.New(z.database, apiPath, z.version, z.appstart), Authorize(""))
+	apiHandler := Chain(api.New(z.database, apiPath, z.version, z.appstart), Authorize())
 	feverPath := "/fever/"
 	feverHandler := fever.New(z.database)
 	webHandler := web.New(z.debugMode)
@@ -182,6 +182,6 @@ func (z *Service) newHandler() http.Handler {
 		CloseHandler(),
 	)
 
-	return Adapt(context.Background(), handler) // TODO: logging
+	return Adapt(context.Background(), handler)
 
 }

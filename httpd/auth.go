@@ -33,12 +33,12 @@ func Authenticate(db model.Database) Middleware {
 }
 
 // Authorize prohibits entry to unauthenticated users and users without the specified role
-func Authorize(role string) Middleware {
+func Authorize(roles ...string) Middleware {
 	return func(next HandlerC) HandlerC {
 		return HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 			if user, ok := ctx.Value("user").(*auth.User); !ok {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-			} else if len(role) > 0 && !user.HasRole(role) {
+			} else if !user.HasAllRoles(roles...) {
 				http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			} else {
 				next.ServeHTTPC(ctx, w, r)

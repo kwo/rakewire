@@ -38,6 +38,15 @@ func (z *User) HasRole(role string) bool {
 	return result
 }
 
+// HasAllRoles tests if the user has been assigned all the given roles
+func (z *User) HasAllRoles(roles ...string) bool {
+	result := true
+	for _, role := range roles {
+		result = result && z.HasRole(role)
+	}
+	return result
+}
+
 // Authenticate will authenticate and authorize a user
 func Authenticate(db model.Database, authHeader string, roles ...string) (user *User, err error) {
 
