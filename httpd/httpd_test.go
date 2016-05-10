@@ -17,6 +17,8 @@ const (
 
 func TestSilk(t *testing.T) {
 
+	t.SkipNow()
+
 	db := openTestDatabase(t)
 	defer closeTestDatabase(t, db)
 

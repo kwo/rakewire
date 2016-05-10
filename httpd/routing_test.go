@@ -17,6 +17,8 @@ func newServer(t *testing.T) *httptest.Server {
 
 func TestRequest(t *testing.T) {
 
+	t.SkipNow()
+
 	server := newServer(t)
 	defer server.Close()
 
