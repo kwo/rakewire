@@ -115,7 +115,7 @@ run:
 
 func (z *Service) poll(t time.Time) {
 
-	log.Debugf("polling...")
+	// log.Debugf("polling...")
 
 	err := z.database.Select(func(tx model.Transaction) error {
 
