@@ -23,8 +23,8 @@ type Middleware func(next HandlerC) HandlerC
 
 // Chain calls middleware for HandlerC
 func Chain(h HandlerC, middlewares ...Middleware) HandlerC {
-	for i := len(middlewares) - 1; i >= 0; i-- {
-		h = middlewares[i](h)
+	for _, middleware := range middlewares {
+		h = middleware(h)
 	}
 	return h
 }
