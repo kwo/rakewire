@@ -176,6 +176,7 @@ func (z *Service) newHandler() http.Handler {
 		router,
 		NoCache(),
 		CanonicalHost(z.publicHostPort, http.StatusMovedPermanently),
+		AccessLog(),
 		Authenticate(z.database),
 		TimeoutHandler(10*time.Second), // TODO: configurable request timeout
 		CloseHandler(),
