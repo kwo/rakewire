@@ -8,6 +8,7 @@ import (
 	"github.com/codegangsta/cli"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 var (
@@ -40,6 +41,7 @@ func makeRequest(c *cli.Context, path string, req interface{}, rsp interface{}) 
 	if errRequest != nil {
 		return errRequest
 	}
+	request.Header.Set("User-Agent", getAppNameAndVersion(c))
 	request.Header.Add("Authorization", auth)
 	client := &http.Client{}
 	response, errResponse := client.Do(request)
@@ -58,6 +60,12 @@ func makeRequest(c *cli.Context, path string, req interface{}, rsp interface{}) 
 
 	return nil
 
+}
+
+func getAppNameAndVersion(c *cli.Context) string {
+	appName := strings.Fields(c.App.Name)[0]
+	version := c.App.Version
+	return strings.TrimSpace(appName + " " + version)
 }
 
 func getHostUsernamePasswordToken(c *cli.Context) (host, username, password, token string, err error) {
