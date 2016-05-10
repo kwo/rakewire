@@ -36,6 +36,7 @@ type Configuration struct {
 type Service struct {
 	sync.Mutex
 	appstart           int64
+	cancel             context.CancelFunc
 	database           model.Database
 	debugMode          bool
 	insecureSkipVerify bool
@@ -140,6 +141,11 @@ func (z *Service) Stop() {
 		log.Debugf("error stopping httpd: %s", err.Error())
 	}
 
+	// cancel top-level context
+	z.cancel()
+	// TODO: how to wait for all child contexts to finish?
+
+	z.cancel = nil
 	z.listener = nil
 	z.running = false
 
@@ -184,6 +190,9 @@ func (z *Service) newHandler() http.Handler {
 		CloseHandler(),
 	)
 
-	return Adapt(context.Background(), handler)
+	ctx, cancel := context.WithCancel(context.Background())
+	z.cancel = cancel
+
+	return Adapt(ctx, handler)
 
 }
