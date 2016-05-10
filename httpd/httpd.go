@@ -41,7 +41,7 @@ type Service struct {
 	insecureSkipVerify bool
 	listener           net.Listener
 	listenHostPort     string // listening address
-	publicHostPort     string // TODO: discard requests not made to this host
+	publicHostPort     string
 	running            bool
 	tlsCertFile        string
 	tlsKeyFile         string
