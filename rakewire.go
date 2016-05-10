@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/codegangsta/cli"
-	"os"
 	"github.com/kwo/rakewire/cmd"
 	"github.com/kwo/rakewire/cmd/remote"
+	"os"
 	"strings"
 )
 
