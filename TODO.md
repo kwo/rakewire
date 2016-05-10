@@ -15,7 +15,6 @@
   - user API
   - init command to create initial user
   - add static pages
-  - filter httpd requests on hostname
 
   - pubsub
   - long-polling

@@ -175,6 +175,7 @@ func (z *Service) newHandler() http.Handler {
 	handler := Chain(
 		router,
 		NoCache(),
+		CanonicalHost(z.publicHostPort, http.StatusMovedPermanently),
 		TimeoutHandler(10*time.Second), // TODO: configurable request timeout
 		CloseHandler(),
 	)
