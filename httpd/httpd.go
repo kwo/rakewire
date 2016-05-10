@@ -157,7 +157,7 @@ func (z *Service) IsRunning() bool {
 func (z *Service) newHandler() http.Handler {
 
 	apiPath := "/api/"
-	apiHandler := Chain(api.New(z.database, apiPath, z.version, z.appstart), Authenticator(z.database))
+	apiHandler := Chain(api.New(z.database, apiPath, z.version, z.appstart), Authorize(""))
 	feverPath := "/fever/"
 	feverHandler := fever.New(z.database)
 	webHandler := web.New(z.debugMode)
@@ -176,6 +176,7 @@ func (z *Service) newHandler() http.Handler {
 		router,
 		NoCache(),
 		CanonicalHost(z.publicHostPort, http.StatusMovedPermanently),
+		Authenticate(z.database),
 		TimeoutHandler(10*time.Second), // TODO: configurable request timeout
 		CloseHandler(),
 	)

@@ -27,6 +27,19 @@ type User struct {
 	Roles []string
 }
 
+// HasRole tests if the user has been assigned the given role
+func (z *User) HasRole(role string) bool {
+	result := false
+	if len(z.Roles) > 0 {
+		for _, value := range z.Roles {
+			if value == role {
+				return true
+			}
+		}
+	}
+	return result
+}
+
 // Authenticate will authenticate and authorize a user
 func Authenticate(db model.Database, authHeader string, roles ...string) (user *User, err error) {
 

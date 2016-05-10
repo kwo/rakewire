@@ -7,18 +7,16 @@ import (
 	"net/http"
 )
 
-// Authenticator authenticates requests, placing the user object in the request context
-func Authenticator(db model.Database) Middleware {
+// Authenticate authenticates requests, placing the user object in the request context
+func Authenticate(db model.Database) Middleware {
 	return func(next HandlerC) HandlerC {
 		return HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 			if user, err := auth.Authenticate(db, r.Header.Get("Authorization")); err == nil {
 				ctx = context.WithValue(ctx, "user", user)
 			} else if err == auth.ErrUnauthenticated {
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
+				// ignore
 			} else if err == auth.ErrUnauthorized {
-				http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-				return
+				// ignore
 			} else if err == auth.ErrBadHeader {
 				http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 				return
@@ -30,6 +28,21 @@ func Authenticator(db model.Database) Middleware {
 			// Call the next handler on success.
 			next.ServeHTTPC(ctx, w, r)
 
+		})
+	}
+}
+
+// Authorize prohibits entry to unauthenticated users and users without the specified role
+func Authorize(role string) Middleware {
+	return func(next HandlerC) HandlerC {
+		return HandlerFuncC(func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+			if user, ok := ctx.Value("user").(*auth.User); !ok {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+			} else if len(role) > 0 && !user.HasRole(role) {
+				http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+			} else {
+				next.ServeHTTPC(ctx, w, r)
+			}
 		})
 	}
 }
