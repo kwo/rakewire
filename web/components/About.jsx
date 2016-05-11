@@ -4,8 +4,8 @@ class About extends React.Component {
 
 	static displayName = 'about';
 
-	constructor(props, context) {
-		super(props, context);
+	constructor(props) {
+		super(props);
 	}
 
 	render() {

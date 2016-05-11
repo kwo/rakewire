@@ -4,8 +4,8 @@ class Home extends React.Component {
 
 	static displayName = 'home';
 
-	constructor(props, context) {
-		super(props, context);
+	constructor(props) {
+		super(props);
 	}
 
 	render() {

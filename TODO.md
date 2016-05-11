@@ -2,7 +2,7 @@
 
 ## Roadmap
 
-  - httpd logging, compression
+  - login form
 
 ### Features
   - UI
@@ -12,10 +12,7 @@
 
 ### Unsorted
 
-  - user API
   - init command to create initial user
-  - add static pages
-
   - pubsub
   - long-polling
   - add user api

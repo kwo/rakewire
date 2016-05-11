@@ -17,6 +17,7 @@ func (z *API) GetToken(ctx context.Context, req *msg.TokenRequest) (*msg.TokenRe
 	}
 
 	rsp := &msg.TokenResponse{
+		Username:   user.Name,
 		Token:      string(token),
 		Expiration: exp.Unix(),
 	}

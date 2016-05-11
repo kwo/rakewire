@@ -13,15 +13,34 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {browserHistory, IndexRoute, Redirect, Route, Router} from 'react-router';
 
+// lib
+import AuthService from './services/Auth';
+
+// components
 import About from './components/About';
 import App from './components/App';
 import Home from './components/Home';
+import Login from './components/Login';
+import Logout from './components/Logout';
+
+function loginIfUnauthenticated(nextState, replace) {
+	if (!AuthService.loggedIn) {
+		replace({
+			pathname: 'login',
+			state: { nextPathname: nextState.location.pathname }
+		});
+	}
+}
 
 const routes = (
 	<Router history={browserHistory}>
-		<Route component={App} path="/">
-			<IndexRoute component={Home} />
-			<Route component={About} path="about" />
+		<Route component={App} >
+			<Route component={Login}  path="login" />
+			<Route component={Logout} path="logout" />
+			<Route component={About}  path="about" />
+			<Route onEnter={loginIfUnauthenticated} path="/" >
+				<IndexRoute component={Home} />
+			</Route>
 			<Redirect from="*" to="/" />
 		</Route>
 	</Router>
