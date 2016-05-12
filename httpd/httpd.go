@@ -24,43 +24,40 @@ var (
 
 // Configuration contains all parameters for the httpd service
 type Configuration struct {
-	DebugMode          bool
-	InsecureSkipVerify bool
-	ListenHostPort     string
-	PublicHostPort     string
-	TLSCertFile        string
-	TLSKeyFile         string
+	DebugMode      bool
+	ListenHostPort string
+	PublicHostPort string
+	TLSCertFile    string
+	TLSKeyFile     string
 }
 
 // Service server
 type Service struct {
 	sync.Mutex
-	appstart           int64
-	cancel             context.CancelFunc
-	database           model.Database
-	debugMode          bool
-	insecureSkipVerify bool
-	listener           net.Listener
-	listenHostPort     string // listening address
-	publicHostPort     string
-	running            bool
-	tlsCertFile        string
-	tlsKeyFile         string
-	version            string
+	appstart       int64
+	cancel         context.CancelFunc
+	database       model.Database
+	debugMode      bool
+	listener       net.Listener
+	listenHostPort string // listening address
+	publicHostPort string
+	running        bool
+	tlsCertFile    string
+	tlsKeyFile     string
+	version        string
 }
 
 // NewService creates a new httpd service.
 func NewService(cfg *Configuration, database model.Database, version string, appStart int64) *Service {
 	return &Service{
-		database:           database,
-		debugMode:          cfg.DebugMode,
-		insecureSkipVerify: cfg.InsecureSkipVerify,
-		listenHostPort:     cfg.ListenHostPort,
-		publicHostPort:     cfg.PublicHostPort,
-		tlsCertFile:        cfg.TLSCertFile,
-		tlsKeyFile:         cfg.TLSKeyFile,
-		version:            version,
-		appstart:           appStart,
+		database:       database,
+		debugMode:      cfg.DebugMode,
+		listenHostPort: cfg.ListenHostPort,
+		publicHostPort: cfg.PublicHostPort,
+		tlsCertFile:    cfg.TLSCertFile,
+		tlsKeyFile:     cfg.TLSKeyFile,
+		version:        version,
+		appstart:       appStart,
 	}
 }
 
@@ -82,25 +79,16 @@ func (z *Service) Start() error {
 	log.Infof("starting...")
 	log.Infof("listen:   %s", z.listenHostPort)
 	log.Infof("public:   %s", z.publicHostPort)
-	log.Infof("insecure: %t", z.insecureSkipVerify)
 	log.Infof("tls cert: %s", z.tlsCertFile)
 	log.Infof("tls key:  %s", z.tlsKeyFile)
 
-	// extract the hostname from public hostport - assign to tlsConfig servername
-	publicFQDN, _, errSplitPublic := net.SplitHostPort(z.publicHostPort)
-	if errSplitPublic != nil {
-		log.Debugf("cannot split public hostport: %s", errSplitPublic.Error())
-		return errSplitPublic
-	}
 	cert, err := tls.LoadX509KeyPair(z.tlsCertFile, z.tlsKeyFile)
 	if err != nil {
 		log.Debugf("cannot create tls key pair: %s", err.Error())
 		return err
 	}
 	tlsConfig := &tls.Config{
-		ServerName:         publicFQDN,
-		InsecureSkipVerify: z.insecureSkipVerify,
-		Certificates:       []tls.Certificate{cert},
+		Certificates: []tls.Certificate{cert},
 	}
 
 	z.listener, err = tls.Listen("tcp", z.listenHostPort, tlsConfig)
@@ -119,7 +107,7 @@ func (z *Service) Start() error {
 
 	go server.Serve(z.listener)
 
-	log.Infof("listening on %s, reachable at %s", z.listenHostPort, z.publicHostPort)
+	log.Infof("listening on %s, reachable at https://%s/", z.listenHostPort, z.publicHostPort)
 
 	z.running = true
 

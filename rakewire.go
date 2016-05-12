@@ -59,11 +59,6 @@ func main() {
 					EnvVar: "RAKEWIRE_PID",
 					Usage:  "location of the pid file",
 				},
-				cli.BoolFlag{
-					Name:   "k, insecure",
-					EnvVar: "RAKEWIRE_INSECURE",
-					Usage:  "Skip verification of TLS certificate, use with a self-signed certificate",
-				},
 				cli.StringFlag{
 					Name:   "bind",
 					Value:  "0.0.0.0:8888",
@@ -87,12 +82,6 @@ func main() {
 					Value:  "rakewire.key",
 					EnvVar: "RAKEWIRE_TLSKEY",
 					Usage:  "TLS key file",
-				},
-				cli.StringFlag{
-					Name:   "useragent",
-					Value:  strings.TrimSpace("Rakewire " + Version),
-					EnvVar: "RAKEWIRE_USERAGENT",
-					Usage:  "useragent string",
 				},
 				cli.IntFlag{
 					Name:   "fetch.timeoutsecs",

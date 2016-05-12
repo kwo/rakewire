@@ -26,12 +26,11 @@ func TestSilk(t *testing.T) {
 	defer removeCerts(t, certFile, keyFile)
 
 	cfg := &Configuration{
-		DebugMode:          false,
-		InsecureSkipVerify: true,
-		ListenHostPort:     testHostPort,
-		PublicHostPort:     testHostPort,
-		TLSCertFile:        certFile,
-		TLSKeyFile:         keyFile,
+		DebugMode:      false,
+		ListenHostPort: testHostPort,
+		PublicHostPort: testHostPort,
+		TLSCertFile:    certFile,
+		TLSKeyFile:     keyFile,
 	}
 
 	server := NewService(cfg, db, "Rakewire", time.Now().Unix())
