@@ -3,10 +3,10 @@ package fetch
 import (
 	"errors"
 	"fmt"
-	"net/http"
 	"github.com/kwo/rakewire/feedparser"
 	"github.com/kwo/rakewire/logger"
 	"github.com/kwo/rakewire/model"
+	"net/http"
 	"sync"
 	"time"
 )
