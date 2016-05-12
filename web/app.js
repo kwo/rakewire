@@ -13,7 +13,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {browserHistory, IndexRoute, Redirect, Route, Router} from 'react-router';
 
-// lib
+// services
 import AuthService from './services/Auth';
 
 // components
