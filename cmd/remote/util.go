@@ -3,6 +3,7 @@ package remote
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/tls"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -25,6 +26,7 @@ func makeRequest(c *cli.Context, path string, req interface{}, rsp interface{}) 
 	if errCredentials != nil {
 		return errCredentials
 	}
+	insecure := c.Parent().Bool("insecure")
 
 	var auth string
 	if len(token) == 0 {
@@ -46,7 +48,16 @@ func makeRequest(c *cli.Context, path string, req interface{}, rsp interface{}) 
 	request.Header.Set("User-Agent", getAppNameAndVersion(c))
 	request.Header.Add("Authorization", auth)
 	request.Header.Add("Accept-Encoding", "gzip")
+
 	client := &http.Client{}
+	if insecure {
+		if transport, ok := http.DefaultTransport.(*http.Transport); ok {
+			transport.TLSClientConfig = &tls.Config{
+				InsecureSkipVerify: insecure,
+			}
+		}
+	}
+
 	response, errResponse := client.Do(request)
 	if errResponse != nil {
 		return errResponse
