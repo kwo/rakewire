@@ -49,6 +49,7 @@ func (z *API) SubscriptionAddUpdate(ctx context.Context, req *msg.SubscriptionAd
 			subscription.Added = time.Now().Truncate(time.Second)
 		}
 
+		subscription.GroupIDs = []string{} // clear groups, readd
 		groupsByName := model.G.GetForUser(tx, user.ID).ByName()
 		for _, groupName := range req.Subscription.Groups {
 
@@ -61,7 +62,7 @@ func (z *API) SubscriptionAddUpdate(ctx context.Context, req *msg.SubscriptionAd
 			}
 
 			if group != nil {
-				subscription.GroupIDs = append(subscription.GroupIDs, group.GetID())
+				subscription.AddGroup(group.GetID())
 			}
 
 		}
