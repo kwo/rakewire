@@ -72,7 +72,7 @@ func Start(c *cli.Context) error {
 	fetchConfig := &fetch.Configuration{
 		TimeoutSeconds: c.Int("fetch.timeoutsecs"),
 		Workers:        c.Int("fetch.workers"),
-		UserAgent:      c.App.Version,
+		UserAgent:      c.App.Name + " " + c.App.Version,
 	}
 	ctx.fetchd = fetch.NewService(fetchConfig, ctx.polld.Output, ctx.reaperd.Input)
 
