@@ -25,60 +25,128 @@ var (
 type API struct {
 	db        model.Database
 	mountPath string
+	handlers  map[string]map[string]Handler // handlers mapped by path then method
 	version   string
 	buildTime int64
 	buildHash string
 	appStart  int64
 }
 
+// Handler handles API requests
+type Handler func(context.Context, http.ResponseWriter, *http.Request)
+
 // New creates a new REST API instance
 func New(database model.Database, mountPath, versionString string, appStart int64) *API {
 
 	version, buildTime, buildHash := parseVersionString(versionString)
 
-	return &API{
+	z := &API{
 		db:        database,
 		mountPath: mountPath,
+		handlers:  make(map[string]map[string]Handler),
 		version:   version,
 		buildTime: buildTime,
 		buildHash: buildHash,
 		appStart:  appStart,
 	}
 
+	// register handlers
+	// TODO: handle more errRequest errors: auth
+
+	z.handlers["token"] = make(map[string]Handler)
+	z.handlers["token"][http.MethodPost] = func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		req := &msg.TokenRequest{}
+		if errRequest := readRequest(ctx, r, req); errRequest == nil {
+			if rsp, errResponse := z.GetToken(ctx, req); errResponse == nil {
+				sendResponse(ctx, w, rsp)
+			} else {
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		} else if errRequest == ErrEmptyRequest {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		} else {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+	}
+
+	z.handlers["status"] = make(map[string]Handler)
+	z.handlers["status"][http.MethodPost] = func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		req := &msg.StatusRequest{}
+		if errRequest := readRequest(ctx, r, req); errRequest == nil {
+			if rsp, errResponse := z.GetStatus(ctx, req); errResponse == nil {
+				sendResponse(ctx, w, rsp)
+			} else {
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		} else if errRequest == ErrEmptyRequest {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		} else {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+	}
+
+	z.handlers["subscriptions/add"] = make(map[string]Handler)
+	z.handlers["subscriptions/add"][http.MethodPost] = func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		req := &msg.SubscriptionAddUpdateRequest{}
+		if errRequest := readRequest(ctx, r, req); errRequest == nil {
+			if rsp, errResponse := z.SubscriptionAddUpdate(ctx, req); errResponse == nil {
+				sendResponse(ctx, w, rsp)
+			} else {
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		} else if errRequest == ErrEmptyRequest {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		} else {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+	}
+
+	z.handlers["subscriptions/list"] = make(map[string]Handler)
+	z.handlers["subscriptions/list"][http.MethodPost] = func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		req := &msg.SubscriptionListRequest{}
+		if errRequest := readRequest(ctx, r, req); errRequest == nil {
+			if rsp, errResponse := z.SubscriptionList(ctx, req); errResponse == nil {
+				sendResponse(ctx, w, rsp)
+			} else {
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		} else if errRequest == ErrEmptyRequest {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		} else {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+	}
+
+	z.handlers["subscriptions/unsubscribe"] = make(map[string]Handler)
+	z.handlers["subscriptions/unsubscribe"][http.MethodPost] = func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		req := &msg.UnsubscribeRequest{}
+		if errRequest := readRequest(ctx, r, req); errRequest == nil {
+			if rsp, errResponse := z.SubscriptionUnsubscribe(ctx, req); errResponse == nil {
+				sendResponse(ctx, w, rsp)
+			} else {
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		} else if errRequest == ErrEmptyRequest {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		} else {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+	}
+
+	z.handlers["subscriptions.opml"] = make(map[string]Handler)
+	z.handlers["subscriptions.opml"][http.MethodGet] = z.opmlExport
+	z.handlers["subscriptions.opml"][http.MethodPut] = z.opmlImport
+
+	return z
+
 }
 
 // ServeHTTPC context-aware http handler
 func (z *API) ServeHTTPC(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 	path := strings.TrimPrefix(r.URL.Path, z.mountPath)
-	if path == "token" {
-		if r.Method == http.MethodPost {
-			req := &msg.TokenRequest{}
-			if errRequest := readRequest(ctx, r, req); errRequest == nil {
-				rsp, errToken := z.GetToken(ctx, req)
-				sendResponse(ctx, w, rsp, errToken)
-			} else {
-				sendResponse(ctx, w, nil, errRequest)
-			}
-		} else {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		}
-	} else if path == "status" {
-		if r.Method == http.MethodPost {
-			req := &msg.StatusRequest{}
-			if errRequest := readRequest(ctx, r, req); errRequest == nil {
-				rsp, errStatus := z.GetStatus(ctx, &msg.StatusRequest{})
-				sendResponse(ctx, w, rsp, errStatus)
-			} else {
-				sendResponse(ctx, w, nil, errRequest)
-			}
-		} else {
-			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
-		}
-	} else if path == "subscriptions.opml" {
-		if r.Method == http.MethodGet {
-			z.opmlExport(ctx, w, r)
-		} else if r.Method == http.MethodPut {
-			z.opmlImport(ctx, w, r)
+	if handlers := z.handlers[path]; handlers != nil {
+		if handler := handlers[r.Method]; handler != nil {
+			handler(ctx, w, r)
 		} else {
 			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
 		}
@@ -94,7 +162,7 @@ func readRequest(ctx context.Context, r *http.Request, req interface{}) error {
 		return errRead
 	}
 	if len(data) == 0 {
-		return msg.ErrEmptyRequest
+		return ErrEmptyRequest
 	}
 	if errJSON := json.Unmarshal(data, req); errJSON != nil {
 		return errJSON
@@ -102,25 +170,16 @@ func readRequest(ctx context.Context, r *http.Request, req interface{}) error {
 	return nil
 }
 
-func sendResponse(ctx context.Context, w http.ResponseWriter, rsp interface{}, errRequest error) {
-	if errRequest == nil {
-		data, errJSON := json.Marshal(rsp)
-		if errJSON == nil {
-			w.Header().Set(hContentType, mimeJSON)
-			data = append(data, '\n')
-			if _, err := w.Write(data); err != nil {
-				log.Debugf("Error sending response: %s", err.Error())
-			}
-		} else {
-			log.Debugf("Cannot serialize response: %s", errJSON.Error())
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+func sendResponse(ctx context.Context, w http.ResponseWriter, rsp interface{}) {
+	data, errJSON := json.Marshal(rsp)
+	if errJSON == nil {
+		w.Header().Set(hContentType, mimeJSON)
+		data = append(data, '\n')
+		if _, err := w.Write(data); err != nil {
+			log.Debugf("Error sending response: %s", err.Error())
 		}
-	} else if errRequest == msg.ErrEmptyRequest {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 	} else {
-		// TODO: senteniel errors for triage
-		// not authorized
-		// bad request
+		log.Debugf("Cannot serialize response: %s", errJSON.Error())
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
 }

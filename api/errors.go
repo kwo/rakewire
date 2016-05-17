@@ -1,4 +1,4 @@
-package msg
+package api
 
 import (
 	"errors"
@@ -6,5 +6,6 @@ import (
 
 // package level senteniel errors
 var (
+	errEscape       = errors.New("Escape Error")
 	ErrEmptyRequest = errors.New("Empty Request")
 )

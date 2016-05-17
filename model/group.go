@@ -85,6 +85,16 @@ func (z Groups) ByName() map[string]*Group {
 	return result
 }
 
+// WithIDs creates a new Groups collection containing only groups with the given groupIDs.
+func (z Groups) WithIDs(groupIDs ...string) Groups {
+	result := Groups{}
+	groupsByID := z.ByID()
+	for _, groupID := range groupIDs {
+		result = append(result, groupsByID[groupID])
+	}
+	return result
+}
+
 func (z *Groups) decode(data []byte) error {
 	if err := json.Unmarshal(data, z); err != nil {
 		return err

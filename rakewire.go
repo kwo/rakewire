@@ -220,6 +220,33 @@ func main() {
 						},
 					},
 				},
+				{
+					Name:      "subscribe",
+					Aliases:   []string{"sub"},
+					Usage:     "subscribe to a feed",
+					ArgsUsage: "<url> <group[,group]> [title]",
+					Action:    remote.SubscriptionAdd,
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "g, groups",
+							Usage: "add groups if they do not exist",
+						},
+					},
+				},
+				{
+					Name:      "unsubscribe",
+					Aliases:   []string{"unsub"},
+					Usage:     "unsubscribe from a feed",
+					ArgsUsage: "<url>",
+					Action:    remote.SubscriptionUnsubscribe,
+				},
+				{
+					Name:      "subscriptions",
+					Aliases:   []string{"subs"},
+					Usage:     "list subscriptions",
+					ArgsUsage: "[filter]",
+					Action:    remote.SubscriptionList,
+				},
 			},
 		},
 		{
