@@ -231,6 +231,14 @@ func main() {
 							Name:  "g, groups",
 							Usage: "add groups if they do not exist",
 						},
+						cli.BoolFlag{
+							Name:  "autoread",
+							Usage: "mark subscription as autoread",
+						},
+						cli.BoolFlag{
+							Name:  "autostar",
+							Usage: "mark subscription as autostar",
+						},
 					},
 				},
 				{

@@ -29,9 +29,11 @@ func SubscriptionAdd(c *cli.Context) error {
 	req := &msg.SubscriptionAddUpdateRequest{
 		AddGroups: c.Bool("groups"),
 		Subscription: &msg.Subscription{
-			URL:    url,
-			Groups: groups,
-			Title:  title,
+			URL:      url,
+			Groups:   groups,
+			Title:    title,
+			AutoRead: c.Bool("autoread"),
+			AutoStar: c.Bool("autostar"),
 		},
 	}
 
@@ -73,8 +75,16 @@ func SubscriptionList(c *cli.Context) error {
 			return nil
 		}
 
+		fmtBool := func(value bool, marker string) string {
+			if value {
+				return marker
+			}
+			return " "
+		}
+
+		fmt.Printf("%-15s %s %s %-25s %-80s %-20s\n", "groups", "r", "s", "title", "url", "added")
 		for _, sub := range rsp.Subscriptions {
-			fmt.Printf("%s %s %s %s\n", sub.Title, strings.Join(sub.Groups, ", "), sub.URL, sub.Added.Format(time.RFC3339))
+			fmt.Printf("%-15s %s %s %-25s %-80s %-20s\n", strings.Join(sub.Groups, ", "), fmtBool(sub.AutoRead, "#"), fmtBool(sub.AutoStar, "*"), sub.Title, sub.URL, sub.Added.Format(time.RFC3339))
 		}
 
 	} else {
