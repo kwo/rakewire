@@ -6,11 +6,14 @@
   "author": "Karl Ostendorf <karl@ostendorf.com> (https://ostendorf.com/)",
   "license": "Copyright 2015 Karl Ostendorf",
   "dependencies": {
-    "milligram": "^1.1.0",
+    "material-design-icons": "^2.2.3",
     "moment": "^2.0",
+    "normalize.css": "^4.1.1",
     "react": "^15.0",
     "react-dom": "^15.0",
     "react-router": "^2.0",
+    "react-tap-event-plugin": "^1.0.0",
+    "roboto-fontface": "^0.4.5",
     "whatwg-fetch": "^1.0"
   },
   "devDependencies": {
@@ -28,6 +31,8 @@
     "extract-text-webpack-plugin": "^1.0",
     "file-loader": "^0.8",
     "html-webpack-plugin": "^2.0",
+    "node-sass": "^3.7.0",
+    "sass-loader": "^3.2.0",
     "style-loader": "^0.13",
     "webpack": "^1.0"
   },

@@ -7,7 +7,14 @@ const HtmlPlugin = require('html-webpack-plugin');
 const config = {
 	entry: {
 		app: path.resolve(__dirname, 'app.js'),
-		vendor: ['moment', 'react', 'react-dom', 'react-router', 'whatwg-fetch']
+		vendor: [
+			'moment',
+			'react',
+			'react-dom',
+			'react-router',
+			'react-tap-event-plugin',
+			'whatwg-fetch'
+		]
 	},
 	output: {
 		path: path.resolve(__dirname, 'public'),
@@ -15,7 +22,7 @@ const config = {
 	},
 	module: {
 		loaders: [
-			{ test: /\.css$/,  loader: ExtractTextPlugin.extract('style-loader', 'css-loader') },
+			{ test: /\.(css|scss)$/,  loader: ExtractTextPlugin.extract('style', 'css!sass') },
 			{ test: /\.jsx?$/,
 				loader: 'babel',
 				exclude: /node_modules/,
@@ -24,12 +31,13 @@ const config = {
 					presets: ['es2015', 'react', 'stage-0']
 				}
 			},
-			{ test: /\.jsx?$/, loader: 'eslint-loader', exclude: /node_modules/ }
+			{ test: /\.jsx?$/, loader: 'eslint-loader', exclude: /node_modules/ },
+			{ test: /\.(eot|svg|ttf|woff|woff2)$/, loader: 'file?name=fonts/[name].[ext]' }
 		]
 	},
 	plugins: [
 		new CleanPlugin(['public']),
-		new ExtractTextPlugin('styles.css'),
+		new ExtractTextPlugin('app.css'),
 		new HtmlPlugin({
 			template: path.resolve(__dirname, 'index.html'),
 			inject: 'body'

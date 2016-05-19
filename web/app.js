@@ -3,11 +3,14 @@ import 'file?name=[name].[ext]!./robots.txt';
 
 // css
 import './node_modules/normalize.css/normalize.css';
-import './node_modules/milligram/dist/milligram.css';
+import './node_modules/roboto-fontface/css/roboto-fontface-regular.scss';
+import './node_modules/material-design-icons/iconfont/material-icons.css';
 import './app.css';
 
 // import global modules
 import 'whatwg-fetch';
+import injectTapEventPlugin from 'react-tap-event-plugin';
+injectTapEventPlugin();
 
 import React from 'react';
 import ReactDOM from 'react-dom';
