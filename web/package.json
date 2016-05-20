@@ -6,7 +6,7 @@
   "author": "Karl Ostendorf <karl@ostendorf.com> (https://ostendorf.com/)",
   "license": "Copyright 2015 Karl Ostendorf",
   "dependencies": {
-    "material-design-icons": "^2.2.3",
+    "material-ui": "^0.15.0",
     "moment": "^2.0",
     "normalize.css": "^4.1.1",
     "react": "^15.0",

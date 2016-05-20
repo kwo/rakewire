@@ -4,7 +4,6 @@ import 'file?name=[name].[ext]!./robots.txt';
 // css
 import './node_modules/normalize.css/normalize.css';
 import './node_modules/roboto-fontface/css/roboto-fontface-regular.scss';
-import './node_modules/material-design-icons/iconfont/material-icons.css';
 import './app.css';
 
 // import global modules
@@ -15,6 +14,8 @@ injectTapEventPlugin();
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {browserHistory, IndexRoute, Redirect, Route, Router} from 'react-router';
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 
 // services
 import AuthService from './services/Auth';
@@ -49,4 +50,10 @@ const routes = (
 	</Router>
 );
 
-ReactDOM.render(routes, document.getElementById('app'));
+const app = (
+	<MuiThemeProvider muiTheme={getMuiTheme()}>
+		{routes}
+	</MuiThemeProvider>
+);
+
+ReactDOM.render(app, document.getElementById('app'));

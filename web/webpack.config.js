@@ -6,15 +6,7 @@ const HtmlPlugin = require('html-webpack-plugin');
 
 const config = {
 	entry: {
-		app: path.resolve(__dirname, 'app.js'),
-		vendor: [
-			'moment',
-			'react',
-			'react-dom',
-			'react-router',
-			'react-tap-event-plugin',
-			'whatwg-fetch'
-		]
+		app: path.resolve(__dirname, 'app.js')
 	},
 	output: {
 		path: path.resolve(__dirname, 'public'),
@@ -42,7 +34,13 @@ const config = {
 			template: path.resolve(__dirname, 'index.html'),
 			inject: 'body'
 		}),
-		new webpack.optimize.CommonsChunkPlugin('vendor', 'vendor.js'),
+		new webpack.optimize.CommonsChunkPlugin({
+			name: 'vendor',
+			filename: 'vendor.js',
+			minChunks: function (module/*, count*/) {
+				return module.resource && module.resource.indexOf('node_modules') > -1;
+			}
+		}),
 		new webpack.optimize.UglifyJsPlugin({
 			compress: {
 				warnings: false

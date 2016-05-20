@@ -1,6 +1,5 @@
 import React, {PropTypes} from 'react';
-import {Link} from 'react-router';
-import AuthService from '../services/Auth';
+import TopBar from './TopBar';
 
 class App extends React.Component {
 
@@ -17,11 +16,7 @@ class App extends React.Component {
 	render() {
 		return (
 			<div>
-				<div>
-					<Link activeClassName="active" to="/">Home</Link><span> </span>
-					<Link activeClassName="active" to="about">About</Link><span> </span>
-					{AuthService.loggedIn && (<Link activeClassName="active" to="logout">Logout</Link>)}
-				</div>
+				<TopBar/>
 				{this.props.children}
 			</div>
 		);
