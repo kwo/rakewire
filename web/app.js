@@ -1,10 +1,9 @@
 // root directory files
 import 'file?name=[name].[ext]!./robots.txt';
+import 'file?name=[name].[ext]!./favicon.ico';
 
 // css
-import './node_modules/normalize.css/normalize.css';
 import './node_modules/roboto-fontface/css/roboto-fontface-regular.scss';
-import './app.css';
 
 // import global modules
 import 'whatwg-fetch';
@@ -16,6 +15,8 @@ import ReactDOM from 'react-dom';
 import {browserHistory, IndexRoute, Redirect, Route, Router} from 'react-router';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+
+import theme from './theme';
 
 // services
 import AuthService from './services/Auth';
@@ -36,6 +37,8 @@ function loginIfUnauthenticated(nextState, replace) {
 	}
 }
 
+
+
 const routes = (
 	<Router history={browserHistory}>
 		<Route component={App} >
@@ -51,7 +54,7 @@ const routes = (
 );
 
 const app = (
-	<MuiThemeProvider muiTheme={getMuiTheme()}>
+	<MuiThemeProvider muiTheme={getMuiTheme(theme)}>
 		{routes}
 	</MuiThemeProvider>
 );

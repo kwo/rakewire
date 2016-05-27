@@ -10,9 +10,7 @@ class About extends React.Component {
 
 	render() {
 		return (
-			<div>
-				<p>About Rakewire</p>
-			</div>
+			<p>About Rakewire</p>
 		);
 	}
 
