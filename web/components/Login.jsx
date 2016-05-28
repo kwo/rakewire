@@ -2,72 +2,106 @@ import React, {PropTypes} from 'react';
 import { withRouter } from 'react-router';
 import AuthService from '../services/Auth';
 
+import RaisedButton from 'material-ui/RaisedButton';
+import TextField from 'material-ui/TextField';
+
+const style = {
+	field: {
+		margin: '1em'
+	},
+	input: {
+		marginLeft: '1em'
+	},
+	refresh: {
+		display: 'inline-block',
+		position: 'relative'
+	}
+};
+
 class Login extends React.Component {
 
 	static displayName = 'login';
 
+	static contextTypes = {
+		router: PropTypes.object.isRequired
+	}
+
 	static propTypes = {
-		location: PropTypes.object,
-		router: PropTypes.object.isRequired,
+		location: PropTypes.object
 	};
 
 	constructor(props) {
 		super(props);
 		this.state = {
-			loginStatus: {}
+			busy: false,
+			password: '',
+			username: ''
 		};
+		this.nextPathname = this.nextPathname.bind(this);
 	}
 
 	componentDidMount() {
 		if (AuthService.loggedIn) {
-			this.props.router.replace('/');
+			this.context.router.replace('/');
 			return;
 		}
 	}
 
-	componentDidUpdate() {
-		if (this.state.loginStatus && this.state.loginStatus.fulfilled) {
-			const { location } = this.props;
-			if (location.state && location.state.nextPathname) {
-				this.props.router.replace(location.state.nextPathname);
-			} else {
-				this.props.router.replace('/');
-			}
+	nextPathname() {
+		const { location } = this.props;
+		if (location.state && location.state.nextPathname) {
+			return location.state.nextPathname;
 		}
+		return '/';
 	}
 
-	submit(event) {
+	submitForm(event) {
+
 		event.preventDefault();
-		this.setState({loginStatus: {pending: true}});
-		AuthService.login(this.refs.username.value, this.refs.password.value).then(success => {
-			this.setState({loginStatus: {pending: false, rejected: !success, fulfilled: success}});
-		});
+
+		if (!this.state.busy && this.state.username && this.state.password) {
+			this.setState({busy: true});
+			AuthService.login(this.state.username, this.state.password).then(success => {
+				this.setState({busy: false});
+				if (success) {
+					this.context.router.replace(this.nextPathname());
+				} else {
+					// TODO: failed login message
+				}
+			});
+		}
+
+	}
+
+	updateForm(event) {
+		if (event.target.id === 'username') {
+			this.setState({username: event.target.value});
+		} else if (event.target.id === 'password') {
+			this.setState({password: event.target.value});
+		}
 	}
 
 	render() {
 
-		let status = '';
-		if (this.state.loginStatus.pending) {
-			status = (<p>pending</p>);
-		} else if (this.state.loginStatus.rejected) {
-			status = (<p>rejected</p>);
-		} else if (this.state.loginStatus.fulfilled) {
-			status = (<p>fulfilled</p>);
-		}
-
 		return (
-			<div>
-				<form onSubmit={(event) => this.submit(event)}>
-					<fieldset>
-						<label htmlFor="username">Username</label>
-						<input id="username" placeholder="username" ref="username" type="text" />
-						<label htmlFor="password">Password</label>
-						<input id="password" placeholder="password" ref="password" type="password" />
-						<button className="button button-outline">login</button>
-					</fieldset>
-				</form>
-				{status}
-			</div>
+			<form onSubmit={(event) => this.submitForm(event)}>
+
+				<div style={style.field}>
+					<TextField id="username" onChange={(event) => this.updateForm(event)}
+						placeholder="username" style={style.input} value={this.state.username} />
+				</div>
+
+				<div style={style.field}>
+					<TextField id="password" onChange={(event) => this.updateForm(event)}
+						placeholder="password" style={style.input} type="password" value={this.state.password} />
+				</div>
+
+				<div style={style.field}>
+					<RaisedButton disabled={this.state.busy} label="Login"
+						onTouchTap={(event) => this.submitForm(event)} primary={true} type="submit" />
+				</div>
+
+			</form>
 		);
 
 	}
