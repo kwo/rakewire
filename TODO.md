@@ -8,6 +8,13 @@
   - event stream
   - hot links
 
+### Login Form
+ - create box around form, center in screen, top portion should read "Welcome to Rakewire"
+ - need failure message
+
+### Service Workers
+
+
 ### Unsorted
 
   - init command to create initial user

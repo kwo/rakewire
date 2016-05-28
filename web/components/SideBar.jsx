@@ -1,12 +1,15 @@
 import React, {PropTypes} from 'react';
-import AppBar from 'material-ui/AppBar';
 import AuthService from '../services/Auth';
+
+import AppBar from 'material-ui/AppBar';
 import Drawer from 'material-ui/Drawer';
-import FeedIcon from 'material-ui/svg-icons/communication/rss-feed';
-import IconButton from 'material-ui/IconButton';
 import {List, ListItem, MakeSelectable} from 'material-ui/List';
 
-// TODO: active class names links
+import DashboardIcon from 'material-ui/svg-icons/action/dashboard';
+import ExitIcon from 'material-ui/svg-icons/action/exit-to-app';
+import FeedIcon from 'material-ui/svg-icons/communication/rss-feed';
+import HomeIcon from 'material-ui/svg-icons/action/home';
+import IconButton from 'material-ui/IconButton';
 
 class SideBar extends React.Component {
 
@@ -27,12 +30,6 @@ class SideBar extends React.Component {
 		this.state = {};
 	}
 
-	// componentDidMount() {
-	// }
-	//
-	// componentWillUnmount() {
-	// }
-
 	render() {
 
 		const SelectableList = MakeSelectable(List);
@@ -52,10 +49,10 @@ class SideBar extends React.Component {
 				<AppBar iconElementLeft={iconApp} title={this.props.title} />
 
 				<SelectableList onChange={this.props.navigate}>
-					<ListItem primaryText="Home" value="home" />
-					<ListItem primaryText="About" value="about" />
+					<ListItem primaryText="Home" value="home" leftIcon={<HomeIcon />} />
+					<ListItem primaryText="Dashboard" value="dashboard" leftIcon={<DashboardIcon />} />
 					{AuthService.loggedIn && (
-						<ListItem primaryText="Logout" value="logout" />
+					<ListItem primaryText="Logout" value="logout" leftIcon={<ExitIcon />} />
 					)}
 				</SelectableList>
 
