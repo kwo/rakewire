@@ -1,4 +1,6 @@
 import React, {PropTypes} from 'react';
+import AuthService from '../services/Auth';
+
 import TopBar from './TopBar';
 
 const style = {
@@ -36,7 +38,9 @@ class App extends React.Component {
 	render() {
 		return (
 			<div style={style.root}>
+				{AuthService.loggedIn && (
 				<TopBar sidebar={this.props.sidebar} title={this.props.title} />
+				)}
 				<div style={style.content}>
 					{this.props.children}
 				</div>

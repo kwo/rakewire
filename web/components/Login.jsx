@@ -2,19 +2,18 @@ import React, {PropTypes} from 'react';
 import { withRouter } from 'react-router';
 import AuthService from '../services/Auth';
 
+import {Card, CardActions, CardTitle, CardText} from 'material-ui/Card';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 
 const style = {
+	card: {
+	},
+	cardheader: {
+	},
 	field: {
-		margin: '1em'
 	},
 	input: {
-		marginLeft: '1em'
-	},
-	refresh: {
-		display: 'inline-block',
-		position: 'relative'
 	}
 };
 
@@ -84,24 +83,34 @@ class Login extends React.Component {
 	render() {
 
 		return (
-			<form onSubmit={(event) => this.submitForm(event)}>
+			<Card style={style.card}>
+				<form onSubmit={(event) => this.submitForm(event)}>
 
-				<div style={style.field}>
-					<TextField id="username" onChange={(event) => this.updateForm(event)}
-						placeholder="username" style={style.input} value={this.state.username} />
-				</div>
+					<CardTitle title="Welcome to Rakewire" subtitle="Login" style={style.cardheader}/>
 
-				<div style={style.field}>
-					<TextField id="password" onChange={(event) => this.updateForm(event)}
-						placeholder="password" style={style.input} type="password" value={this.state.password} />
-				</div>
+					<CardText>
 
-				<div style={style.field}>
-					<RaisedButton disabled={this.state.busy} label="Login"
-						onTouchTap={(event) => this.submitForm(event)} primary={true} type="submit" />
-				</div>
+						<div style={style.field}>
+							<TextField id="username" floatingLabelText="Username"
+								value={this.state.username} style={style.input}
+								onChange={(event) => this.updateForm(event)} />
+						</div>
 
-			</form>
+						<div style={style.field}>
+							<TextField id="password" type="password" floatingLabelText="Password"
+								value={this.state.password} style={style.input}
+								onChange={(event) => this.updateForm(event)} />
+						</div>
+
+					</CardText>
+
+					<CardActions>
+						<RaisedButton disabled={this.state.busy} label="Login"
+							onTouchTap={(event) => this.submitForm(event)} primary={true} type="submit" />
+					</CardActions>
+
+				</form>
+			</Card>
 		);
 
 	}
