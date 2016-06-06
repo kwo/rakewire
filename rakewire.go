@@ -205,6 +205,11 @@ func main() {
 			},
 			Subcommands: []cli.Command{
 				{
+					Name:   "groups",
+					Usage:  "list groups for user",
+					Action: remote.GroupList,
+				},
+				{
 					Name:   "status",
 					Usage:  "get instance status",
 					Action: remote.Status,

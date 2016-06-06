@@ -53,6 +53,22 @@ func New(database model.Database, mountPath, versionString string, appStart int6
 	// register handlers
 	// TODO: handle more errRequest errors: auth
 
+	z.handlers["groups/list"] = make(map[string]Handler)
+	z.handlers["groups/list"][http.MethodPost] = func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
+		req := &msg.GroupListRequest{}
+		if errRequest := readRequest(ctx, r, req); errRequest == nil {
+			if rsp, errResponse := z.GroupList(ctx, req); errResponse == nil {
+				sendResponse(ctx, w, rsp)
+			} else {
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			}
+		} else if errRequest == ErrEmptyRequest {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		} else {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		}
+	}
+
 	z.handlers["token"] = make(map[string]Handler)
 	z.handlers["token"][http.MethodPost] = func(ctx context.Context, w http.ResponseWriter, r *http.Request) {
 		req := &msg.TokenRequest{}

@@ -125,6 +125,7 @@ func (z *API) SubscriptionList(ctx context.Context, req *msg.SubscriptionListReq
 	return rsp, err
 
 }
+
 func matchFilter(filter string, subscription *msg.Subscription) bool {
 
 	match := false
