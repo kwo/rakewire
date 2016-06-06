@@ -22,12 +22,11 @@ import theme from './theme';
 import AuthService from './services/Auth';
 
 // components
-import About from './components/About';
 import App from './components/App';
 import Dashboard from './components/Dashboard';
-import Home from './components/Home';
 import Login from './components/Login';
 import Logout from './components/Logout';
+import Reader from './components/Reader';
 
 function loginIfUnauthenticated(nextState, replace) {
 	if (!AuthService.loggedIn) {
@@ -43,9 +42,8 @@ const routes = (
 		<Route component={App} >
 			<Route component={Login}  path="login" />
 			<Route component={Logout} path="logout" />
-			<Route component={About}  path="about" />
 			<Route onEnter={loginIfUnauthenticated} path="/" >
-				<IndexRoute component={Home} />
+				<IndexRoute component={Reader} />
 				<Route component={Dashboard} path="dashboard" />
 			</Route>
 			<Redirect from="*" to="/" />
