@@ -41,7 +41,7 @@ func EntryList(c *cli.Context) error {
 
 		fmt.Printf("%s %s %-25s %-80s %-20s\n", "u", "s", "updated", "title", "guid")
 		for _, entry := range rsp.Entries {
-			fmt.Printf("%s %s %-25s %-80s %-20s\n", fmtBool(entry.Read, "#"), fmtBool(entry.Star, "*"), entry.Updated.Format(time.RFC3339), entry.Title, entry.GUID)
+			fmt.Printf("%s %s %-25s %-80s %-20s\n", fmtBool(!entry.Read, "#"), fmtBool(entry.Star, "*"), entry.Updated.Format(time.RFC3339), entry.Title, entry.GUID)
 		}
 
 	} else {
