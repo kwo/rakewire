@@ -52,3 +52,43 @@ func EntryList(c *cli.Context) error {
 	return nil
 
 }
+
+// EntryStar marks a single entry as starred
+func EntryStar(c *cli.Context) error {
+
+	req := &msg.EntryUpdateRequest{}
+	rsp := &msg.EntryUpdateResponse{}
+
+	var feedURL string
+	var itemGUID string
+
+	if c.NArg() == 2 {
+		feedURL = c.Args()[0]
+		itemGUID = c.Args()[1]
+	} else {
+		cli.ShowCommandHelp(c, c.Command.Name)
+		os.Exit(1)
+	}
+
+	entry := &msg.Entry{
+		Subscription: feedURL,
+		GUID:         itemGUID,
+		Read:         true,
+		Star:         true,
+	}
+	req.Entries = append(req.Entries, entry)
+
+	if err := makeRequest(c, "entries/update", req, rsp); err == nil {
+		if len(rsp.Message) > 0 {
+			fmt.Printf("%s: %s\n", msg.StatusText(rsp.Status), rsp.Message)
+		} else {
+			fmt.Println(msg.StatusText(rsp.Status))
+		}
+	} else {
+		fmt.Printf("Error: %s\n", err.Error())
+		os.Exit(1)
+	}
+
+	return nil
+
+}

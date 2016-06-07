@@ -217,6 +217,12 @@ func main() {
 					Action: remote.GroupList,
 				},
 				{
+					Name:      "star",
+					Usage:     "star entry",
+					ArgsUsage: "<feed url> <guid>",
+					Action:    remote.EntryStar,
+				},
+				{
 					Name:   "status",
 					Usage:  "get instance status",
 					Action: remote.Status,
