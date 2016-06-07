@@ -205,6 +205,13 @@ func main() {
 			},
 			Subcommands: []cli.Command{
 				{
+					Name:      "entries",
+					Aliases:   []string{"e"},
+					Usage:     "list entries",
+					ArgsUsage: "[feed url]",
+					Action:    remote.EntryList,
+				},
+				{
 					Name:   "groups",
 					Usage:  "list groups for user",
 					Action: remote.GroupList,
