@@ -7,6 +7,7 @@ import (
 	"github.com/kwo/rakewire/logger"
 	"github.com/kwo/rakewire/model"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 )
@@ -241,7 +242,7 @@ func processFeedMovedPermanently(harvest *model.Harvest, rsp *http.Response) {
 	harvest.Transmission.Result = model.FetchResultRedirect
 	newURL := rsp.Header.Get(hLocation)
 	harvest.Transmission.ResultMessage = fmt.Sprintf("%s moved %s", harvest.Feed.URL, newURL)
-	harvest.Feed.URL = newURL // update feed
+	harvest.Feed.URL = resolveURL(harvest.Feed.URL, newURL)
 }
 
 func processFeedNotModified(harvest *model.Harvest, rsp *http.Response) {
@@ -261,4 +262,20 @@ func (z *Service) newRequest(feed *model.Feed) *http.Request {
 		req.Header.Set(hIfNoneMatch, feed.ETag)
 	}
 	return req
+}
+
+func resolveURL(uOriginal, uNew string) string {
+
+	urlOriginal, errParse1 := url.Parse(uOriginal)
+	if errParse1 != nil {
+		return uOriginal
+	}
+
+	urlNew, errParse2 := url.Parse(uNew)
+	if errParse2 != nil {
+		return uOriginal
+	}
+
+	return urlOriginal.ResolveReference(urlNew).String()
+
 }
