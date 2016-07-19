@@ -115,8 +115,6 @@ run:
 
 func (z *Service) poll(t time.Time) {
 
-	// log.Debugf("polling...")
-
 	err := z.database.Select(func(tx model.Transaction) error {
 
 		// get next feeds
@@ -145,7 +143,7 @@ func (z *Service) poll(t time.Time) {
 	})
 
 	if err != nil {
-		log.Debugf("Error poll feeds: %s", err.Error())
+		log.Infof("Error poll feeds: %s", err.Error())
 	}
 
 }

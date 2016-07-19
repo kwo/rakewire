@@ -191,14 +191,14 @@ func (z *Service) reapHarvest(harvest *model.Harvest) {
 			return err
 		}
 
-		log.Debugf("%2s  %3d  %s  %3d/%-3d  %s  %s", harvest.Feed.Status, harvest.Transmission.StatusCode, harvest.Feed.LastUpdated.Local().Format("02.01.06 15:04"), harvest.Transmission.NewItems, harvest.Transmission.ItemCount, harvest.Feed.URL, harvest.Feed.StatusMessage)
+		log.Infof("%2s  %3d  %s  %3d/%-3d  %s  %s", harvest.Feed.Status, harvest.Transmission.StatusCode, harvest.Feed.LastUpdated.Local().Format("02.01.06 15:04"), harvest.Transmission.NewItems, harvest.Transmission.ItemCount, harvest.Feed.URL, harvest.Feed.StatusMessage)
 
 		return nil
 
 	})
 
 	if err != nil {
-		log.Debugf("Error processing feed: %s", err.Error())
+		log.Infof("Error processing feed: %s", err.Error())
 	}
 
 }
