@@ -44,8 +44,9 @@ func TestJWT(t *testing.T) {
 
 func TestNoExp(t *testing.T) {
 
-	token := jwt.New(jwtSigningMethod)
-	token.Claims[claimName] = "jake"
+	claims := jwt.MapClaims{}
+	token := jwt.NewWithClaims(jwtSigningMethod, claims)
+	claims[claimName] = "jake"
 	tokenString, errSign := token.SignedString(getSigningKey())
 	if errSign != nil {
 		t.Fatalf("Failed to sign token: %s", errSign.Error())
@@ -63,9 +64,10 @@ func TestNoExp(t *testing.T) {
 
 func TestExpired(t *testing.T) {
 
-	token := jwt.New(jwtSigningMethod)
-	token.Claims[claimName] = "jake"
-	token.Claims[claimExpiration] = time.Now().Add(time.Second * -1).Unix()
+	claims := jwt.MapClaims{}
+	token := jwt.NewWithClaims(jwtSigningMethod, claims)
+	claims[claimName] = "jake"
+	claims[claimExpiration] = time.Now().Add(time.Second * -1).Unix()
 	tokenString, errSign := token.SignedString(getSigningKey())
 	if errSign != nil {
 		t.Fatalf("Failed to sign token: %s", errSign.Error())
@@ -83,9 +85,10 @@ func TestExpired(t *testing.T) {
 
 func TestWrongSignature(t *testing.T) {
 
-	token := jwt.New(jwtSigningMethod)
-	token.Claims[claimName] = "jake"
-	token.Claims[claimExpiration] = time.Now().Add(time.Second * -1).Unix()
+	claims := jwt.MapClaims{}
+	token := jwt.NewWithClaims(jwtSigningMethod, claims)
+	claims[claimName] = "jake"
+	claims[claimExpiration] = time.Now().Add(time.Second * -1).Unix()
 	tokenString, errSign := token.SignedString(getSigningKey())
 	if errSign != nil {
 		t.Fatalf("Failed to sign token: %s", errSign.Error())
@@ -105,8 +108,9 @@ func TestWrongSignature(t *testing.T) {
 
 func TestNoUser(t *testing.T) {
 
-	token := jwt.New(jwtSigningMethod)
-	token.Claims[claimExpiration] = time.Now().Add(time.Second * -1).Unix()
+	claims := jwt.MapClaims{}
+	token := jwt.NewWithClaims(jwtSigningMethod, claims)
+	claims[claimExpiration] = time.Now().Add(time.Second * -1).Unix()
 	tokenString, errSign := token.SignedString(getSigningKey())
 	if errSign != nil {
 		t.Fatalf("Failed to sign token: %s", errSign.Error())

@@ -27,11 +27,12 @@ var (
 // GenerateToken creates a new JWT encoded with the username and roles of the given user, returns the token and expiration
 func GenerateToken(user *User) (string, time.Time, error) {
 	expiration := time.Now().Add(jwtExpiration)
-	token := jwt.New(jwtSigningMethod)
-	token.Claims[claimExpiration] = expiration.Unix()
-	token.Claims[claimUserID] = user.ID
-	token.Claims[claimName] = user.Name
-	token.Claims[claimRoles] = strings.Join(user.Roles, " ")
+	claims := jwt.MapClaims{}
+	claims[claimExpiration] = expiration.Unix()
+	claims[claimUserID] = user.ID
+	claims[claimName] = user.Name
+	claims[claimRoles] = strings.Join(user.Roles, " ")
+	token := jwt.NewWithClaims(jwtSigningMethod, claims)
 	tokenString, err := token.SignedString(getSigningKey())
 	return tokenString, expiration, err
 }
@@ -58,19 +59,22 @@ func authenticateJWT(authHeader string, roles ...string) (*User, error) {
 	}
 
 	user := &User{}
-	if claim := token.Claims[claimUserID]; claim != nil {
-		if id, ok := claim.(string); ok {
-			user.ID = id
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if claim := claims[claimUserID]; claim != nil {
+			if id, ok := claim.(string); ok {
+				user.ID = id
+			}
 		}
-	}
-	if claim := token.Claims[claimName]; claim != nil {
-		if name, ok := claim.(string); ok {
-			user.Name = name
+		if claim := claims[claimName]; claim != nil {
+			if name, ok := claim.(string); ok {
+				user.Name = name
+			}
 		}
-	}
-	if claim := token.Claims[claimRoles]; claim != nil {
-		if roles, ok := claim.(string); ok {
-			user.Roles = strings.Fields(roles)
+		if claim := claims[claimRoles]; claim != nil {
+			if roles, ok := claim.(string); ok {
+				user.Roles = strings.Fields(roles)
+			}
 		}
 	}
 
