@@ -43,8 +43,6 @@
     - collection methods - which ones return collections, individual elements, maps?
     - need specifics here!!!
 
-  - https://github.com/mmcdole/gofeed
-
   - create feed item frequency graph per feed for one week
     - allow assigning polling frequency per hour/day for feed
 
