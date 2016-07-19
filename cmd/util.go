@@ -3,8 +3,8 @@ package cmd
 import (
 	"fmt"
 	"github.com/codegangsta/cli"
-	"path/filepath"
 	"github.com/kwo/rakewire/model"
+	"path/filepath"
 )
 
 func showVersionInformation(c *cli.Context) {

@@ -1,8 +1,8 @@
 package opml
 
 import (
-	"io"
 	"github.com/kwo/rakewire/model"
+	"io"
 	"strings"
 	"testing"
 	"time"

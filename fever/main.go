@@ -2,10 +2,10 @@ package fever
 
 import (
 	"encoding/json"
-	"golang.org/x/net/context"
-	"net/http"
 	"github.com/kwo/rakewire/logger"
 	"github.com/kwo/rakewire/model"
+	"golang.org/x/net/context"
+	"net/http"
 	"strings"
 )
 

@@ -3,8 +3,8 @@ package opml
 import (
 	"bufio"
 	"bytes"
-	"io"
 	"github.com/kwo/rakewire/model"
+	"io"
 	"strings"
 	"testing"
 )

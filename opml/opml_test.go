@@ -2,10 +2,10 @@ package opml
 
 import (
 	"bytes"
+	"github.com/kwo/rakewire/model"
 	"io"
 	"io/ioutil"
 	"os"
-	"github.com/kwo/rakewire/model"
 	"strings"
 	"testing"
 	"time"

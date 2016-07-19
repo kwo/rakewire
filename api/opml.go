@@ -2,11 +2,11 @@ package api
 
 import (
 	"fmt"
-	"golang.org/x/net/context"
-	"net/http"
 	"github.com/kwo/rakewire/auth"
 	"github.com/kwo/rakewire/model"
 	"github.com/kwo/rakewire/opml"
+	"golang.org/x/net/context"
+	"net/http"
 )
 
 func (z *API) opmlExport(ctx context.Context, w http.ResponseWriter, r *http.Request) {
