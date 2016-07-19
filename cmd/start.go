@@ -2,6 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/codegangsta/cli"
 	"github.com/kwo/rakewire/fetch"
 	"github.com/kwo/rakewire/httpd"
@@ -9,11 +15,6 @@ import (
 	"github.com/kwo/rakewire/model"
 	"github.com/kwo/rakewire/pollfeed"
 	"github.com/kwo/rakewire/reaper"
-	"io/ioutil"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 type startContext struct {
@@ -51,16 +52,7 @@ func Start(c *cli.Context) error {
 	}
 	ctx.log.Infof("Database: %s", ctx.database.Location())
 
-	// initialize logging - debug statements above this point will never be logged
-	// Forbid debugMode in production.
-	// If model.Version is not an empty string (stamped via LDFLAGS) then we are in production mode.
-	if verbose {
-		if len(c.App.Version) == 0 {
-			logger.DebugMode = true
-		} else {
-			ctx.log.Infof("verbose logging not available in production mode")
-		}
-	}
+	logger.DebugMode = verbose
 
 	pollConfig := &pollfeed.Configuration{
 		BatchMax:        c.Int("poll.batchmax"),
