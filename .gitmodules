@@ -1,6 +1,3 @@
-[submodule "vendor/github.com/paulrosania/go-charset"]
-	path = vendor/github.com/paulrosania/go-charset
-	url = https://github.com/paulrosania/go-charset
 [submodule "vendor/github.com/boltdb/bolt"]
 	path = vendor/github.com/boltdb/bolt
 	url = https://github.com/boltdb/bolt
@@ -22,3 +19,6 @@
 [submodule "vendor/github.com/matryer/m"]
 	path = vendor/github.com/matryer/m
 	url = https://github.com/matryer/m
+[submodule "vendor/golang.org/x/text"]
+	path = vendor/golang.org/x/text
+	url = https://go.googlesource.com/text

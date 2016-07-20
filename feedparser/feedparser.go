@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/xml"
 	"errors"
+	"golang.org/x/net/html/charset"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -101,7 +102,7 @@ func (z *Entry) hash() string {
 func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 
 	z.decoder = xml.NewDecoder(reader)
-	z.decoder.CharsetReader = newFilterCharsetReader
+	z.decoder.CharsetReader = charset.NewReaderLabel
 	z.decoder.Strict = false
 
 	z.stack = &elements{}
