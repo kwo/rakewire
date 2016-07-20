@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/xml"
-	"fmt"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/url"
@@ -12,6 +12,42 @@ import (
 	"strings"
 	"time"
 )
+
+const (
+	nsAtom       = "http://www.w3.org/2005/Atom"
+	nsContent    = "http://purl.org/rss/1.0/modules/content/"
+	nsDublinCore = "http://purl.org/dc/elements/1.1/"
+	nsNone       = ""
+	nsRSS        = ""
+	nsXML        = "http://www.w3.org/XML/1998/namespace"
+)
+
+const (
+	flavorAtom = "atom"
+	flavorRSS  = "rss"
+)
+
+const (
+	linkSelf      = "self"
+	linkAlternate = "alternate"
+)
+
+var (
+	rssPerson = regexp.MustCompile(`^(.+)\s+\((.+)\)$`)
+)
+
+// NewParser returns a new parser
+func NewParser() *Parser {
+	return &Parser{}
+}
+
+// Parser can parse feeds
+type Parser struct {
+	decoder *xml.Decoder
+	entry   *Entry
+	feed    *Feed
+	stack   *elements
+}
 
 // Feed feed
 type Feed struct {
@@ -46,6 +82,7 @@ type Entry struct {
 	Updated       time.Time
 }
 
+// hash calculates a unique signature for an entry, used if the entry lacks a unique ID/GUID.
 func (z *Entry) hash() string {
 
 	// Needs to be reproducible so that on future parsings of the same entry, the same ID will ge generated.
@@ -58,40 +95,6 @@ func (z *Entry) hash() string {
 	hash.Write([]byte(z.Links[linkAlternate]))
 	return hex.EncodeToString(hash.Sum(nil))
 
-}
-
-// Parser can parse feeds
-type Parser struct {
-	decoder *xml.Decoder
-	entry   *Entry
-	feed    *Feed
-	stack   *elements
-}
-
-const (
-	nsAtom       = "http://www.w3.org/2005/Atom"
-	nsContent    = "http://purl.org/rss/1.0/modules/content/"
-	nsDublinCore = "http://purl.org/dc/elements/1.1/"
-	nsNone       = ""
-	nsRSS        = ""
-	nsXML        = "http://www.w3.org/XML/1998/namespace"
-)
-
-const (
-	flavorAtom = "atom"
-	flavorRSS  = "rss"
-)
-
-const (
-	linkSelf      = "self"
-	linkAlternate = "alternate"
-)
-
-var rssPerson = regexp.MustCompile(`^(.+)\s+\((.+)\)$`)
-
-// NewParser returns a new parser
-func NewParser() *Parser {
-	return &Parser{}
 }
 
 // Parse feed
@@ -190,7 +193,7 @@ Loop:
 	}
 
 	if exitError == nil && z.feed == nil {
-		exitError = fmt.Errorf("Cannot parse feed")
+		exitError = errors.New("Cannot parse feed")
 	}
 
 	return z.feed, exitError
@@ -208,7 +211,7 @@ func (z *Parser) doStartFeedNil(e *element, start *xml.StartElement) error {
 			z.feed.Flavor = flavorRSS
 		} // switch
 	} else {
-		return fmt.Errorf("Cannot parse %s:%s", e.name.Space, e.name.Local)
+		return errors.New("Cannot parse " + e.name.Space + " : " + e.name.Local)
 	}
 	return nil
 }
@@ -402,9 +405,6 @@ func (z *Parser) doEndEntryAtom(e *element) {
 			z.entry.LinkAlternate = z.entry.Links[""]
 		}
 
-		z.entry.Summary = makeAbsoluteURLs(z.entry.LinkAlternate, z.entry.Summary)
-		z.entry.Content = makeAbsoluteURLs(z.entry.LinkAlternate, z.entry.Content)
-
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
 
@@ -434,9 +434,6 @@ func (z *Parser) doEndEntryRSS(e *element) {
 		if isEmpty(z.entry.LinkAlternate) {
 			z.entry.LinkAlternate = z.entry.Links[""]
 		}
-
-		z.entry.Summary = makeAbsoluteURLs(z.entry.LinkAlternate, z.entry.Summary)
-		z.entry.Content = makeAbsoluteURLs(z.entry.LinkAlternate, z.entry.Content)
 
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil

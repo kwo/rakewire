@@ -2,7 +2,6 @@ package feedparser
 
 import (
 	"encoding/xml"
-	"fmt"
 	"strings"
 )
 
@@ -11,6 +10,28 @@ type element struct {
 	name xml.Name
 	attr []xml.Attr
 }
+
+// elements maintains a stack of Element objects
+type elements struct {
+	stack []*element
+}
+
+func mismatch(ns, tag, nsRequested, tagRequested string) *mismatchError {
+	return &mismatchError{Namespace: ns, Tag: tag, NamespaceRequested: nsRequested, TagRequested: tagRequested}
+}
+
+type mismatchError struct {
+	Namespace          string
+	Tag                string
+	NamespaceRequested string
+	TagRequested       string
+}
+
+func (z *mismatchError) Error() string {
+	return z.NamespaceRequested + ":" + z.TagRequested + " does not match " + z.Namespace + ":" + z.Tag
+}
+
+/********** element functions **********/
 
 // Match returns case-insensitive match of given xml.Name
 func (z *element) Match(space string, local string) bool {
@@ -27,10 +48,7 @@ func (z *element) Attr(space string, local string) string {
 	return ""
 }
 
-// elements maintains a stack of Element objects
-type elements struct {
-	stack []*element
-}
+/********** elements functions **********/
 
 // IsStackFeed if you are at the feed level
 func (z *elements) IsStackFeed(flavor string, offset int) bool {
@@ -96,7 +114,7 @@ func (z *elements) PeekIf(t xml.EndElement) (*element, error) {
 	if e.Match(t.Name.Space, t.Name.Local) {
 		return e, nil
 	}
-	return nil, fmt.Errorf("%s:%s does not match %s:%s", e.name.Space, e.name.Local, t.Name.Space, t.Name.Local)
+	return nil, mismatch(e.name.Space, e.name.Local, t.Name.Space, t.Name.Local)
 }
 
 // Pop xml EndElement off of elements stack
@@ -114,7 +132,7 @@ func (z *elements) PopIf(t xml.EndElement) (*element, error) {
 		z.Pop()
 		return e, nil
 	}
-	return nil, fmt.Errorf("%s:%s does not match %s:%s", e.name.Space, e.name.Local, t.Name.Space, t.Name.Local)
+	return nil, mismatch(e.name.Space, e.name.Local, t.Name.Space, t.Name.Local)
 }
 
 // Push xml StartElement on to elements stack
