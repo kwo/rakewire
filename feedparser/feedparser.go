@@ -1,8 +1,6 @@
 package feedparser
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"encoding/xml"
 	"errors"
 	"golang.org/x/net/html/charset"
@@ -37,9 +35,22 @@ var (
 	rssPerson = regexp.MustCompile(`^(.+)\s+\((.+)\)$`)
 )
 
-// NewParser returns a new parser
+var (
+	// StandardPostProcessors defines the standard PostProcessors to be executed after a feed is parsed.
+	StandardPostProcessors = []PostProcessor{HashFeed, RewriteFeedWithAbsoluteURLs}
+)
+
+// PostProcessor defines a function to be executed on a feed after parsing
+type PostProcessor func(f *Feed)
+
+// NewParser returns a new parser with the standard post processors
 func NewParser() *Parser {
-	return &Parser{}
+	return NewParserWithPostProcessors(StandardPostProcessors...)
+}
+
+// NewParserWithPostProcessors returns a new parser with custom post processors
+func NewParserWithPostProcessors(postprocessors ...PostProcessor) *Parser {
+	return &Parser{postp: postprocessors}
 }
 
 // Parser can parse feeds
@@ -47,6 +58,7 @@ type Parser struct {
 	decoder *xml.Decoder
 	entry   *Entry
 	feed    *Feed
+	postp   []PostProcessor
 	stack   *elements
 }
 
@@ -81,21 +93,6 @@ type Entry struct {
 	Summary       string
 	Title         string
 	Updated       time.Time
-}
-
-// hash calculates a unique signature for an entry, used if the entry lacks a unique ID/GUID.
-func (z *Entry) hash() string {
-
-	// Needs to be reproducible so that on future parsings of the same entry, the same ID will ge generated.
-	// Also needs to have enough variables to be unique within the feed.
-
-	hash := md5.New()
-	hash.Write([]byte(z.Content))
-	hash.Write([]byte(z.Summary))
-	hash.Write([]byte(z.Title))
-	hash.Write([]byte(z.Links[linkAlternate]))
-	return hex.EncodeToString(hash.Sum(nil))
-
 }
 
 // Parse feed
@@ -185,16 +182,25 @@ Loop:
 
 	} // loop
 
+	// finish reading stream
 	if exitError != nil {
 		ioutil.ReadAll(reader)
 	}
 
+	// close stream
 	if closer, ok := reader.(io.Closer); ok {
 		closer.Close()
 	}
 
 	if exitError == nil && z.feed == nil {
 		exitError = errors.New("Cannot parse feed")
+	}
+
+	// run postprocessors
+	if exitError == nil && z.feed != nil {
+		for _, p := range z.postp {
+			p(z.feed)
+		}
 	}
 
 	return z.feed, exitError
@@ -395,10 +401,6 @@ func (z *Parser) doEndEntryAtom(e *element) {
 		if z.feed.Updated.Before(z.entry.Updated) {
 			z.feed.Updated = z.entry.Updated
 		}
-		// guarentee entry always has an id
-		if isEmpty(z.entry.ID) {
-			z.entry.ID = z.entry.hash()
-		}
 
 		z.entry.LinkSelf = z.entry.Links[linkSelf]
 		z.entry.LinkAlternate = z.entry.Links[linkAlternate]
@@ -424,10 +426,6 @@ func (z *Parser) doEndEntryRSS(e *element) {
 		}
 		if z.feed.Updated.Before(z.entry.Updated) {
 			z.feed.Updated = z.entry.Updated
-		}
-		// guarentee entry always has an id
-		if isEmpty(z.entry.ID) {
-			z.entry.ID = z.entry.hash()
 		}
 
 		z.entry.LinkSelf = z.entry.Links[linkSelf]
