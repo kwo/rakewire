@@ -98,7 +98,7 @@ func NewParser() *Parser {
 func (z *Parser) Parse(reader io.Reader) (*Feed, error) {
 
 	z.decoder = xml.NewDecoder(reader)
-	z.decoder.CharsetReader = NewFilterCharsetReader
+	z.decoder.CharsetReader = newFilterCharsetReader
 	z.decoder.Strict = false
 
 	z.stack = &elements{}

@@ -9,26 +9,26 @@ import (
 
 // NewFilterCharsetReader constructs a new filtered reader
 // The filter will operate on UTF8, which is the same as ASCII for the control characters.
-func NewFilterCharsetReader(characterset string, r io.Reader) (io.Reader, error) {
+func newFilterCharsetReader(characterset string, r io.Reader) (io.Reader, error) {
 	cr, err := charset.NewReader(characterset, r)
 	if err != nil {
 		return nil, err
 	}
-	return NewFilterReader(cr), nil
+	return newFilterReader(cr), nil
 }
 
 // NewFilterReader constructs a new filtered reader
-func NewFilterReader(r io.Reader) io.Reader {
-	return &FilterReader{source: r}
+func newFilterReader(r io.Reader) io.Reader {
+	return &filterReader{source: r}
 }
 
-// FilterReader filters invalid characters from an XML string
-type FilterReader struct {
+// filterReader filters invalid characters from an XML string
+type filterReader struct {
 	source io.Reader
 }
 
 // Close closes the reader
-func (z *FilterReader) Close() error {
+func (z *filterReader) Close() error {
 	if closer, ok := z.source.(io.Closer); ok {
 		return closer.Close()
 	}
@@ -36,7 +36,7 @@ func (z *FilterReader) Close() error {
 }
 
 // Close closes the reader
-func (z *FilterReader) Read(p []byte) (int, error) {
+func (z *filterReader) Read(p []byte) (int, error) {
 
 	buf := make([]byte, len(p))
 	n, err := z.source.Read(buf)

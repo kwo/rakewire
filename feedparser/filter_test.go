@@ -9,7 +9,7 @@ import (
 func TestFilter1(t *testing.T) {
 
 	r := strings.NewReader("")
-	f := NewFilterReader(r)
+	f := newFilterReader(r)
 
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
@@ -25,7 +25,7 @@ func TestFilter1(t *testing.T) {
 func TestFilter2(t *testing.T) {
 
 	r := strings.NewReader("")
-	f := NewFilterReader(r)
+	f := newFilterReader(r)
 
 	b := []byte{}
 	i, err := f.Read(b)
@@ -43,7 +43,7 @@ func TestFilter2(t *testing.T) {
 func TestFilter3(t *testing.T) {
 
 	r := strings.NewReader("abcdefg\nhijklmnop\tqrstuv\rwxyz")
-	f := NewFilterReader(r)
+	f := newFilterReader(r)
 
 	data, err := ioutil.ReadAll(f)
 	if err != nil {
