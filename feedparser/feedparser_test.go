@@ -5,6 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -82,7 +83,7 @@ func TestLinkWithoutRel(t *testing.T) {
 	`
 
 	p := NewParser()
-	feed, err := p.Parse(ioutil.NopCloser(strings.NewReader(atom)), "")
+	feed, err := p.Parse(ioutil.NopCloser(strings.NewReader(atom)))
 	if err != nil {
 		t.Fatalf("Cannot parse Aton feed: %s", err.Error())
 	}
@@ -129,7 +130,7 @@ func TestRSSPerson(t *testing.T) {
 	`
 
 	p := NewParser()
-	feed, err := p.Parse(ioutil.NopCloser(strings.NewReader(rss)), "")
+	feed, err := p.Parse(ioutil.NopCloser(strings.NewReader(rss)))
 	if err != nil {
 		t.Fatalf("Cannot parse RSS feed: %s", err.Error())
 	}
@@ -208,7 +209,7 @@ func TestAtom(t *testing.T) {
 
 	t.Parallel()
 
-	f := testFeed(t, getAtomFeed(), "")
+	f := testFeed(t, getAtomFeed())
 
 	assertEqual(t, "atom", f.Flavor)
 	assertEqual(t, "tag:feedparser.org,2005-11-09:/docs/examples/atom10.xml", f.ID)
@@ -284,7 +285,7 @@ func TestRSS(t *testing.T) {
 
 	t.Parallel()
 
-	f := testFeed(t, getRSSFeed(), "")
+	f := testFeed(t, getRSSFeed())
 
 	assertEqual(t, "rss2.0", f.Flavor)
 	assertEqual(t, "https://en.blog.wordpress.com/feed/", f.ID)
@@ -316,9 +317,10 @@ func TestRSS(t *testing.T) {
 
 }
 
-func testFeed(t *testing.T, reader io.Reader, contentType string) *Feed {
+func testFeed(t *testing.T, reader io.Reader) *Feed {
 	p := NewParser()
-	feed, err := p.Parse(reader, contentType)
+
+	feed, err := p.Parse(reader)
 	if err != nil {
 		t.Fatalf("Error parsing feed: %s", err.Error())
 	} else if feed == nil {
@@ -327,13 +329,20 @@ func testFeed(t *testing.T, reader io.Reader, contentType string) *Feed {
 	return feed
 }
 
+func testFile(t *testing.T, filename string) *Feed {
+	f, err := os.Open(filename)
+	assertNoError(t, err)
+	assertNotNil(t, f)
+	defer f.Close()
+	return testFeed(t, f)
+}
+
 func testURL(t *testing.T, url string) *Feed {
 	rsp, err := http.Get(url)
-	contentType := rsp.Header.Get("Content-Type")
 	assertNoError(t, err)
 	assertNotNil(t, rsp)
 	defer rsp.Body.Close()
-	return testFeed(t, rsp.Body, contentType)
+	return testFeed(t, rsp.Body)
 }
 
 func assertNoError(t *testing.T, e error) {
