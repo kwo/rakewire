@@ -13,7 +13,8 @@ type Link struct {
 	URL  *url.URL
 }
 
-func findURLs(content string) []*Link {
+// FindURLs will find all HTML links in the given content.
+func FindURLs(content string) []*Link {
 
 	if isEmpty(content) {
 		return nil
@@ -59,8 +60,22 @@ Loop:
 
 }
 
-// base url should be the alternate link to the feed entry
-func makeAbsoluteURLs(base, content string) string {
+// RewriteFeedWithAbsoluteURLs will rewrite all feed entries with absolute URLs if not already.
+func RewriteFeedWithAbsoluteURLs(f *Feed) {
+	for _, entry := range f.Entries {
+		RewriteEntryWithAbsoluteURLs(entry)
+	}
+}
+
+// RewriteEntryWithAbsoluteURLs will rewrite all links in Entry.Content and Entry.Summary as absolute URLs if not already.
+func RewriteEntryWithAbsoluteURLs(entry *Entry) {
+	entry.Content = RewriteContentWithAbsoluteURLs(entry.LinkAlternate, entry.Content)
+	entry.Summary = RewriteContentWithAbsoluteURLs(entry.LinkAlternate, entry.Summary)
+}
+
+// RewriteContentWithAbsoluteURLs will rewrite all HTML anchor and image tags in content as absolute URLs,
+// if not already, using the given base url as a reference.
+func RewriteContentWithAbsoluteURLs(base, content string) string {
 
 	if isEmpty(base) || isEmpty(content) {
 		return content

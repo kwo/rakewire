@@ -13,7 +13,7 @@ func TestRewriteSimpleHref(t *testing.T) {
 	content2 := `
 	<p>abc <a href="http://localhost/123" title="hello">hello</a> def <img src="http://localhost/image"/> ghi <img src="http://localhost/pict.jpg"></img></p>
 	`
-	result := makeAbsoluteURLs("http://localhost", content)
+	result := RewriteContentWithAbsoluteURLs("http://localhost", content)
 
 	t.Log(result)
 
@@ -29,11 +29,12 @@ func TestRewriteOngoing(t *testing.T) {
 	if f == nil {
 		t.Fatal("Cannot parse feed.")
 	}
+	RewriteFeedWithAbsoluteURLs(f)
 
 	for _, entry := range f.Entries {
 		t.Logf("entry: %s", entry.Title)
 		if entry.Title == "New British Isles" {
-			links := findURLs(entry.Content)
+			links := FindURLs(entry.Content)
 			if len(links) != 5 {
 				t.Fatalf("bad link count %d, expecting %d", len(links), 5)
 			}
