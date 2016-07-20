@@ -10,15 +10,6 @@ import (
 	"time"
 )
 
-func TestMain(m *testing.M) {
-
-	// cfg := &logging.Configuration{Level: logging.LogTrace}
-	// cfg.Init()
-
-	m.Run()
-
-}
-
 func TestAndrew(t *testing.T) {
 
 	t.SkipNow()
