@@ -1,0 +1,1487 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns='http://www.w3.org/2005/Atom'
+      xmlns:thr='http://purl.org/syndication/thread/1.0'
+      xml:lang='en-us'>
+ <title>ongoing by Tim Bray</title>
+ <link rel='hub' href='http://pubsubhubbub.appspot.com/' />
+ <id>https://www.tbray.org/ongoing/</id>
+ <link href='https://www.tbray.org/ongoing/' />
+ <link rel='self' href='https://www.tbray.org/ongoing/ongoing.atom' />
+ <link rel='replies'       thr:count='101'       href='https://www.tbray.org/ongoing/comments.atom' />
+ <logo>rsslogo.jpg</logo>
+ <icon>/favicon.ico</icon>
+ <updated>2016-07-18T14:11:03-07:00</updated>
+ <author><name>Tim Bray</name></author>
+ <subtitle>ongoing fragmented essay by Tim Bray</subtitle>
+ <rights>All content written by Tim Bray and photos by Tim Bray Copyright Tim Bray, some rights reserved, see /ongoing/misc/Copyright</rights>
+ <generator uri='/misc/Colophon'>Generated from XML source code using Perl, Expat, Emacs, Mysql, Ruby, Java, and ImageMagick.  Industrial-strength technology, baby.</generator>
+
+<entry>
+ <title>Susan and her SQL Problem</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/07/14/Melissa-and-SQL' />
+ <link rel='replies'        thr:count='4'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/07/14/Melissa-and-SQL#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/07/14/Melissa-and-SQL</id>
+ <published>2016-07-14T12:00:00-07:00</published>
+ <updated>2016-07-16T11:34:05-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology/Software' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Software' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>As usu&#xad;al, it all start&#xad;ed out in&#xad;no&#xad;cent&#xad;ly enough. Su&#xad;san [ed: names have been changed to pro&#xad;tect pri&#xad;va&#xad;cy] had no way to meet the dead&#xad;lines her boss&#xad;es had set for her. Bob had re&#xad;cent&#xad;ly and abrupt&#xad;ly left the com&#xad;pa&#xad;ny, and Melis&#xad;sa was on an ex&#xad;tend&#xad;ed med&#xad;i&#xad;cal ab&#xad;sence, leav&#xad;ing Su&#xad;san to do the work of three peo&#xad;ple. That is, three peo&#xad;ple each try&#xad;ing to rec&#xad;on&#xad;cile a few dozen 40,000+ row Ex&#xad;cel spread&#xad;sheets rep&#xad;re&#xad;sent&#xad;ing the gen&#xad;er&#xad;al ledger of the For&#xad;tune 1000 com&#xad;pa&#xad;ny they con&#xad;sult&#xad;ed for. She was about to brush off ever-chatty and an&#xad;noy&#xad;ing Michael from Com&#xad;pli&#xad;ance when, for on&#xad;ce, he rec&#xad;og&#xad;nized the stress she was un&#xad;der and said some&#xad;thing use&#xad;ful.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>As usual, it all started out innocently enough. Susan [ed: names have been
+changed to protect privacy] had no way to meet the deadlines her bosses had
+set for her. Bob had recently and abruptly left the company, and Melissa was
+on an extended medical absence, leaving Susan to do the work of three
+people. That is, three people each trying to reconcile a few dozen 40,000+ row
+Excel spreadsheets representing the general ledger of the Fortune 1000 company
+they consulted for. She was about to brush off ever-chatty and annoying
+Michael from Compliance when, for once, he recognized the stress she was under
+and said something useful.</p> 
+<blockquote><p><i>[Tim here: I didn’t write this! I read it on a mailing list,
+uh, 
+somewhere, by Dave, uh, somebody, and I asked Dave “Where’d you get that? I
+wanna link to it!” and Dave said “I wrote it, go ahead and share it.”  Dave
+doesn’t have a canonical URL, he says, but this gentleman clearly needs a
+blog.]</i></p></blockquote>
+<p>Useful and dangerous, that is.</p>
+ <p>“Hey, let me give you something that’ll help. A friend introduced it to
+ me, and it’s made my life amazingly easy ever since,” he said. He handed her
+ a USB stick.</p> 
+<p>Susan was understandably wary – the security team was always harping on not
+plugging in USB devices from untrusted sources, and Michael wasn’t exactly the
+type she would want to hang out with after work. But security didn’t have to
+close the books, either, so she reluctantly accepted it and plugged it into
+her workstation. Virus scans came up clean, and there was just one file on
+it:SQLite_Installer.msi.</p>
+<p>She created her schemas and loaded the CSV files in. Everything was
+consistent. Numbers added up. The rush was incredible. For the first time
+since taking this job, high strung Susan felt a rush of euphoria. The books
+would close on time!</p> 
+<p>Susan wasn’t a daily user at first. Just a bit to help her get through the
+hard times. But a couple times a month turned into a couple times a week as
+the demands mounted. Worse, SQLite was starting to fray at the edges with its
+value-typing. The euphoria just wasn’t the same. Desperate, she turned to
+something stronger. MySQL fit the bill and the price was still right. Data
+types matched up again, and she was no longer stuck reconciling mismatched
+data. Oh, how good it felt to be on top of the world again.</p> 
+<p>And that was when the dealer entered into the scene. Forget your notion of
+the sketchy thug with a gauche display of jewelry. No, Ashley McIntyre was a
+well-articulated, friendly, and slightly diminutive lady in proper business
+attire. Ashley pointed out the dangers of how Susan was using MySQL: no
+backups, no way to recover the precious data she had so painstakingly entered
+in. One bump on her old Dell laptop, and the high she felt now would be
+nothing compared to the depression she would feel having lost all the
+data. Ashley got her set up on a full Oracle installation with consultants to
+get everything moved over.</p> 
+<p>This was pure dopamine. Not only was it consistent, it was fast. It took
+anything they threw at it. Yes, “they” – Susan had introduced others in her
+department to it. It wasn’t free anymore, but – she rationalized – you get
+what you pay for, right? And it easily fit within their budget.</p> 
+<p>Until, one day, Ashley returned – with a team of equally well dressed thugs
+from the license audit team. “You’re running this on a 32-core machine. That’s
+not what you’re paying for. You’re going to have to true-up.”</p>
+<p>Susan panicked. She tried to explain how it was a virtualized server –
+“We’re only using two cores!” – but her pleas fell on deaf ears. The
+“diminutive” Ashley was unrelenting and threatening. Susan couldn’t let the
+books not close, so she had to find some way – any way – to keep the Oracle
+hits coming. She did what any addict did: she stole from other departments. In
+her mind, she rationalized her decision – “I’m just adding a few line entries
+into their accounts; we’re just ‘moving around’ the money.” But, of course,
+reality eventually caught up with her. Any legitimate accounting firm couldn’t
+risk having someone on their payroll with a less-than-stellar
+reputation. Officially, Susan was let go by “mutual agreement” – i.e., they
+paid her a bit of severance to keep her quiet – but the reality is that she
+was fired, unemployed, and – worse – unemployable.</p>
+<p>Sadly, Susan was never able to get the help she desperately needed. She can now be found floating around between various DBA contractual agencies, ranting about denormalization and first-normal database schemas.</p>
+<p>[This story brought to you by HARD – Humans Against Relational Databases –
+a 501(c)(3) non-profit dedicated to ending the cycle of addiction to database
+licenses.]</p>
+<blockquote><p><i>[Tim again; I’ll forward fan mail to Dave, and point you at
+his inevitable blog when he launches it.]</i></p></blockquote>
+</div></content></entry>
+
+<entry>
+ <title>Corporate Pride</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/07/13/Easy-Pride' />
+ <link rel='replies'        thr:count='2'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/07/13/Easy-Pride#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/07/13/Easy-Pride</id>
+ <published>2016-07-13T12:00:00-07:00</published>
+ <updated>2016-07-13T23:38:31-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World/Politics' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Politics' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>There&#x2019;s this nice video mes&#xad;sage in the el&#xad;e&#xad;va&#xad;tors at work, about the Pride Pa&#xad;rade. And it&#x2019;s mak&#xad;ing me un&#xad;easy.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>There’s this nice video message in the elevators at work, about the Pride
+Parade. And it’s making me uneasy.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/07/13/LRM_20160712_083018.png" class="inline" alt="Pride parade Telus marketing" />
+<p>I took a picture of the message and it’s a fine thing; gives me a warm glow. Especially since
+there’s going to be a big Amazon contingent in Vancouver’s parade, which
+is a powerful, uplifting occasion.</p>
+<p>I have some
+history here: back in the Seventies, I was on the college’s student-paper
+staff and we
+sponsored and hyped up the first ever Gay Dance.  Pretty radical at the time;
+you can’t imagine the freakout among the Engineering jocks and Aggies.
+Three decades later, I have the
+coolest-ever rainbow-flag sticker over the glowy apple on my Mac.
+Homophobia in all its flavors seems mostly on the run.  [Disclosure: I’m a
+white cishet male
+<a href="http://whatever.scalzi.com/2012/05/15/straight-white-male-the-lowest-difficulty-setting-there-is/">playing
+at the lowest difficulty setting</a>.]</p>
+<p>Now, the “<a href="http://www.telus.com/">TELUS</a>” in that Pride blurb 
+is a huge Canadian telecom.
+Did I mention I was uneasy? To start with, I’m profoundly unused to 
+finding myself aligned with a telephone company.</p>
+<p>The obvious next step would be  corporates funding shelter for the
+<a href="http://vancouver.ca/news-calendar/city-releases-2016-homeless-count-results-updates-low-income-housing.aspx">army
+of homeless</a> on Vancouver’s streets, including the street right
+outside Telus’ building, where there’s someone sleeping on cardboard on
+pavement every morning.  Then taking positive action on the
+<a href="https://www.policyalternatives.ca/van-working-poverty">hundred
+thousand working people</a> living in poverty in Vancouver, 
+<a href="http://www.vansunkidsfund.ca/">sending kids to school hungry</a>.
+And speaking of poor kids, can we expect to see corporate leadership on
+addressing the problems behind the fact that
+<a href="http://www.metronews.ca/news/vancouver/2016/05/19/first-nations-child-poverty-study.html">half of them are aboriginal</a>?</p>
+<p>It shouldn’t be a problem that homeless people and hungry aboriginal kids
+don’t have a parade to march in, one you can send your employees off to 
+and get a diversity badge for the price of a few banners; and the employees
+don’t even have to take a day off work!</p>
+<p>Pride? I’m 100% supportive, and homophobia’s still there to be combated.
+But I’m actually not holding my breath waiting for corporate
+leadership on that other stuff.</p>
+</div></content></entry>
+
+<entry>
+ <title>Vegetables!</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/07/10/Farmers-Market' />
+ <link rel='replies'        thr:count='0'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/07/10/Farmers-Market#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/07/10/Farmers-Market</id>
+ <published>2016-07-10T12:00:00-07:00</published>
+ <updated>2016-07-10T21:48:11-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World/Food and Drink' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Food and Drink' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts/Photos' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Photos' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>This morn&#xad;ing we went to the <a href='http://eatlocal.org/markets/mt-pleasant/'>Mount Pleas&#xad;ant Farmers&#x2019; Mar&#xad;ket</a>, which is small and good, if kind of pricey. It&#x2019;s soup-to-nuts where by &#x201c;soup-to-nuts&#x201d;, I mean meat, veg&#xad;eta&#xad;bles, and booze. I ap&#xad;prove of all three, but it was the veg&#xad;eta&#xad;bles in the sun that want&#xad;ed to be pho&#xad;tographed.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>This morning we went to the
+<a href="http://eatlocal.org/markets/mt-pleasant/">Mount Pleasant Farmers’
+Market</a>, which is small and good, if kind of pricey.  It’s soup-to-nuts
+where by “soup-to-nuts”, I mean meat, vegetables, and booze.  I approve of all
+three, but it was the vegetables in the sun that wanted to be photographed.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/07/10/FXT16225.png" alt="Carrots" />
+<img src="https://www.tbray.org/ongoing/When/201x/2016/07/10/FXT16226.png" alt="Pink vegetables" />
+<img src="https://www.tbray.org/ongoing/When/201x/2016/07/10/FXT16227.png" alt="Yellow potatoes" />
+<img src="https://www.tbray.org/ongoing/When/201x/2016/07/10/FXT16228.png" alt="Zucchini?" />
+<img src="https://www.tbray.org/ongoing/When/201x/2016/07/10/FXT16230.png" alt="Potatoes and greens" />
+<img src="https://www.tbray.org/ongoing/When/201x/2016/07/10/FXT16231.png" alt="Cucumbers" />
+<p>We bought everything we’d need for dinner, including the potatoes in the
+second-last photo, which weren’t bad; but the highlight was the sockeye salmon
+the guy had caught the day before just off Port Alberni.</p>
+<p>Accompaniment was by this nice
+<a href="http://www.nkmipcellars.com/product/Winemaker-s-2013-Ros-">2015
+Nk’Mip rosé</a>, which I recommend highly.</p>
+</div></content></entry>
+
+<entry>
+ <title>The REST Report</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/07/09/RESTfulness' />
+ <link rel='replies'        thr:count='3'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/07/09/RESTfulness#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/07/09/RESTfulness</id>
+ <published>2016-07-09T12:00:00-07:00</published>
+ <updated>2016-07-10T16:20:19-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology/Web' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Web' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>We were talk&#xad;ing <a href='http://aws.amazon.com/'>at work</a>  about Server&#xad;less: What&#x2019;s  the right tool&#xad;ing for de&#xad;vel&#xad;op&#xad;ers build&#xad;ing that kind of ap&#xad;p? One of the  busi&#xad;ness&#xad;peo&#xad;ple in the room said &#x201c;Won&#x2019;t de&#xad;vel&#xad;op&#xad;ers need s spe&#xad;cial UI  con&#xad;struc&#xad;tion kit for Server&#xad;less apps?&#x201d;  The tech&#xad;ni&#xad;cal peo&#xad;ple all looked blank, be&#xad;cause REST. Brows&#xad;er code doesn&#x2019;t  care (nor does a new-fangled Re&#xad;act thingie, nor an iOS/An&#xad;droid ap&#xad;p)  what&#x2019;s hid&#xad;ing be&#xad;hind that HTTP POST. REST is more or less  to&#xad;tal&#xad;ly dom&#xad;i&#xad;nant  among app builders to&#xad;day. Is there any prospect of that chang&#xad;ing?</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>We were talking
+<a href="http://aws.amazon.com/">at work</a> about Serverless: What’s
+the right tooling for developers building that kind of app?  One of the
+businesspeople in the room said “Won’t developers need s special UI
+construction kit for Serverless apps?”
+The technical people all looked blank, because REST.  Browser code doesn’t
+care (nor does a new-fangled React thingie, nor an iOS/Android app)
+what’s hiding behind that HTTP POST.  REST is more or less
+totally dominant 
+among app builders today. Is there any prospect of that changing?</p>
+<h2 id='p-1'>What we talk about when we talk about REST</h2>
+<p>HTTP CRUD.  Well, HTTPS actually these days, thank goodness. GET and POST,
+maybe a little PUT if you’re daring.  Not much
+<a href="https://en.wikipedia.org/wiki/HATEOAS">HATEOAS</a>, to be honest.  No
+deep thinking about idempotence, that I see anyhow.</p>
+<p>All of which is perfectly OK, because it works.  So your server doesn’t
+need to know whether it’s talking to a groovy TheNewHotness.js Single-Page 
+App or a C++ Unity-engine First-Person Shooter running on a phone.  And your
+SPA or FPS client doesn’t need to know whether it’s talking to a baroque Java
+EE monolith or a posse of funky micro-services.  It’s only the most
+successful large-scale integration architectural style in the history of
+architectures.</p>
+<p>[I may be pardoned a bit of glowiness about this, having spent a decade or
+so shouting that objects-on-the-wire (CORBA/DCOM/etc) were a bad idea, then
+another decade saying the same about SOAP, WSDL, and friends.]</p>
+<h2 id='p-2'>Is REST running out of gas?</h2>
+<p>I don’t think so, but the app areas where you see non-RESTful deployments
+are interesting.  Now, I’m talking mainstream business apps, so the use of UDP
+by the real-time bits of games is a big deal, but nobody’s 
+expecting to see unsequenced datagrams replacing conventional web-site
+networking.</p>
+<p>But what <em>is</em> interesting is streaming.  I’m not talking about video
+streaming; that’s
+<a href="https://openconnect.netflix.com/en/software/">done with HTTP</a>,
+anyhow.  I mean, for example, Slack’s
+<a href="https://api.slack.com/rtm">Real Time Messaging API</a>; I bet a lot
+of people reading this are in a few Slack channels, and at the moment, that’s
+being done with WebSockets.</p>
+<p>Which astonished me when I found out.  It’s like this: Connections across
+the Internet, particularly when one end is a mobile device, are flaky,
+evanescent things.  They all have one thing in common: Sooner or later, they
+break. Look at that Slack documentation I linked to above; it covers how to
+deal with disconnections. That’s sort of a pain for client authors, but
+apparently not too awful judging by Slack’s success.  Still, a Google search
+for
+<a href="https://www.google.ca/webhp?sourceid=chrome-instant&amp;ion=1&amp;espv=2&amp;ie=UTF-8#q=slack%20disconnects">slack disconnect</a>
+is amusing.</p>
+<p>What I can’t figure out, though, is how they manage the server-side; maybe
+the technology has advanced, but I wouldn’t have the vaguest idea how to
+configure a fleet to terminate a few hundred thousand WebSocket connections.
+A hundred thousand HTTP transactions/second?  No problemo, these days. But
+<em>persistent</em> connections?  Cool stuff; Let’s see if it catches on.</p> 
+<p>I wondered aloud about this and
+<a href="https://twitter.com/peterc">Peter Cooper</a> pointed me at
+<a href="http://www.phoenixframework.org/blog/the-road-to-2-million-websocket-connections">The Road to 2 Million Websocket Connections in Phoenix</a>,
+which has impressive numbers. 
+Mind you, they cheated<span class='dashes'> —</span> they
+used Erlang.</p>
+<h2 id='p-3'>Streaming for volume</h2>
+<p>There’s one scenario where I’ve become convinced that HTTP is stupid and
+wasteful.  That’s where you have a <em>small</em> number of parties (like, for
+example, two) exchanging
+a <em>huge</em> number of messages.  At some point, streaming <em>has</em> to
+win, right?  Well yeah, but gosh, HTTP is still hard to let go of.  There’s
+<em>so much</em> machinery there for it: authentication and encryption and
+routing and benchmarking and tracing and caching, so much a part of the
+ecosystem that you mostly don’t have to think about it.</p>
+<p>Anyhow, seems pretty likely that the next little bit of the future will stay
+REST-centric.  One of the nice things about that is you can think about
+changing out your server-side architectures, like for example going
+serverless, without breaking the world.</p>
+
+</div></content></entry>
+
+<entry>
+ <title>Video and Speed</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/06/26/Video-going-slow' />
+ <link rel='replies'        thr:count='8'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/06/26/Video-going-slow#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/06/26/Video-going-slow</id>
+ <published>2016-06-26T12:00:00-07:00</published>
+ <updated>2016-06-26T21:18:49-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology/Publishing' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Publishing' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>I&#x2019;m sure you know the feel&#xad;ing<span class="dashes"> &#x2009;&#x2014;</span> &#x2009;you see a link  to some&#xad;thing that looks in&#xad;ter&#xad;est&#xad;ing, fol&#xad;low it, and when it turns out to be a  video clip, you shake your head and kill the tab. The prob&#xad;lem with video is  it&#x2019;s just too slow. But some&#xad;times slow is OK, and maybe video can be  fixed.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>I’m sure you know the feeling<span class='dashes'> —</span> you see a link
+to something that looks interesting, follow it, and when it turns out to be a
+video clip, you shake your head and kill the tab.  The problem with video is
+it’s just too slow.  But sometimes slow is OK, and maybe video can be
+fixed.</p> 
+<p>This was provoked by
+<a href="https://www.washingtonpost.com/news/wonk/wp/2016/06/22/i-have-found-a-new-way-to-watch-tv-and-it-changes-everything/">I have found a new way to watch TV, and it changes everything</a>
+by Jeff Guo,
+which recommends watching video, by default, in fast-forward mode.  The
+pitch is compelling, I’ll probably pick the habit up.  Right now
+I watch almost no Web video, but maybe that’ll change.  Seriously, go read
+Guo’s piece, it’s challenging. Out-take: “In a way, what’s happening to video
+recalls what happened to literature when we stopped reading aloud, together,
+and started reading silently, alone.”</p>
+<h2 id='p-1'>Voice too!</h2>
+<p>Overclocked audio is one of the big features in Marco Arment’s
+super-successful
+<a href="https://en.wikipedia.org/wiki/Overcast_(app)">Overcast</a>
+pod-catcher; you can get through a voice presentation immensely faster than
+you’d think without information loss.</p>
+<p>Which I’d known since the Nineties. Way back in the day I was
+working at
+<a href="http://www.opentext.com/">Open Text</a>, which at that time was
+pretty well 100% server-side software.  Our QA lead was this brilliant guy
+who happened to be blind. He was one of our major assets, but most people
+didn’t want to sit too near him, because he did everything with audio, only
+speeded up by some huge factor, so there was this continuous high-pitched
+gabble of ultra-fast voice reading server logs and source-code listings.</p>
+<h2 id='p-2'>Video sucks</h2>
+<p>As a method of communicating information, I mean.  When you’re using the
+Internet to learn about what’s happening in the world, you want words in a
+row.</p>
+<p>Not everyone agrees.
+<a href="http://qz.com/706461/facebook-is-predicting-the-end-of-the-written-word/">Check
+this out</a>: “The best way to tell stories
+in this world, where so much information is coming at us, actually is video,”
+Mendelsohn said. “It conveys so much more information in a much quicker
+period. So actually the trend helps us to digest much more information.”
+That’s Facebook’s Nicola Mendelsohn.</p>
+<p>But I’m pretty sure she’s wrong.  Check out these
+two Tweet sequences from US political uber-blogger
+<a href="https://en.wikipedia.org/wiki/Josh_Marshall">Josh Marshall</a>, the
+first of which starts with the Mendelson assertion.  Outtake:
+<a href="https://twitter.com/joshtpm/status/746850103516868609">But the reality is that news consumers don't want video. It is sometimes successfully forced on them.</a></p>
+<p>The second sequence, just as interesting, starts with
+<a href="https://twitter.com/joshtpm/status/747057398255329280">A lot of
+reactions to my comment on video for news/politics sites. Some oddly sensitive
+from certain VC-backed outlets.</a></p>
+<p>I suspect most Net-head news-junkies will agree fervently.</p>
+<h2 id='p-3'>It doesn’t always suck</h2>
+<p>There are exceptions, chiefly live cameras pointed at live news.  To this
+day I remember, in June 1989, sitting for hours like a garden vegetable,
+watching the live feed from Tiananmen Square.  Same story with Gaza wars and
+legislative sit-ins and Olympic torch-lighting.  And of course live sports;
+baseball can be agonizingly slow, but that’s the price of love.</p>
+<h2 id='p-4'>What can’t you speed up?</h2>
+<p>To start with, some video.  The British Film
+Institute helpfully
+<a href="http://www.bfi.org.uk/news-opinion/news-bfi/lists/16-incredible-long-takes">lists
+sixteen great cinematic long cuts</a>.  I found that page by searching by
+“long take Tarkovsky” which will tip you off that I was profoundly moved by
+the six-minute one-shot (but sadly, not one take) finale of
+<a href="https://en.wikipedia.org/wiki/The_Sacrifice">The Sacrifice</a>.</p>
+<p>Here’s another example: Recently
+<a href="https://en.wikipedia.org/wiki/Sigur_R%C3%B3s">Sigur Rós</a> offered
+<a href="http://sigur-ros.co.uk/routeone/">Route One</a> (hm, that link
+currently doesn’t work), 24 hours of live-streamed video of a drive
+round Iceland, backed by their space-fluff ear-candy.  The video was kind of
+low-rez and I’m not even a huge fan of their music, but I spent 90 minutes on
+Route One with them and don’t regret a second.</p>
+<p>And so, music.  Speeding up recorded music would be the lowest philistinism
+imaginable, but messing with a song’s speed is a long and honorable
+tradition.  Cosider J.J. Cale’s original lilting lope through <cite>After
+Midnight</cite>, and compare Clapton’s live hell-for-leather dash through it on
+1979’s
+<a href="https://en.wikipedia.org/wiki/Just_One_Night_(Eric_Clapton_album)">Just
+One Night</a>.  I wouldn’t want the world to be without either.</p>
+<h2 id='p-5'>The rest</h2>
+<p>For your convenience, here is a comprehensive list of things for which
+there’s a proper pace that really oughtn’t be sped up.</p>
+<ol>
+<li><p>Eating</p></li>
+<li><p>Drinking</p></li>
+<li><p>… or really any path to altered states of consciousness</p></li>
+<li><p>Walking in the woods</p></li>
+<li><p>Any activity for which beds are designed</p></li>
+<li><p>Dancing</p></li>
+<li><p>Considering alternatives</p></li>
+</ol>
+<p>I’m sure you can think of more.</p>
+</div></content></entry>
+
+<entry>
+ <title>New British Isles</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/06/24/The-New-British-Isles' />
+ <link rel='replies'        thr:count='7'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/06/24/The-New-British-Isles#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/06/24/The-New-British-Isles</id>
+ <published>2016-06-24T12:00:00-07:00</published>
+ <updated>2016-06-25T10:27:27-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World/Politics' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Politics' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>Fol&#xad;low&#xad;ing on the Bri&#xad;tish EU ref&#xad;er&#xad;en&#xad;dum, some po&#xad;lit&#xad;i&#xad;cal re-alignment of the Bri&#xad;tish Isles feels in&#xad;evitable. I pro&#xad;pose a re-organization in&#xad;to three states: Ire&#xad;land, Bri&#xad;tain, and D&#xe1;l Ri&#xad;a&#xad;ta (or per&#xad;haps Dal&#xad;ri&#xad;ada) which com&#xad;pris&#xad;es what we now call Scot&#xad;land and North&#xad;ern Ire&#xad;land. Here&#x2019;s a map.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>Following on the British EU referendum, some political re-alignment of the
+British Isles feels inevitable. I propose a re-organization into three states:
+Ireland, Britain, and Dál Riata (or perhaps Dalriada) which comprises what we
+now call Scotland and Northern Ireland.  Here’s a map.</p>
+<img src="british-isles.png" alt="The British Isles" />
+<h2 id='p-1'>Vital Statistics</h2>
+<p>Britain remains the big dog; but the new kid on the block is no slouch;
+about the same population as Bulgaria (less than Switzerland, more than
+Denmark) and about as big as Hungary (smaller than Iceland, bigger than Portugal).</p>
+<table >
+<tr><td class="empty"></td>
+<th>Britain</th><th>Dál Riata</th><th>Ireland</th></tr>
+<tr align="right"><th>Population (M)</th><td>56.1</td><td>7.1</td><td>4.6</td></tr>
+<tr align="right"><th>Area (km<sup>2</sup>)</th><td>130,395</td><td>94,620</td><td>70,273</td></tr>
+</table>
+<h2 id='p-2'>Dál What?</h2>
+<p>The names are pretty easy; Ireland already has one, and what was once The
+United Kingdom of Great Britain and Northern Ireland loses its second half and
+is a little less “Great”, so “Britain” falls out
+naturally.</p>
+<p>As for
+<a href="https://en.wikipedia.org/wiki/D%C3%A1l_Riata">Dál Riata</a>, that was
+the name of an early Gaelic “overkingdom” that occupied Ulster and quite a bit
+of Western Scotland starting around 500 AD, suffered a terrible military defeat
+at the battle of Mag Rath in 647, but still appeared in contemporary documents
+into the mid-800s.  The best outline of its history I found online was at
+<a href="http://www.scottishhistory.com/articles/early/settlement/settlement_page1.html">ScottishHistory.com</a>,
+under the name “Dalriada”, which is also pretty nice.</p>
+<h2 id='p-3'>Advantages</h2>
+<p>The other proposals being floated are for Northern Ireland to join Ireland,
+and Scotland to go indie.  Neither of these ideas sound terrible, but there’s
+an ugly weight of Irish history to work around in the first case, and
+Scotland plus Ulster makes for a usefully weightier combo than either alone,
+it seems.</p>
+<p>Also, their administrative infrastructures, inherited from the
+UK, would fit together nicely without too much redesign required.</p>
+<p>They’re both wet grey-and-green nations with irregular spelling and good distilleries.  Historically, the travel and migration back and forth
+has been regular, ranging into promiscuous/incestuous territory; the DNA pools
+are hardly separable anyhow.</p>
+<p>Then there are sports; I can see the Dál Riatan side being one to watch in
+football, rugby, and cricket; and they’d really enjoy their occasional upset
+victories over the British.</p>
+<h2 id='p-4'>Problems</h2>
+<p>The toughest one I see is where to put the capital.  The most interesting
+and cosmopolitan city in Dál Riata would be Glasgow, but that’s a long way
+from Belfast.</p>
+<p>You could adopt an approach like Canada and Australia did, and build or
+enlarge a spot halfway between; a candidate might be
+<a href="https://en.wikipedia.org/wiki/Campbeltown">Campbeltown</a> on the
+Kintyre peninsula, or alternatively repurpose the
+<a href="https://en.wikipedia.org/wiki/Isle_of_Arran">Isle of Arran</a>.</p>
+<p>Then you’re going to have to invent a constitution. No-one will miss the
+monarchy much, and it seems like a good opportunity to adopt some
+psephological innovations along the lines of proportional representation or
+single-transferable vote.</p>
+<p>Then there’s the three-way relationship to figure out.  Obviously Ireland
+will stay in the EU and I can’t see the Euros not welcoming the Dál Riatans
+with open arms.  Schengen-style open borders might be hard to achieve;
+but I can’t see anyone seriously taking up tariffs.</p>
+<p>Whisky vs Whiskey would only be a problem for the small-minded.</p>
+<h2 id='p-5'>Precedents and disclosures</h2>
+<p>After the Americans disastrously re-elected Dubya in 2004, I
+<a href="/ongoing/When/200x/2004/11/04/NewNorthAmerica">proposed redividing
+North America</a> into three nations, and it seemed to entertain a lot of
+people, so why not try again?  And this map is way more plausible than that
+one.</p>
+<p>Also, if you look at my ancestry, it’s a quarter Norwegian and the rest is
+pretty well Orange and Scottish.  So if they do get together and create Dál
+Riata, I feel this blog piece has earned me honorary citizenship and a
+comprehensive whisky/whiskey tour.</p>
+</div></content></entry>
+
+<entry>
+ <title>Other American Gods</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/06/18/The-Library-at-Mount-Char' />
+ <link rel='replies'        thr:count='0'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/06/18/The-Library-at-Mount-Char#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/06/18/The-Library-at-Mount-Char</id>
+ <published>2016-06-18T12:00:00-07:00</published>
+ <updated>2016-06-18T20:25:36-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts/Books' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Books' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>I just fin&#xad;ished read&#xad;ing <a href='http://amzn.to/28NkRdl'>The Li&#xad;brary at Mount Char</a>  by <a href='http://www.shawkins.net/'>Scott Hawkins</a>, who al&#xad;so writes <a href='http://www.amazon.com/Scott-Hawkins/e/B00MCIWP1K/ref=dp_byline_cont_ebooks_1'>geek books</a>  about   Lin&#xad;ux and Apache and so on.   I en&#xad;joyed it, it&#x2019;s a page-turner. One of the re&#xad;view&#xad;ers on Ama&#xad;zon said &#x201c;This   is what Gaiman&#x2019;s <cite><a href='http://amzn.to/1PA1kRQ'>Amer&#xad;i&#xad;can Gods</a></cite>  should have  been.&#x201d;  I&#x2019;m not sure  I&#x2019;d go that far, but both ad&#xad;dress the tricky prob&#xad;lem of di&#xad;vine per&#xad;son&#xad;ae lodged  in Mid&#xad;dle Amer&#xad;i&#xad;ca.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>I just finished reading
+<a href="http://amzn.to/28NkRdl">The Library at Mount Char</a> by
+<a href="http://www.shawkins.net/">Scott Hawkins</a>, who also writes 
+<a href="http://www.amazon.com/Scott-Hawkins/e/B00MCIWP1K/ref=dp_byline_cont_ebooks_1">geek
+books</a> about 
+Linux and Apache and so on.
+I enjoyed it, it’s a page-turner.  One of the reviewers on Amazon said “This
+is what Gaiman’s
+<cite><a href="http://amzn.to/1PA1kRQ">American Gods</a></cite> should have
+been.” 
+I’m not sure
+I’d go that far, but both address the tricky problem of divine personae lodged
+in Middle America.</p>
+<img src="tlamc.png" alt="The Library at Mount Char cover" class="inline" />
+<p>It’s a big sprawling messy book with subdivisions and malls and
+trucker bars, and then there’s Father,
+a heartless God who fosters young Americans and trains them up, what business
+people call
+“succession planning”.  The training involves infinite time
+and infinite cruelty, and on the occasion of that succession the consequences
+are really not good for the neighbohood, comprising the Earth.</p>
+<p>For all the cosmic fireworks, the story’s mostly tactical and local and
+suburban. The characters who aren’t divine are compelling and fun, while the
+deranged-flyover-zone-deity villains ooze terror and, weirdly, pity.</p>
+<p>Plus, there are a couple of lions who will leave a mark on you.</p>
+<p>And then there’s Carolyn, our protagonist, who’s both human and divine,
+ruthless and sympathetic, full of surprises; a novelist’s triumph and a
+character I’m really, really glad to have spent four hundred pages with.</p>
+</div></content></entry>
+
+<entry>
+ <title>A Really Bad Year</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/06/09/1177' />
+ <link rel='replies'        thr:count='1'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/06/09/1177#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/06/09/1177</id>
+ <published>2016-06-09T12:00:00-07:00</published>
+ <updated>2016-06-09T21:45:45-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts/books' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='books' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>I just fin&#xad;ished read&#xad;ing <a href='http://amzn.to/1tlMom9'>1177 B.C.: The Year Civ&#xad;i&#xad;liza&#xad;tion Col&#xad;lapsed</a>, and en&#xad;joyed it a lot. You might not though, un&#xad;less you&#x2019;re in&#xad;ter&#xad;est&#xad;ed in the an&#xad;cient Near East (from Greece to Egypt in&#xad;clu&#xad;sive), or the prac&#xad;tice of ar&#xad;chae&#xad;ol&#xad;o&#xad;gy. Wel&#xad;l, or the large-scale sys&#xad;temic col&#xad;lapse of great em&#xad;pires.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>I just finished reading
+<a href="http://amzn.to/1tlMom9">1177 B.C.: The Year Civilization
+Collapsed</a>, and enjoyed it a lot. You might not though, unless you’re
+interested 
+in the ancient Near East (from Greece to Egypt inclusive), or the practice
+of archaeology.  Well, or the large-scale systemic collapse of great
+empires.</p>
+<img src="1177cover.png" alt="1177 B.C.: The Year Civilization Collapsed" class="inline" />
+<p>It turns out that in the centuries leading up to 1200 B.C., this part of
+the world was 
+mostly occupied by biggish Bronze-Age nations: Egyptian, Hittite, Mittani,
+Babylonian &amp; Assyrian, Mycenaean.  Trade was brisk and
+multipolar. Culture mashups happened; you can find Cretan frescoes in Egyptian
+palaces of the day.  But by 1130 it was all over; most great cities had
+burned, commerce had collapsed, and alphabets were starting to replace the
+cuneiform, hieroglyphic, and linear scripts.</p>
+<p>In 1177 B.C., <a href="https://en.wikipedia.org/wiki/Ramesses_III">Ramses
+III</a> fought (and won) a well-documented war against the
+<a href="https://en.wikipedia.org/wiki/Sea_Peoples">Sea Peoples</a>, whose
+identity remains shadowy; as good a reason as any to pick that year as the
+fulcrum of the disaster.</p>
+<p>For a long time, it was popularly believed that those Sea Peoples were the
+knife in the heart of the Bronze Age.  After all, Ramses said so:</p>
+<blockquote><p><i>The foreign countries made a conspiracy in
+their islands, All at once the lands were removed and scattered in the
+fray. No land could stand before their arms: from Hatti, Qode, Carchemish,
+Arzawa and Alashiya on, being cut off at one time. A camp was
+set up in Amurru. They desolated its people, and its land was like that which
+has never come into being. They were coming forward toward Egypt, while the
+flame was prepared before them. Their confederation was the Peleset, Tjeker,
+Shekelesh, Denyen and Weshesh, lands united. They laid their hands upon the
+land as far as the circuit of the earth, their hearts confident and trusting:
+“Our plans will succeed!”</i></p></blockquote>
+<p>Archaeologists these days mostly don’t buy that theory.
+So, what brought
+everything down?  <i>[Spoiler alert!  Stop reading now if you don’t want the
+reveal.]</i></p>
+<p>The short answer is, we don’t really know. The long answer is this book,
+more or less.  Author
+<a href="https://en.wikipedia.org/wiki/Eric_H._Cline">Eric H. Cline</a> has
+fun with it, giving an overview of what we know about the Bronze Age’s good
+times, and then diving deep on the bad ones.  Yes, the “Sea Peoples” quite
+likely contributed.  But then, there was also climate change, and plagues, and
+a lot of earthquakes.  Cline considers each of these carefully, and you may
+find yourself developing your own theory of the catastrophe’s cause.</p>
+<p>The amount of written-at-the-time records that remain is surprisingly
+large, but obviously full of holes, and ignores issues that would seem
+important to us.  But there is still a whole lot of character and color: You
+get to meet lots of different royal personages (both genders), and a few
+merchants, and read what they wrote to each other.</p>
+<p>The names are wonderful; of the people I mean, and the names the nations
+called each other. The only that you might have heard are those of a pharaoh
+or two.</p>
+<p>This patch of history notably includes the Hebrew Exodus, if the consensus
+on biblical dates is correct.
+Cline takes a look through the archaeology, but there’s no
+there there.  I guess that in science, a negative result is still a
+result: independent supporting evidence for the Exodus legend just isn’t
+there.</p>
+<p>Anyhow, the book has lots of interesting pictures.  In the Kindle edition,
+the resolutions aren’t very good; when I enlarge them to fill my Nexus-7
+screen, they get pixellated.  That’s really a pity.</p>
+<p>I would prefer to avoid living through an empire’s end-times. But reading
+about them is good fun.</p>
+</div></content></entry>
+
+<entry>
+ <title>On the Left</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/06/04/On-the-Left' />
+ <link rel='replies'        thr:count='25'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/06/04/On-the-Left#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/06/04/On-the-Left</id>
+ <published>2016-06-04T12:00:00-07:00</published>
+ <updated>2016-06-04T10:40:37-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World/Politics' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Politics' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>I have a prob&#xad;lem late&#xad;ly: When I look in the mir&#xad;ror, I see a left-wing ex&#xad;trem&#xad;ist. I&#x2019;m un&#xad;easy about my strength&#xad;en&#xad;ing be&#xad;lief that Free En&#xad;ter&#xad;prise is gonna ru&#xad;in ev&#xad;ery&#xad;thing good un&#xad;less we take a knife to its tes&#xad;ti&#xad;cles first.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>I have a problem lately: When I look in the mirror, I see a
+left-wing extremist.  
+I’m uneasy about my
+strengthening belief that Free Enterprise is gonna ruin everything good
+unless we take a knife to its
+testicles first.</p>
+<p>I think we need to:</p>
+<ol>
+<li><p>Tax the crap out of the 1% [disclosure: I’m one],</p></li>
+<li><p>stamp out most forms of high-leverage financial speculation,</p></li>
+<li><p>introduce ruthless transparency such that any asset whose
+beneficial ownership cannot be established where legally appropriate
+is subject to summary confiscation,</p></li>
+<li><p>adopt a zero-tolerance posture on business crime, with jail time
+regularly administered for significant financial misdeeds, in rough proportion
+to the size of the takings, and</p></li>
+<li><p>roll out a universal basic income to deal with the
+inevitable decline in the proportion of humans “enjoying” full employment.</p></li>
+</ol>
+<p>I think we can all agree that these are extreme measures. And inside, I
+feel like this reasonable mild-mannered guy.  But there’s overwhelming
+evidence that we’re facing extreme problems; read on.</p>
+<p>Taking these steps would require strong unpleasant language
+and make many powerful and persuasive people unhappy. At the
+moment, the critical mass to make these things happen isn’t there. But it
+feels to me like it’s steadily less and less not-there.</p>
+<h2 id='p-2'>Readings</h2>
+<p>I’ll spare you paragraphs of my own discourse: As a political
+rhetorician, I’m a fine software geek.  
+But there’s some awfully good,
+awfully strong things being said out there; here are some:</p>
+<p><a href="https://morecrows.wordpress.com/2016/05/10/unnecessariat/">Unnecessariat</a>
+by “Anne Amnesia” is messy, disorganized, data-dense, and darkly
+beautiful, a 
+raw scream out of the raw parts of Middle America.  Out-take: “Lets be
+honest- Clinton doesn’t give a shit about me. When Clinton talks about people
+hurt by the economy, she means you: elite-educated white-collar people with
+obvious career tracks who are having trouble with their bills and their 401k
+plans. That’s who boomed under the last president Clinton, especially the
+401ks. Me, or the three guys fighting two nights ago over the Township mowing
+contract, we’re nothing. Clinton doesn’t have an economic plan for us. Nobody
+has an economic plan for us. There is no economic plan for us, ever. We keep
+driving trucks around and keep the margins above gas money and maybe take an
+odd job here or there, but essentially, we’re history and nobody seems to mind
+saying so.”</p>
+<p><a href="https://www.craigmurray.org.uk/archives/2016/04/on-revolutionary-attitude/">On
+Revolutionary Attitude</a> by Craig Murray is way more British and polished
+than <cite>Unnecessariat</cite> but perhaps even angrier:  “Society is so obviously
+broken to the disadvantage of the many, that to indulge those who, from
+self-interest or media brainwashing or nostalgia, support the status quo is
+not helpful.”</p>
+<p><a href="http://fivethirtyeight.com/features/americans-dont-miss-manufacturing-they-miss-unions/">Americans Don’t Miss Manufacturing — They Miss Unions</a>,
+from Ben Casselman at stats-wonk site <cite>FiveThirtyEight</cite>, is
+unsurprisingly data-heavy: “a third of production workers — non-managers
+working on factory floors and in related occupations — earn so little that
+their families receive some form of public assistance such as food stamps or
+the Earned Income Tax Credit”.</p>
+<p>Finally,
+<a href="http://talkingpointsmemo.com/edblog/north-carolna">On Some Issues,
+Moral Appeals Don't Seem To Work</a> by John Judis at big-league US-liberal
+blog <cite>TPM</cite>, is short but focused on a point I want to
+expand on: While you can rally round and move the needle on social-liberal
+projects (in this case the US Deep South’s  Neanderthal anti-sexual-minority
+laws), nobody is willing to do much about the poor, who are getting crapped on
+at least as comprehensively as trans people.</p>
+<p>Anne Amnesia echoes this: At some point starting in the Seventies,
+the gay community woke up and wouldn’t take it any more, and they’ve 
+won a lot of their fights. The powers that be realized, first, that it was
+stupid and indefensible to discriminate against people for being born that
+way; and second (more important) it wouldn’t cost them anything to stop
+discriminating.</p>
+<p>Which is why, obviously, it’s easier to address the issues of smaller
+factions like the LGBTQers, than the big race and gender power issues, which
+you can’t touch without major economic dislocation.</p>
+<p>I wonder, now that the social-progressive program is largely (thank
+goodness) scoring wins, whether we might direct some of that awesome energy to
+economic-progressive ends.</p>
+<h2 id='p-3'>Questions</h2>
+<p><i>“Are you a Marxist?”</i>  I don’t think so, and I’ve even read Marx.
+While he said smart things about class conflict and talked about
+“workers alienated from the means of production” (translation: a lot of jobs
+suck), Marx didn’t say much useful about how to fix the problem, and was
+appallingly data-illiterate (<a href="/ongoing/When/201x/2014/05/01/Piketty-Capital">see Piketty</a>).  Anyhow, even if he was right,
+there isn’t a proletariat any more.</p>
+<p><i>“But if you cripple the Free Market, won’t that plunge us into poverty?”</i>
+It might; the free market is one of <i>Homo sapiens’</i> greatest
+inventions.  But it’s profoundly artificial, relies on the Rule of Law and a
+functioning court system and a central bank and all sorts of other
+public apparatus.</p>
+<p>And it’s here to serve us, not the other way round. Guess what: If the
+executive class were whacked back to the single-digit millions they
+accumulated a few decades back, instead of all the zeroes they accumulate now,
+there’d still be lots of people knocking themselves out to build companies and
+be the boss.</p>
+<p>Let me
+<a href="/ongoing/When/201x/2014/05/01/Piketty-Capital">quote Piketty</a>: “There is no statistically significant relationship
+between the decrease in top marginal tax rates and the rate of productivity
+growth in the developed countries since 1980.”</p>
+<p>I remember having lunch with some Deutsche Bank execs in 2009, with lots of
+financial-crisis blood still on the floor.  They were feeling sorry for
+themselves: “These politicos don’t get the market, they want to regulate the
+hell out of us, make the banking system run like the civil service.”  Hm,
+that doesn’t sound obviously worse than the way the banking system runs
+today.  But it was the cloud-castle sense of entitlement that, all these years
+in the distant rear-view, still makes me angry.</p>
+<p><i>“Won’t technology create enough jobs to replace the ones it’s
+destroying, like it always has?”</i> Maybe, but I don’t think so.  In
+particular, I think self-driving vehicles are going to blow a hole in
+employment for the relatively-unskilled that may never heal.</p>
+<p><i>“But this century has seen massive poverty reduction in Asia, are you
+against that?”</i> No, and I hope that the Indians manage to repeat the China
+trick.  But I don’t see any reason why the emergent Asian middle class isn’t
+gong to end up whipsawed just like Middle America’s is, once the manufacturing
+boom eases off.</p>
+<p>“But what about
+<a href="https://en.wikipedia.org/wiki/Intersectionality">intersectionality</a>?”
+Seems to me that the nastiness I observe in the world is way better explained
+by old-fashioned economic class interests than by any intersectional theory
+I’ve read.  Lots of socially-progressive Silly Valley titans are working
+diligently to disempower workers by turning them into “independent
+contractors”.</p> 
+<h2 id='p-4'>Next?</h2>
+<p>Well, that’s the problem.  I’ve presented my best policy ideas above but,
+like I said, I’m a server-side Net geek not a political economist.  Anyone
+know any political parties with ideas like those?
+If I were American, I’d be in the Sanders/Warren
+camp. In Canada, I usually vote NDP, but without much joy.</p>
+<p>I think the ground is fertile. I think the “conventional wisdom” which
+sustains the current finance-centric <i>rentier</i> economy is thought wise by
+fewer and fewer. I think the path from here to something saner will have messy
+and ugly parts.  But I’m increasingly sure that our current path, as a society
+and species, is unsustainable.</p>
+</div></content></entry>
+
+<entry>
+ <title>YouTube Addiction?</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/05/29/YouTube-addiction' />
+ <link rel='replies'        thr:count='8'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/05/29/YouTube-addiction#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/05/29/YouTube-addiction</id>
+ <published>2016-05-29T12:00:00-07:00</published>
+ <updated>2016-05-29T21:07:41-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World/Life Online' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Life Online' />
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>You hear talk about Internet overload/addiction, but this very specific
+form has crossed my radar multiple times in recent days.  In students,
+specifically.  To the extent of failing multiple courses.  Because they use
+laptops for everything, and YouTube is always a Cmd-Tab away, and whether your
+itch is Team Fortress 2 or cat breeding or string quartets or tentacles,
+there’s always something new and fresh there to scratch it. So teachers don’t
+get heard and homework doesn’t get done.  My hunch is it’s a real thing.
+Anyone else?</p>
+</div></content></entry>
+
+<entry>
+ <title>Another JSON Schema Gripe</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/05/22/Json-Schema-Gripe' />
+ <link rel='replies'        thr:count='2'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/05/22/Json-Schema-Gripe#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/05/22/Json-Schema-Gripe</id>
+ <published>2016-05-22T12:00:00-07:00</published>
+ <updated>2016-05-22T12:36:34-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology/Software' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Software' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'><a href='/ongoing/When/201x/2016/04/30/JSON-Schema-funnies'>Re&#xad;cent&#xad;ly</a>  I   wrote of my dis&#xad;gruntle&#xad;ment with <a href='http://json-schema.org/'>JSON Schema</a>. Since then I&#x2019;ve learned that its au&#xad;thors plan more work, and that there are sev&#xad;er&#xad;al oth&#xad;er ef&#xad;forts to build a schema fa&#xad;cil&#xad;i&#xad;ty for JSON. This note is just a com&#xad;plaint about a par&#xad;tic&#xad;u&#xad;lar use-case, with the hope that it might in&#xad;form these ef&#xad;fort&#xad;s.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p><a href="/ongoing/When/201x/2016/04/30/JSON-Schema-funnies">Recently</a> I
+wrote of my disgruntlement with
+<a href="http://json-schema.org/">JSON Schema</a>. Since then I’ve  learned
+that its authors plan more work, and that there are several other efforts
+to build a schema facility for JSON.  This note is just a complaint about a
+particular use-case, with the hope that it might inform these efforts.</p>
+<p>Here’s the problem; the language I’m building includes a big object whose
+fields are also objects, and each of these child objects has a
+<code>Type</code> field, whose value is, in effect, an enum; a constrained set
+of string values. The rest of the fields in each child object depend on the
+<code>Type</code> value.</p>
+<p>Like so:</p>
+<pre><code>
+{
+  "o1": {
+    "Type": "Animal",
+    ... other fields specific to Animal ...
+  },
+  "o2": {
+    "Type": "Vegetable",
+    ... other fields specific to Vegetable ...
+  },
+  "o3": {
+    "Type": "Mineral",
+    ... other fields specific to Mineral
+  }
+}</code></pre>
+<p>In JSON Schema it’s easy enough to use a <code>oneOf</code> construct to
+describe what you want, but here’s the problem: when you syntax-check 
+these, the error messages go right off the rails.  For example, suppose my
+schema says that if <code>Type</code> is <code>Mineral</code>, then there must
+be a boolean-valued <code>Organic</code> field.  And then suppose I try to
+validate a doc with an object that has <code>"Type": "Mineral"</code> and
+<code>"Organic": 42</code>.</p> 
+<p>The validators I’ve been working with give me a massively unhelpful flurry
+of messages saying that:</p>
+<o>
+<li><p>This can’t be <code>Animal</code> because the <code>Type</code> is
+wrong.</p></li>
+<li><p>This can’t be <code>Vegetable</code> because the <code>Type</code> is
+wrong.</p></li>
+<li><p>This can’t be <code>Mineral</code> because the <code>Organic</code> is
+wrong.</p></li>
+<li><p>This can’t be a valid instance because the <code>oneOf</code> doesn’t
+match.</p></li>
+</o>
+<p>Of these, only one error message is helpful; but I don’t see any way to
+write a schema processor to report what’s really wrong in a human-friendly
+way.</p>
+<p>Anyhow, I can think of specific recommendations for schema-language design
+that fall out of this observation. But I’m not building any of them so I’ll
+stick with just reporting the use-case.</p>
+</div></content></entry>
+
+<entry>
+ <title>Hemlock Ocean</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/05/08/Tree' />
+ <link rel='replies'        thr:count='0'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/05/08/Tree#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/05/08/Tree</id>
+ <published>2016-05-08T12:00:00-07:00</published>
+ <updated>2016-05-08T13:12:28-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts/Photos' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Photos' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World/Cottage Life' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Cottage Life' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>I care most about the ocean, while Lau&#xad;ren cares more for the forest;  for&#xad;tu&#xad;nate&#xad;ly the Pa&#xad;cif&#xad;ic North&#xad;west of&#xad;fers <a href='/ongoing/What/The%20World/Cottage%20Life/'>Cottage-Life</a>   com&#xad;pro&#xad;mis&#xad;es; il&#xad;lus&#xad;trat&#xad;ed with the help of a gi&#xad;ant hem&#xad;lock.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>I care most about the ocean, while Lauren cares more for the forest;
+fortunately the Pacific Northwest offers
+<a href="/ongoing/What/The%20World/Cottage%20Life/">Cottage-Life</a>
+compromises; illustrated with the help of a giant hemlock.</p>
+<p>What happened was, a few years ago a construction project accidentally left
+behind a bare earth platform down near the water.  We ordered 10kg of
+“Coastal Forest Revegetation Seed Mix” and used it liberally; now it’s a
+delightful little meadow, suitable for stretching out and considering the
+great seaside evergreens.</p>
+<p>Here’s a sideways look, lying down.  Fortunately nobody was nearby watching
+me scrunch myself down behind the camera and bend away unsightly blades.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/05/08/FXT15984.png" alt="Grass" />
+<p>The natural direction to look, no scrunching required, is up.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/05/08/FXT15980.png" alt="Hemlock" />
+<div class='caption'><p>
+<a href="https://www.for.gov.bc.ca/hfd/library/documents/treebook/westernhemlock.htm">Western Hemlock</a>,
+maybe 40m tall.</p></div>
+<p>The light was a little weird; it was toward sunset and the sky, except for
+a gap to the west, was cloudy, so the light was overwhelmingly horizontal.
+Also, the trees are a little weird this time of year; each of the myriad
+little branches has a small outburst of new green at the tip.  To
+illustrate, Here’s a close look-in at one branch.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/05/08/FXT15977.png" alt="Hemlock branch" />
+<p>The effect, in the large, is remarkable.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/05/08/FXT15981.png" alt="Inside the crown of a Western Hemlock" />
+<div class='caption'><p>The light inside the crown.</p></div>
+<p>It turns out that tree has a buddy next door, and they do a good job of
+framing the ocean.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/05/08/FXT15996.png" alt="Ocean and Hemlocks" />
+<p>I had another one with a lovely little boat in the frame, but hadn’t
+crunched the aperture enough for the tree trunks. Sob.</p>
+</div></content></entry>
+
+<entry>
+ <title>On Color</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/05/04/On-Color' />
+ <link rel='replies'        thr:count='0'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/05/04/On-Color#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/05/04/On-Color</id>
+ <published>2016-05-04T12:00:00-07:00</published>
+ <updated>2016-05-05T08:35:10-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts/Photos' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Photos' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>I just en&#xad;joyed read&#xad;ing <a href='http://www.newyorker.com/tech/elements/the-search-for-our-missing-colors'>The Search for Our Miss&#xad;ing Colors</a>    by Amos Zee&#xad;berg in <cite>The New York&#xad;er</cite>, and it gives me men&#xad;tal wire to hang some words and pic&#xad;tures on col&#xad;or and its ab&#xad;sence.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>I just enjoyed reading
+<a href="http://www.newyorker.com/tech/elements/the-search-for-our-missing-colors">The Search for Our Missing Colors</a>
+by Amos Zeeberg in <cite>The New Yorker</cite>, and it gives me mental
+wire to hang some words and pictures on color and its absence.</p>
+<h2 id='p-1'>Color is hard</h2>
+<p>I spent a few years in the publishing-technology business. I’d go to the
+conferences, and there’d always be seminars and boot-camps on Color.  Like,
+twelve hours over two days, advertised as “An introduction to a few of the
+basic issues in color.”</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/05/04/FXT15935.png" alt="Tulips" />
+<div class='caption'><p>Lightly processed: backed off the highlights,<br/>
+darkened
+the darks, sharpened a bit. And applied Lightroom’s PROVIA/STANDARD
+profile.</p></div>
+<p>Spend a little while digging into gamuts and color spaces and Pantone and
+CMYK and transmission and emission and reflection and so on, and you’ll see
+what they mean.</p>
+<p>Computer programmers are, uh, what’s the word for “worse than ignorant”?  We
+absorb this notion that you can express everything you need to in three 8-bit
+values for R, G, and B (well, 4 values if you have an alpha channel).
+Which is deeply wrong.  These days, the wrongness doesn’t matter <em>that</em>
+much unless you’re doing print.  But if the Zeeberg article is right, maybe
+Web-design geeks will start having to do grown-up color for the screens of
+tomorrow.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/05/04/FXT15648.png" alt="Seashell" />
+<div class='caption'><p>Quite heavily processed; bumped the color saturation
+in the shell while turning it down in the tabletop and, well, pushed a lot of
+other sliders back and forth. Which results in the picture looking to me like
+the way the shell did.</p></div>
+<p>Having said that, I don’t want to diss the 24-bit RGB space that much;
+among other things, I once had fun 
+<a href="/ongoing/When/200x/2004/05/19/RGBPlane">generating 768 256x256 color
+planes</a> to expore it.</p>
+<h2 id='p-2'>Should photos be in color?</h2>
+<p><a href="http://theonlinephotographer.com">Mike Johnston</a>, my personal
+favorite photo-blogger, has been known to argue that you should generally shoot
+B&amp;W, because shape and proportion and shading are at the center
+of photography.  I don’t agree at all, but there’s a lot to think about in
+that argument.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/05/04/FXT15773.png" alt="Boards" />
+<div class='caption'><p>Very nearly straight-outta-the-camera; blackened the
+blacks a bit to intensify the spaces between the boards.  Oh, and I’m
+cheating; this is a full-color image.</p></div>
+<p>If you think that’s an interesting point of view, you’d probably really
+enjoy his
+<a href="http://theonlinephotographer.typepad.com/the_online_photographer/2014/11/one-camera-one-lens-one-year-the-digital-version.html">One
+Camera, One Lens, One Year</a> challenge. I’ve never tried that diet, but the
+proportion of my photos that are via the Fuji 35mm/F1.4 + X-T1 combo is
+trending toward 100%, so I might as well be.</p>
+<p>Anyhow, I like pretty colors.  But this last couple of years, I’ve found
+myself more willing, when I notice strong shapes in a photo, to start
+exploring the B&amp;W space.</p>
+<p>There are two approaches to this.  First, just slide the “Saturation” knob
+in Lightroom all the way left.  Second, pull out the nuclear cannon, by which
+I mean Silver Efex Pro.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/05/04/FXT15958-Edit-2.png" alt="Dogwood flowers" />
+<div class='caption'><p>Dogwood blossoms, Silver-Efex-infected.<br/>
+No, it doesn’t look remotely like the sunlit tree really did.</p></div>
+<p>Have I mentioned recently that we’re in the golden age of photography?</p>
+</div></content></entry>
+
+<entry>
+ <title>Specifying JSON</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/04/30/JSON-Schema-funnies' />
+ <link rel='replies'        thr:count='18'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/04/30/JSON-Schema-funnies#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/04/30/JSON-Schema-funnies</id>
+ <published>2016-04-30T12:00:00-07:00</published>
+ <updated>2016-04-30T15:33:15-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology/Software' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Software' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>I find my&#xad;self tasked with pol&#xad;ish&#xad;ing and pub&#xad;lish&#xad;ing a lit&#xad;tle cus&#xad;tom JSON-encoded lan&#xad;guage. It&#x2019;s hard&#xad;er than it ought to be.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>I find myself tasked with polishing and publishing a little custom
+JSON-encoded language.  It’s harder than it ought to be.</p>
+<p>This didn’t start with the language, it started with prototype software
+this guy wrote, that did something old and familiar in a new and dramatically
+better way. He
+replaced a bunch of gnarly old code with a few JSON templates to save time.
+Now, in the rearview, the JSON looks like an important part of an important
+product.</p>
+<p>And there’s a lesson in that: All the good markup vocabularies are
+discovered by coders trying to get shit done, not cooked up in committee rooms
+in advance of software.  For example, TimBL just needed to tag his
+hypertexts.  Not that this is that big.</p>
+<h2 id='p-1'>Q: Why JSON?</h2>
+<p>If it looks like a document, use XML.  If it looks like an object, use
+JSON.  It’s that simple.  The essential difference isn’t simplicity/complexity
+or compact/verbose or typed/text, it’s ordered-by-default or not.</p>
+<p>This particular thing I’m working on is a lot like objects and not at all
+like documents.  Case closed.</p>
+<p>By the way, it’s amusing that this century hasn’t yet offered a plausible
+new markup alternative to the last one’s mouldy leftovers.  Also pleasing to
+one who has left fingerprints on both leftovers.</p>
+<h2 id='p-2'>Q: How to author?</h2>
+<p>With pain.  By default, I write things in Emacs, which unaccountably
+doesn’t have a JSON mode that knows <em>where to put the fucking
+commas</em>.</p>
+<p>I’ve also tried editing JSON in IntelliJ and it’s not terrible but not
+remotely good enough. I’m writing what you’re now reading in XML in an Emacs
+mode that’s a fantastically-productive finely-tuned machine, so the thing
+should be possible.</p>
+<p>There’s another solution: make JSON easier.
+<a href="https://hjson.org/">Hjson</a> (“the Human JSON”) addresses this
+problem and looks quite cleanly thought out.  There’s also
+<a href="http://json5.org/">JSON5</a> (“JSON for the ES5 era”), but I stopped
+reading at “Unicode characters and escape sequences aren’t yet supported”.</p>
+<p>Meh.  Fewer markup languages are better; fix the editors, I say.  Maybe
+Amazon would be OK with me dropping all this cloud stuff and working on JSON
+authoring tools for a few months?  Not holding my breath.</p>
+<h2 id='p-3'>Q: How to specify?</h2>
+<p>If you want to ship your own language, you need to specify it.  The most
+important
+part of any language spec is the human-readable prose that describes the
+constructs, says what they mean, and offers advice on how to use them.</p>
+<p>Next most important is examples; lots of ’em, well-chosen, and downloadable
+from somewhere.</p>
+<p>(Actually, if you ever find yourself tasked with specifying something, go
+read Mark Pilgrim’s
+<a href="https://web.archive.org/web/20051016203842/http://diveintomark.org/archives/2004/08/16/specs">Why
+specs matter</a>, which clarifies your task: Turning morons into experts.)</p>
+<p>Next most important, an open-source validator, so people can check their
+efforts; it should have helpful error messages which include line and column
+numbers.</p>
+<p>Now, to write the validator, a schema will help, and you should write one
+anyhow; if you’re like most people, writing down the formalisms will probably
+shake out some bugs and sloppy thinking in your mental model of your
+language.</p>
+<p>Having a schema is a lousy way to <em>explain</em> a language, and it only
+solves part of the validation problem, because any nontrivial language will
+have semantic constraints that you can’t capture declaratively.</p>
+<p>But like I said, you should write one anyhow.  Which means that if your
+language is JSON-based, it sucks to be you, because
+<a href="http://json-schema.org/">JSON Schema</a> is a big fat
+pool of pain.</p>
+<h2 id='p-5'>JSON Schema, sigh</h2>
+<p>If you find yourself needing to use it, run don’t walk over to
+<a href="http://spacetelescope.github.io/understanding-json-schema/index.html">Understanding
+JSON Schema</a>, which has lots of examples and reasonably human-readable
+narrative; a nice piece of work.</p>
+<p>In its first paragraph, it says “learning to use [JSON
+Schema] by reading its specification is like learning to drive a car by
+looking at its blueprints.”
+They’re being tactful; the JSON Schema spec is really not very good at all.  I
+don’t think this is a controversial thing to say, but let me offer some
+evidence anyhow.</p>
+<p>Most obvious: There are multiple pieces of software out there that claim to
+implement JSON Schema, and their behavior is really inconsistent, in my
+experience.</p> 
+<p>One area where I observe inconsistencies is in the handling of the
+“$ref” construct.  Irritated, I decided to go check the official spec. “$ref”
+is not defined (but is used) in
+<a href="http://json-schema.org/latest/json-schema-core.html">JSON Schema
+Core</a>. Same for
+<a href="http://json-schema.org/latest/json-schema-validation.html">JSSON
+Schema Validation</a>. 
+Same for
+<a href="http://json-schema.org/latest/json-schema-hypermedia.html">JSON
+Hyper-Schema</a>. 
+Same for the
+<a href="http://json-schema.org/schema">Core/Validation Meta-Schema</a> and
+the
+<a href="http://json-schema.org/hyper-schema">Hyper Meta-Schema</a></p>
+<p>Actually, I could be wrong; the spec is <em>really</em> hard to read; and I
+say that as one with much more experience in spec-reading and schemas than
+most.</p> 
+<p>When I’m defining a language, I need to work on the schema and the
+validator and the examples all together, iteratively, validating things
+multiple times per minute, so I need a tool that I can run from the command
+line that is:</p>
+<ol>
+<li><p>Fast,</p></li>
+<li><p>consistent,</p></li>
+<li><p>complete, and</p></li>
+<li><p>reports errors with line and column numbers.</p></li>
+</ol>
+<p>So far, I haven’t found one.
+<a href="http://jsonlint.com/">JSONLint</a> (npm) isn’t up to date with the
+latest schema spec draft.  
+<a href="https://github.com/ruby-json-schema/json-schema">json-schema</a> and
+<a href="https://github.com/brandur/json_schema">json_schema</a> (ruby; see,
+hyphen vs underscore, isn’t that quaint?) are inconsistent, particularly in
+their 
+handling of “$ref”, and neither of them reports line/column, and neither of
+them respond sanely to JSON-level rather than schema-level errors.</p>
+<p>Then there’s
+<a href="https://github.com/fge/json-schema-validator">json-schema-validator</a>,
+but that’s in Java, which means it’s probably too slow for command-line use,
+and also I’m not smart enough to run Java from the command line without 
+hand-holding from an IDE or a really good build system that knows dependencies.</p>
+<p>Feaugh.</p>
+<h2 id='p-6'>What I’m actually doing</h2>
+<p>First, I’m keeping my schema in one great big file; cross-file “$ref”
+handling is irremediably broken, near as I can tell.</p>
+<p>Second, I’m using “json-schema” (hyphen not underbar) in a little ruby
+script, which first of all runs “jsonlint” to check for basic JSON
+sanity. “jsonlint” at least does line numbers, yay. ♫ <i>Ruby and Node, sittin’
+in a tree…</i> ♫</p>
+<p>Because I distrust the tools I’m building a Java testbed in IntelliJ that
+will let me double-check
+with “json-schema-validator” from time to time.</p>
+<h2 id='p-7'>JSON specification future?</h2>
+<p>I notice that the
+<a href="https://tools.ietf.org/html/draft-zyp-json-schema-04">most recent JSON-Schema IETF
+draft</a> expired in 2013, and that a couple of the tools have “looking for
+maintainer” signs posted on them.</p>
+<p>Now that I’ve mostly figured out JSON Schema, I neither love it nor hate
+it.  So far, 
+I’ve been able to make it do what I wanted. But it sure feels lame compared to 
+<a href="http://relaxng.org/">RELAX NG</a>, in terms of polish, documentation,
+and tooling.</p>
+<p>This is a space that could use some work.</p>
+</div></content></entry>
+
+<entry>
+ <title>&#x201c;Photographer&#x201d;?</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/04/14/What-is-a-Photographer' />
+ <link rel='replies'        thr:count='8'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/04/14/What-is-a-Photographer#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/04/14/What-is-a-Photographer</id>
+ <published>2016-04-14T12:00:00-07:00</published>
+ <updated>2016-04-16T17:35:06-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts/Photos' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Photos' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>Every&#xad;one takes pic&#xad;tures ev&#xad;ery&#xad;where now, 24/7/365. So does &#x201c;photographer&#x201d;, in the am&#xad;a&#xad;teur sense, still mean any&#xad;thing? I have pic&#xad;tures and ques&#xad;tions that say it does.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>Everyone takes pictures everywhere now, 24/7/365.  So does
+“photographer”, in the amateur sense, still mean anything?  I have pictures
+and questions that say it does.</p>
+<p>This is provoked by Om Malik’s
+<a href="http://www.newyorker.com/business/currency/in-the-future-we-will-photograph-everything-and-look-at-nothing">In the Future, We Will Photograph Everything
+and Look at Nothing</a> in the <cite>New Yorker</cite>.  
+It quotes Sontag (de
+rigeur for that subject in those pages I 
+suppose), flirts with that seductive
+ol’ Internet Contrarianism, says smart things about photo software in general
+and and Google’s
+<a href="https://www.google.com/nikcollection/">Nik Collection</a> in
+particular, and has plenty of arm-wavey futurology about Evolution
+and Conversation.</p>  
+<p>I found the piece flat, partly because (oddly) it contains none of the
+author’s photos; thus just words about pictures.
+But it quotes a (professional) photographer saying “the term
+‘photographer’ is changing.”</p>
+<p>So if everyone is a photographer, then maybe no-one is?  But I don’t buy
+it; “photographer” is still a useful word describing a class of people
+who aren’t hard to distinguish with a few basic questions.</p>
+<h2 id='p-1'>Q: Shoot faces?</h2>
+<p>It’s easy to laugh at selfies, but they make people happy and that can’t be
+bad.  Also they celebrate certain of
+life’s moments, pulling them out to assert them special.  You can laugh at the
+dweebs with the sticks but they just don’t care and I admire them for
+it.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/04/14/FXT15726.png" alt="Melbourne train" />
+<div class='caption'><p>On a Melbourne train</p></div>
+<p>Also: Somewhere right now there’s a young woman who’ll lead her nation to
+war, or write a book that wrenches a generation’s heart, or help make
+technology that touches a billion lives.  Unlike previous generations of such
+women, her biography’s early chapters will be improved by
+selfies.</p>
+<p>There are exceptions, but I think a photographer is apt to spend lots of
+time and care on portraits, their own or others’.
+No pictures are as intense as pictures
+with faces in them.</p>
+<h2 id='p-2'>Q: Keep all your pictures?</h2>
+<p>Lots of people do.  In the <cite>New Yorker</cite>, Malik points out that
+with two billion smartphones in daily use, the planet’s aggregate photo
+inventory 
+is growing like cancer. He notes that there are more pictures than anyone can
+remember, and speculates that cloudy artificial intelligences will extract
+emotional value from them.</p> 
+<p>I doubt it.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/04/14/FXT15919.png" alt="Sydney Ferry on Mosman Bay" />
+<div class='caption'><p>Sydney harbour ferry on Mosman bay.<br/>
+You can’t imagine how many I threw away;<br/>I was trying for a Miyazaki sort of
+feel.</p></div>
+<p>I think that most pictures are trash and you shouldn’t invest your
+irreplaceable neurons in tracking them. </p>
+<p>Which is to say, a photographer is someone who discards lots of
+their own pictures.  Now, by “discard” one may mean “leave RAW files in an
+archive I never look at” and that’s OK.  Me, I actually delete everything that
+doesn’t give either my eyes or my emotions a thrill.</p>
+<p>I propose a taxonomy of pictures-that-are-worth-keeping, grouped by “why”.
+It has only two taxa: <i>because they touch my life</i> and
+<i>because they please my eye</i>.  Do not throw away time guessing
+whether they will touch other lives or please other eyes. The only life
+whose touch-points you understand is your own, and the only eyes whose
+pleasures you feel are your own.  I often want to touch other lives and
+please other eyes, but all I (or you) can do is bet that their
+lives or their eyes are like mine (or yours).</p> 
+<img src="https://www.tbray.org/ongoing/When/201x/2016/04/14/FXT15928.png" alt="Vancouver on Main Street" />
+<div class='caption'><p>Spring sun on Vancouver’s Main
+Street</p></div>
+<p>I don’t know about you, but the photographs I care about (including almost
+all of the four thousand or so that have appeared on this blog) fire a cascade
+of memory neurons when I see 
+them. Which is almost frightening; how much of my brain is occupied with
+remembering images I captured in the last century, as opposed to useful things
+like where vacuum attachments are or what those I love want for their
+birthdays?</p>
+<h2 id='p-5'>Q: Post-process?</h2>
+<p>Well, yeah.  Malik suggests that this can be outsourced to The Cloud or The
+Google.  And indeed, those services can sometimes work subtle magic.</p>
+<img src="Spider-eyes.png" alt="Spider eyes" />
+<div class='caption'><p>I had two pictures of this Sydney spider silhouetted
+against a street-lamp. Fairly heavy Photoshoppery here.</p></div>
+<p>But I, and I’m betting most photographers, totally love post-processing.
+I’m old enough to remember spinning the dials on an enlarger in a darkroom,
+but I don’t miss it, except perhaps the Seventies bonhomie and dope-smoking.
+Tools like Lightroom and Nik go further
+faster.  I’ll be honest: There are few things I enjoy more than
+unloading the camera and spending a couple of hours coaxing magic out of the
+pixels the sensor saw.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/04/14/LRM_20160327_121408.png" alt="Sydney sidewalk" />
+<div class='caption'><p>Sydney sidewalk in the rain; a mobile-phone capture that required
+a <em>lot</em> of punching up.</p></div>
+<p>There’s a built-in frustration for me and I suppose any photographer: Unless
+you’re in my house or get me to make a large paper print, you’ll never see any
+of my pictures looking as nice as they do in Lightroom on a big modern retina
+screen with decent color calibration.</p>
+<h2 id='p-4'>Q: What’s Nik about?</h2>
+<p>It’s wonderful software, full of love.  It concentrates the judgments of a
+small number of people who know a whole lot about beauty and 
+image-processing algorithms and lets amateurs like me apply them by clicking
+on buttons and wiggling sliders.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/04/14/FXT15757-Edit.png" alt="Debbie, at dinner in Melbourne" />
+<div class='caption'><p>Our friend Debbie, a lawyer in Melbourne.<br/>Processed 
+with Nik Silver Efex Pro 2.</p></div>
+<p>Malik says that Google making Nik free is a prelude to ignoring it and
+thus putting it on the road to dusty death that beckons all unstrategic
+unmaintained software.  I suspect he’s right.</p>
+<p>So here’s why Google should pour love and money into Nik: It increases the
+amount of beauty on the Internet.  Google profits when there are beautiful
+things there to be found and displayed.</p>
+<p>I’d argue
+that Nik is a uniquely cost-effective lever for converting photographic
+passion into images that make people go “wow”.
+And further, at least in this decade, that you can’t achieve an equivalent
+effect on a mobile device without a keyboard or mouse. Mobile technology wins
+in lots of arenas, but can’t yet replace a general-purpose computer with
+high-grade input devices.</p>
+<h2 id='p-3'>Q: What’s a photographer?</h2>
+<p>I still think the word has meaning.  If you’re getting paid to take
+pictures, you qualify.  If you’re not, then you might anyhow:
+Do you capture faces? <em>Check.</em> Do 
+you throw away loads of pictures? <em>Check.</em>  Do you enjoy
+post-processing? <em>Check.</em></p>
+<p>Most important: Do you feel it in your gut, sometimes, looking at pictures
+you’ve taken  and processed? <em>Check.</em></p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/04/14/FXT15800.png" alt="Latrobe Reading Room in Victoria State Library, Melbourne" />
+<div class='caption'><p>The Victoria State Library’s Latrobe Reading Room, in
+Melbourne.</p></div>
+<p>If you think you might be a photographer and you’re not sharing, start now.
+When others say “nice pic” it feels good.  Not as good as
+<em>making</em> the pic, though.</p>
+</div></content></entry>
+
+<entry>
+ <title>Speaker Dust Cap Dent Repair</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/04/11/Audio-repair' />
+ <link rel='replies'        thr:count='4'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/04/11/Audio-repair#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/04/11/Audio-repair</id>
+ <published>2016-04-11T12:00:00-07:00</published>
+ <updated>2016-04-11T11:32:02-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology/Audio' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Audio' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>As pre&#xad;vi&#xad;ous&#xad;ly not&#xad;ed in this space, I&#x2019;m a de&#xad;ranged au&#xad;dio&#xad;phile, and for some  years my speak&#xad;ers of choice have been from <a href='https://totemacoustic.com/en/'>Totem</a>, out of Montr&#xe9;al. In a  re&#xad;cent ren&#xad;o&#xad;va&#xad;tion a woofer got a dent in a <a href='https://en.wikipedia.org/wiki/Dust_cap'>dust cap</a>, where by &#x201c;dent&#x201d; I mean it was pushed in. I&#x2019;m post&#xad;ing the so&#xad;lu&#xad;tion here in the hopes that fu&#xad;ture searchers will find it.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>As previously noted in this space, I’m a deranged audiophile, and for some
+years my speakers of choice have been from
+<a href="https://totemacoustic.com/en/">Totem</a>, out of Montréal.  In a
+recent renovation a woofer got a dent in a
+<a href="https://en.wikipedia.org/wiki/Dust_cap">dust cap</a>, where by
+“dent” I mean it was pushed in.  I’m posting the
+solution here in the hopes that future searchers will find it.</p>
+<p>I was sitting up late listening to Coltrane and something about the sound
+just wasn’t gelling.  Eventually it bothered me enough to turn on the lights
+and even then it took a while to spot the problem, illustrated below.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/04/11/IMG_20160308_091252.png" alt="Totme speaker with pushed in dustcap" />
+<div class='caption'><p>The round thing in the center of the lower driver is
+supposed to be smooth and convex, not uneven and concave.</p></div>
+<p>There’d recently been a renovation that’d required moving the speakers out
+of the way; I can only conclude someone applied a blow with their butt or knee.</p>
+<p>At first I thought the driver was ruined and I was sad, because these
+speakers have made beautiful sound for us for years. I called the local Totem
+dealer to consult and they said yeah, they could replace the driver, but it
+sounded like it was just the dustcap, why didn’t I try just pulling it back
+out?</p> 
+<p>Easier said than done; getting a grip on a smooth curved surface is harder
+than you’d think.  We tried Blue Tack. We tried duct tape.  We tried the
+locking suction cup that holds up the bag of bath toys.  The problem is
+that with many of these options, to get a grip you have to push down pretty
+hard, which is probably not good for the music.</p>
+<h2 id='p-1'>Enter the wizard</h2>
+<p>By which I mean my practical, innovative spouse
+<a href="http://laurenwood.org/">Lauren Wood</a>, who’d already
+had a couple of good (albeit failed) ideas. She furrowed her brow and said “I
+think hot glue will do it, but it feels a little drastic. I’ll give you a few
+minutes to think about it.”</p>
+<p>I couldn’t think of any other alternatives, so why not?  What she did was
+get out the vacuum cleaner, take the end off, and hot-glue the vacuum pipe to
+the dented dustcap.  The combination of the glue and the suction gripped
+pretty hard.  The cone resisted smoothly but strongly as she pulled, but I
+don’t think it ever came out as far as I’ve achieved on those occasions when
+the family’s out and I crank up the Led Zep.  Anyhow, in just a few seconds,
+hey-presto, it was smoothly convex.</p>
+<p>Well, and festooned with gobs of glue.  But that’s OK, hot glue peels
+off pretty easily, at least before it’s had a while to set.  The dustcap is
+back to the right shape and, while it has a few little scars if you look
+close, I call them wounds of love.  And Coltrane gels just fine now.</p>
+</div></content></entry>
+
+<entry>
+ <title>Getting the Picture</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/04/07/Graph-it' />
+ <link rel='replies'        thr:count='1'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/04/07/Graph-it#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/04/07/Graph-it</id>
+ <published>2016-04-07T12:00:00-07:00</published>
+ <updated>2016-04-08T07:53:27-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology/Software' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Software' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>It&#x2019;s like this: Aver&#xad;ages are your en&#xad;e&#xad;my be&#xad;cause they hide change. Mak&#xad;ing graphs is easy and cheap and some&#xad;times they un&#xad;cov&#xad;er se&#xad;cret&#xad;s; more of us should do it more.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>It’s like this: Averages are your enemy because they hide change.  Making
+graphs is easy and cheap and sometimes they uncover secrets; more of us
+should do it more.</p> 
+<p>What happened was, I was working on some software that takes an incoming
+flow of messages and stuffs them into an 
+<a href="https://aws.amazon.com/kinesis/streams/">Amazon Kinesis stream</a>.
+Kinesis is a thing that can soak up a whole lot of data really fast; the way
+it works is that you configure it with a number of “shards”, and each shard
+can soak up a thousand messages per second, or a megabyte per second,
+whichever comes first.  There’s nice software for reading the messages out and
+doing useful stuff with them. It turns out there are lots of apps where
+Kinesis or something like it<span class='dashes'> —</span> I hear that
+<a href="http://kafka.apache.org/">Apache Kafka</a> is good too.</p>
+<p>Kinesis will deal out the messages among the shards automatically if you
+want, but I didn’t, I wanted to deal them out in a particular way to achieve a
+particular effect.  And I was having a lot of trouble making it work, lots of
+messages were falling on the floor, making me sad.</p>
+<p>Which was really odd, because I’d configured this particular stream with 24
+shards, the messages were averaging around 1K bytes each, and they were
+arriving at only about 7 thousand per second (we say “7K TPS”).  This is a
+development setup, the TPS when we go live will have lots more digits in front
+of the K.  I remember when I used to think that a thousand transactions a
+second was a lot.</p>
+<p>When you try to stuff too much data into Kinesis, it “throttles” you,
+saying “sorry, this shard is busy, wait a while or try somewhere else.”  Now,
+my software was supposed to be smart enough to detect this and sensibly pick
+another shard, routing around the problem.  But still, I kept hearing the
+discouraging pitter-pat of messages hitting the floor.</p>
+<p>So I spent quality time munging through logfiles with grep and sed and ruby
+scripts, and eventually it became obvious that at certain times, <em>all</em>
+of the shards were throttling me at the same time.</p>
+<p>Which made no sense at all, because I had more or less three times the
+number of shards I needed for the 7K TPS.  (At this point, some of the wiser
+readers are already shaking their heads and laughing at me.)</p>
+<p>“Gosh,” I thought, “maybe the load is uneven.”  So I ran a little script
+over the logfile and computed the TPS every minute.  Still pretty flat,
+between 5K and 7K TPS.  I turned the reporting interval down to ten seconds
+and OMG, the numbers were all over the place.  At this point I decided to do
+what I should have done off the top and graph the TPS.</p>
+<img src="tps.png" alt="TPS graph" />
+<p>Well, there you go.  The upstream system was highly periodic and while the
+average TPS was sane, it regularly ran right
+up against the capacity of the stream; at this point, my software’s pathetic
+attempt to shuffle the messages from shard to shard only made things
+worse.</p>
+<p>How, you ask, do you graph numbers like this?  Methods vary, but mine is to
+dump them into a text file whose name ends in “.csv” then have my local
+operating system open it with whatever the default spreadsheet app is, select
+the first column, and say “graph this”.</p>
+<h2 id='p-2'>Credit</h2>
+<p>I first, or anyhow most recently, learned this lesson from 
+<a href="http://www.real-logic.co.uk/about.html">Martin Thompson</a>, at
+the Goto; conference in Denmark in 2014. He’s a heavy optimization geek and
+gave a speech about how he had a weird throughput problem and no matter how
+he averaged the numbers they hid the problem.  Until he graphed them and saw
+it. Yup.</p>
+</div></content></entry>
+
+<entry>
+ <title>Cool Aussie Phoners</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/04/01/Cool-Aussie-Phoners' />
+ <link rel='replies'        thr:count='0'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/04/01/Cool-Aussie-Phoners#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/04/01/Cool-Aussie-Phoners</id>
+ <published>2016-04-01T12:00:00-07:00</published>
+ <updated>2016-04-01T23:25:42-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts/Photos' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Photos' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World/Places/Australia' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='The World' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Places' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Australia' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>What the ti&#xad;tle says: Three pho&#xad;tos of Aussies hold&#xad;ing phones look&#xad;ing cool.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>What the title says: Three photos of Aussies holding phones looking
+cool.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/04/01/FXT15845.png" alt="Cool Aussie phoner" />
+<img src="https://www.tbray.org/ongoing/When/201x/2016/04/01/FXT15846.png" alt="Cool Aussie phoner" />
+<img src="https://www.tbray.org/ongoing/When/201x/2016/04/01/FXT15877.png" alt="Cool Aussie phoner" />
+<p>Some people think “street” photography is supposed to be B&amp;W and sad,
+but I’ve never understood that.</p>
+<p>The first two of these are in Melbourne.</p>
+</div></content></entry>
+
+<entry>
+ <title>Serverlessness</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/03/31/Serverlessness' />
+ <link rel='replies'        thr:count='3'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/03/31/Serverlessness#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/03/31/Serverlessness</id>
+ <published>2016-03-31T12:00:00-07:00</published>
+ <updated>2016-04-01T08:18:02-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology/Cloud' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Technology' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Cloud' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>To&#xad;day Mi&#xad;crosoft an&#xad;nounced <a href='https://azure.microsoft.com/en-us/services/functions/'>Azure Func&#xad;tions</a>, join&#xad;ing <a href='https://cloud.google.com/functions/docs'>Google Cloud Func&#xad;tions</a>    and (from 2014) <a href='https://aws.amazon.com/lambda/details/'>AWS Lamb&#xad;da</a>. This is fun stuff, and might be a big deal.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>Today Microsoft announced
+<a href="https://azure.microsoft.com/en-us/services/functions/">Azure
+Functions</a>, joining
+<a href="https://cloud.google.com/functions/docs">Google Cloud Functions</a>
+and (from 2014)
+<a href="https://aws.amazon.com/lambda/details/">AWS Lambda</a>.
+This is fun stuff, and might be a big deal.</p>
+<p>In the beginning was the server.  The last one I ever bought was from Dell;
+I can remember hauling it out of the cardboard and sliding it into the rack.
+I pinched a finger badly enough that there was blood on the floor.
+Then I had to argue with the sysadmin over Debian vs Red Hat.</p>
+<p>So, now that we have cloud biggies like the three companies named in the
+first paragraph [disclosure,
+I work for AWS]  nobody has to
+shed blood deploying servers.  Even more
+important, nobody has to find the money to buy the suckers.</p>
+<p>But you do still have to have those arguments about operating systems, and
+how much memory, and the load-balancing setup, and how many servers in the
+rack.  Except maybe not, with Lambda and its competitors.</p>
+<h2 id='p-1'>GAE</h2>
+<p>I can remember when Google App Engine came out.  I was working for Sun then
+and totally in love with the idea.  When I write server-side code I want to
+think about handling HTTP requests and passing messages and updating
+databases.  I totally don’t care about operating systems and web servers and
+mostly I don’t even care that much about frameworks like Node and Rails and so
+on.</p>
+<p>Later, when I worked for Google, I wrote a couple of App Engine apps and
+that was mostly OK;  the APIs were nicely-thought-out, but I could never get
+comfy
+with the built-in datastore.  I honestly don’t know whether Google sees App
+Engine as a success these days; but way too many people are still configuring
+operating systems.</p>
+<h2 id='p-2'>Functions</h2>
+<p>So the new idea, initially from Lambda, now from all the Cloud
+heavyweights, is that the natural unit of computation is a function, which
+runs in response to an “Event”.  An Event could obviously be an HTTP
+request, but it could also be a message in a queue or an upload arriving in a
+datastore.   If you’re using
+<a href="https://aws.amazon.com/about-aws/whats-new/2016/01/introducing-cloudwatch-events-monitor-and-rapidly-react-to-changes-in-your-amazon-web-services-resources/">CloudWatch
+Events</a> on AWS [Yay, I helped write that] the
+Event can be, well, more or less anything that happens in your Cloud
+deployment.</p>
+<p>The first time I got excited was when this engineer who sits near me told
+me about his wife’s website; she’s a photographer and sells pictures,
+which occasionally gets high-volume when she shoots classrooms or
+graduations or whatever.</p>
+<p>He was running her site on some low-rent Web framework on EC2 and it cost
+him under $10/month.  Then he re-wrote it as a bunch of static
+files and a couple of Lambda functions which among other things called out to
+their payment processor.  There was a whole lot less code, and suddenly the
+bills were under 10¢.</p>
+<p>Well OK then, you’ve got my attention now.</p>
+<h2 id='p-3'>Functions?</h2>
+<p>I think there’s a lot to like about the function as the
+natural unit of cloud computation.  Statelessness is good.  No local storage
+is good.  Not much need for proprietary APIs is good.</p>
+<p>Are they the whole solution? Obviously not; every Lambda I’ve ever looked
+at is mostly callouts to databases and REST endpoints and messaging APIs.
+But they really do mean that you never have to argue Debian vs Red Hat
+again, and that feels like real progress.</p>
+<p>I should disclose that I don’t work on Lambda, although code I wrote is
+helping send lots of events from AWS services I didn’t write to Lambda
+functions I didn’t write.</p>
+<p>I guess saying that functions are cool is about the safest thing ever, what
+with Google and Microsoft piling on board.  If you haven’t given them a try
+yet,
+<a href="https://aws.amazon.com/lambda/details/">go ahead</a>, there’s really not much to it.</p>
+</div></content></entry>
+
+<entry>
+ <title>Mobile Aerials</title>
+ <link href='https://www.tbray.org/ongoing/When/201x/2016/03/28/Mobile-Aerials' />
+ <link rel='replies'        thr:count='1'        type='application/xhtml+xml'        href='/ongoing/When/201x/2016/03/28/Mobile-Aerials#comments' />
+ <id>https://www.tbray.org/ongoing/When/201x/2016/03/28/Mobile-Aerials</id>
+ <published>2016-03-28T12:00:00-07:00</published>
+ <updated>2016-03-31T22:10:47-07:00</updated>
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts/Photos' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Arts' />
+ <category scheme='https://www.tbray.org/ongoing/What/' term='Photos' />
+ <summary type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>A lit&#xad;tle while ago I tweet&#xad;ed &#x201c;One thing phone-cams aren&#x2019;t much good for is shoot&#xad;ing out air&#xad;plane windows.&#x201d; Since then, I&#x2019;ve no&#xad;ticed my Nexus 5X look&#xad;ing at me in a hurt sort of way.</div></summary>
+<content type='xhtml'><div xmlns='http://www.w3.org/1999/xhtml'>
+<p>A little while ago I tweeted “One thing phone-cams aren’t much good for is
+shooting out airplane windows.”  Since then, I’ve noticed
+my Nexus 5X looking at me in a hurt sort of way.</p>
+<img src="https://www.tbray.org/ongoing/When/201x/2016/03/28/LRM_20160314_145014.png" alt="Somewhere over Australia" />
+<img src="https://www.tbray.org/ongoing/When/201x/2016/03/28/LRM_20160314_153431.png" alt="Somewhere over Australia" />
+<p>It seems I was wrong. These are both taken somewhere over Australia.</p>
+</div></content></entry>
+
+</feed>

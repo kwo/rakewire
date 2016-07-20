@@ -402,6 +402,9 @@ func (z *Parser) doEndEntryAtom(e *element) {
 			z.entry.LinkAlternate = z.entry.Links[""]
 		}
 
+		z.entry.Summary = makeAbsoluteURLs(z.entry.LinkAlternate, z.entry.Summary)
+		z.entry.Content = makeAbsoluteURLs(z.entry.LinkAlternate, z.entry.Content)
+
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
 
@@ -431,6 +434,9 @@ func (z *Parser) doEndEntryRSS(e *element) {
 		if isEmpty(z.entry.LinkAlternate) {
 			z.entry.LinkAlternate = z.entry.Links[""]
 		}
+
+		z.entry.Summary = makeAbsoluteURLs(z.entry.LinkAlternate, z.entry.Summary)
+		z.entry.Content = makeAbsoluteURLs(z.entry.LinkAlternate, z.entry.Content)
 
 		z.feed.Entries = append(z.feed.Entries, z.entry)
 		z.entry = nil
