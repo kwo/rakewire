@@ -73,7 +73,7 @@ func (z *elements) IsStackEntry(flavor string, offset int) bool {
 // Attr walks down the stack delivering the first matching attribute value
 func (z *elements) Attr(space string, local string) string {
 	for i := len(z.stack) - 1; i >= 0; i-- {
-		if value := z.stack[i].Attr(space, local); value != "" {
+		if value := z.stack[i].Attr(space, local); !isEmpty(value) {
 			return value
 		}
 	}

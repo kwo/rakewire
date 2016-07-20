@@ -35,11 +35,11 @@ func (z *generator) ToString() string {
 	z.URI = strings.TrimSpace(z.URI)
 	z.Version = strings.TrimSpace(z.Version)
 	result := z.Text
-	if result != "" {
-		if z.Version != "" {
+	if !isEmpty(result) {
+		if !isEmpty(z.Version) {
 			result += " " + z.Version
 		}
-		if z.URI != "" {
+		if !isEmpty(z.URI) {
 			result += " (" + z.URI + ")"
 		}
 	}
@@ -61,10 +61,10 @@ func (p *person) ToString() string {
 	p.Email = strings.TrimSpace(p.Email)
 	p.URI = strings.TrimSpace(p.URI)
 	result := p.Name
-	if p.Email != "" {
+	if !isEmpty(p.Email) {
 		result += " <" + p.Email + ">"
 	}
-	if p.URI != "" {
+	if !isEmpty(p.URI) {
 		result += " (" + p.URI + ")"
 	}
 	return result

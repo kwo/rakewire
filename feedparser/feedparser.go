@@ -72,8 +72,8 @@ const (
 	nsAtom       = "http://www.w3.org/2005/Atom"
 	nsContent    = "http://purl.org/rss/1.0/modules/content/"
 	nsDublinCore = "http://purl.org/dc/elements/1.1/"
-	nsNone       = empty
-	nsRSS        = empty
+	nsNone       = ""
+	nsRSS        = ""
 	nsXML        = "http://www.w3.org/XML/1998/namespace"
 )
 
@@ -85,10 +85,6 @@ const (
 const (
 	linkSelf      = "self"
 	linkAlternate = "alternate"
-)
-
-const (
-	empty = ""
 )
 
 var rssPerson = regexp.MustCompile(`^(.+)\s+\((.+)\)$`)
@@ -220,7 +216,7 @@ func (z *Parser) doStartFeedNil(e *element, start *xml.StartElement) error {
 func (z *Parser) doStartFeedAtom(e *element, start *xml.StartElement) {
 	switch {
 	case e.Match(nsAtom, "author"):
-		if value := z.makePersonAtom(e, start); value != empty {
+		if value := z.makePersonAtom(e, start); !isEmpty(value) {
 			z.feed.Authors = append(z.feed.Authors, value)
 		}
 	case e.Match(nsAtom, "entry"):
@@ -229,7 +225,7 @@ func (z *Parser) doStartFeedAtom(e *element, start *xml.StartElement) {
 	case e.Match(nsAtom, "generator"):
 		z.feed.Generator = z.makeGenerator(e, start)
 	case e.Match(nsAtom, "icon"):
-		if text := z.makeText(e, start); text != empty {
+		if text := z.makeText(e, start); !isEmpty(text) {
 			z.feed.Icon = makeURL(z.stack.Attr(nsXML, "base"), text)
 		}
 	case e.Match(nsAtom, "id"):
@@ -282,17 +278,17 @@ func (z *Parser) doStartFeedRSS(e *element, start *xml.StartElement) {
 func (z *Parser) doStartEntryAtom(e *element, start *xml.StartElement) {
 	switch {
 	case e.Match(nsAtom, "author"):
-		if value := z.makePersonAtom(e, start); value != empty {
+		if value := z.makePersonAtom(e, start); !isEmpty(value) {
 			z.entry.Authors = append(z.entry.Authors, value)
 		}
 	case e.Match(nsAtom, "category"):
-		if value := makeCategory(e, start); value != empty {
+		if value := makeCategory(e, start); !isEmpty(value) {
 			z.entry.Categories = append(z.entry.Categories, value)
 		}
 	case e.Match(nsAtom, "content"):
 		z.entry.Content = z.makeContent(e, start)
 	case e.Match(nsAtom, "contributor"):
-		if value := z.makePersonAtom(e, start); value != empty {
+		if value := z.makePersonAtom(e, start); !isEmpty(value) {
 			z.entry.Contributors = append(z.entry.Contributors, value)
 		}
 	case e.Match(nsAtom, "id"):
@@ -308,7 +304,7 @@ func (z *Parser) doStartEntryAtom(e *element, start *xml.StartElement) {
 	case e.Match(nsAtom, "title"):
 		z.entry.Title = z.makeContent(e, start)
 	case e.Match(nsAtom, "updated"):
-		if text := z.makeText(e, start); text != empty {
+		if text := z.makeText(e, start); !isEmpty(text) {
 			z.entry.Updated = parseTime(text)
 		}
 	}
@@ -323,21 +319,21 @@ func (z *Parser) doStartEntryRSS(e *element, start *xml.StartElement) {
 	case e.Match(nsContent, "encoded"):
 		z.entry.Content = z.makeText(e, start)
 	case e.Match(nsDublinCore, "creator"):
-		if creator := z.makeText(e, start); creator != empty {
+		if creator := z.makeText(e, start); !isEmpty(creator) {
 			z.entry.Authors = append(z.entry.Authors, creator)
 		}
 	case e.Match(nsDublinCore, "date"):
 		if z.entry.Updated.IsZero() {
-			if text := z.makeText(e, start); text != empty {
+			if text := z.makeText(e, start); !isEmpty(text) {
 				z.entry.Updated = parseTime(text)
 			}
 		}
 	case e.Match(nsRSS, "author"):
-		if value := z.makePersonRSS(e, start); value != empty {
+		if value := z.makePersonRSS(e, start); !isEmpty(value) {
 			z.entry.Authors = append(z.entry.Authors, value)
 		}
 	case e.Match(nsRSS, "category"):
-		if value := z.makeText(e, start); value != empty {
+		if value := z.makeText(e, start); !isEmpty(value) {
 			z.entry.Categories = append(z.entry.Categories, value)
 		}
 	case e.Match(nsRSS, "description"):
@@ -347,7 +343,7 @@ func (z *Parser) doStartEntryRSS(e *element, start *xml.StartElement) {
 	case e.Match(nsRSS, "link"):
 		z.entry.Links[linkAlternate] = makeURL(z.stack.Attr(nsXML, "base"), z.makeText(e, start))
 	case e.Match(nsRSS, "pubdate"):
-		if text := z.makeText(e, start); text != empty {
+		if text := z.makeText(e, start); !isEmpty(text) {
 			z.entry.Updated = parseTime(text)
 		}
 	case e.Match(nsRSS, "title"):
@@ -361,7 +357,7 @@ func (z *Parser) doEndFeedAtom(e *element) {
 		// finished: clean up atom feed here
 		z.feed.LinkSelf = z.feed.Links[linkSelf]
 		z.feed.LinkAlternate = z.feed.Links[linkAlternate]
-		if len(z.feed.LinkAlternate) == 0 {
+		if isEmpty(z.feed.LinkAlternate) {
 			z.feed.LinkAlternate = z.feed.Links[""]
 		}
 	}
@@ -370,17 +366,17 @@ func (z *Parser) doEndFeedAtom(e *element) {
 func (z *Parser) doEndFeedRSS(e *element) {
 	switch {
 	case e.Match(nsRSS, "channel"):
-		if z.feed.ID == empty {
+		if isEmpty(z.feed.ID) {
 			z.feed.ID = z.feed.Links[linkSelf]
 		}
-		if z.feed.ID == empty {
+		if isEmpty(z.feed.ID) {
 			z.feed.ID = z.feed.Links[linkAlternate]
 		}
 		// finished: clean up rss feed here
 		z.feed.Flavor = flavorRSS + z.stack.Attr(nsRSS, "version")
 		z.feed.LinkSelf = z.feed.Links[linkSelf]
 		z.feed.LinkAlternate = z.feed.Links[linkAlternate]
-		if len(z.feed.LinkAlternate) == 0 {
+		if isEmpty(z.feed.LinkAlternate) {
 			z.feed.LinkAlternate = z.feed.Links[""]
 		}
 	}
@@ -396,13 +392,13 @@ func (z *Parser) doEndEntryAtom(e *element) {
 			z.feed.Updated = z.entry.Updated
 		}
 		// guarentee entry always has an id
-		if z.entry.ID == empty {
+		if isEmpty(z.entry.ID) {
 			z.entry.ID = z.entry.hash()
 		}
 
 		z.entry.LinkSelf = z.entry.Links[linkSelf]
 		z.entry.LinkAlternate = z.entry.Links[linkAlternate]
-		if len(z.entry.LinkAlternate) == 0 {
+		if isEmpty(z.entry.LinkAlternate) {
 			z.entry.LinkAlternate = z.entry.Links[""]
 		}
 
@@ -415,9 +411,9 @@ func (z *Parser) doEndEntryAtom(e *element) {
 func (z *Parser) doEndEntryRSS(e *element) {
 	switch {
 	case e.Match(nsRSS, "item"):
-		if z.entry.Summary != empty && z.entry.Content == empty {
+		if !isEmpty(z.entry.Summary) && isEmpty(z.entry.Content) {
 			z.entry.Content = z.entry.Summary
-			z.entry.Summary = empty
+			z.entry.Summary = ""
 		}
 		if z.entry.Created.IsZero() {
 			z.entry.Created = z.entry.Updated
@@ -426,13 +422,13 @@ func (z *Parser) doEndEntryRSS(e *element) {
 			z.feed.Updated = z.entry.Updated
 		}
 		// guarentee entry always has an id
-		if z.entry.ID == empty {
+		if isEmpty(z.entry.ID) {
 			z.entry.ID = z.entry.hash()
 		}
 
 		z.entry.LinkSelf = z.entry.Links[linkSelf]
 		z.entry.LinkAlternate = z.entry.Links[linkAlternate]
-		if len(z.entry.LinkAlternate) == 0 {
+		if isEmpty(z.entry.LinkAlternate) {
 			z.entry.LinkAlternate = z.entry.Links[""]
 		}
 
@@ -444,7 +440,7 @@ func (z *Parser) doEndEntryRSS(e *element) {
 func makeCategory(e *element, start *xml.StartElement) string {
 	term := strings.TrimSpace(e.Attr(nsNone, "term"))
 	label := strings.TrimSpace(e.Attr(nsNone, "label"))
-	if label != empty {
+	if !isEmpty(label) {
 		return label
 	}
 	return term
@@ -506,7 +502,7 @@ func (z *Parser) makeText(e *element, start *xml.StartElement) string {
 func makeURL(base string, urlstr string) string {
 	u, err := url.Parse(urlstr)
 	if err == nil {
-		if base != empty && !u.IsAbs() {
+		if !isEmpty(base) && !u.IsAbs() {
 			b, err := url.Parse(base)
 			if err == nil {
 				return b.ResolveReference(u).String()
