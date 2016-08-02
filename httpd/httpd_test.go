@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kwo/rakewire/auth"
 	"github.com/kwo/rakewire/model"
 )
 
@@ -23,15 +22,10 @@ func TestSilk(t *testing.T) {
 	db := openTestDatabase(t)
 	defer closeTestDatabase(t, db)
 
-	certFile, keyFile := generateCerts(t)
-	defer removeCerts(t, certFile, keyFile)
-
 	cfg := &Configuration{
 		DebugMode:      false,
 		ListenHostPort: testHostPort,
 		PublicHostPort: testHostPort,
-		TLSCertFile:    certFile,
-		TLSKeyFile:     keyFile,
 	}
 
 	server := NewService(cfg, db, "Rakewire", time.Now().Unix())
@@ -48,23 +42,6 @@ func TestSilk(t *testing.T) {
 
 	//url := fmt.Sprintf("https://%s", server.publicHostPort)
 
-}
-
-func generateCerts(t *testing.T) (certFile, keyFile string) {
-
-	certFile = "certfile.crt"
-	keyFile = "keyfile.key"
-
-	if err := auth.GenerateCertificates("localhost", 2048, "", certFile, keyFile, "Rakewire"); err != nil {
-		t.Fatalf("Cannot generate certificates: %s", err.Error())
-	}
-
-	return
-}
-
-func removeCerts(t *testing.T, certFile, keyFile string) {
-	os.Remove(certFile)
-	os.Remove(keyFile)
 }
 
 func openTestDatabase(t *testing.T) model.Database {

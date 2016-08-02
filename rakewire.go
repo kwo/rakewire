@@ -125,40 +125,6 @@ func main() {
 			Action: cmd.Check,
 		},
 		{
-			Name:   "certgen",
-			Usage:  "generate tls certificate",
-			Action: cmd.CertGen,
-			Flags: []cli.Flag{
-				cli.StringFlag{
-					Name:   "host",
-					Value:  "localhost",
-					EnvVar: "RAKEWIRE_HOST",
-					Usage:  "Comma-separated hostnames and IPs to generate a certificate for, :port will be removed",
-				},
-				cli.IntFlag{
-					Name:  "bits",
-					Value: 2048,
-					Usage: "Size of RSA key to generate. Ignored if --curve is set",
-				},
-				cli.StringFlag{
-					Name:  "curve",
-					Usage: "ECDSA curve to use to generate a key. Valid values are P224, P256, P384 and P521",
-				},
-				cli.StringFlag{
-					Name:   "tlscert",
-					Value:  "rakewire.crt",
-					EnvVar: "RAKEWIRE_TLSCERT",
-					Usage:  "Location of the certificate file to generate. Will not overwrite existing file.",
-				},
-				cli.StringFlag{
-					Name:   "tlskey",
-					Value:  "rakewire.key",
-					EnvVar: "RAKEWIRE_TLSKEY",
-					Usage:  "Location of the key file to generate. Will not overwrite existing file.",
-				},
-			},
-		},
-		{
 			Name:      "useradd",
 			Usage:     "add user",
 			ArgsUsage: "<username> <password> [role[,role]]",
