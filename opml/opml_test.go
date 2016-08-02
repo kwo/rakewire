@@ -2,13 +2,14 @@ package opml
 
 import (
 	"bytes"
-	"github.com/kwo/rakewire/model"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/kwo/rakewire/model"
 )
 
 func TestParseFormat(t *testing.T) {

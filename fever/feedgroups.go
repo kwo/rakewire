@@ -1,8 +1,9 @@
 package fever
 
 import (
-	"github.com/kwo/rakewire/model"
 	"strings"
+
+	"github.com/kwo/rakewire/model"
 )
 
 func (z *API) getFeeds(userID string, tx model.Transaction) ([]*Feed, []*FeedGroup, error) {

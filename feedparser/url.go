@@ -2,9 +2,10 @@ package feedparser
 
 import (
 	"bytes"
-	"golang.org/x/net/html"
 	"net/url"
 	"strings"
+
+	"golang.org/x/net/html"
 )
 
 // Link represents an HTML link

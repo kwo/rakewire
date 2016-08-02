@@ -3,17 +3,18 @@ package httpd
 import (
 	"crypto/tls"
 	"errors"
+	"net"
+	"net/http"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/kwo/rakewire/api"
 	"github.com/kwo/rakewire/fever"
 	"github.com/kwo/rakewire/logger"
 	"github.com/kwo/rakewire/model"
 	"github.com/kwo/rakewire/web"
 	"golang.org/x/net/context"
-	"net"
-	"net/http"
-	"strings"
-	"sync"
-	"time"
 )
 
 var (

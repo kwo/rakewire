@@ -3,10 +3,11 @@ package opml
 import (
 	"bufio"
 	"bytes"
-	"github.com/kwo/rakewire/model"
 	"io"
 	"strings"
 	"testing"
+
+	"github.com/kwo/rakewire/model"
 )
 
 func TestExport(t *testing.T) {

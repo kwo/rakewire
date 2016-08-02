@@ -1,11 +1,12 @@
 package reaper
 
 import (
-	"github.com/kwo/rakewire/logger"
-	"github.com/kwo/rakewire/model"
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/kwo/rakewire/logger"
+	"github.com/kwo/rakewire/model"
 )
 
 var (

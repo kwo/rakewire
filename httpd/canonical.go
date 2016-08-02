@@ -1,9 +1,10 @@
 package httpd
 
 import (
-	"golang.org/x/net/context"
 	"net/http"
 	"strings"
+
+	"golang.org/x/net/context"
 )
 
 // CanonicalHost is HTTP middleware that re-directs requests to the canonical

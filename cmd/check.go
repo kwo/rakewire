@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/codegangsta/cli"
-	"github.com/kwo/rakewire/model"
 	"os"
 	"path/filepath"
+
+	"github.com/codegangsta/cli"
+	"github.com/kwo/rakewire/model"
 )
 
 // Check the database

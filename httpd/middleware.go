@@ -1,8 +1,9 @@
 package httpd
 
 import (
-	"golang.org/x/net/context"
 	"net/http"
+
+	"golang.org/x/net/context"
 )
 
 // HandlerC is a context-aware http handler

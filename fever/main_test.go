@@ -2,15 +2,16 @@ package fever
 
 import (
 	"fmt"
-	"github.com/kwo/rakewire/model"
-	"github.com/matryer/silk/runner"
-	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/kwo/rakewire/model"
+	"github.com/matryer/silk/runner"
+	"golang.org/x/net/context"
 )
 
 const (

@@ -1,11 +1,12 @@
 package pollfeed
 
 import (
-	"github.com/kwo/rakewire/model"
 	"io/ioutil"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/kwo/rakewire/model"
 )
 
 func TestInterfaceService(t *testing.T) {

@@ -3,13 +3,14 @@ package feedparser
 import (
 	"encoding/xml"
 	"errors"
-	"golang.org/x/net/html/charset"
 	"io"
 	"io/ioutil"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
+
+	"golang.org/x/net/html/charset"
 )
 
 const (

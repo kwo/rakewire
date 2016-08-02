@@ -1,12 +1,13 @@
 package httpd
 
 import (
-	"github.com/kwo/rakewire/auth"
-	"github.com/kwo/rakewire/model"
 	"io/ioutil"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/kwo/rakewire/auth"
+	"github.com/kwo/rakewire/model"
 )
 
 const (

@@ -7,11 +7,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/codegangsta/cli"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/codegangsta/cli"
 )
 
 var (

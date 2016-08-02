@@ -1,12 +1,13 @@
 package model
 
 import (
-	"github.com/boltdb/bolt"
-	"github.com/kwo/rakewire/logger"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/boltdb/bolt"
+	"github.com/kwo/rakewire/logger"
 )
 
 // Instance allows opening and closing new Databases

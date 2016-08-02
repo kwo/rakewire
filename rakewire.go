@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/codegangsta/cli"
 	"github.com/kwo/rakewire/cmd"
 	"github.com/kwo/rakewire/cmd/remote"
-	"os"
-	"strings"
 )
 
 // application level variables

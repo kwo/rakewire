@@ -2,8 +2,9 @@ package auth
 
 import (
 	"errors"
-	"github.com/kwo/rakewire/model"
 	"strings"
+
+	"github.com/kwo/rakewire/model"
 )
 
 const (

@@ -1,12 +1,13 @@
 package httpd
 
 import (
-	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"golang.org/x/net/context"
 )
 
 func TestMiddleware(t *testing.T) {

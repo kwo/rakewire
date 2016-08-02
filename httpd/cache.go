@@ -1,8 +1,9 @@
 package httpd
 
 import (
-	"golang.org/x/net/context"
 	"net/http"
+
+	"golang.org/x/net/context"
 )
 
 // NoCache adds cache-control headers so that the content is not cached

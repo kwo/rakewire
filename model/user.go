@@ -4,8 +4,9 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
-	"golang.org/x/crypto/bcrypt"
 	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 const (

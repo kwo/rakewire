@@ -2,9 +2,10 @@ package fever
 
 import (
 	"fmt"
-	"github.com/kwo/rakewire/model"
 	"strconv"
 	"time"
+
+	"github.com/kwo/rakewire/model"
 )
 
 func (z *API) updateItems(userID string, mark, pAs, idStr, beforeStr string, tx model.Transaction) error {

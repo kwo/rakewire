@@ -2,9 +2,10 @@ package opml
 
 import (
 	"fmt"
-	"github.com/kwo/rakewire/model"
 	"strings"
 	"time"
+
+	"github.com/kwo/rakewire/model"
 )
 
 // Export OPML document

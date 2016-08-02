@@ -2,10 +2,11 @@ package remote
 
 import (
 	"fmt"
-	"github.com/codegangsta/cli"
-	"github.com/kwo/rakewire/api/msg"
 	"os"
 	"time"
+
+	"github.com/codegangsta/cli"
+	"github.com/kwo/rakewire/api/msg"
 )
 
 // EntryList retrieves the list of entries for a subscription

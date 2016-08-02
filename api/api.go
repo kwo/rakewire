@@ -2,14 +2,15 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/kwo/rakewire/api/msg"
-	"github.com/kwo/rakewire/logger"
-	"github.com/kwo/rakewire/model"
-	"golang.org/x/net/context"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/kwo/rakewire/api/msg"
+	"github.com/kwo/rakewire/logger"
+	"github.com/kwo/rakewire/model"
+	"golang.org/x/net/context"
 )
 
 const (

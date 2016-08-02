@@ -3,9 +3,10 @@ package web
 //go:generate esc -private -o public.go -pkg web -prefix public public
 
 import (
-	"golang.org/x/net/context"
 	"net/http"
 	"regexp"
+
+	"golang.org/x/net/context"
 )
 
 // Handler defines the http handler for the web package

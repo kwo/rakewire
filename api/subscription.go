@@ -1,12 +1,13 @@
 package api
 
 import (
+	"strings"
+	"time"
+
 	"github.com/kwo/rakewire/api/msg"
 	"github.com/kwo/rakewire/auth"
 	"github.com/kwo/rakewire/model"
 	"golang.org/x/net/context"
-	"strings"
-	"time"
 )
 
 // SubscriptionAddUpdate adds or updates a subscription

@@ -1,11 +1,12 @@
 package opml
 
 import (
-	"github.com/kwo/rakewire/model"
 	"io"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/kwo/rakewire/model"
 )
 
 func TestImportAutoStar(t *testing.T) {

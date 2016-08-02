@@ -1,9 +1,10 @@
 package fever
 
 import (
-	"github.com/kwo/rakewire/model"
 	"strconv"
 	"strings"
+
+	"github.com/kwo/rakewire/model"
 )
 
 func (z *API) getSavedItemIDs(userID string, tx model.Transaction) (string, error) {

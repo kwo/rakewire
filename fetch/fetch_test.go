@@ -1,9 +1,10 @@
 package fetch
 
 import (
-	"github.com/kwo/rakewire/model"
 	"net/url"
 	"testing"
+
+	"github.com/kwo/rakewire/model"
 )
 
 func TestInterfaceService(t *testing.T) {

@@ -2,8 +2,9 @@ package auth
 
 import (
 	"encoding/base64"
-	"github.com/kwo/rakewire/model"
 	"strings"
+
+	"github.com/kwo/rakewire/model"
 )
 
 func authenticateBasic(db model.Database, authHeader string, roles ...string) (*User, error) {

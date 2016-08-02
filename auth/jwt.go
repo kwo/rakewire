@@ -1,11 +1,12 @@
 package auth
 
 import (
-	"github.com/dgrijalva/jwt-go"
 	"math/rand"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 const (

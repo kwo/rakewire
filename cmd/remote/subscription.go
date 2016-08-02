@@ -2,11 +2,12 @@ package remote
 
 import (
 	"fmt"
-	"github.com/codegangsta/cli"
-	"github.com/kwo/rakewire/api/msg"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/codegangsta/cli"
+	"github.com/kwo/rakewire/api/msg"
 )
 
 // SubscriptionAdd adds a new subscription

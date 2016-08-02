@@ -3,13 +3,14 @@ package fetch
 import (
 	"errors"
 	"fmt"
-	"github.com/kwo/rakewire/feedparser"
-	"github.com/kwo/rakewire/logger"
-	"github.com/kwo/rakewire/model"
 	"net/http"
 	"net/url"
 	"sync"
 	"time"
+
+	"github.com/kwo/rakewire/feedparser"
+	"github.com/kwo/rakewire/logger"
+	"github.com/kwo/rakewire/model"
 )
 
 const (

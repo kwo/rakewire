@@ -2,10 +2,11 @@ package remote
 
 import (
 	"fmt"
-	"github.com/codegangsta/cli"
-	"github.com/kwo/rakewire/api/msg"
 	"os"
 	"time"
+
+	"github.com/codegangsta/cli"
+	"github.com/kwo/rakewire/api/msg"
 )
 
 // Status retrieves the status of a remote instance

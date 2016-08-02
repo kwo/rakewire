@@ -1,10 +1,11 @@
 package httpd
 
 import (
+	"net/http"
+
 	"github.com/kwo/rakewire/auth"
 	"github.com/kwo/rakewire/model"
 	"golang.org/x/net/context"
-	"net/http"
 )
 
 // Authenticate authenticates requests, placing the user object in the request context

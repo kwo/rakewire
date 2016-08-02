@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"github.com/codegangsta/cli"
 	"github.com/kwo/rakewire/model"
-	"path/filepath"
 )
 
 func showVersionInformation(c *cli.Context) {

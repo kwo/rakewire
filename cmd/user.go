@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/codegangsta/cli"
 	"github.com/kwo/rakewire/model"
-	"os"
 )
 
 // UserAdd adds a user

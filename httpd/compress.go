@@ -3,10 +3,11 @@ package httpd
 import (
 	"compress/flate"
 	"compress/gzip"
-	"golang.org/x/net/context"
 	"io"
 	"net/http"
 	"strings"
+
+	"golang.org/x/net/context"
 )
 
 type compressResponseWriter struct {

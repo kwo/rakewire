@@ -2,13 +2,14 @@ package httpd
 
 import (
 	"fmt"
-	"github.com/kwo/rakewire/auth"
-	"golang.org/x/net/context"
 	"io"
 	"net"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/kwo/rakewire/auth"
+	"golang.org/x/net/context"
 )
 
 const (

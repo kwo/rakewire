@@ -2,9 +2,10 @@ package remote
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/codegangsta/cli"
 	"github.com/kwo/rakewire/api/msg"
-	"os"
 )
 
 // GroupList retrieves the list of user groups from the remote instance
